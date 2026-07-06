@@ -9,6 +9,7 @@ import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
@@ -380,11 +381,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  entry.value.isOptional
-                                      ? '${entry.value.description} (opcional)'
-                                      : entry.value.description,
-                                ),
+                                child: RecipeStepText(step: entry.value),
                               ),
                             ],
                           ),
