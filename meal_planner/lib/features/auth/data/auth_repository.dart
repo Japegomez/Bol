@@ -16,6 +16,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState, AuthExce
 
 class AuthRepository {
   GoogleSignIn? _googleSignInInstance;
+  bool _manualSignOut = false;
 
   GoogleSignIn? get _googleSignIn {
     if (!Env.hasGoogleSignIn) return null;
@@ -150,7 +151,8 @@ class AuthRepository {
     }
   }
 
-  Future<void> signOut() async {
+  Future<void> signOut({bool manual = false}) async {
+    _manualSignOut = manual;
     if (_signedInWithGoogle) {
       try {
         await _googleSignIn?.signOut();
@@ -175,7 +177,7 @@ class AuthRepository {
 
     await _deleteUserAvatar(userId);
     await supabase.rpc<void>('delete_user_account');
-    await signOut();
+    await signOut(manual: true);
   }
 
   Future<void> _deleteUserAvatar(String userId) async {
@@ -189,16 +191,22 @@ class AuthRepository {
   Session? get currentSession => supabase.auth.currentSession;
 
   Stream<AuthState> get authStateChanges async* {
-    yield supabase.auth.currentSession != null
+    var wasAuthenticated = supabase.auth.currentSession != null;
+
+    yield wasAuthenticated
         ? AuthAuthenticated(supabase.auth.currentUser!)
         : const AuthUnauthenticated();
 
     await for (final event in supabase.auth.onAuthStateChange) {
       final session = event.session;
       if (session != null) {
+        wasAuthenticated = true;
         yield AuthAuthenticated(session.user);
       } else {
-        yield const AuthUnauthenticated();
+        final sessionExpired = wasAuthenticated && !_manualSignOut;
+        wasAuthenticated = false;
+        _manualSignOut = false;
+        yield AuthUnauthenticated(sessionExpired: sessionExpired);
       }
     }
   }

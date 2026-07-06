@@ -15,5 +15,7 @@ final class AuthAuthenticated extends AuthState {
 }
 
 final class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
+  const AuthUnauthenticated({this.sessionExpired = false});
+
+  final bool sessionExpired;
 }

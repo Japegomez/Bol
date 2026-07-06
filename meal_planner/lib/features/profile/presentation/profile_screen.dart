@@ -30,7 +30,7 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     if (confirmed != true || !context.mounted) return;
-    await ref.read(authRepositoryProvider).signOut();
+    await ref.read(authRepositoryProvider).signOut(manual: true);
   }
 
   @override

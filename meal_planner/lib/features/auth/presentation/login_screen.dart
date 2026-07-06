@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
+import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -78,6 +79,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sessionExpired = ref.watch(authStateProvider).maybeWhen(
+          data: (state) =>
+              state is AuthUnauthenticated && state.sessionExpired,
+          orElse: () => false,
+        );
 
     return Scaffold(
       body: SafeArea(
@@ -105,6 +111,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
+                    if (sessionExpired) ...[
+                      Card(
+                        color: theme.colorScheme.secondaryContainer,
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: theme.colorScheme.onSecondaryContainer,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Tu sesión ha caducado. Inicia sesión de nuevo.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color:
+                                        theme.colorScheme.onSecondaryContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (!Env.hasSupabase)
                       const Card(
                         child: Padding(
