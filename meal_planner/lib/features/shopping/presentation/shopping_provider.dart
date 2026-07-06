@@ -5,6 +5,7 @@ import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
+import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/shopping/data/shopping_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -248,16 +249,14 @@ String formatShoppingListForShare(Map<String, List<ShoppingItem>> grouped) {
   for (final entry in grouped.entries) {
     buffer.writeln('${entry.key}:');
     for (final item in entry.value) {
-      final qty = item.quantity != null ? '${_formatQuantity(item.quantity!)} ' : '';
-      final unit = item.unit != null ? '${item.unit} ' : '';
-      buffer.writeln('• $qty$unit${item.name}');
+      buffer.writeln('• ${formatShoppingItemLabel(
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+      )}');
     }
     buffer.writeln();
   }
 
   return buffer.toString().trimRight();
-}
-
-String _formatQuantity(num quantity) {
-  return quantity.round().toString();
 }
