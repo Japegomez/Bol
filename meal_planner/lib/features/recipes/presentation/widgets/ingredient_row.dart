@@ -4,11 +4,30 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
-class IngredientRow extends StatelessWidget {
+// Computed once at module load; reused across every IngredientRow rebuild.
+// Avoids creating 20–30 DropdownMenuItem instances per dropdown per rebuild.
+final _unitDropdownItems = <DropdownMenuItem<String>>[
+  ...predefinedUnits
+      .map((u) => DropdownMenuItem<String>(value: u, child: Text(u))),
+  const DropdownMenuItem<String>(
+    value: customUnitOption,
+    child: Text(customUnitOption),
+  ),
+];
+
+final _categoryDropdownItems = ingredientCategories
+    .map((c) => DropdownMenuItem<String>(value: c, child: Text(c)))
+    .toList(growable: false);
+
+/// Row for a single ingredient in the recipe form.
+///
+/// Stateful and controller-based so that typing mutates the model in place
+/// without rebuilding the parent form. Only layout-affecting changes ("al
+/// gusto", custom unit) trigger a local setState; category changes are free.
+class IngredientRow extends StatefulWidget {
   const IngredientRow({
     required this.index,
     required this.ingredient,
-    required this.onChanged,
     required this.onRemove,
     required this.canRemove,
     super.key,
@@ -16,28 +35,52 @@ class IngredientRow extends StatelessWidget {
 
   final int index;
   final IngredientFormItem ingredient;
-  final ValueChanged<IngredientFormItem> onChanged;
   final VoidCallback onRemove;
   final bool canRemove;
 
   @override
-  Widget build(BuildContext context) {
-    final unitItems = [
-      ...predefinedUnits,
-      customUnitOption,
-    ];
+  State<IngredientRow> createState() => _IngredientRowState();
+}
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+class _IngredientRowState extends State<IngredientRow> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _quantityController;
+  late final TextEditingController _customUnitController;
+
+  IngredientFormItem get _ingredient => widget.ingredient;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: _ingredient.name);
+    _quantityController = TextEditingController(
+      text: _ingredient.quantity?.toString() ?? '',
+    );
+    _customUnitController = TextEditingController(text: _ingredient.customUnit);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _quantityController.dispose();
+    _customUnitController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Row(
               children: [
                 ReorderableDragStartListener(
-                  index: index,
+                  index: widget.index,
                   child: Icon(
                     Icons.drag_handle,
                     color: Theme.of(context).colorScheme.outline,
@@ -46,30 +89,29 @@ class IngredientRow extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextFormField(
-                    initialValue: ingredient.name,
+                    controller: _nameController,
                     decoration: const InputDecoration(
                       labelText: 'Ingrediente',
                       isDense: true,
                     ),
-                    onChanged: (value) =>
-                        onChanged(ingredient.copyWith(name: value)),
+                    onChanged: (value) => _ingredient.name = value,
                   ),
                 ),
-                if (canRemove)
+                if (widget.canRemove)
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
-                    onPressed: onRemove,
+                    onPressed: widget.onRemove,
                     tooltip: 'Eliminar ingrediente',
                   ),
               ],
             ),
             const SizedBox(height: 8),
-            if (!ingredient.isToTaste)
+            if (!_ingredient.isToTaste)
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
-                      initialValue: ingredient.quantity?.toString() ?? '',
+                      controller: _quantityController,
                       decoration: const InputDecoration(
                         labelText: 'Cantidad',
                         isDense: true,
@@ -83,100 +125,77 @@ class IngredientRow extends StatelessWidget {
                         ),
                       ],
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return null;
-                        }
+                        if (value == null || value.trim().isEmpty) return null;
                         final parsed =
                             num.tryParse(value.trim().replaceAll(',', '.'));
-                        if (parsed == null) {
-                          return 'Introduce un número válido';
-                        }
+                        if (parsed == null) return 'Introduce un número válido';
                         return null;
                       },
                       onChanged: (value) {
-                        if (value.trim().isEmpty) {
-                          onChanged(ingredient.copyWith(quantity: null));
-                          return;
-                        }
-                        final parsed =
-                            num.tryParse(value.replaceAll(',', '.'));
-                        onChanged(ingredient.copyWith(quantity: parsed));
+                        _ingredient.quantity = value.trim().isEmpty
+                            ? null
+                            : num.tryParse(value.replaceAll(',', '.'));
                       },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      initialValue: ingredient.useCustomUnit
+                      // Key forces recreation when useCustomUnit changes so
+                      // the displayed value resets to the model's current state.
+                      key: ValueKey(
+                        'unit-${widget.ingredient.key}-${_ingredient.useCustomUnit}',
+                      ),
+                      initialValue: _ingredient.useCustomUnit
                           ? customUnitOption
-                          : (ingredient.unit ?? predefinedUnits.first),
+                          : (_ingredient.unit ?? predefinedUnits.first),
                       decoration: const InputDecoration(
                         labelText: 'Unidad',
                         isDense: true,
                       ),
-                      items: unitItems
-                          .map(
-                            (unit) => DropdownMenuItem(
-                              value: unit,
-                              child: Text(unit),
-                            ),
-                          )
-                          .toList(),
+                      items: _unitDropdownItems,
                       onChanged: (value) {
                         if (value == customUnitOption) {
-                          onChanged(
-                            ingredient.copyWith(
-                              useCustomUnit: true,
-                              unit: null,
-                            ),
-                          );
+                          setState(() {
+                            _ingredient.useCustomUnit = true;
+                            _ingredient.unit = null;
+                          });
                         } else {
-                          onChanged(
-                            ingredient.copyWith(
-                              useCustomUnit: false,
-                              unit: value,
-                              customUnit: '',
-                            ),
-                          );
+                          setState(() {
+                            _ingredient.useCustomUnit = false;
+                            _ingredient.unit = value;
+                            _ingredient.customUnit = '';
+                            _customUnitController.clear();
+                          });
                         }
                       },
                     ),
                   ),
                 ],
               ),
-            if (ingredient.useCustomUnit && !ingredient.isToTaste) ...[
+            if (_ingredient.useCustomUnit && !_ingredient.isToTaste) ...[
               const SizedBox(height: 8),
               TextFormField(
-                initialValue: ingredient.customUnit,
+                controller: _customUnitController,
                 decoration: const InputDecoration(
                   labelText: 'Unidad personalizada',
                   isDense: true,
                 ),
-                onChanged: (value) =>
-                    onChanged(ingredient.copyWith(customUnit: value)),
+                onChanged: (value) => _ingredient.customUnit = value,
               ),
             ],
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: ingredientCategories.contains(ingredient.category)
-                  ? ingredient.category
+              initialValue: ingredientCategories.contains(_ingredient.category)
+                  ? _ingredient.category
                   : ingredientCategories.first,
               decoration: const InputDecoration(
                 labelText: 'Categoría',
                 isDense: true,
               ),
-              items: ingredientCategories
-                  .map(
-                    (category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    ),
-                  )
-                  .toList(),
+              items: _categoryDropdownItems,
               onChanged: (value) {
-                if (value != null) {
-                  onChanged(ingredient.copyWith(category: value));
-                }
+                if (value != null) _ingredient.category = value;
               },
             ),
             CheckboxListTile(
@@ -188,19 +207,20 @@ class IngredientRow extends StatelessWidget {
                 'No se añade a la lista de la compra (p. ej. sal, pimienta)',
                 style: TextStyle(fontSize: 12),
               ),
-              value: ingredient.isToTaste,
+              value: _ingredient.isToTaste,
               onChanged: (value) {
-                if (value != null) {
-                  onChanged(
-                    ingredient.copyWith(
-                      isToTaste: value,
-                      quantity: value ? null : ingredient.quantity,
-                      unit: value ? null : ingredient.unit,
-                      useCustomUnit: value ? false : ingredient.useCustomUnit,
-                      customUnit: value ? '' : ingredient.customUnit,
-                    ),
-                  );
-                }
+                if (value == null) return;
+                setState(() {
+                  _ingredient.isToTaste = value;
+                  if (value) {
+                    _ingredient.quantity = null;
+                    _ingredient.unit = null;
+                    _ingredient.useCustomUnit = false;
+                    _ingredient.customUnit = '';
+                    _quantityController.clear();
+                    _customUnitController.clear();
+                  }
+                });
               },
             ),
             CheckboxListTile(
@@ -212,21 +232,19 @@ class IngredientRow extends StatelessWidget {
                 'Puedes incluirlo o excluirlo en la ficha de la receta',
                 style: TextStyle(fontSize: 12),
               ),
-              value: ingredient.isOptional,
+              value: _ingredient.isOptional,
               onChanged: (value) {
-                if (value != null) {
-                  onChanged(
-                    ingredient.copyWith(
-                      isOptional: value,
-                      isIncluded: value ? ingredient.isIncluded : true,
-                    ),
-                  );
-                }
+                if (value == null) return;
+                setState(() {
+                  _ingredient.isOptional = value;
+                  if (!value) _ingredient.isIncluded = true;
+                });
               },
             ),
           ],
         ),
       ),
+    ),
     );
   }
 }

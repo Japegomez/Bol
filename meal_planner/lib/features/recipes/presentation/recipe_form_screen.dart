@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,30 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/ingredient_row.dart';
+
+/// Elevates the dragged row while reordering (SliverReorderableList has no
+/// default proxy decoration unlike ReorderableListView).
+Widget _reorderProxyDecorator(
+  Widget child,
+  int index,
+  Animation<double> animation,
+) {
+  return AnimatedBuilder(
+    animation: animation,
+    builder: (context, child) {
+      final t = Curves.easeInOut.transform(animation.value);
+      final elevation = lerpDouble(0, 6, t)!;
+      return Material(
+        elevation: elevation,
+        color: Colors.transparent,
+        shadowColor: Theme.of(context).shadowColor,
+        borderRadius: BorderRadius.circular(12),
+        child: child,
+      );
+    },
+    child: child,
+  );
+}
 
 class RecipeFormScreen extends ConsumerStatefulWidget {
   const RecipeFormScreen({this.recipeId, super.key});
@@ -21,15 +46,42 @@ class RecipeFormScreen extends ConsumerStatefulWidget {
 class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _tagController = TextEditingController();
+
+  RecipeFormData? _data;
+  bool _initialized = false;
+
+  TextEditingController? _titleController;
+  TextEditingController? _servingsController;
+  TextEditingController? _prepController;
+  TextEditingController? _cookController;
+  TextEditingController? _tipsController;
+
   Uint8List? _localPhotoPreview;
 
   @override
   void dispose() {
     _tagController.dispose();
+    _titleController?.dispose();
+    _servingsController?.dispose();
+    _prepController?.dispose();
+    _cookController?.dispose();
+    _tipsController?.dispose();
     super.dispose();
   }
 
-  Future<void> _pickPhoto(RecipeFormData data) async {
+  void _initFrom(RecipeFormData data) {
+    _data = data;
+    _titleController = TextEditingController(text: data.title);
+    _servingsController = TextEditingController(text: data.servings.toString());
+    _prepController =
+        TextEditingController(text: data.prepTime?.toString() ?? '');
+    _cookController =
+        TextEditingController(text: data.cookTime?.toString() ?? '');
+    _tipsController = TextEditingController(text: data.tips);
+    _initialized = true;
+  }
+
+  Future<void> _pickPhoto() async {
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -39,86 +91,34 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     if (file == null || !mounted) return;
 
     final bytes = await file.readAsBytes();
-    setState(() => _localPhotoPreview = bytes);
-
-    final updated = RecipeFormData(
-      title: data.title,
-      servings: data.servings,
-      prepTime: data.prepTime,
-      cookTime: data.cookTime,
-      tags: data.tags,
-      ingredients: data.ingredients,
-      steps: data.steps,
-      nutrition: data.nutrition,
-      existingPhotoPath: data.existingPhotoPath,
-      removePhoto: false,
-      pendingPhoto: file,
-      isPublic: data.isPublic,
-      forkedFromId: data.forkedFromId,
-      tips: data.tips,
-    );
-    ref.read(recipeFormProvider(widget.recipeId).notifier).updateData(updated);
+    setState(() {
+      _localPhotoPreview = bytes;
+      _data!
+        ..pendingPhoto = file
+        ..removePhoto = false;
+    });
   }
 
-  void _removePhoto(RecipeFormData data) {
-    setState(() => _localPhotoPreview = null);
-    final updated = RecipeFormData(
-      title: data.title,
-      servings: data.servings,
-      prepTime: data.prepTime,
-      cookTime: data.cookTime,
-      tags: data.tags,
-      ingredients: data.ingredients,
-      steps: data.steps,
-      nutrition: data.nutrition,
-      existingPhotoPath: data.existingPhotoPath,
-      removePhoto: true,
-      isPublic: data.isPublic,
-      forkedFromId: data.forkedFromId,
-      tips: data.tips,
-    );
-    ref.read(recipeFormProvider(widget.recipeId).notifier).updateData(updated);
+  void _removePhoto() {
+    setState(() {
+      _localPhotoPreview = null;
+      _data!
+        ..pendingPhoto = null
+        ..removePhoto = true;
+    });
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final id =
-        await ref.read(recipeFormProvider(widget.recipeId).notifier).save();
+    final notifier = ref.read(recipeFormProvider(widget.recipeId).notifier);
+    notifier.setData(_data!);
+    final id = await notifier.save();
     if (!mounted || id == null) return;
     context.go('/home/recipes/$id');
   }
 
-  void _updateForm(RecipeFormData data) {
-    ref.read(recipeFormProvider(widget.recipeId).notifier).updateData(data);
-    setState(() {});
-  }
-
-  RecipeFormData _copyData(RecipeFormData data) {
-    return RecipeFormData(
-      title: data.title,
-      servings: data.servings,
-      prepTime: data.prepTime,
-      cookTime: data.cookTime,
-      tags: List<String>.from(data.tags),
-      ingredients: List<IngredientFormItem>.from(data.ingredients),
-      steps: List<StepFormItem>.from(data.steps),
-      nutrition: NutritionFormData(
-        calories: data.nutrition.calories,
-        protein: data.nutrition.protein,
-        carbohydrates: data.nutrition.carbohydrates,
-        fat: data.nutrition.fat,
-        fiber: data.nutrition.fiber,
-      ),
-      existingPhotoPath: data.existingPhotoPath,
-      removePhoto: data.removePhoto,
-      pendingPhoto: data.pendingPhoto,
-      isPublic: data.isPublic,
-      forkedFromId: data.forkedFromId,
-      tips: data.tips,
-    );
-  }
-
-  Future<void> _togglePublic(RecipeFormData data, bool value) async {
+  Future<void> _togglePublic(bool value) async {
+    final data = _data!;
     if (!data.canPublish) return;
     if (value) {
       final confirmed = await showDialog<bool>(
@@ -165,9 +165,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       if (confirmed != true || !mounted) return;
     }
 
-    final copy = _copyData(data);
-    copy.isPublic = value;
-    _updateForm(copy);
+    setState(() => data.isPublic = value);
   }
 
   @override
@@ -201,377 +199,470 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
         ],
       ),
       body: formAsync.when(
-        data: (state) => _buildForm(context, state),
+        data: (state) {
+          if (!_initialized) _initFrom(state.data);
+          return _buildForm(context, state.error);
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Error: $error')),
       ),
     );
   }
 
-  Widget _buildForm(BuildContext context, RecipeFormState state) {
-    final data = state.data;
+  Widget _buildForm(BuildContext context, String? error) {
+    final data = _data!;
+    const hPad = EdgeInsets.symmetric(horizontal: 16);
 
     return Form(
       key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (state.error != null) ...[
-            Card(
-              color: Theme.of(context).colorScheme.errorContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  state.error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onErrorContainer,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          _PhotoSection(
-            localPreview: _localPhotoPreview,
-            existingPhotoPath: data.removePhoto ? null : data.existingPhotoPath,
-            onPick: () => _pickPhoto(data),
-            onRemove: () => _removePhoto(data),
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            initialValue: data.title,
-            decoration: const InputDecoration(
-              labelText: 'Nombre',
-              border: OutlineInputBorder(),
-            ),
-            validator: (value) =>
-                value == null || value.trim().isEmpty ? 'Obligatorio' : null,
-            onChanged: (value) => _updateForm(_copyData(data)..title = value),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  initialValue: data.servings.toString(),
-                  decoration: const InputDecoration(
-                    labelText: 'Raciones',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    final parsed = int.tryParse(value ?? '');
-                    if (parsed == null || parsed < 1) {
-                      return 'Mínimo 1';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    final parsed = int.tryParse(value);
-                    if (parsed != null) {
-                      _updateForm(_copyData(data)..servings = parsed);
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextFormField(
-                  initialValue: data.prepTime?.toString() ?? '',
-                  decoration: const InputDecoration(
-                    labelText: 'Prep (min)',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    final copy = _copyData(data);
-                    copy.prepTime = int.tryParse(value);
-                    _updateForm(copy);
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextFormField(
-                  initialValue: data.cookTime?.toString() ?? '',
-                  decoration: const InputDecoration(
-                    labelText: 'Cocción (min)',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    final copy = _copyData(data);
-                    copy.cookTime = int.tryParse(value);
-                    _updateForm(copy);
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text('Etiquetas', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ...suggestedRecipeTags.map(
-                (tag) => FilterChip(
-                  label: Text(tag),
-                  selected: data.tags.contains(tag),
-                  onSelected: (selected) {
-                    final copy = _copyData(data);
-                    if (selected) {
-                      copy.tags.add(tag);
-                    } else {
-                      copy.tags.remove(tag);
-                    }
-                    _updateForm(copy);
-                  },
-                ),
-              ),
-              ...data.tags
-                  .where((tag) => !suggestedRecipeTags.contains(tag))
-                  .map(
-                    (tag) => InputChip(
-                      label: Text(tag),
-                      onDeleted: () {
-                        final copy = _copyData(data);
-                        copy.tags.remove(tag);
-                        _updateForm(copy);
-                      },
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                if (error != null) ...[
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        error,
+                        style: TextStyle(
+                          color:
+                              Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
                     ),
                   ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _tagController,
-                  decoration: const InputDecoration(
-                    labelText: 'Etiqueta personalizada',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
+                  const SizedBox(height: 8),
+                ],
+                _PhotoSection(
+                  localPreview: _localPhotoPreview,
+                  existingPhotoPath:
+                      data.removePhoto ? null : data.existingPhotoPath,
+                  onPick: _pickPhoto,
+                  onRemove: _removePhoto,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () {
-                  final tag = _tagController.text.trim();
-                  if (tag.isEmpty || data.tags.contains(tag)) return;
-                  final copy = _copyData(data);
-                  copy.tags.add(tag);
-                  _tagController.clear();
-                  _updateForm(copy);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text('Ingredientes', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: data.ingredients.length,
-            onReorderItem: (oldIndex, newIndex) {
-              final copy = _copyData(data);
-              if (newIndex > oldIndex) newIndex -= 1;
-              final item = copy.ingredients.removeAt(oldIndex);
-              copy.ingredients.insert(newIndex, item);
-              _updateForm(copy);
-            },
-            itemBuilder: (context, index) {
-              final ingredient = data.ingredients[index];
-              return IngredientRow(
-                key: ValueKey(ingredient.key),
-                index: index,
-                ingredient: ingredient,
-                canRemove: data.ingredients.length > 1,
-                onChanged: (updated) {
-                  final copy = _copyData(data);
-                  copy.ingredients[index] = updated;
-                  _updateForm(copy);
-                },
-                onRemove: () {
-                  final copy = _copyData(data);
-                  copy.ingredients.removeAt(index);
-                  _updateForm(copy);
-                },
-              );
-            },
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () {
-                final copy = _copyData(data);
-                copy.ingredients.add(IngredientFormItem());
-                _updateForm(copy);
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Añadir ingrediente'),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text('Pasos', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: data.steps.length,
-            onReorderItem: (oldIndex, newIndex) {
-              final copy = _copyData(data);
-              if (newIndex > oldIndex) newIndex -= 1;
-              final item = copy.steps.removeAt(oldIndex);
-              copy.steps.insert(newIndex, item);
-              _updateForm(copy);
-            },
-            itemBuilder: (context, index) {
-              final step = data.steps[index];
-              return Card(
-                key: ValueKey(step.key),
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ReorderableDragStartListener(
-                            index: index,
-                            child: Icon(
-                              Icons.drag_handle,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              initialValue: step.description,
-                              decoration: InputDecoration(
-                                labelText: 'Paso ${index + 1}',
-                                isDense: true,
-                              ),
-                              maxLines: 3,
-                              onChanged: (value) {
-                                final copy = _copyData(data);
-                                copy.steps[index].description = value;
-                                _updateForm(copy);
-                              },
-                            ),
-                          ),
-                          if (data.steps.length > 1)
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () {
-                                final copy = _copyData(data);
-                                copy.steps.removeAt(index);
-                                _updateForm(copy);
-                              },
-                            ),
-                        ],
-                      ),
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        title: const Text('Opcional'),
-                        value: step.isOptional,
-                        onChanged: (value) {
-                          if (value != null) {
-                            final copy = _copyData(data);
-                            copy.steps[index].isOptional = value;
-                            _updateForm(copy);
-                          }
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? 'Obligatorio' : null,
+                  onChanged: (v) => data.title = v,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _servingsController,
+                        decoration: const InputDecoration(
+                          labelText: 'Raciones',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (v) {
+                          final n = int.tryParse(v ?? '');
+                          return (n == null || n < 1) ? 'Mínimo 1' : null;
+                        },
+                        onChanged: (v) {
+                          final n = int.tryParse(v);
+                          if (n != null) data.servings = n;
                         },
                       ),
-                    ],
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _prepController,
+                        decoration: const InputDecoration(
+                          labelText: 'Prep (min)',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (v) => data.prepTime = int.tryParse(v),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _cookController,
+                        decoration: const InputDecoration(
+                          labelText: 'Cocción (min)',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (v) => data.cookTime = int.tryParse(v),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Etiquetas',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ...suggestedRecipeTags.map(
+                      (tag) => FilterChip(
+                        label: Text(tag),
+                        selected: data.tags.contains(tag),
+                        onSelected: (selected) => setState(() {
+                          if (selected) {
+                            data.tags.add(tag);
+                          } else {
+                            data.tags.remove(tag);
+                          }
+                        }),
+                      ),
+                    ),
+                    ...data.tags
+                        .where((t) => !suggestedRecipeTags.contains(t))
+                        .map(
+                          (tag) => InputChip(
+                            label: Text(tag),
+                            onDeleted: () =>
+                                setState(() => data.tags.remove(tag)),
+                          ),
+                        ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _tagController,
+                        decoration: const InputDecoration(
+                          labelText: 'Etiqueta personalizada',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        final tag = _tagController.text.trim();
+                        if (tag.isEmpty || data.tags.contains(tag)) return;
+                        _tagController.clear();
+                        setState(() => data.tags.add(tag));
+                      },
+                    ),
+                  ],
+                ),
+              ]),
+            ),
+          ),
+
+          // ── Ingredientes (lazy sliver + auto-scroll on drag) ────────────────
+          SliverPadding(
+            padding: hPad.copyWith(top: 24),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                'Ingredientes',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: hPad.copyWith(top: 8),
+            sliver: _IngredientsSliverSection(ingredients: data.ingredients),
+          ),
+
+          // ── Pasos (lazy sliver + auto-scroll on drag) ─────────────────────
+          SliverPadding(
+            padding: hPad.copyWith(top: 24),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                'Pasos',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: hPad.copyWith(top: 8),
+            sliver: _StepsSliverSection(steps: data.steps),
+          ),
+
+          // ── Consejos, nutrición, publicar ─────────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                TextFormField(
+                  controller: _tipsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Consejos',
+                    hintText: 'Trucos, variaciones o notas útiles',
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
                   ),
+                  maxLines: 4,
+                  onChanged: (v) => data.tips = v,
                 ),
-              );
-            },
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () {
-                final copy = _copyData(data);
-                copy.steps.add(StepFormItem());
-                _updateForm(copy);
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Añadir paso'),
+                const SizedBox(height: 24),
+                Text(
+                  'Nutrición (por ración)',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                _NutritionFields(data: data.nutrition),
+                const SizedBox(height: 24),
+                if (!data.canPublish)
+                  const Card(
+                    child: ListTile(
+                      leading: Icon(Icons.bookmark_added_outlined),
+                      title: Text('Receta guardada de otro usuario'),
+                      subtitle: Text(
+                        'Las recetas forkeadas no se pueden publicar en Explorar.',
+                      ),
+                    ),
+                  )
+                else
+                  Card(
+                    child: SwitchListTile(
+                      title: const Text('Publicar receta'),
+                      subtitle: const Text(
+                        'Visible para todos los usuarios en Explorar',
+                      ),
+                      secondary: const Icon(Icons.public),
+                      value: data.isPublic,
+                      onChanged: _togglePublic,
+                    ),
+                  ),
+              ]),
             ),
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            initialValue: data.tips,
-            decoration: const InputDecoration(
-              labelText: 'Consejos',
-              hintText: 'Trucos, variaciones o notas útiles',
-              border: OutlineInputBorder(),
-              alignLabelWithHint: true,
-            ),
-            maxLines: 4,
-            onChanged: (value) {
-              final copy = _copyData(data);
-              copy.tips = value;
-              _updateForm(copy);
-            },
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Nutrición (por ración)',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          _NutritionFields(
-            data: data.nutrition,
-            onChanged: (nutrition) {
-              final copy = _copyData(data);
-              copy.nutrition.calories = nutrition.calories;
-              copy.nutrition.protein = nutrition.protein;
-              copy.nutrition.carbohydrates = nutrition.carbohydrates;
-              copy.nutrition.fat = nutrition.fat;
-              copy.nutrition.fiber = nutrition.fiber;
-              _updateForm(copy);
-            },
-          ),
-          const SizedBox(height: 24),
-          if (!data.canPublish)
-            const Card(
-              child: ListTile(
-                leading: Icon(Icons.bookmark_added_outlined),
-                title: Text('Receta guardada de otro usuario'),
-                subtitle: Text(
-                  'Las recetas forkeadas no se pueden publicar en Explorar.',
-                ),
-              ),
-            )
-          else
-            Card(
-              child: SwitchListTile(
-                title: const Text('Publicar receta'),
-                subtitle: const Text(
-                  'Visible para todos los usuarios en Explorar',
-                ),
-                secondary: const Icon(Icons.public),
-                value: data.isPublic,
-                onChanged: (value) => _togglePublic(data, value),
-              ),
-            ),
-          const SizedBox(height: 32),
         ],
       ),
     );
   }
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Sliver de ingredientes (lazy + auto-scroll)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _IngredientsSliverSection extends StatefulWidget {
+  const _IngredientsSliverSection({required this.ingredients});
+
+  final List<IngredientFormItem> ingredients;
+
+  @override
+  State<_IngredientsSliverSection> createState() =>
+      _IngredientsSliverSectionState();
+}
+
+class _IngredientsSliverSectionState extends State<_IngredientsSliverSection> {
+  @override
+  Widget build(BuildContext context) {
+    final items = widget.ingredients;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverReorderableList(
+          itemCount: items.length,
+          onReorder: (oldIndex, newIndex) {
+            setState(() {
+              if (newIndex > oldIndex) newIndex -= 1;
+              final item = items.removeAt(oldIndex);
+              items.insert(newIndex, item);
+            });
+          },
+          proxyDecorator: _reorderProxyDecorator,
+          itemBuilder: (context, index) {
+            final ingredient = items[index];
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey(ingredient.key),
+              index: index,
+              child: IngredientRow(
+                index: index,
+                ingredient: ingredient,
+                canRemove: items.length > 1,
+                onRemove: () => setState(() => items.removeAt(index)),
+              ),
+            );
+          },
+        ),
+        SliverToBoxAdapter(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () =>
+                  setState(() => items.add(IngredientFormItem())),
+              icon: const Icon(Icons.add),
+              label: const Text('Añadir ingrediente'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Sliver de pasos (lazy + auto-scroll)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _StepsSliverSection extends StatefulWidget {
+  const _StepsSliverSection({required this.steps});
+
+  final List<StepFormItem> steps;
+
+  @override
+  State<_StepsSliverSection> createState() => _StepsSliverSectionState();
+}
+
+class _StepsSliverSectionState extends State<_StepsSliverSection> {
+  @override
+  Widget build(BuildContext context) {
+    final items = widget.steps;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverReorderableList(
+          itemCount: items.length,
+          onReorder: (oldIndex, newIndex) {
+            setState(() {
+              if (newIndex > oldIndex) newIndex -= 1;
+              final item = items.removeAt(oldIndex);
+              items.insert(newIndex, item);
+            });
+          },
+          proxyDecorator: _reorderProxyDecorator,
+          itemBuilder: (context, index) {
+            final step = items[index];
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey(step.key),
+              index: index,
+              child: _StepRow(
+                index: index,
+                step: step,
+                canRemove: items.length > 1,
+                onRemove: () => setState(() => items.removeAt(index)),
+              ),
+            );
+          },
+        ),
+        SliverToBoxAdapter(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => items.add(StepFormItem())),
+              icon: const Icon(Icons.add),
+              label: const Text('Añadir paso'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Fila de paso individual
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _StepRow extends StatefulWidget {
+  const _StepRow({
+    required this.index,
+    required this.step,
+    required this.canRemove,
+    required this.onRemove,
+  });
+
+  final int index;
+  final StepFormItem step;
+  final bool canRemove;
+  final VoidCallback onRemove;
+
+  @override
+  State<_StepRow> createState() => _StepRowState();
+}
+
+class _StepRowState extends State<_StepRow> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.step.description);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ReorderableDragStartListener(
+                    index: widget.index,
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        labelText: 'Paso ${widget.index + 1}',
+                        isDense: true,
+                      ),
+                      maxLines: 3,
+                      onChanged: (v) => widget.step.description = v,
+                    ),
+                  ),
+                  if (widget.canRemove)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: widget.onRemove,
+                    ),
+                ],
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: const Text('Opcional'),
+                value: widget.step.isOptional,
+                onChanged: (v) {
+                  if (v != null) setState(() => widget.step.isOptional = v);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Sección de foto
+// ──────────────────────────────────────────────────────────────────────────────
 
 class _PhotoSection extends ConsumerWidget {
   const _PhotoSection({
@@ -588,7 +679,8 @@ class _PhotoSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final existingUrlAsync = ref.watch(recipePhotoUrlProvider(existingPhotoPath));
+    final existingUrlAsync =
+        ref.watch(recipePhotoUrlProvider(existingPhotoPath));
 
     Widget? preview;
     if (localPreview != null) {
@@ -645,82 +737,79 @@ class _PhotoSection extends ConsumerWidget {
   }
 }
 
-class _NutritionFields extends StatelessWidget {
-  const _NutritionFields({required this.data, required this.onChanged});
+// ──────────────────────────────────────────────────────────────────────────────
+// Campos de nutrición
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _NutritionFields extends StatefulWidget {
+  const _NutritionFields({required this.data});
 
   final NutritionFormData data;
-  final ValueChanged<NutritionFormData> onChanged;
+
+  @override
+  State<_NutritionFields> createState() => _NutritionFieldsState();
+}
+
+class _NutritionFieldsState extends State<_NutritionFields> {
+  late final TextEditingController _calories;
+  late final TextEditingController _protein;
+  late final TextEditingController _carbohydrates;
+  late final TextEditingController _fat;
+  late final TextEditingController _fiber;
+
+  @override
+  void initState() {
+    super.initState();
+    _calories =
+        TextEditingController(text: widget.data.calories?.toString() ?? '');
+    _protein =
+        TextEditingController(text: widget.data.protein?.toString() ?? '');
+    _carbohydrates =
+        TextEditingController(text: widget.data.carbohydrates?.toString() ?? '');
+    _fat = TextEditingController(text: widget.data.fat?.toString() ?? '');
+    _fiber = TextEditingController(text: widget.data.fiber?.toString() ?? '');
+  }
+
+  @override
+  void dispose() {
+    _calories.dispose();
+    _protein.dispose();
+    _carbohydrates.dispose();
+    _fat.dispose();
+    _fiber.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _nutritionField('Calorías (kcal)', data.calories, (v) {
-          onChanged(NutritionFormData(
-            calories: v,
-            protein: data.protein,
-            carbohydrates: data.carbohydrates,
-            fat: data.fat,
-            fiber: data.fiber,
-          ));
-        }),
-        _nutritionField('Proteínas (g)', data.protein, (v) {
-          onChanged(NutritionFormData(
-            calories: data.calories,
-            protein: v,
-            carbohydrates: data.carbohydrates,
-            fat: data.fat,
-            fiber: data.fiber,
-          ));
-        }),
-        _nutritionField('Carbohidratos (g)', data.carbohydrates, (v) {
-          onChanged(NutritionFormData(
-            calories: data.calories,
-            protein: data.protein,
-            carbohydrates: v,
-            fat: data.fat,
-            fiber: data.fiber,
-          ));
-        }),
-        _nutritionField('Grasas (g)', data.fat, (v) {
-          onChanged(NutritionFormData(
-            calories: data.calories,
-            protein: data.protein,
-            carbohydrates: data.carbohydrates,
-            fat: v,
-            fiber: data.fiber,
-          ));
-        }),
-        _nutritionField('Fibra (g)', data.fiber, (v) {
-          onChanged(NutritionFormData(
-            calories: data.calories,
-            protein: data.protein,
-            carbohydrates: data.carbohydrates,
-            fat: data.fat,
-            fiber: v,
-          ));
-        }),
+        _field('Calorías (kcal)', _calories, (v) => widget.data.calories = v),
+        _field('Proteínas (g)', _protein, (v) => widget.data.protein = v),
+        _field('Carbohidratos (g)', _carbohydrates,
+            (v) => widget.data.carbohydrates = v),
+        _field('Grasas (g)', _fat, (v) => widget.data.fat = v),
+        _field('Fibra (g)', _fiber, (v) => widget.data.fiber = v),
       ],
     );
   }
 
-  Widget _nutritionField(
+  Widget _field(
     String label,
-    num? value,
+    TextEditingController controller,
     ValueChanged<num?> onChanged,
   ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
-        initialValue: value?.toString() ?? '',
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
           isDense: true,
         ),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        onChanged: (text) =>
-            onChanged(num.tryParse(text.replaceAll(',', '.'))),
+        onChanged: (t) => onChanged(num.tryParse(t.replaceAll(',', '.'))),
       ),
     );
   }
