@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
+import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 class IngredientRow extends StatelessWidget {
   const IngredientRow({
@@ -62,64 +64,87 @@ class IngredientRow extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: ingredient.quantity?.toString() ?? '',
-                    decoration: const InputDecoration(
-                      labelText: 'Cantidad',
-                      isDense: true,
+            if (!ingredient.isToTaste)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: ingredient.quantity?.toString() ?? '',
+                      decoration: const InputDecoration(
+                        labelText: 'Cantidad',
+                        isDense: true,
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d*[.,]?\d*'),
+                        ),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return null;
+                        }
+                        final parsed =
+                            num.tryParse(value.trim().replaceAll(',', '.'));
+                        if (parsed == null) {
+                          return 'Introduce un número válido';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        if (value.trim().isEmpty) {
+                          onChanged(ingredient.copyWith(quantity: null));
+                          return;
+                        }
+                        final parsed =
+                            num.tryParse(value.replaceAll(',', '.'));
+                        onChanged(ingredient.copyWith(quantity: parsed));
+                      },
                     ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (value) {
-                      final parsed = num.tryParse(value.replaceAll(',', '.'));
-                      onChanged(ingredient.copyWith(quantity: parsed));
-                    },
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: ingredient.useCustomUnit
-                        ? customUnitOption
-                        : (ingredient.unit ?? predefinedUnits.first),
-                    decoration: const InputDecoration(
-                      labelText: 'Unidad',
-                      isDense: true,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: ingredient.useCustomUnit
+                          ? customUnitOption
+                          : (ingredient.unit ?? predefinedUnits.first),
+                      decoration: const InputDecoration(
+                        labelText: 'Unidad',
+                        isDense: true,
+                      ),
+                      items: unitItems
+                          .map(
+                            (unit) => DropdownMenuItem(
+                              value: unit,
+                              child: Text(unit),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == customUnitOption) {
+                          onChanged(
+                            ingredient.copyWith(
+                              useCustomUnit: true,
+                              unit: null,
+                            ),
+                          );
+                        } else {
+                          onChanged(
+                            ingredient.copyWith(
+                              useCustomUnit: false,
+                              unit: value,
+                              customUnit: '',
+                            ),
+                          );
+                        }
+                      },
                     ),
-                    items: unitItems
-                        .map(
-                          (unit) => DropdownMenuItem(
-                            value: unit,
-                            child: Text(unit),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == customUnitOption) {
-                        onChanged(
-                          ingredient.copyWith(
-                            useCustomUnit: true,
-                            unit: null,
-                          ),
-                        );
-                      } else {
-                        onChanged(
-                          ingredient.copyWith(
-                            useCustomUnit: false,
-                            unit: value,
-                            customUnit: '',
-                          ),
-                        );
-                      }
-                    },
                   ),
-                ),
-              ],
-            ),
-            if (ingredient.useCustomUnit) ...[
+                ],
+              ),
+            if (ingredient.useCustomUnit && !ingredient.isToTaste) ...[
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: ingredient.customUnit,
@@ -151,6 +176,30 @@ class IngredientRow extends StatelessWidget {
               onChanged: (value) {
                 if (value != null) {
                   onChanged(ingredient.copyWith(category: value));
+                }
+              },
+            ),
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text('Al gusto'),
+              subtitle: const Text(
+                'No se añade a la lista de la compra (p. ej. sal, pimienta)',
+                style: TextStyle(fontSize: 12),
+              ),
+              value: ingredient.isToTaste,
+              onChanged: (value) {
+                if (value != null) {
+                  onChanged(
+                    ingredient.copyWith(
+                      isToTaste: value,
+                      quantity: value ? null : ingredient.quantity,
+                      unit: value ? null : ingredient.unit,
+                      useCustomUnit: value ? false : ingredient.useCustomUnit,
+                      customUnit: value ? '' : ingredient.customUnit,
+                    ),
+                  );
                 }
               },
             ),

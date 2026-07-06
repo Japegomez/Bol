@@ -55,6 +55,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       pendingPhoto: file,
       isPublic: data.isPublic,
       forkedFromId: data.forkedFromId,
+      tips: data.tips,
     );
     ref.read(recipeFormProvider(widget.recipeId).notifier).updateData(updated);
   }
@@ -74,6 +75,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       removePhoto: true,
       isPublic: data.isPublic,
       forkedFromId: data.forkedFromId,
+      tips: data.tips,
     );
     ref.read(recipeFormProvider(widget.recipeId).notifier).updateData(updated);
   }
@@ -112,6 +114,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       pendingPhoto: data.pendingPhoto,
       isPublic: data.isPublic,
       forkedFromId: data.forkedFromId,
+      tips: data.tips,
     );
   }
 
@@ -376,6 +379,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
             itemCount: data.ingredients.length,
             onReorderItem: (oldIndex, newIndex) {
               final copy = _copyData(data);
+              if (newIndex > oldIndex) newIndex -= 1;
               final item = copy.ingredients.removeAt(oldIndex);
               copy.ingredients.insert(newIndex, item);
               _updateForm(copy);
@@ -383,9 +387,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
             itemBuilder: (context, index) {
               final ingredient = data.ingredients[index];
               return IngredientRow(
-                key: ValueKey(
-                  '${ingredient.key}-${ingredient.unit}-${ingredient.useCustomUnit}',
-                ),
+                key: ValueKey(ingredient.key),
                 index: index,
                 ingredient: ingredient,
                 canRemove: data.ingredients.length > 1,
@@ -423,6 +425,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
             itemCount: data.steps.length,
             onReorderItem: (oldIndex, newIndex) {
               final copy = _copyData(data);
+              if (newIndex > oldIndex) newIndex -= 1;
               final item = copy.steps.removeAt(oldIndex);
               copy.steps.insert(newIndex, item);
               _updateForm(copy);
@@ -434,41 +437,60 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Row(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ReorderableDragStartListener(
-                        index: index,
-                        child: Icon(
-                          Icons.drag_handle,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          initialValue: step.description,
-                          decoration: InputDecoration(
-                            labelText: 'Paso ${index + 1}',
-                            isDense: true,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: Icon(
+                              Icons.drag_handle,
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
                           ),
-                          maxLines: 3,
-                          onChanged: (value) {
-                            final copy = _copyData(data);
-                            copy.steps[index].description = value;
-                            _updateForm(copy);
-                          },
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: step.description,
+                              decoration: InputDecoration(
+                                labelText: 'Paso ${index + 1}',
+                                isDense: true,
+                              ),
+                              maxLines: 3,
+                              onChanged: (value) {
+                                final copy = _copyData(data);
+                                copy.steps[index].description = value;
+                                _updateForm(copy);
+                              },
+                            ),
+                          ),
+                          if (data.steps.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () {
+                                final copy = _copyData(data);
+                                copy.steps.removeAt(index);
+                                _updateForm(copy);
+                              },
+                            ),
+                        ],
                       ),
-                      if (data.steps.length > 1)
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () {
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: const Text('Opcional'),
+                        value: step.isOptional,
+                        onChanged: (value) {
+                          if (value != null) {
                             final copy = _copyData(data);
-                            copy.steps.removeAt(index);
+                            copy.steps[index].isOptional = value;
                             _updateForm(copy);
-                          },
-                        ),
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -486,6 +508,22 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
               icon: const Icon(Icons.add),
               label: const Text('Añadir paso'),
             ),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            initialValue: data.tips,
+            decoration: const InputDecoration(
+              labelText: 'Consejos',
+              hintText: 'Trucos, variaciones o notas útiles',
+              border: OutlineInputBorder(),
+              alignLabelWithHint: true,
+            ),
+            maxLines: 4,
+            onChanged: (value) {
+              final copy = _copyData(data);
+              copy.tips = value;
+              _updateForm(copy);
+            },
           ),
           const SizedBox(height: 24),
           Text(

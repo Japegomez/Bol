@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
+import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 
 enum ForkOptionalNoticeAction { close, edit }
 
@@ -27,7 +28,7 @@ Future<ForkOptionalNoticeAction?> showForkOptionalIngredientsNoticeDialog(
                 (ingredient) => CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
                   controlAffinity: ListTileControlAffinity.leading,
-                  title: Text(_formatIngredientLabel(ingredient)),
+                  title: Text(formatIngredientLabel(ingredient)),
                   value: true,
                   onChanged: null,
                 ),
@@ -50,14 +51,4 @@ Future<ForkOptionalNoticeAction?> showForkOptionalIngredientsNoticeDialog(
       );
     },
   );
-}
-
-String _formatIngredientLabel(Ingredient ingredient) {
-  final parts = <String>[];
-  if (ingredient.quantity != null) parts.add(ingredient.quantity.toString());
-  if (ingredient.unit != null && ingredient.unit!.isNotEmpty) {
-    parts.add(ingredient.unit!);
-  }
-  parts.add(ingredient.name);
-  return parts.join(' ');
 }

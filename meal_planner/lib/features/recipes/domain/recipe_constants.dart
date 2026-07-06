@@ -1,21 +1,4 @@
-const weightUnits = ['g', 'kg'];
-const volumeUnits = ['ml', 'l'];
-const countUnits = ['unidad', 'unidades'];
-const relativeUnits = [
-  'pizca',
-  'cucharadita',
-  'cucharada',
-  'vaso',
-  'taza',
-  'puñado',
-];
-
-const predefinedUnits = [
-  ...weightUnits,
-  ...volumeUnits,
-  ...countUnits,
-  ...relativeUnits,
-];
+export 'unit_mappings.dart';
 
 const ingredientCategories = [
   'Carnes y pescados',
@@ -25,6 +8,13 @@ const ingredientCategories = [
   'Cereales',
   'Legumbres',
   'Especias',
+  'Aceites y vinagres',
+  'Conservas',
+  'Frutos secos',
+  'Bebidas',
+  'Panadería',
+  'Congelados',
+  'Salsas y condimentos',
   'Otros',
 ];
 
@@ -51,5 +41,3 @@ const suggestedRecipeTags = [
   'picante',
   'para niños',
 ];
-
-const customUnitOption = 'Otra';
