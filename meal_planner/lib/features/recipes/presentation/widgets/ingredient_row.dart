@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
-import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 // Computed once at module load; reused across every IngredientRow rebuild.
 // Avoids creating 20–30 DropdownMenuItem instances per dropdown per rebuild.

@@ -471,9 +471,8 @@ class _IngredientsSliverSectionState extends State<_IngredientsSliverSection> {
       slivers: [
         SliverReorderableList(
           itemCount: items.length,
-          onReorder: (oldIndex, newIndex) {
+          onReorderItem: (oldIndex, newIndex) {
             setState(() {
-              if (newIndex > oldIndex) newIndex -= 1;
               final item = items.removeAt(oldIndex);
               items.insert(newIndex, item);
             });
@@ -530,9 +529,8 @@ class _StepsSliverSectionState extends State<_StepsSliverSection> {
       slivers: [
         SliverReorderableList(
           itemCount: items.length,
-          onReorder: (oldIndex, newIndex) {
+          onReorderItem: (oldIndex, newIndex) {
             setState(() {
-              if (newIndex > oldIndex) newIndex -= 1;
               final item = items.removeAt(oldIndex);
               items.insert(newIndex, item);
             });

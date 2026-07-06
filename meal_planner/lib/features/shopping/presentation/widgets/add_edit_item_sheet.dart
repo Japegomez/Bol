@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
-import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 class AddEditItemSheet extends StatefulWidget {
   const AddEditItemSheet({
