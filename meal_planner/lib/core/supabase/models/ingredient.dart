@@ -13,6 +13,7 @@ class Ingredient implements SupadartClass<Ingredient> {
   final int position;
   final bool isOptional;
   final bool isIncluded;
+  final bool isToTaste;
 
   const Ingredient({
     required this.id,
@@ -24,6 +25,7 @@ class Ingredient implements SupadartClass<Ingredient> {
     required this.position,
     this.isOptional = false,
     this.isIncluded = true,
+    this.isToTaste = false,
   });
 
   static String get table_name => 'ingredients';
@@ -36,6 +38,7 @@ class Ingredient implements SupadartClass<Ingredient> {
   static String get c_position => 'position';
   static String get c_isOptional => 'is_optional';
   static String get c_isIncluded => 'is_included';
+  static String get c_isToTaste => 'is_to_taste';
 
   static List<Ingredient> converter(List<Map<String, dynamic>> data) {
     return data.map(Ingredient.fromJson).toList();
@@ -55,6 +58,7 @@ class Ingredient implements SupadartClass<Ingredient> {
     int? position,
     bool? isOptional,
     bool? isIncluded,
+    bool? isToTaste,
   }) {
     return {
       'id': ?id,
@@ -66,6 +70,7 @@ class Ingredient implements SupadartClass<Ingredient> {
       'position': ?position,
       'is_optional': ?isOptional,
       'is_included': ?isIncluded,
+      'is_to_taste': ?isToTaste,
     };
   }
 
@@ -79,6 +84,7 @@ class Ingredient implements SupadartClass<Ingredient> {
     int? position,
     bool isOptional = false,
     bool isIncluded = true,
+    bool isToTaste = false,
   }) {
     return _generateMap(
       id: id,
@@ -90,6 +96,7 @@ class Ingredient implements SupadartClass<Ingredient> {
       position: position,
       isOptional: isOptional,
       isIncluded: isIncluded,
+      isToTaste: isToTaste,
     );
   }
 
@@ -103,6 +110,7 @@ class Ingredient implements SupadartClass<Ingredient> {
     int? position,
     bool? isOptional,
     bool? isIncluded,
+    bool? isToTaste,
   }) {
     return _generateMap(
       id: id,
@@ -114,6 +122,7 @@ class Ingredient implements SupadartClass<Ingredient> {
       position: position,
       isOptional: isOptional,
       isIncluded: isIncluded,
+      isToTaste: isToTaste,
     );
   }
 
@@ -132,6 +141,7 @@ class Ingredient implements SupadartClass<Ingredient> {
           : 0,
       isOptional: jsonn['is_optional'] == true,
       isIncluded: jsonn['is_included'] != false,
+      isToTaste: jsonn['is_to_taste'] == true,
     );
   }
 
@@ -145,6 +155,7 @@ class Ingredient implements SupadartClass<Ingredient> {
     int? position,
     bool? isOptional,
     bool? isIncluded,
+    bool? isToTaste,
   }) {
     return {
       'id': ?id,
@@ -156,6 +167,7 @@ class Ingredient implements SupadartClass<Ingredient> {
       'position': ?position,
       'is_optional': ?isOptional,
       'is_included': ?isIncluded,
+      'is_to_taste': ?isToTaste,
     };
   }
 
@@ -170,6 +182,7 @@ class Ingredient implements SupadartClass<Ingredient> {
       position: position,
       isOptional: isOptional,
       isIncluded: isIncluded,
+      isToTaste: isToTaste,
     );
   }
 
@@ -184,6 +197,7 @@ class Ingredient implements SupadartClass<Ingredient> {
     Object? position = _unset,
     Object? isOptional = _unset,
     Object? isIncluded = _unset,
+    Object? isToTaste = _unset,
   }) {
     return Ingredient(
       id: id == _unset ? this.id : id as String,
@@ -195,6 +209,7 @@ class Ingredient implements SupadartClass<Ingredient> {
       position: position == _unset ? this.position : position as int,
       isOptional: isOptional == _unset ? this.isOptional : isOptional as bool,
       isIncluded: isIncluded == _unset ? this.isIncluded : isIncluded as bool,
+      isToTaste: isToTaste == _unset ? this.isToTaste : isToTaste as bool,
     );
   }
 }
