@@ -147,7 +147,7 @@ class _IngredientRowState extends State<IngredientRow> {
                       ),
                       initialValue: _ingredient.useCustomUnit
                           ? customUnitOption
-                          : (_ingredient.unit ?? predefinedUnits.first),
+                          : _ingredient.unit,
                       decoration: const InputDecoration(
                         labelText: 'Unidad',
                         isDense: true,
@@ -218,6 +218,11 @@ class _IngredientRowState extends State<IngredientRow> {
                     _ingredient.customUnit = '';
                     _quantityController.clear();
                     _customUnitController.clear();
+                  } else {
+                    // When re-enabling unit, set to default if null
+                    if (_ingredient.unit == null && !_ingredient.useCustomUnit) {
+                      _ingredient.unit = predefinedUnits.first;
+                    }
                   }
                 });
               },

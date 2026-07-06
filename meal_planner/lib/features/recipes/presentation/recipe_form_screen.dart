@@ -110,6 +110,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final formState = ref.read(recipeFormProvider(widget.recipeId)).valueOrNull;
+    if (formState?.isSaving ?? false) return;
     final notifier = ref.read(recipeFormProvider(widget.recipeId).notifier);
     notifier.setData(_data!);
     final id = await notifier.save();

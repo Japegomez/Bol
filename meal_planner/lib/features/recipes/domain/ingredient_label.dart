@@ -33,7 +33,7 @@ String formatIngredientDisplay({
   }
 
   if (hasQuantity) {
-    return '${_formatQuantity(quantity, round: roundQuantity)} $name';
+    return '${_formatQuantity(quantity, round: roundQuantity)} ${name.toLowerCase()}';
   }
 
   return name;

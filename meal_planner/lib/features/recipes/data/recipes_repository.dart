@@ -388,7 +388,7 @@ class RecipesRepository {
                   return IngredientFormItem(
                     name: ingredient.name,
                     quantity: ingredient.isToTaste ? null : ingredient.quantity,
-                    unit: isPredefined ? normalizedUnit : predefinedUnits.first,
+                    unit: isPredefined ? normalizedUnit : null,
                     category: ingredient.category ?? 'Carnes y pescados',
                     customUnit: isPredefined ? '' : (normalizedUnit ?? ''),
                     useCustomUnit:
