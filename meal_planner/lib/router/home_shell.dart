@@ -14,7 +14,7 @@ class HomeShell extends ConsumerWidget {
       initialLocation: index == navigationShell.currentIndex,
     );
 
-    if (index == 2) {
+    if (index == 3) {
       ref.read(shoppingItemsProvider.notifier).reload();
     }
   }
@@ -38,14 +38,14 @@ class HomeShell extends ConsumerWidget {
             label: 'Recetario',
           ),
           NavigationDestination(
-            icon: Icon(Icons.shopping_cart_outlined),
-            selectedIcon: Icon(Icons.shopping_cart),
-            label: 'Compra',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month),
             label: 'Planificador',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
+            label: 'Compra',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
