@@ -35,6 +35,7 @@ const customUnitOption = 'Otra';
 /// Mapeo singular → plural. Edita aquí para corregir pluralizaciones.
 const unitPluralMap = <String, String>{
   'unidad': 'unidades',
+  'pizca': 'pizcas',
   'cucharadita': 'cucharaditas',
   'cucharada': 'cucharadas',
   'vaso': 'vasos',
