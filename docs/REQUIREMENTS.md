@@ -1,7 +1,7 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
 > **Versión:** 1.0 — Fase 6 en `main`; pulido post-lanzamiento y fixes de auth en Play
-> **Fecha:** Junio 2026
+> **Fecha:** Julio 2026
 > **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight; siguiente: validar Google Sign-In en build Play tras PR #33
 
 ---
@@ -149,9 +149,10 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-12** El recetario es privado por usuario: al cambiar de sesión, los providers de recetas se recargan según `authStateProvider` (no se muestran recetas de otro usuario).  
 **RF-REC-13** El usuario puede marcar un ingrediente como **al gusto** (`is_to_taste`). No requiere cantidad ni unidad; en ficha se muestra como «nombre al gusto» y no se sincroniza a la lista de la compra.  
 **RF-REC-14** El usuario puede añadir **consejos** opcionales a la receta (`recipes.tips`); se muestran en ficha y detalle público si no están vacíos.  
-**RF-REC-15** Los pasos de elaboración pueden marcarse como **opcionales** (`recipe_steps.is_optional`); en ficha se indican con «(opcional)».  
+**RF-REC-15** Los pasos de elaboración pueden marcarse como **opcionales** (`recipe_steps.is_optional`); en ficha y detalle público se muestran con el prefijo **Opcional:** en negrita seguido de la descripción.  
 **RF-REC-16** Las unidades se almacenan en singular; si la cantidad es > 1, el plural se deriva de `unitPluralMap` (`unit_mappings.dart`).  
-**RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.
+**RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.  
+**RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).
 
 ---
 

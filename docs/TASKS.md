@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 06/07/2026 — Mejoras recetario (unidades, al gusto, consejos, pasos opcionales), nav con planificador central, sesión persistente
+> Actualizado: 06/07/2026 — Rendimiento formulario recetas largas (slivers, autoscroll), pasos opcionales en negrita
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -274,12 +274,16 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Excluidos no se sincronizan a lista de la compra al planificar (`planner_repository._syncShoppingListAdd`)
 - [x] Marcar ingrediente **al gusto** (`is_to_taste`; migración `017`): no va a lista de compra; en ficha muestra «nombre al gusto»
 - [x] Campo **Consejos** en receta (`recipes.tips`; migración `017`); sección en ficha y detalle público
-- [x] Pasos de elaboración **opcionales** (`recipe_steps.is_optional`; migración `017`); validación exige ≥1 paso no opcional
+- [x] Pasos de elaboración **opcionales** (`recipe_steps.is_optional`; migración `017`); validación exige ≥1 paso no opcional; en ficha y detalle público se muestran con prefijo **Opcional:** en negrita (`RecipeStepText`)
 - [x] Cantidad numérica obligatoria si el campo no está vacío (`FilteringTextInputFormatter` + validator)
 - [x] Orden de ingredientes/pasos preservado al guardar (fix `onReorder` + `ValueKey` estable + `.order(ascending: true)`)
 - [x] Formato de etiquetas unificado en ficha, compra y receta pública (`ingredient_label.dart`)
 - [x] Validación al guardar: al menos **1 ingrediente no opcional** (ni al gusto) y **1 paso no opcional** (`RecipeFormData.validate`)
 - [x] Lista de ingredientes en ficha: viñetas verdes (`IngredientBullet`); opcionales con **checkbox** en lugar de viñeta (columna alineada); categoría no se muestra en ficha
+- [x] Rendimiento formulario en recetas largas: estado mutable in-place + `TextEditingController` (sin rebuild por tecla); `setData` en `recipeFormProvider`
+- [x] `fetchRecipeDetail`: ingredientes, pasos, nutrición y foto en paralelo (`Future.wait`)
+- [x] Formulario con `CustomScrollView` + `SliverReorderableList` (solo filas visibles); `RepaintBoundary` por fila; items de dropdown cacheados
+- [x] Reordenar ingredientes/pasos: auto-scroll al arrastrar cerca del borde; long-press en fila o asa `drag_handle`; `proxyDecorator` con sombra
 
 ---
 
