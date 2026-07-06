@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 06/07/2026 — Rendimiento formulario recetas largas (slivers, autoscroll), pasos opcionales en negrita
+> Actualizado: 06/07/2026 — GitHub Pages clásico desde `/docs`; eliminado workflow `pages.yml`
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -413,9 +413,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 ## Backlog general (sin fase asignada)
 
 - [x] Pantalla de Términos y Condiciones (texto estático)
-  - GitHub Pages (legacy `/docs`): `docs/terminos.html`; en app: WebView `/legal/terms`
+  - Publicado en GitHub Pages: `docs/terminos.html`; en app: WebView `/legal/terms` → `LegalUrls.terms`
 - [x] Pantalla de Política de Privacidad (texto estático)
-  - GitHub Pages (legacy `/docs`): `docs/privacidad.html`; en app: WebView `/legal/privacy`
+  - Publicado en GitHub Pages: `docs/privacidad.html`; en app: WebView `/legal/privacy` → `LegalUrls.privacy`
+- [x] **GitHub Pages** — documentos legales (`docs/index.html`, `terminos.html`, `privacidad.html`, `style.css`)
+  - Despliegue **clásico** en el repositorio: **Settings → Pages → Deploy from a branch → `/docs`**
+  - Sin workflow de GitHub Actions (eliminado `.github/workflows/pages.yml`)
+  - URL base: `https://japegomez.github.io/meal_planner/` (override opcional: `--dart-define=LEGAL_BASE_URL=...`)
 - [x] Flujo de eliminación de cuenta (derecho de supresión RGPD)
   - RPC `delete_user_account` (migración `010`); pantalla Perfil → Eliminar cuenta
   - Pendiente: aplicar migración `010` en Supabase remoto
