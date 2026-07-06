@@ -63,25 +63,30 @@ class RecipesRepository {
     );
     final forkedFromId = recipeData['forked_from_id']?.toString();
 
-    final ingredientsData = await supabase
-        .from(Ingredient.table_name)
-        .select()
-        .eq(Ingredient.c_recipeId, id)
-        .order(Ingredient.c_position, ascending: true);
+    // Fetch ingredients, steps, nutrition and photo URL in parallel.
+    final results = await Future.wait<dynamic>(<Future<dynamic>>[
+      supabase
+          .from(Ingredient.table_name)
+          .select()
+          .eq(Ingredient.c_recipeId, id)
+          .order(Ingredient.c_position, ascending: true),
+      supabase
+          .from(RecipeStep.table_name)
+          .select()
+          .eq(RecipeStep.c_recipeId, id)
+          .order(RecipeStep.c_position, ascending: true),
+      supabase
+          .from(NutritionInfo.table_name)
+          .select()
+          .eq(NutritionInfo.c_recipeId, id)
+          .maybeSingle(),
+      resolvePhotoUrl(recipe.photoUrl),
+    ]);
 
-    final stepsData = await supabase
-        .from(RecipeStep.table_name)
-        .select()
-        .eq(RecipeStep.c_recipeId, id)
-        .order(RecipeStep.c_position, ascending: true);
-
-    final nutritionData = await supabase
-        .from(NutritionInfo.table_name)
-        .select()
-        .eq(NutritionInfo.c_recipeId, id)
-        .maybeSingle();
-
-    final photoDisplayUrl = await resolvePhotoUrl(recipe.photoUrl);
+    final ingredientsData = results[0] as List<dynamic>;
+    final stepsData = results[1] as List<dynamic>;
+    final nutritionData = results[2] as Map<String, dynamic>?;
+    final photoDisplayUrl = results[3] as String?;
 
     return RecipeDetail(
       recipe: recipe,
