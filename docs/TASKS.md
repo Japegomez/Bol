@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 28/06/2026 — UX ingredientes (bullets/checkbox), fork propio bloqueado, recetario por sesión, cantidades enteras en compra
+> Actualizado: 06/07/2026 — Mejoras recetario (unidades, al gusto, consejos, pasos opcionales), nav con planificador central, sesión persistente
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -193,9 +193,11 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Creación automática de perfil al registrarse por primera vez (trigger o lógica en cliente)
   - Trigger `handle_new_user` en `001_profiles.sql`
 - [x] Cerrar sesión desde perfil (con confirmación modal)
-  - `profile_screen.dart` en tab Perfil (`/home/profile`)
+  - `profile_screen.dart` en tab Perfil (`/home/profile`); `signOut(manual: true)` para no mostrar aviso de caducidad
 - [x] Mensajes de error amigables en login/registro (mapeo `AuthApiException` → `AuthException`)
-- [x] Cierre de sesión al salir de la app / reinicio en frío (`SessionLifecycleHandler` + limpieza en `main.dart`)
+- [x] Sesión persistente al minimizar la app (sin cierre automático en background)
+  - `SessionLifecycleHandler` ya no hace `signOut` al pausar; eliminado `signOut()` en arranque de `main.dart`
+- [x] Aviso en login cuando la sesión caduca por expiración del refresh token (`AuthUnauthenticated.sessionExpired`)
 - [x] Campos de contraseña con icono mostrar/ocultar (`PasswordTextField`)
 
 ### F2 - Perfil de usuario
@@ -258,21 +260,26 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] Componente `IngredientRow`: nombre, cantidad, unidad, categoría
   - `widgets/ingredient_row.dart`
-- [x] Selector de unidad (lista predefinida + campo libre):
-  - Unidades de peso: `g`, `kg`
-  - Unidades de volumen: `ml`, `l`
-  - Unidades de conteo: `unidad`, `unidades`
-  - Unidades relativas: `pizca`, `cucharadita`, `cucharada`, `vaso`, `taza`, `puñado`
+- [x] Selector de unidad (lista predefinida en **singular** + campo libre; mapeo plural en `unit_mappings.dart`):
+  - Peso/volumen: `g`, `kg`, `ml`, `l` (pegados a la cantidad en ficha/compra: `200g de pasta`)
+  - Conteo/relativas: `unidad`, `pizca`, `cucharadita`, `cucharada`, `vaso`, `taza`, `puñado`, `hoja`, `diente`, `chorrito`, `ramita`, `rebanada`, `lámina`, `rama`, `trozo`, `filete`, `rodaja`, `lata`, `bote`, `paquete`, `sobre`
+  - Plural automático si cantidad > 1 según `unitPluralMap` (editable)
 - [x] Selector de categoría de ingrediente:
-  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Otros`
+  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Panadería`, `Congelados`, `Salsas y condimentos`, `Otros`
 - [x] Añadir/eliminar ingrediente desde el formulario de receta
   - Botones «Añadir ingrediente» / «Añadir paso» al final de cada lista (mejor UX en recetas largas)
 - [x] Ampliar etiquetas sugeridas (dietas, alérgenos, estilos de cocina: sin lactosa, vegano, etc.)
 - [x] Marcar ingrediente como **opcional** en formulario (`is_optional`; migración `015`)
 - [x] Incluir/excluir opcionales en ficha de receta (`is_included`; checkbox; tachado si excluido; migración `016`)
   - Excluidos no se sincronizan a lista de la compra al planificar (`planner_repository._syncShoppingListAdd`)
-- [x] Validación al guardar: al menos **1 ingrediente no opcional** y **1 paso** de elaboración (`RecipeFormData.validate`)
-- [x] Lista de ingredientes en ficha: viñetas verdes (`IngredientBullet`); opcionales con **checkbox** en lugar de viñeta (columna alineada)
+- [x] Marcar ingrediente **al gusto** (`is_to_taste`; migración `017`): no va a lista de compra; en ficha muestra «nombre al gusto»
+- [x] Campo **Consejos** en receta (`recipes.tips`; migración `017`); sección en ficha y detalle público
+- [x] Pasos de elaboración **opcionales** (`recipe_steps.is_optional`; migración `017`); validación exige ≥1 paso no opcional
+- [x] Cantidad numérica obligatoria si el campo no está vacío (`FilteringTextInputFormatter` + validator)
+- [x] Orden de ingredientes/pasos preservado al guardar (fix `onReorder` + `ValueKey` estable + `.order(ascending: true)`)
+- [x] Formato de etiquetas unificado en ficha, compra y receta pública (`ingredient_label.dart`)
+- [x] Validación al guardar: al menos **1 ingrediente no opcional** (ni al gusto) y **1 paso no opcional** (`RecipeFormData.validate`)
+- [x] Lista de ingredientes en ficha: viñetas verdes (`IngredientBullet`); opcionales con **checkbox** en lugar de viñeta (columna alineada); categoría no se muestra en ficha
 
 ---
 
@@ -338,6 +345,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Al añadir receta al planificador: insertar ingredientes en `shopping_items` escalados por `(raciones elegidas / raciones de la receta)`
   - Omitido si `is_leftover = true` o si el slot es texto libre (`recipe_id` null)
   - Omitido si `is_included = false` (ingredientes opcionales excluidos en la ficha)
+  - Omitido si `is_to_taste = true` (ingredientes al gusto)
   - Cantidades escaladas redondeadas a **enteros** (`_scaleQuantity` en `planner_repository`)
   - Cada ingrediente se inserta con `plan_slot_id` (sin fusionar filas entre comidas distintas)
 - [x] Al eliminar receta del planificador: eliminar ítems por `plan_slot_id` o restar cantidad en datos legacy consolidados
@@ -347,7 +355,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] Botón «Compartir lista» en la pantalla de lista de la compra
 - [x] Generar texto plano con los ítems agrupados por categoría
-  - Formato: `• 500 g Pechuga de pollo`, `• 1 Pimiento rojo`, etc.
+  - Formato: `• 500g de pechuga de pollo`, `• 2 unidades de huevos`, etc. (`formatShoppingItemLabel`)
 - [x] Abrir diálogo de compartir del sistema (paquete `share_plus`): compatible con WhatsApp y otras apps
   - iOS/iPad: `sharePositionOrigin` obligatorio para que aparezca el share sheet
 
@@ -439,7 +447,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 ### F14 - Descubrimiento
 
 - [x] Pantalla de exploración de recetas públicas (buscador + filtros por etiqueta)
-  - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | Compra | Planificador | Perfil)
+  - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | **Planificador** | Compra | Perfil)
 - [x] Paginación / scroll infinito
 - [x] Tarjeta de receta pública: foto, nombre, autor, valoración media, etiquetas
 
