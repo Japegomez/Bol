@@ -85,13 +85,13 @@ class SocialRepository {
         .from(Ingredient.table_name)
         .select()
         .eq(Ingredient.c_recipeId, id)
-        .order(Ingredient.c_position);
+        .order(Ingredient.c_position, ascending: true);
 
     final stepsData = await supabase
         .from(RecipeStep.table_name)
         .select()
         .eq(RecipeStep.c_recipeId, id)
-        .order(RecipeStep.c_position);
+        .order(RecipeStep.c_position, ascending: true);
 
     final nutritionData = await supabase
         .from(NutritionInfo.table_name)
@@ -163,6 +163,7 @@ class SocialRepository {
             cookTime: source.cookTime,
             tags: source.tags,
             isPublic: false,
+            tips: source.tips,
           ),
           'forked_from_id': publicRecipeId,
         })
@@ -186,6 +187,7 @@ class SocialRepository {
                     position: entry.key,
                     isOptional: entry.value.isOptional,
                     isIncluded: entry.value.isIncluded,
+                    isToTaste: entry.value.isToTaste,
                   ),
                 )
                 .toList(),
@@ -200,6 +202,7 @@ class SocialRepository {
                     recipeId: newId,
                     position: step.position,
                     description: step.description,
+                    isOptional: step.isOptional,
                   ),
                 )
                 .toList(),

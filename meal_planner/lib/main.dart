@@ -6,7 +6,6 @@ import 'package:meal_planner/core/analytics/analytics_service.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/utils/logger.dart';
-import 'package:meal_planner/features/auth/data/auth_repository.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
@@ -20,7 +19,6 @@ Future<void> main() async {
         url: Env.supabaseUrl,
         anonKey: Env.supabaseAnonKey,
       );
-      await AuthRepository().signOut();
       log.i('Supabase initialized');
     } else {
       log.w('SUPABASE_URL / SUPABASE_ANON_KEY not set — running offline scaffold');

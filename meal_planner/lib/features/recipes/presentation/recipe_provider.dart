@@ -146,6 +146,16 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
     state = AsyncData(current.copyWith(data: data, clearError: true));
   }
 
+  /// Sets the working data without triggering a rebuild-inducing state swap
+  /// when the reference is unchanged. Used by the form screen, which mutates
+  /// the data in place and only syncs right before saving.
+  void setData(RecipeFormData data) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    if (identical(current.data, data) && current.error == null) return;
+    state = AsyncData(current.copyWith(data: data, clearError: true));
+  }
+
   Future<String?> save() async {
     final current = state.valueOrNull;
     if (current == null) return null;

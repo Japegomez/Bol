@@ -7,7 +7,9 @@ import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
+import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
@@ -34,6 +36,7 @@ class RecipeDetailScreen extends ConsumerWidget {
           ingredients: detail.ingredients,
           steps: detail.steps,
           nutrition: detail.nutrition,
+          tips: detail.recipe.tips,
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Error: $error')),
@@ -56,6 +59,7 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
     required this.ingredients,
     required this.steps,
     required this.nutrition,
+    this.tips,
   });
 
   final String recipeId;
@@ -70,6 +74,7 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
   final List<Ingredient> ingredients;
   final List<RecipeStep> steps;
   final NutritionInfo? nutrition;
+  final String? tips;
 
   @override
   ConsumerState<_RecipeDetailBody> createState() => _RecipeDetailBodyState();
@@ -346,7 +351,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                           ingredient: ingredient,
                           isUpdating:
                               _updatingIngredientIds.contains(ingredient.id),
-                          onIncludedChanged: ingredient.isOptional
+                          onIncludedChanged: ingredient.isOptional &&
+                                  !ingredient.isToTaste
                               ? (included) => _toggleIngredientIncluded(
                                     ingredient,
                                     included,
@@ -374,11 +380,22 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                                 child: Text('${entry.key + 1}'),
                               ),
                               const SizedBox(width: 12),
-                              Expanded(child: Text(entry.value.description)),
+                              Expanded(
+                                child: RecipeStepText(step: entry.value),
+                              ),
                             ],
                           ),
                         ),
                       ),
+                if (widget.tips != null && widget.tips!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    'Consejos',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(widget.tips!),
+                ],
                 if (widget.nutrition != null) ...[
                   const SizedBox(height: 24),
                   Text(
@@ -423,7 +440,7 @@ class _IngredientListTile extends StatelessWidget {
         children: [
           SizedBox(
             width: _leadingWidth,
-            child: ingredient.isOptional
+            child: ingredient.isOptional && !ingredient.isToTaste
                 ? _buildOptionalLeading()
                 : Padding(
                     padding: const EdgeInsets.only(top: 6),
@@ -434,7 +451,7 @@ class _IngredientListTile extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: _textTopPadding),
               child: Text(
-                _formatLabel(ingredient),
+                formatIngredientLabel(ingredient),
                 style: excluded
                     ? TextStyle(
                         decoration: TextDecoration.lineThrough,
@@ -472,19 +489,6 @@ class _IngredientListTile extends StatelessWidget {
             : (value) => onIncludedChanged!(value ?? ingredient.isIncluded),
       ),
     );
-  }
-
-  String _formatLabel(Ingredient ingredient) {
-    final parts = <String>[];
-    if (ingredient.quantity != null) parts.add(ingredient.quantity.toString());
-    if (ingredient.unit != null && ingredient.unit!.isNotEmpty) {
-      parts.add(ingredient.unit!);
-    }
-    parts.add(ingredient.name);
-    if (ingredient.category != null && ingredient.category!.isNotEmpty) {
-      parts.add('(${ingredient.category})');
-    }
-    return parts.join(' ');
   }
 }
 

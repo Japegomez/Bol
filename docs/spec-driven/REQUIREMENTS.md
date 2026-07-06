@@ -1,7 +1,7 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
 > **Versión:** 1.0 — Fase 6 en `main`; pulido post-lanzamiento y fixes de auth en Play
-> **Fecha:** Junio 2026
+> **Fecha:** Julio 2026
 > **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight; siguiente: validar Google Sign-In en build Play tras PR #33
 
 ---
@@ -68,7 +68,9 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-05** El usuario puede iniciar sesión con **Apple** (*Sign in with Apple*, obligatorio en iOS cuando se ofrece cualquier otro proveedor OAuth, según las App Store Review Guidelines).  
 **RF-AUTH-06** Al autenticarse por primera vez (cualquier método) se crea automáticamente un perfil con nombre de usuario y avatar opcional.  
 **RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`).  
-**RF-AUTH-08** El usuario puede cerrar sesión.  
+**RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
+**RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
+**RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
 
 > **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros).
 
@@ -111,8 +113,9 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 | Tiempo de preparación | Minutos (entero) | No |
 | Tiempo de cocción | Minutos (entero) | No |
 | Etiquetas | Lista de strings | No |
-| Pasos de elaboración | Lista ordenada de textos | No |
-| Ingredientes | Lista (ver abajo) | Sí (mínimo 1) |
+| Pasos de elaboración | Lista ordenada de textos | Sí (mínimo 1 no opcional) |
+| Ingredientes | Lista (ver abajo) | Sí (mínimo 1 no opcional ni al gusto) |
+| Consejos | Texto libre (trucos, variaciones) | No |
 | Información nutricional | Objeto (ver abajo) | No |
 
 #### Campos de un ingrediente
@@ -120,10 +123,11 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 | Campo | Descripción | Ejemplos |
 |---|---|---|
 | Nombre | Nombre del ingrediente | "Pechuga de pollo", "Pimiento rojo" |
-| Cantidad | Número decimal o fracción | 500, 1, 0.5 |
-| Unidad | Unidad de medida libre | `g`, `kg`, `ml`, `l`, `unidad`, `pizca`, `cucharada`, `cucharadita`, `vaso`, `taza`, `puñado` |
-| Categoría | Agrupación para la lista de la compra | `Carnes y pescados`, `Verduras`, `Lácteos`, `Cereales`, `Legumbres`, `Frutas`, `Especias`, `Otros` |
+| Cantidad | Número (solo dígitos; opcional) | 500, 1, 0.5 |
+| Unidad | Unidad en **singular** (lista predefinida o libre) | `g`, `kg`, `ml`, `l`, `unidad`, `hoja`, `diente`, `chorrito`, `pizca`, `cucharada`, etc. |
+| Categoría | Agrupación para la lista de la compra (no visible en ficha) | `Carnes y pescados`, `Verduras`, `Lácteos`, `Legumbres`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Panadería`, `Congelados`, `Salsas y condimentos`, `Otros` |
 | Opcional | El ingrediente puede omitirse al cocinar / en la compra | `is_optional` (autor); `is_included` (usuario en su ficha) |
+| Al gusto | Sin cantidad/unidad; no se añade a la lista de la compra | `is_to_taste` (p. ej. sal, pimienta) |
 
 #### Campos de información nutricional (por ración)
 
@@ -131,7 +135,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 
 #### Requisitos funcionales
 
-**RF-REC-01** El usuario puede crear una receta rellenando el formulario con los campos anteriores. La receta debe tener al menos un ingrediente **no opcional** y al menos un paso de elaboración.  
+**RF-REC-01** El usuario puede crear una receta rellenando el formulario con los campos anteriores. La receta debe tener al menos un ingrediente **no opcional** (ni al gusto) y al menos un paso de elaboración **no opcional**.  
 **RF-REC-02** El usuario puede editar cualquier campo de una receta existente.  
 **RF-REC-03** El usuario puede eliminar una receta (con confirmación). Si la receta está en el planificador, los slots quedan vacíos.  
 **RF-REC-04** El usuario puede buscar recetas de su recetario por nombre.  
@@ -142,7 +146,13 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-09** El usuario puede ver el detalle completo de una receta desde el recetario o desde el planificador.  
 **RF-REC-10** El usuario puede marcar un ingrediente como **opcional** al crear/editar la receta. En la ficha de su receta puede **incluir o excluir** cada opcional (checkbox en lugar de viñeta). Si está excluido, se muestra tachado y no se añade a la lista de la compra al planificar. Los ingredientes obligatorios se muestran con viñeta verde.  
 **RF-REC-11** Al eliminar una receta del recetario, el panel lateral del planificador y los slots de la semana se actualizan de inmediato (invalidación de `recipesProvider` y `planSlotsProvider`).  
-**RF-REC-12** El recetario es privado por usuario: al cambiar de sesión, los providers de recetas se recargan según `authStateProvider` (no se muestran recetas de otro usuario).
+**RF-REC-12** El recetario es privado por usuario: al cambiar de sesión, los providers de recetas se recargan según `authStateProvider` (no se muestran recetas de otro usuario).  
+**RF-REC-13** El usuario puede marcar un ingrediente como **al gusto** (`is_to_taste`). No requiere cantidad ni unidad; en ficha se muestra como «nombre al gusto» y no se sincroniza a la lista de la compra.  
+**RF-REC-14** El usuario puede añadir **consejos** opcionales a la receta (`recipes.tips`); se muestran en ficha y detalle público si no están vacíos.  
+**RF-REC-15** Los pasos de elaboración pueden marcarse como **opcionales** (`recipe_steps.is_optional`); en ficha y detalle público se muestran con el prefijo **Opcional:** en negrita seguido de la descripción.  
+**RF-REC-16** Las unidades se almacenan en singular; si la cantidad es > 1, el plural se deriva de `unitPluralMap` (`unit_mappings.dart`).  
+**RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.  
+**RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).
 
 ---
 
@@ -170,7 +180,7 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 
 La lista de la compra está asociada al hogar (o al usuario individual) y **no está vinculada a una semana específica**: es una lista activa que se va actualizando.
 
-**RF-SHOP-01** Cuando se añade una receta al planificador, sus ingredientes **incluidos** (`is_included = true`) se agregan automáticamente a la lista de la compra (escalados según raciones y **redondeados a enteros**). Los opcionales excluidos en la ficha no se sincronizan.  
+**RF-SHOP-01** Cuando se añade una receta al planificador, sus ingredientes **incluidos** (`is_included = true`) y **no al gusto** (`is_to_taste = false`) se agregan automáticamente a la lista de la compra (escalados según raciones y **redondeados a enteros**). Los opcionales excluidos en la ficha no se sincronizan.  
 **RF-SHOP-02** Los ingredientes se agrupan visualmente por su **categoría** (Verduras, Lácteos, etc.).  
 **RF-SHOP-03** Si el mismo ingrediente aparece en varias comidas planificadas, cada asignación genera ítems vinculados por `plan_slot_id` (pueden mostrarse filas separadas con el mismo nombre/unidad).  
 **RF-SHOP-04** El usuario puede añadir ítems manualmente (sin estar vinculados a ninguna receta).  
@@ -182,7 +192,7 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 **RF-SHOP-10** El usuario puede **exportar la lista** como texto plano y compartirla por WhatsApp u otras apps del sistema (usando el `share_plus` de Flutter).  
 **RF-SHOP-11** En modo hogar, todos los miembros ven la misma lista en tiempo real y pueden marcar/desmarcar ítems.
 
-> **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included`. Al quitar: `_syncShoppingListRemove` borra por slot o resta cantidades en datos legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
+> **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included` y no `is_to_taste`. Etiquetas con `formatShoppingItemLabel` (misma regla que ficha de receta). Al quitar: `_syncShoppingListRemove` borra por slot o resta cantidades en datos legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
 
 ---
 
@@ -473,7 +483,7 @@ supabase
 /auth/login
 /auth/register
 /auth/forgot-password
-/home                     → Shell con bottom nav (Explorar | Recetario | Compra | Planificador | Perfil)
+/home                     → Shell con bottom nav (Explorar | Recetario | Planificador | Compra | Perfil)
   /home/explore           → Exploración de recetas públicas
     /home/explore/feed    → Feed de usuarios seguidos
     /home/explore/user/:userId → Perfil público

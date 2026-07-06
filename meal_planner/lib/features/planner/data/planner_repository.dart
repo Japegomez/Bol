@@ -189,7 +189,7 @@ class PlannerRepository {
         .from(Ingredient.table_name)
         .select()
         .eq(Ingredient.c_recipeId, recipeId)
-        .order(Ingredient.c_position);
+        .order(Ingredient.c_position, ascending: true);
 
     final ingredients = Ingredient.converter(
       (ingredientsData as List).cast<Map<String, dynamic>>(),
@@ -199,6 +199,7 @@ class PlannerRepository {
 
     for (final ingredient in ingredients) {
       if (!ingredient.isIncluded) continue;
+      if (ingredient.isToTaste) continue;
 
       final scaledQty = _scaleQuantity(ingredient.quantity, scale);
 
@@ -264,7 +265,7 @@ class PlannerRepository {
         .from(Ingredient.table_name)
         .select()
         .eq(Ingredient.c_recipeId, recipeId)
-        .order(Ingredient.c_position);
+        .order(Ingredient.c_position, ascending: true);
 
     final ingredients = Ingredient.converter(
       (ingredientsData as List).cast<Map<String, dynamic>>(),
@@ -281,6 +282,7 @@ class PlannerRepository {
 
     for (final ingredient in ingredients) {
       if (!ingredient.isIncluded) continue;
+      if (ingredient.isToTaste) continue;
 
       final scaledQty = _scaleQuantity(ingredient.quantity, scale);
       if (scaledQty == null) continue;

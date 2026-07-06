@@ -14,6 +14,7 @@ class IngredientFormItem {
     this.useCustomUnit = false,
     this.isOptional = false,
     this.isIncluded = true,
+    this.isToTaste = false,
   }) : key = key ?? _newFormItemKey('ingredient');
 
   final String key;
@@ -25,6 +26,7 @@ class IngredientFormItem {
   bool useCustomUnit;
   bool isOptional;
   bool isIncluded;
+  bool isToTaste;
 
   String? get effectiveUnit =>
       useCustomUnit ? (customUnit.trim().isEmpty ? null : customUnit.trim()) : unit;
@@ -38,6 +40,7 @@ class IngredientFormItem {
     bool? useCustomUnit,
     bool? isOptional,
     bool? isIncluded,
+    bool? isToTaste,
   }) {
     return IngredientFormItem(
       key: key,
@@ -49,16 +52,21 @@ class IngredientFormItem {
       useCustomUnit: useCustomUnit ?? this.useCustomUnit,
       isOptional: isOptional ?? this.isOptional,
       isIncluded: isIncluded ?? this.isIncluded,
+      isToTaste: isToTaste ?? this.isToTaste,
     );
   }
 }
 
 class StepFormItem {
-  StepFormItem({String? key, this.description = ''})
-      : key = key ?? _newFormItemKey('step');
+  StepFormItem({
+    String? key,
+    this.description = '',
+    this.isOptional = false,
+  }) : key = key ?? _newFormItemKey('step');
 
   final String key;
   String description;
+  bool isOptional;
 }
 
 class NutritionFormData {
@@ -99,6 +107,7 @@ class RecipeFormData {
     this.pendingPhoto,
     this.isPublic = false,
     this.forkedFromId,
+    this.tips = '',
   })  : tags = tags ?? [],
         ingredients = ingredients ?? [IngredientFormItem()],
         steps = steps ?? [StepFormItem()],
@@ -117,6 +126,7 @@ class RecipeFormData {
   XFile? pendingPhoto;
   bool isPublic;
   final String? forkedFromId;
+  String tips;
 
   bool get canPublish => forkedFromId == null;
 
@@ -124,14 +134,17 @@ class RecipeFormData {
     if (title.trim().isEmpty) return 'El nombre es obligatorio';
     if (servings < 1) return 'Las raciones deben ser al menos 1';
 
-    final requiredIngredients =
-        validIngredients.where((ingredient) => !ingredient.isOptional);
+    final requiredIngredients = validIngredients.where(
+      (ingredient) => !ingredient.isOptional && !ingredient.isToTaste,
+    );
     if (requiredIngredients.isEmpty) {
       return 'Añade al menos un ingrediente no opcional';
     }
 
-    if (validSteps.isEmpty) {
-      return 'Añade al menos un paso de elaboración';
+    final requiredSteps =
+        validSteps.where((step) => !step.isOptional);
+    if (requiredSteps.isEmpty) {
+      return 'Añade al menos un paso de elaboración no opcional';
     }
 
     return null;

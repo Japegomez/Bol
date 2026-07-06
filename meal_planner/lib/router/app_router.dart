@@ -136,16 +136,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/home/shopping',
-                builder: (_, _) => const ShoppingListScreen(),
+                path: '/home/planner',
+                builder: (_, _) => const PlannerScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/home/planner',
-                builder: (_, _) => const PlannerScreen(),
+                path: '/home/shopping',
+                builder: (_, _) => const ShoppingListScreen(),
               ),
             ],
           ),

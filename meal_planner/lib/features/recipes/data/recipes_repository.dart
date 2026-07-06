@@ -7,6 +7,7 @@ import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
+import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RecipesRepository {
@@ -62,25 +63,30 @@ class RecipesRepository {
     );
     final forkedFromId = recipeData['forked_from_id']?.toString();
 
-    final ingredientsData = await supabase
-        .from(Ingredient.table_name)
-        .select()
-        .eq(Ingredient.c_recipeId, id)
-        .order(Ingredient.c_position);
+    // Fetch ingredients, steps, nutrition and photo URL in parallel.
+    final results = await Future.wait<dynamic>(<Future<dynamic>>[
+      supabase
+          .from(Ingredient.table_name)
+          .select()
+          .eq(Ingredient.c_recipeId, id)
+          .order(Ingredient.c_position, ascending: true),
+      supabase
+          .from(RecipeStep.table_name)
+          .select()
+          .eq(RecipeStep.c_recipeId, id)
+          .order(RecipeStep.c_position, ascending: true),
+      supabase
+          .from(NutritionInfo.table_name)
+          .select()
+          .eq(NutritionInfo.c_recipeId, id)
+          .maybeSingle(),
+      resolvePhotoUrl(recipe.photoUrl),
+    ]);
 
-    final stepsData = await supabase
-        .from(RecipeStep.table_name)
-        .select()
-        .eq(RecipeStep.c_recipeId, id)
-        .order(RecipeStep.c_position);
-
-    final nutritionData = await supabase
-        .from(NutritionInfo.table_name)
-        .select()
-        .eq(NutritionInfo.c_recipeId, id)
-        .maybeSingle();
-
-    final photoDisplayUrl = await resolvePhotoUrl(recipe.photoUrl);
+    final ingredientsData = results[0] as List<dynamic>;
+    final stepsData = results[1] as List<dynamic>;
+    final nutritionData = results[2] as Map<String, dynamic>?;
+    final photoDisplayUrl = results[3] as String?;
 
     return RecipeDetail(
       recipe: recipe,
@@ -124,6 +130,7 @@ class RecipesRepository {
             cookTime: form.cookTime,
             tags: form.tags,
             isPublic: form.isPublic,
+            tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
           ),
         )
         .select()
@@ -183,6 +190,7 @@ class RecipesRepository {
             cookTime: form.cookTime,
             tags: form.tags,
             isPublic: form.canPublish ? form.isPublic : false,
+            tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
           ),
         )
         .eq(Recipe.c_id, id)
@@ -229,13 +237,16 @@ class RecipesRepository {
                   (entry) => Ingredient.insert(
                     recipeId: recipeId,
                     name: entry.value.name.trim(),
-                    quantity: entry.value.quantity,
-                    unit: entry.value.effectiveUnit,
+                    quantity: entry.value.isToTaste ? null : entry.value.quantity,
+                    unit: entry.value.isToTaste
+                        ? null
+                        : normalizeUnit(entry.value.effectiveUnit),
                     category: entry.value.category,
                     position: entry.key,
                     isOptional: entry.value.isOptional,
                     isIncluded:
                         entry.value.isOptional ? entry.value.isIncluded : true,
+                    isToTaste: entry.value.isToTaste,
                   ),
                 )
                 .toList(),
@@ -253,6 +264,7 @@ class RecipesRepository {
                     recipeId: recipeId,
                     position: entry.key,
                     description: entry.value.description.trim(),
+                    isOptional: entry.value.isOptional,
                   ),
                 )
                 .toList(),
@@ -364,23 +376,26 @@ class RecipesRepository {
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
       tags: List<String>.from(recipe.tags),
+      tips: recipe.tips ?? '',
       ingredients: detail.ingredients.isEmpty
           ? [IngredientFormItem()]
           : detail.ingredients
               .map(
                 (ingredient) {
-                  final unit = ingredient.unit;
-                  final isPredefined =
-                      unit != null && predefinedUnits.contains(unit);
+                  final normalizedUnit = normalizeUnit(ingredient.unit);
+                  final isPredefined = normalizedUnit != null &&
+                      predefinedUnits.contains(normalizedUnit);
                   return IngredientFormItem(
                     name: ingredient.name,
-                    quantity: ingredient.quantity,
-                    unit: isPredefined ? unit : predefinedUnits.first,
+                    quantity: ingredient.isToTaste ? null : ingredient.quantity,
+                    unit: isPredefined ? normalizedUnit : null,
                     category: ingredient.category ?? 'Carnes y pescados',
-                    customUnit: isPredefined ? '' : (unit ?? ''),
-                    useCustomUnit: unit != null && !isPredefined,
+                    customUnit: isPredefined ? '' : (normalizedUnit ?? ''),
+                    useCustomUnit:
+                        normalizedUnit != null && !isPredefined,
                     isOptional: ingredient.isOptional,
                     isIncluded: ingredient.isIncluded,
+                    isToTaste: ingredient.isToTaste,
                   );
                 },
               )
@@ -388,7 +403,12 @@ class RecipesRepository {
       steps: detail.steps.isEmpty
           ? [StepFormItem()]
           : detail.steps
-              .map((step) => StepFormItem(description: step.description))
+              .map(
+                (step) => StepFormItem(
+                  description: step.description,
+                  isOptional: step.isOptional,
+                ),
+              )
               .toList(),
       nutrition: NutritionFormData(
         calories: detail.nutrition?.calories,

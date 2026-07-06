@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 
@@ -47,7 +48,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
     );
     _customUnitController = TextEditingController();
 
-    final itemUnit = item?.unit;
+    final itemUnit = normalizeUnit(item?.unit);
     if (itemUnit != null && !predefinedUnits.contains(itemUnit)) {
       _useCustomUnit = true;
       _unit = customUnitOption;
@@ -77,6 +78,8 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
     return _unit;
   }
 
+  String? _normalizeResolvedUnit() => normalizeUnit(_resolvedUnit);
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -88,7 +91,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
     Navigator.of(context).pop({
       'name': _nameController.text.trim(),
       'quantity': quantity,
-      'unit': _resolvedUnit,
+      'unit': _normalizeResolvedUnit(),
       'category': _category,
     });
   }
@@ -134,6 +137,22 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*[.,]?\d*'),
+                      ),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return null;
+                      }
+                      final parsed =
+                          num.tryParse(value.trim().replaceAll(',', '.'));
+                      if (parsed == null) {
+                        return 'Introduce un número válido';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),

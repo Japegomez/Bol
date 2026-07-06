@@ -2,11 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/fork_optional_ingredients_dialog.dart';
@@ -351,11 +352,8 @@ class _PublicRecipeDetailScreenState
                                   children: [
                                     const IngredientBullet(),
                                     Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(top: 2),
-                                        child: Text(
-                                          _formatIngredient(ingredient),
-                                        ),
+                                      child: Text(
+                                        '${formatIngredientLabel(ingredient)}${ingredient.isOptional ? ' (opcional)' : ''}',
                                       ),
                                     ),
                                   ],
@@ -384,12 +382,22 @@ class _PublicRecipeDetailScreenState
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Text(entry.value.description),
+                                      child: RecipeStepText(step: entry.value),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
+                      if (detail.recipe.tips != null &&
+                          detail.recipe.tips!.trim().isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'Consejos',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(detail.recipe.tips!),
+                      ],
                       if (detail.nutrition != null) ...[
                         const SizedBox(height: 24),
                         Text(
@@ -421,19 +429,6 @@ class _PublicRecipeDetailScreenState
         error: (error, _) => Center(child: Text('Error: $error')),
       ),
     );
-  }
-
-  String _formatIngredient(Ingredient ingredient) {
-    final parts = <String>[];
-    if (ingredient.quantity != null) parts.add(ingredient.quantity.toString());
-    if (ingredient.unit != null && ingredient.unit!.isNotEmpty) {
-      parts.add(ingredient.unit!);
-    }
-    parts.add(ingredient.name);
-    if (ingredient.isOptional) {
-      parts.add('(opcional)');
-    }
-    return parts.join(' ');
   }
 }
 

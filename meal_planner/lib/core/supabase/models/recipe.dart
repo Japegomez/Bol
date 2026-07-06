@@ -15,6 +15,7 @@ class Recipe implements SupadartClass<Recipe> {
   final bool isPublic;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? tips;
 
   const Recipe({
     required this.id,
@@ -28,6 +29,7 @@ class Recipe implements SupadartClass<Recipe> {
     required this.isPublic,
     required this.createdAt,
     required this.updatedAt,
+    this.tips,
   });
 
   static String get table_name => 'recipes';
@@ -42,6 +44,7 @@ class Recipe implements SupadartClass<Recipe> {
   static String get c_isPublic => 'is_public';
   static String get c_createdAt => 'created_at';
   static String get c_updatedAt => 'updated_at';
+  static String get c_tips => 'tips';
 
   static List<Recipe> converter(List<Map<String, dynamic>> data) {
     return data.map(Recipe.fromJson).toList();
@@ -63,6 +66,7 @@ class Recipe implements SupadartClass<Recipe> {
     bool? isPublic,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? tips,
   }) {
     return {
       'id': ?id,
@@ -76,6 +80,7 @@ class Recipe implements SupadartClass<Recipe> {
       'is_public': ?isPublic,
       if (createdAt != null) 'created_at': createdAt.toUtc().toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt.toUtc().toIso8601String(),
+      'tips': ?tips,
     };
   }
 
@@ -91,6 +96,7 @@ class Recipe implements SupadartClass<Recipe> {
     bool? isPublic,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? tips,
   }) {
     return _generateMap(
       id: id,
@@ -104,6 +110,7 @@ class Recipe implements SupadartClass<Recipe> {
       isPublic: isPublic,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      tips: tips,
     );
   }
 
@@ -119,6 +126,7 @@ class Recipe implements SupadartClass<Recipe> {
     bool? isPublic,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? tips,
   }) {
     return _generateMap(
       id: id,
@@ -132,6 +140,7 @@ class Recipe implements SupadartClass<Recipe> {
       isPublic: isPublic,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      tips: tips,
     );
   }
 
@@ -162,6 +171,7 @@ class Recipe implements SupadartClass<Recipe> {
       updatedAt: jsonn['updated_at'] != null
           ? DateTime.parse(jsonn['updated_at'].toString())
           : DateTime.fromMillisecondsSinceEpoch(0),
+      tips: jsonn['tips'] != null ? jsonn['tips'].toString() : null,
     );
   }
 
@@ -177,6 +187,7 @@ class Recipe implements SupadartClass<Recipe> {
     bool? isPublic,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? tips,
   }) {
     return {
       'id': ?id,
@@ -190,6 +201,7 @@ class Recipe implements SupadartClass<Recipe> {
       'is_public': ?isPublic,
       'created_at': ?createdAt,
       'updated_at': ?updatedAt,
+      'tips': ?tips,
     };
   }
 
@@ -206,6 +218,7 @@ class Recipe implements SupadartClass<Recipe> {
       isPublic: isPublic,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      tips: tips,
     );
   }
 
@@ -222,6 +235,7 @@ class Recipe implements SupadartClass<Recipe> {
     Object? isPublic = _unset,
     Object? createdAt = _unset,
     Object? updatedAt = _unset,
+    Object? tips = _unset,
   }) {
     return Recipe(
       id: id == _unset ? this.id : id as String,
@@ -235,6 +249,7 @@ class Recipe implements SupadartClass<Recipe> {
       isPublic: isPublic == _unset ? this.isPublic : isPublic as bool,
       createdAt: createdAt == _unset ? this.createdAt : createdAt as DateTime,
       updatedAt: updatedAt == _unset ? this.updatedAt : updatedAt as DateTime,
+      tips: tips == _unset ? this.tips : tips as String?,
     );
   }
 }

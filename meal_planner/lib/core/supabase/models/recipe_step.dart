@@ -8,12 +8,14 @@ class RecipeStep implements SupadartClass<RecipeStep> {
   final String recipeId;
   final int position;
   final String description;
+  final bool isOptional;
 
   const RecipeStep({
     required this.id,
     required this.recipeId,
     required this.position,
     required this.description,
+    this.isOptional = false,
   });
 
   static String get table_name => 'recipe_steps';
@@ -21,6 +23,7 @@ class RecipeStep implements SupadartClass<RecipeStep> {
   static String get c_recipeId => 'recipe_id';
   static String get c_position => 'position';
   static String get c_description => 'description';
+  static String get c_isOptional => 'is_optional';
 
   static List<RecipeStep> converter(List<Map<String, dynamic>> data) {
     return data.map(RecipeStep.fromJson).toList();
@@ -35,12 +38,14 @@ class RecipeStep implements SupadartClass<RecipeStep> {
     String? recipeId,
     int? position,
     String? description,
+    bool? isOptional,
   }) {
     return {
       'id': ?id,
       'recipe_id': ?recipeId,
       'position': ?position,
       'description': ?description,
+      'is_optional': ?isOptional,
     };
   }
 
@@ -49,12 +54,14 @@ class RecipeStep implements SupadartClass<RecipeStep> {
     required String recipeId,
     required int position,
     required String description,
+    bool isOptional = false,
   }) {
     return _generateMap(
       id: id,
       recipeId: recipeId,
       position: position,
       description: description,
+      isOptional: isOptional,
     );
   }
 
@@ -63,12 +70,14 @@ class RecipeStep implements SupadartClass<RecipeStep> {
     String? recipeId,
     int? position,
     String? description,
+    bool? isOptional,
   }) {
     return _generateMap(
       id: id,
       recipeId: recipeId,
       position: position,
       description: description,
+      isOptional: isOptional,
     );
   }
 
@@ -82,6 +91,7 @@ class RecipeStep implements SupadartClass<RecipeStep> {
       description: jsonn['description'] != null
           ? jsonn['description'].toString()
           : '',
+      isOptional: jsonn['is_optional'] == true,
     );
   }
 
@@ -90,12 +100,14 @@ class RecipeStep implements SupadartClass<RecipeStep> {
     String? recipeId,
     int? position,
     String? description,
+    bool? isOptional,
   }) {
     return {
       'id': ?id,
       'recipe_id': ?recipeId,
       'position': ?position,
       'description': ?description,
+      'is_optional': ?isOptional,
     };
   }
 
@@ -105,6 +117,7 @@ class RecipeStep implements SupadartClass<RecipeStep> {
       recipeId: recipeId,
       position: position,
       description: description,
+      isOptional: isOptional,
     );
   }
 
@@ -114,6 +127,7 @@ class RecipeStep implements SupadartClass<RecipeStep> {
     Object? recipeId = _unset,
     Object? position = _unset,
     Object? description = _unset,
+    Object? isOptional = _unset,
   }) {
     return RecipeStep(
       id: id == _unset ? this.id : id as String,
@@ -122,6 +136,7 @@ class RecipeStep implements SupadartClass<RecipeStep> {
       description: description == _unset
           ? this.description
           : description as String,
+      isOptional: isOptional == _unset ? this.isOptional : isOptional as bool,
     );
   }
 }

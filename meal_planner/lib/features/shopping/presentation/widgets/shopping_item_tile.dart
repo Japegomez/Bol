@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
+import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/add_edit_item_sheet.dart';
 
 class ShoppingItemTile extends StatelessWidget {
@@ -17,21 +18,11 @@ class ShoppingItemTile extends StatelessWidget {
   final Future<void> Function(Map<String, dynamic> data) onEdit;
   final VoidCallback onDelete;
 
-  String get _label {
-    final parts = <String>[];
-    if (item.quantity != null) {
-      parts.add(_formatQuantity(item.quantity!));
-    }
-    if (item.unit != null && item.unit!.isNotEmpty) {
-      parts.add(item.unit!);
-    }
-    parts.add(item.name);
-    return parts.join(' ');
-  }
-
-  String _formatQuantity(num quantity) {
-    return quantity.round().toString();
-  }
+  String get _label => formatShoppingItemLabel(
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+      );
 
   Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
