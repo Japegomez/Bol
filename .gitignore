@@ -14,3 +14,6 @@ AuthKey.p8
 supabase/.temp/
 /scripts/
 !/scripts/generate_apple_jwt.py
+
+# Graphify
+/graphify-out
