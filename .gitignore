@@ -4,7 +4,7 @@
 !.env.example
 
 # Cursor session artifacts (rules are tracked)
-.cursor/plans/
+.cursor/
 
 # Apple Sign-In private keys (never commit)
 *.p8
