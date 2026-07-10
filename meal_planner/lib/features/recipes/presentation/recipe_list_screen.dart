@@ -45,10 +45,23 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recetario')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/home/recipes/new'),
-        tooltip: 'Nueva receta',
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'cooking-glossary',
+            onPressed: () => context.push('/home/recipes/glossary'),
+            tooltip: 'Glosario culinario',
+            child: const Icon(Icons.book),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'new-recipe',
+            onPressed: () => context.push('/home/recipes/new'),
+            tooltip: 'Nueva receta',
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
       body: Column(
         children: [

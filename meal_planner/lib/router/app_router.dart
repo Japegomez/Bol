@@ -14,6 +14,7 @@ import 'package:meal_planner/features/profile/presentation/delete_account_screen
 import 'package:meal_planner/features/profile/presentation/edit_profile_screen.dart';
 import 'package:meal_planner/features/profile/presentation/legal_document_screen.dart';
 import 'package:meal_planner/features/profile/presentation/profile_screen.dart';
+import 'package:meal_planner/features/recipes/presentation/cooking_glossary_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_detail_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_form_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_list_screen.dart';
@@ -111,6 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/home/recipes',
                 builder: (_, _) => const RecipeListScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'glossary',
+                    builder: (_, _) => const CookingGlossaryScreen(),
+                  ),
                   GoRoute(
                     path: 'new',
                     builder: (_, _) => const RecipeFormScreen(),
