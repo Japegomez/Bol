@@ -12,7 +12,7 @@ const ingredientCategories = [
   'Conservas',
   'Frutos secos',
   'Bebidas',
-  'Panadería',
+  'Repostería',
   'Congelados',
   'Salsas y condimentos',
   'Otros',
