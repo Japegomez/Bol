@@ -92,27 +92,87 @@ class PublicRecipeCard extends ConsumerWidget {
                     ),
                     if (recipe.tags.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: recipe.tags
-                            .take(3)
-                            .map(
-                              (tag) => Chip(
-                                label: Text(tag),
-                                visualDensity: VisualDensity.compact,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      _HorizontalTagList(tags: recipe.tags),
                     ],
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HorizontalTagList extends StatefulWidget {
+  const _HorizontalTagList({required this.tags});
+
+  final List<String> tags;
+
+  @override
+  State<_HorizontalTagList> createState() => _HorizontalTagListState();
+}
+
+class _HorizontalTagListState extends State<_HorizontalTagList> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollBy(double delta) {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    final offset = (_scrollController.offset - delta).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    _scrollController.jumpTo(offset);
+  }
+
+  void _fling(DragEndDetails details) {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    final target = (_scrollController.offset -
+            details.velocity.pixelsPerSecond.dx * 0.15)
+        .clamp(position.minScrollExtent, position.maxScrollExtent);
+
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 32,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: (details) => _scrollBy(details.delta.dx),
+        onHorizontalDragEnd: _fling,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          child: Row(
+            children: [
+              for (var index = 0; index < widget.tags.length; index++) ...[
+                if (index > 0) const SizedBox(width: 4),
+                Chip(
+                  label: Text(widget.tags[index]),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
