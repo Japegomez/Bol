@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
 import 'package:meal_planner/core/widgets/app_button.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
 
@@ -22,6 +23,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   XFile? _pickedImage;
   Uint8List? _pickedImageBytes;
   bool _isSaving = false;
+  bool _isModeratingImage = false;
   String? _errorMessage;
 
   @override
@@ -31,18 +33,37 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    if (_isModeratingImage) return;
+
     final image = await _picker.pickImage(
       source: source,
       imageQuality: 80,
       maxWidth: 512,
       maxHeight: 512,
     );
-    if (image == null) return;
+    if (image == null || !mounted) return;
 
     final bytes = await image.readAsBytes();
     setState(() {
-      _pickedImage = image;
-      _pickedImageBytes = bytes;
+      _isModeratingImage = true;
+      _errorMessage = null;
+    });
+
+    if (!mounted) return;
+
+    final allowed = await moderatePickedImage(
+      context: context,
+      ref: ref,
+      bytes: bytes,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isModeratingImage = false;
+      if (allowed) {
+        _pickedImage = image;
+        _pickedImageBytes = bytes;
+      }
     });
   }
 
@@ -138,19 +159,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           : avatarUrl != null
                               ? CachedNetworkImageProvider(avatarUrl)
                               : null,
-                      child: _pickedImageBytes == null && avatarUrl == null
-                          ? Icon(
-                              Icons.person,
-                              size: 56,
-                              color: theme.colorScheme.onPrimaryContainer,
-                            )
-                          : null,
+                      child: _isModeratingImage
+                          ? const CircularProgressIndicator()
+                          : _pickedImageBytes == null && avatarUrl == null
+                              ? Icon(
+                                  Icons.person,
+                                  size: 56,
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                )
+                              : null,
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
                       child: IconButton.filled(
-                        onPressed: _isSaving ? null : _showImageSourceSheet,
+                        onPressed: (_isSaving || _isModeratingImage)
+                            ? null
+                            : _showImageSourceSheet,
                         icon: const Icon(Icons.camera_alt),
                       ),
                     ),
@@ -159,10 +184,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
               const SizedBox(height: 8),
               Center(
-                child: TextButton(
-                  onPressed: _isSaving ? null : _showImageSourceSheet,
-                  child: const Text('Cambiar foto'),
-                ),
+                child: _isModeratingImage
+                    ? Text(
+                        'Comprobando imagen...',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      )
+                    : TextButton(
+                        onPressed: _isSaving ? null : _showImageSourceSheet,
+                        child: const Text('Cambiar foto'),
+                      ),
               ),
               const SizedBox(height: 24),
               TextFormField(

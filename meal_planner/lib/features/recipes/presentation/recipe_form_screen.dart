@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -58,6 +59,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   TextEditingController? _tipsController;
 
   Uint8List? _localPhotoPreview;
+  bool _isModeratingPhoto = false;
+  String? _photoModerationError;
 
   @override
   void dispose() {
@@ -83,6 +86,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   }
 
   Future<void> _pickPhoto() async {
+    if (_isModeratingPhoto) return;
+
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -93,10 +98,28 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
 
     final bytes = await file.readAsBytes();
     setState(() {
-      _localPhotoPreview = bytes;
-      _data!
-        ..pendingPhoto = file
-        ..removePhoto = false;
+      _isModeratingPhoto = true;
+      _photoModerationError = null;
+    });
+
+    if (!mounted) return;
+
+    final allowed = await moderatePickedImage(
+      context: context,
+      ref: ref,
+      bytes: bytes,
+      onServiceError: (message) => _photoModerationError = message,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isModeratingPhoto = false;
+      if (allowed) {
+        _localPhotoPreview = bytes;
+        _data!
+          ..pendingPhoto = file
+          ..removePhoto = false;
+      }
     });
   }
 
@@ -224,13 +247,13 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                if (error != null) ...[
+                if (error != null || _photoModerationError != null) ...[
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(
-                        error,
+                        error ?? _photoModerationError!,
                         style: TextStyle(
                           color:
                               Theme.of(context).colorScheme.onErrorContainer,
@@ -244,6 +267,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                   localPreview: _localPhotoPreview,
                   existingPhotoPath:
                       data.removePhoto ? null : data.existingPhotoPath,
+                  isModerating: _isModeratingPhoto,
                   onPick: _pickPhoto,
                   onRemove: _removePhoto,
                 ),
@@ -669,12 +693,14 @@ class _PhotoSection extends ConsumerWidget {
   const _PhotoSection({
     required this.localPreview,
     required this.existingPhotoPath,
+    required this.isModerating,
     required this.onPick,
     required this.onRemove,
   });
 
   final Uint8List? localPreview;
   final String? existingPhotoPath;
+  final bool isModerating;
   final VoidCallback onPick;
   final VoidCallback onRemove;
 
@@ -684,7 +710,21 @@ class _PhotoSection extends ConsumerWidget {
         ref.watch(recipePhotoUrlProvider(existingPhotoPath));
 
     Widget? preview;
-    if (localPreview != null) {
+    if (isModerating) {
+      preview = const SizedBox(
+        height: 180,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 12),
+              Text('Comprobando imagen...'),
+            ],
+          ),
+        ),
+      );
+    } else if (localPreview != null) {
       preview = Image.memory(localPreview!, height: 180, fit: BoxFit.cover);
     } else if (existingPhotoPath != null) {
       preview = existingUrlAsync.when(
@@ -720,11 +760,11 @@ class _PhotoSection extends ConsumerWidget {
         Row(
           children: [
             FilledButton.tonalIcon(
-              onPressed: onPick,
+              onPressed: isModerating ? null : onPick,
               icon: const Icon(Icons.photo_library_outlined),
               label: const Text('Elegir foto'),
             ),
-            if (preview != null) ...[
+            if (preview != null && !isModerating) ...[
               const SizedBox(width: 8),
               TextButton(
                 onPressed: onRemove,
