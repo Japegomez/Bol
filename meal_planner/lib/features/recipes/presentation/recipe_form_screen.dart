@@ -102,6 +102,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       _photoModerationError = null;
     });
 
+    if (!mounted) return;
+
     final allowed = await moderatePickedImage(
       context: context,
       ref: ref,

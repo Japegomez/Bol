@@ -49,6 +49,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _errorMessage = null;
     });
 
+    if (!mounted) return;
+
     final allowed = await moderatePickedImage(
       context: context,
       ref: ref,
