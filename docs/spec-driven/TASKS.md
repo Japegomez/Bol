@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 06/07/2026 — GitHub Pages clásico desde `/docs`; eliminado workflow `pages.yml`
+> Actualizado: 10/07/2026 — glosario culinario, scroll horizontal de etiquetas, marca Recetea, categoría Repostería
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -265,7 +265,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Conteo/relativas: `unidad`, `pizca`, `cucharadita`, `cucharada`, `vaso`, `taza`, `puñado`, `hoja`, `diente`, `chorrito`, `ramita`, `rebanada`, `lámina`, `rama`, `trozo`, `filete`, `rodaja`, `lata`, `bote`, `paquete`, `sobre`
   - Plural automático si cantidad > 1 según `unitPluralMap` (editable)
 - [x] Selector de categoría de ingrediente:
-  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Panadería`, `Congelados`, `Salsas y condimentos`, `Otros`
+  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Repostería`, `Congelados`, `Salsas y condimentos`, `Otros`
 - [x] Añadir/eliminar ingrediente desde el formulario de receta
   - Botones «Añadir ingrediente» / «Añadir paso» al final de cada lista (mejor UX en recetas largas)
 - [x] Ampliar etiquetas sugeridas (dietas, alérgenos, estilos de cocina: sin lactosa, vegano, etc.)
@@ -284,6 +284,11 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] `fetchRecipeDetail`: ingredientes, pasos, nutrición y foto en paralelo (`Future.wait`)
 - [x] Formulario con `CustomScrollView` + `SliverReorderableList` (solo filas visibles); `RepaintBoundary` por fila; items de dropdown cacheados
 - [x] Reordenar ingredientes/pasos: auto-scroll al arrastrar cerca del borde; long-press en fila o asa `drag_handle`; `proxyDecorator` con sombra
+- [x] Etiquetas en tarjetas del recetario con scroll horizontal (`HorizontalTagList`; altura fija de ficha)
+- [x] Glosario culinario desde recetario (FAB libro encima de «Nueva receta»)
+  - Términos predefinidos + entradas personalizadas (`shared_preferences`); buscador; ruta `/home/recipes/glossary`
+- [x] Categoría de ingrediente `Repostería` sustituye `Panadería` (migración `018_rename_panaderia_to_reposteria.sql`)
+- [x] Marca visible de la app unificada como **Recetea** (`AppBranding.displayName`; iOS/Android/web)
 
 ---
 
@@ -457,7 +462,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Pantalla de exploración de recetas públicas (buscador + filtros por etiqueta)
   - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | **Planificador** | Compra | Perfil)
 - [x] Paginación / scroll infinito
-- [x] Tarjeta de receta pública: foto, nombre, autor, valoración media, etiquetas
+- [x] Tarjeta de receta pública: foto, nombre, autor, valoración media, etiquetas (scroll horizontal si hay varias)
 
 ### F15 - Interacción social
 

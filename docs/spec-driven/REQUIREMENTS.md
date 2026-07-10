@@ -125,7 +125,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 | Nombre | Nombre del ingrediente | "Pechuga de pollo", "Pimiento rojo" |
 | Cantidad | Número (solo dígitos; opcional) | 500, 1, 0.5 |
 | Unidad | Unidad en **singular** (lista predefinida o libre) | `g`, `kg`, `ml`, `l`, `unidad`, `hoja`, `diente`, `chorrito`, `pizca`, `cucharada`, etc. |
-| Categoría | Agrupación para la lista de la compra (no visible en ficha) | `Carnes y pescados`, `Verduras`, `Lácteos`, `Legumbres`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Panadería`, `Congelados`, `Salsas y condimentos`, `Otros` |
+| Categoría | Agrupación para la lista de la compra (no visible en ficha) | `Carnes y pescados`, `Verduras`, `Lácteos`, `Legumbres`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Repostería`, `Congelados`, `Salsas y condimentos`, `Otros` |
 | Opcional | El ingrediente puede omitirse al cocinar / en la compra | `is_optional` (autor); `is_included` (usuario en su ficha) |
 | Al gusto | Sin cantidad/unidad; no se añade a la lista de la compra | `is_to_taste` (p. ej. sal, pimienta) |
 
@@ -152,7 +152,9 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-15** Los pasos de elaboración pueden marcarse como **opcionales** (`recipe_steps.is_optional`); en ficha y detalle público se muestran con el prefijo **Opcional:** en negrita seguido de la descripción.  
 **RF-REC-16** Las unidades se almacenan en singular; si la cantidad es > 1, el plural se deriva de `unitPluralMap` (`unit_mappings.dart`).  
 **RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.  
-**RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).
+**RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).  
+**RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
+**RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (icono de libro) con términos y definiciones predefinidos, buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).
 
 ---
 
@@ -508,7 +510,7 @@ supabase
 Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/social/`.
 
 - **RF-SOC-01** El usuario puede marcar una receta como pública y visible para todos (formulario y detalle). Recetas forkeadas (`forked_from_id`) no se pueden publicar.
-- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtros por etiqueta, orden recientes/top y scroll infinito.
+- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtros por etiqueta, orden recientes/top y scroll infinito. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila.
 - **RF-SOC-03** El usuario puede guardar una receta pública de **otro** usuario en su recetario (fork); no puede forkear la propia. Queda privada y no republicable. Si tiene ingredientes opcionales, se muestra un aviso y el usuario puede editar la inclusión en su ficha.
 - **RF-SOC-04** Valoración 1–5 estrellas (una por usuario y receta; no en recetas propias).
 - **RF-SOC-05** Seguir usuarios y feed en `/home/explore/feed`.
