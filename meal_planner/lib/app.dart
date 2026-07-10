@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/auth/session_lifecycle_handler.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/theme/app_theme.dart';
 import 'package:meal_planner/core/widgets/connectivity_banner.dart';
 import 'package:meal_planner/router/app_router.dart';
@@ -15,7 +16,7 @@ class MealPlannerApp extends ConsumerWidget {
 
     return SessionLifecycleHandler(
       child: MaterialApp.router(
-        title: 'MealPlanner',
+        title: AppBranding.displayName,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         routerConfig: router,

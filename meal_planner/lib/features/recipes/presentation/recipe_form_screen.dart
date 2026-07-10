@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -128,8 +129,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
         builder: (context) => AlertDialog(
           title: const Text('Publicar receta'),
           content: const Text(
-            'Esta receta será visible para todos los usuarios de MealPlanner. '
-            'Podrás despublicarla en cualquier momento.',
+            'Esta receta será visible para todos los usuarios de '
+            '${AppBranding.displayName}. Podrás despublicarla en cualquier momento.',
           ),
           actions: [
             TextButton(

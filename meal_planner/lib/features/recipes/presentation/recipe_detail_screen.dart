@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
@@ -139,8 +140,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
         builder: (context) => AlertDialog(
           title: const Text('Publicar receta'),
           content: const Text(
-            'Esta receta será visible para todos los usuarios de MealPlanner. '
-            'Podrás despublicarla en cualquier momento.',
+            'Esta receta será visible para todos los usuarios de '
+            '${AppBranding.displayName}. Podrás despublicarla en cualquier momento.',
           ),
           actions: [
             TextButton(
