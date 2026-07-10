@@ -73,6 +73,24 @@ dart pub get && dart run supadart
 - `015_ingredients_optional.sql`: `ingredients.is_optional`
 - `016_ingredients_included.sql`: `ingredients.is_included` (inclusión en ficha y sync compra)
 
+## Edge Function: moderación de imágenes
+
+La función `moderate-image` analiza fotos de recetas y avatares con Google Cloud Vision SafeSearch antes de aceptarlas en la app.
+
+**Requisitos:** API key de Google Cloud con [Cloud Vision API](https://console.cloud.google.com/apis/library/vision.googleapis.com) habilitada y **facturación activada** en el proyecto (el tier gratuito cubre ~1000 imágenes/mes).
+
+**Configuración de la API key (importante):**
+- Restricción de aplicación: **Ninguna** (la función corre en servidores de Supabase, no en el navegador).
+- Restricción de API: solo **Cloud Vision API**.
+
+```bash
+supabase link --project-ref hxtynisikjpwlvpdgdbt
+supabase secrets set GOOGLE_VISION_API_KEY=tu_api_key
+supabase functions deploy moderate-image --no-verify-jwt=false
+```
+
+La función exige JWT de usuario autenticado (comportamiento por defecto). La app invoca la función al seleccionar una imagen en el formulario de receta o en editar perfil.
+
 ## Pendiente (Fase 1 — plan §3d en adelante)
 
 - Google Sign-In nativo: 3 clientes OAuth en Google Cloud + proveedor en Supabase
