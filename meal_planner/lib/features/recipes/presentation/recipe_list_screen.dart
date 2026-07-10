@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
+import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {
@@ -257,20 +258,7 @@ class _RecipeCard extends ConsumerWidget {
                     ),
                     if (recipe.tags.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: recipe.tags
-                            .map(
-                              (tag) => Chip(
-                                label: Text(tag),
-                                visualDensity: VisualDensity.compact,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      HorizontalTagList(tags: recipe.tags),
                     ],
                   ],
                 ),
