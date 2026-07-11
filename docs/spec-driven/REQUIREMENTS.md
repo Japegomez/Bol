@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; pulido UX y moderación en `develop`
+> **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `feature/offline-access`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: marca Recetea, glosario culinario, scroll horizontal de etiquetas, categoría Repostería, filtro de etiquetas multi-selección, modo oscuro manual, moderación Vision API (PR #37 mergeado), destacado del día actual en planificador.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop` / `feature/offline-access`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, moderación Vision API.
 
 ---
 
@@ -16,6 +16,7 @@
    - 3.3 [Recetario](#33-recetario)
    - 3.4 [Planificador semanal](#34-planificador-semanal)
    - 3.5 [Lista de la compra](#35-lista-de-la-compra)
+   - 3.6 [Acceso offline (móvil)](#36-acceso-offline-móvil)
 4. [Modelo de datos](#4-modelo-de-datos)
 5. [Arquitectura Flutter](#5-arquitectura-flutter)
 6. [Navegación](#6-navegación)
@@ -54,7 +55,8 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Logs en cliente | **`logger`** (Dart) | Logs con niveles (`debug`→`error`), pretty-print en dev, redirigibles a Sentry en prod |
 | Actualizaciones forzadas | **`upgrader`** | Diálogo nativo cuando existe una versión mínima requerida en la store |
 | Valoración en tienda | **`in_app_review`** | Prompt nativo de iOS/Android tras hitos clave (ej. primera semana completada) |
-| Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase |
+| Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase (solo iOS/Android) |
+| Caché offline (móvil) | **Drift** + **sqlite3_flutter_libs** | SQLite local en iOS/Android: espejo de recetario, planificador y lista de compra; cola de operaciones pendientes |
 | Almacenamiento seguro | **`flutter_secure_storage`** | Token de sesión en Keychain (iOS) / Keystore (Android) en lugar de SharedPreferences |
 
 ---
@@ -201,6 +203,22 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 **RF-SHOP-11** En modo hogar, todos los miembros ven la misma lista en tiempo real y pueden marcar/desmarcar ítems.
 
 > **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included` y no `is_to_taste`. Etiquetas con `formatShoppingItemLabel` (misma regla que ficha de receta). Al quitar: `_syncShoppingListRemove` borra por slot o resta cantidades en datos legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
+
+---
+
+### 3.6 Acceso offline (móvil)
+
+> **Alcance:** iOS y Android únicamente. En **web** no hay caché local ni modo offline (`kIsWeb`); la app requiere conexión a Supabase. La sesión sigue persistiendo en web vía `flutter_secure_storage` / almacenamiento del navegador según plataforma.
+
+**RF-OFF-01** Si el usuario **está autenticado** y pierde la conexión en móvil, la app muestra un diálogo informativo **una vez por sesión offline** (se resetea al volver online) con las limitaciones según el modo (individual vs hogar).  
+**RF-OFF-02** En **modo individual** sin conexión, el usuario puede **consultar y editar** recetario, planificador y lista de la compra; los cambios se encolan localmente y se sincronizan con Supabase al reconectar.  
+**RF-OFF-03** En **modo hogar** sin conexión, el usuario puede **consultar la última versión en caché** del recetario, planificador y lista de la compra, pero **no editar** (evita conflictos con Realtime de otros miembros).  
+**RF-OFF-04** Sin conexión, la pestaña **Explorar** queda deshabilitada.  
+**RF-OFF-05** Sin conexión, **no se pueden subir fotos** de receta (fail-closed, coherente con moderación server-side).  
+**RF-OFF-06** Un banner persistente «Sin conexión» se muestra en la parte superior de la app mientras no hay red (solo móvil).  
+**RF-OFF-07** Al recuperar la conexión, `SyncService` reproduce las operaciones pendientes en orden y resuelve IDs temporales locales.
+
+> **Nota de implementación — caché local:** `lib/core/local_db/` (`AppDatabase` Drift, `LocalCacheStore`, conexión nativa SQLite). Cola en tabla local `pending_operations`. Providers: `isOfflineProvider`, `canEditOfflineProvider`. UI: `OfflineEntryListener`, `ConnectivityBanner`, gating en formularios y `home_shell.dart`. **No** se usa Drift/WASM en web.
 
 ---
 
@@ -371,10 +389,13 @@ lib/
 │
 ├── core/
 │   ├── supabase/              # Cliente Supabase, constantes
+│   ├── local_db/              # AppDatabase (Drift), LocalCacheStore, conexión nativa
+│   ├── offline/               # isOfflineProvider, canEditOfflineProvider, excepciones
+│   ├── sync/                  # SyncService, cola pending_operations
 │   ├── moderation/            # PhotoModerationService, diálogos de rechazo
-│   ├── theme/                 # ThemeData, colores, tipografía
+│   ├── theme/                 # ThemeData, colores, tipografía, theme_mode_provider
 │   ├── utils/                 # Formatters, helpers, extensiones
-│   └── widgets/               # Widgets reutilizables (AppButton, AppCard…)
+│   └── widgets/               # ConnectivityBanner, OfflineEntryListener, etc.
 │
 ├── features/
 │   ├── auth/
@@ -432,7 +453,8 @@ lib/
 | `logger` | Logs estructurados con niveles en cliente |
 | `upgrader` | Diálogo de actualización forzada desde la store |
 | `in_app_review` | Prompt nativo de valoración en tienda |
-| `connectivity_plus` | Detección de estado de red |
+| `connectivity_plus` | Detección de estado de red (móvil) |
+| `drift` + `sqlite3_flutter_libs` | Caché SQLite offline en iOS/Android |
 | `flutter_secure_storage` | Almacenamiento seguro de tokens (Keychain / Keystore) |
 
 > **Web:** `supabase_flutter` arrastra `passkeys_web` (WebAuthn). Incluir `web/passkeys_bundle.js` en `index.html` antes de `flutter_bootstrap.js`.

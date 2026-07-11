@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
@@ -12,7 +13,7 @@ import 'package:meal_planner/features/shopping/presentation/shopping_provider.da
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final plannerRepositoryProvider = Provider<PlannerRepository>((ref) {
-  return PlannerRepository();
+  return PlannerRepository(ref.watch(localCacheStoreProvider));
 });
 
 final currentWeekProvider = StateProvider<DateTime>((ref) {
@@ -153,6 +154,7 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
         householdId: household?.id,
         isLeftover: isLeftover,
         notes: notes,
+        recipeTitle: recipeTitle,
       );
       state = AsyncData(await _repository.getSlotsForPlan(plan.id));
       await ref.read(shoppingItemsProvider.notifier).reload();
@@ -171,8 +173,10 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
       previous.where((item) => item.slot.id != slotId).toList(),
     );
 
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
+
     try {
-      await _repository.removeSlot(slotId);
+      await _repository.removeSlot(slotId, householdId: household?.id);
       state = AsyncData(await _repository.getSlotsForPlan(plan.id));
       await ref.read(shoppingItemsProvider.notifier).reload();
     } catch (_) {

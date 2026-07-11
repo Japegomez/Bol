@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/shopping/presentation/shopping_provider.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/add_edit_item_sheet.dart';
@@ -53,8 +54,12 @@ class ShoppingListScreen extends ConsumerWidget {
     await Share.share(text, sharePositionOrigin: origin);
   }
 
-  Future<void> _openAddSheet(BuildContext context, WidgetRef ref) async {
-    final data = await AddEditItemSheet.show(context);
+  Future<void> _openAddSheet(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool canEdit,
+  }) async {
+    final data = await AddEditItemSheet.show(context, canSave: canEdit);
     if (data == null) return;
 
     await ref.read(shoppingItemsProvider.notifier).addManualItem(
@@ -68,6 +73,7 @@ class ShoppingListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemsAsync = ref.watch(shoppingItemsProvider);
+    final canEdit = ref.watch(canEditOfflineProvider);
     final items = itemsAsync.valueOrNull ?? const <ShoppingItem>[];
     final grouped = groupShoppingItemsByCategory(items);
     final isEmpty = items.isEmpty;
@@ -82,7 +88,7 @@ class ShoppingListScreen extends ConsumerWidget {
             tooltip: 'Compartir lista',
           ),
           IconButton(
-            onPressed: isEmpty
+            onPressed: isEmpty || !canEdit
                 ? null
                 : () => _confirmClearList(context, ref),
             icon: const Icon(Icons.delete_sweep_outlined),
@@ -147,6 +153,7 @@ class ShoppingListScreen extends ConsumerWidget {
                 for (final item in entry.value)
                   ShoppingItemTile(
                     item: item,
+                    canEdit: canEdit,
                     onToggle: (checked) => ref
                         .read(shoppingItemsProvider.notifier)
                         .toggleItem(item.id, checked),
@@ -169,7 +176,7 @@ class ShoppingListScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddSheet(context, ref),
+        onPressed: canEdit ? () => _openAddSheet(context, ref, canEdit: canEdit) : null,
         tooltip: 'Añadir ítem',
         child: const Icon(Icons.add),
       ),

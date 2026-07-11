@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 11/07/2026 — filtro multi-etiqueta (recetario, planificador, explorar), etiquetas de tipo de plato, modo oscuro manual en Perfil, limpieza UI planificador
+> Actualizado: 11/07/2026 — acceso offline en móvil (Drift + sync), filtro multi-etiqueta, modo oscuro manual, limpieza UI planificador
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -15,6 +15,7 @@
 | Fase 4 — Planificador   | Completada | Vista semanal vertical, slots, drag-and-drop, sobras, texto libre, Realtime |
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
+| Fase 7 — Acceso offline | Completada (código) | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
 
 ---
 
@@ -427,11 +428,46 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [ ] Prompt de valoración en tienda (`in_app_review`) tras completar la primera semana planificada
   - `ReviewPromptService` implementado; falta invocar `onFirstWeekCompleted()` desde el planificador
   - Cooldown 6 días en secure storage; fallback manual «Valorar la app» en ajustes (pendiente)
-- [x] Banner «Sin conexión» persistente cuando no hay red (`ConnectivityBanner` en `app.dart`)
+- [x] Banner «Sin conexión» persistente cuando no hay red (`ConnectivityBanner` en `app.dart`; solo móvil, desactivado en web)
 - [x] Diálogo de actualización de versión (`UpgradeAlert` / `upgrader` en `app.dart`)
 - [x] Modo oscuro manual desde Perfil (`SwitchListTile` en `profile_screen.dart`)
   - `ThemeModeNotifier` (`theme_mode_provider.dart`) persiste preferencia en `shared_preferences`; por defecto sigue el modo del sistema hasta que el usuario lo cambia
   - `AppTheme.light`/`AppTheme.dark` cacheados como `static final` (evita recalcular `ColorScheme.fromSeed` en cada rebuild; corrige lag al cambiar de tema en web)
+
+---
+
+## Fase 7 — Acceso offline (móvil)
+
+> Rama `feature/offline-access`. Caché local con **Drift** + SQLite nativo (`sqlite3_flutter_libs`). **Web:** sin base de datos local ni modo offline (`kIsWeb`); probar solo en dispositivo/emulador.
+
+### Infraestructura local
+
+- [x] Dependencias: `drift`, `drift_dev`, `build_runner`, `sqlite3_flutter_libs`, `path_provider`, `path`, `uuid`
+- [x] `AppDatabase` con tablas espejo: recetas, ingredientes, pasos, nutrición, planes, slots, listas e ítems de compra
+- [x] Tablas `pending_operations` (cola de sync) e `id_mappings` (IDs temporales → reales)
+- [x] `LocalCacheStore` + providers Riverpod (`local_db_provider.dart`)
+- [x] Conexión nativa condicional (`database_connection_native.dart`); stub en plataformas sin FFI
+- [x] Helpers: `NetworkStatus`, `isOfflineProvider`, `canEditOfflineProvider`
+- [x] `SyncService`: drena `pending_operations` al reconectar e invalida providers afectados
+
+### Repositorios local-first
+
+- [x] `RecipesRepository`: lectura con fallback a caché; escritura offline en modo individual (sin foto)
+- [x] `PlannerRepository`: slots y sync de lista de compra offline en modo individual
+- [x] `ShoppingRepository`: CRUD offline en modo individual
+
+### UI y reglas de negocio
+
+- [x] Popup «Modo sin conexión» al entrar offline (`OfflineEntryListener`; texto distinto hogar vs individual; una vez por sesión offline)
+- [x] Pestaña **Explorar** deshabilitada offline (`home_shell.dart`)
+- [x] Modo **hogar** offline: solo lectura (sin edición; evita conflictos Realtime)
+- [x] Fotos de receta bloqueadas offline (fail-closed, alineado con moderación)
+- [x] Gating de edición en formularios, planificador, lista de compra (`canEditOfflineProvider`)
+- [x] Tests: codec de formulario + helper de conectividad (`test/offline_support_test.dart`)
+
+### Pendiente
+
+- [ ] Validación manual en móvil: modo avión → lectura/edición caché → reconexión → sync (individual y hogar)
 
 ---
 
@@ -501,7 +537,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-2. **Push de `develop`** y release con Recetea + glosario + filtro multi-etiqueta + modo oscuro + moderación de fotos (build TestFlight / Play).
-3. **Onboarding** o tutorial para nuevos usuarios (backlog).
-4. **Tests unitarios** de escalado de ingredientes y consolidación de lista de la compra.
+1. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
+2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
+3. **Merge `feature/offline-access` → `develop`** y release TestFlight / Play con offline + multi-etiqueta + modo oscuro.
+4. **Onboarding** o tutorial para nuevos usuarios (backlog).
+5. **Tests unitarios** de escalado de ingredientes y consolidación de lista de la compra.

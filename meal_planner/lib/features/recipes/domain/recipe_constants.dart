@@ -19,6 +19,9 @@ const ingredientCategories = [
 ];
 
 const suggestedRecipeTags = [
+  'entrante',
+  'plato principal',
+  'postre',
   'vegetariana',
   'vegano',
   'pescetariana',

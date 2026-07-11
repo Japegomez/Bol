@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/servings_dialog.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
 class RecipePickerSheet extends ConsumerStatefulWidget {
   const RecipePickerSheet({
@@ -21,46 +23,26 @@ class RecipePickerSheet extends ConsumerStatefulWidget {
 
 class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
   final _searchController = TextEditingController();
-  List<Recipe> _filteredRecipes = [];
-  bool _isSearching = false;
+  Set<String> _selectedTags = {};
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_onSearchChanged);
+    _searchController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    _searchController
-      ..removeListener(_onSearchChanged)
-      ..dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _onSearchChanged() async {
-    final query = _searchController.text;
-    if (query.trim().isEmpty) {
-      setState(() {
-        _isSearching = false;
-        _filteredRecipes = [];
-      });
-      return;
-    }
-
-    setState(() => _isSearching = true);
-    final results = await ref.read(recipesProvider.notifier).search(query);
-    if (!mounted) return;
-    setState(() {
-      _filteredRecipes = results;
-      _isSearching = false;
-    });
-  }
-
   Future<void> _selectRecipe(Recipe recipe) async {
+    final canEdit = ref.read(canEditOfflineProvider);
     final result = await showServingsDialog(
       context,
       defaultServings: recipe.servings,
+      canConfirm: canEdit,
     );
 
     if (result == null || !mounted) return;
@@ -78,7 +60,8 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
   }
 
   Future<void> _addTextEntry() async {
-    final result = await showAddTextDialog(context);
+    final canEdit = ref.read(canEditOfflineProvider);
+    final result = await showAddTextDialog(context, canConfirm: canEdit);
     if (result == null || !mounted) return;
 
     await ref.read(planSlotsProvider.notifier).addSlot(
@@ -96,9 +79,8 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
   @override
   Widget build(BuildContext context) {
     final recipesAsync = ref.watch(recipesProvider);
-    final displayRecipes = _searchController.text.trim().isEmpty
-        ? recipesAsync.valueOrNull ?? []
-        : _filteredRecipes;
+    final hasActiveFilter =
+        _searchController.text.trim().isNotEmpty || _selectedTags.isNotEmpty;
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -133,8 +115,12 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
               ),
             ),
           ),
+          RecipeTagFilterBar(
+            selectedTags: _selectedTags,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            onSelectionChanged: (tags) => setState(() => _selectedTags = tags),
+          ),
           const SizedBox(height: 4),
-          // Free-text entry option
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: ListTile(
@@ -152,17 +138,19 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
             child: recipesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => Center(child: Text('Error: $error')),
-              data: (_) {
-                if (_isSearching) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+              data: (recipes) {
+                final displayRecipes = filterRecipesByQueryAndTags(
+                  recipes,
+                  query: _searchController.text,
+                  tags: _selectedTags,
+                );
 
                 if (displayRecipes.isEmpty) {
                   return Center(
                     child: Text(
-                      _searchController.text.trim().isEmpty
-                          ? 'No tienes recetas. Créalas en el recetario.'
-                          : 'Sin resultados',
+                      hasActiveFilter
+                          ? 'Sin resultados'
+                          : 'No tienes recetas. Créalas en el recetario.',
                     ),
                   );
                 }

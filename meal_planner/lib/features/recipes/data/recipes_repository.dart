@@ -1,18 +1,28 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/local_db/local_cache_store.dart';
+import 'package:meal_planner/core/local_db/local_db_provider.dart';
+import 'package:meal_planner/core/offline/network_status.dart';
+import 'package:meal_planner/core/offline/offline_exceptions.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
-import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
+import 'package:meal_planner/core/sync/pending_operation_types.dart';
+import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RecipesRepository {
+  RecipesRepository(this._cache);
+
   static const _photoBucket = 'recipe-photos';
   static const _signedUrlExpiry = 3600;
+
+  final LocalCacheStore _cache;
 
   String get _userId {
     final id = supabase.auth.currentUser?.id;
@@ -20,21 +30,52 @@ class RecipesRepository {
     return id;
   }
 
-  Future<List<Recipe>> fetchRecipes({String? search, String? tag}) async {
-    var query = supabase
-        .from(Recipe.table_name)
-        .select()
-        .eq(Recipe.c_userId, _userId);
-
-    if (search != null && search.trim().isNotEmpty) {
-      query = query.ilike(Recipe.c_title, '%${search.trim()}%');
+  Future<void> _guardOfflineMutation({String? householdId}) async {
+    if (householdId != null && !await NetworkStatus.isOnline) {
+      throw OfflineEditBlockedException();
     }
-    if (tag != null && tag.isNotEmpty) {
-      query = query.contains(Recipe.c_tags, [tag]);
+  }
+
+  Future<void> _guardOfflinePhoto(RecipeFormData form) async {
+    if (form.pendingPhoto != null && !await NetworkStatus.isOnline) {
+      throw OfflinePhotoBlockedException();
+    }
+  }
+
+  Future<List<Recipe>> fetchRecipes({String? search, Set<String>? tags}) async {
+    if (await NetworkStatus.isOnline) {
+      try {
+        var query = supabase
+            .from(Recipe.table_name)
+            .select()
+            .eq(Recipe.c_userId, _userId);
+
+        if (search != null && search.trim().isNotEmpty) {
+          query = query.ilike(Recipe.c_title, '%${search.trim()}%');
+        }
+        if (tags != null && tags.isNotEmpty) {
+          query = query.contains(Recipe.c_tags, tags.toList());
+        }
+
+        final data = await query.order(Recipe.c_createdAt, ascending: false);
+        final recipes =
+            Recipe.converter(List<Map<String, dynamic>>.from(data));
+        await _cache.cacheRecipes(recipes);
+        return recipes;
+      } catch (_) {
+        return _cache.getRecipes(
+          userId: _userId,
+          search: search,
+          tags: tags,
+        );
+      }
     }
 
-    final data = await query.order(Recipe.c_createdAt, ascending: false);
-    return Recipe.converter(List<Map<String, dynamic>>.from(data));
+    return _cache.getRecipes(
+      userId: _userId,
+      search: search,
+      tags: tags,
+    );
   }
 
   Future<Set<String>> fetchAllTags() async {
@@ -47,6 +88,30 @@ class RecipesRepository {
   }
 
   Future<RecipeDetail> fetchRecipeDetail(String id) async {
+    if (await NetworkStatus.isOnline) {
+      try {
+        final detail = await _fetchRecipeDetailRemote(id);
+        await _cache.saveRecipeDetail(
+          recipe: detail.recipe,
+          ingredients: detail.ingredients,
+          steps: detail.steps,
+          nutrition: detail.nutrition,
+          forkedFromId: detail.forkedFromId,
+        );
+        return detail;
+      } catch (_) {
+        final cached = await _cache.getRecipeDetail(id);
+        if (cached != null) return cached;
+        rethrow;
+      }
+    }
+
+    final cached = await _cache.getRecipeDetail(id);
+    if (cached != null) return cached;
+    throw Exception('Receta no encontrada');
+  }
+
+  Future<RecipeDetail> _fetchRecipeDetailRemote(String id) async {
     final recipeData = await supabase
         .from(Recipe.table_name)
         .select()
@@ -63,7 +128,6 @@ class RecipesRepository {
     );
     final forkedFromId = recipeData['forked_from_id']?.toString();
 
-    // Fetch ingredients, steps, nutrition and photo URL in parallel.
     final results = await Future.wait<dynamic>(<Future<dynamic>>[
       supabase
           .from(Ingredient.table_name)
@@ -109,13 +173,37 @@ class RecipesRepository {
   Future<String?> resolvePhotoUrl(String? photoPath) async {
     if (photoPath == null || photoPath.isEmpty) return null;
     if (photoPath.startsWith('http')) return photoPath;
+    if (!await NetworkStatus.isOnline) return null;
 
     return supabase.storage
         .from(_photoBucket)
         .createSignedUrl(photoPath, _signedUrlExpiry);
   }
 
-  Future<String> createRecipe(RecipeFormData form) async {
+  Future<String> createRecipe(
+    RecipeFormData form, {
+    String? householdId,
+  }) async {
+    await _guardOfflineMutation(householdId: householdId);
+    await _guardOfflinePhoto(form);
+
+    if (await NetworkStatus.isOnline) {
+      final id = await createRecipeRemote(form);
+      final detail = await _fetchRecipeDetailRemote(id);
+      await _cache.saveRecipeDetail(
+        recipe: detail.recipe,
+        ingredients: detail.ingredients,
+        steps: detail.steps,
+        nutrition: detail.nutrition,
+        forkedFromId: detail.forkedFromId,
+      );
+      return id;
+    }
+
+    return _createRecipeOffline(form);
+  }
+
+  Future<String> createRecipeRemote(RecipeFormData form) async {
     final validationError = form.validate();
     if (validationError != null) throw Exception(validationError);
 
@@ -142,6 +230,39 @@ class RecipesRepository {
     return recipeId;
   }
 
+  Future<String> _createRecipeOffline(RecipeFormData form) async {
+    final validationError = form.validate();
+    if (validationError != null) throw Exception(validationError);
+
+    final tempId = newLocalId();
+    final now = DateTime.now();
+    final built = _buildModelsFromForm(
+      form: form,
+      recipeId: tempId,
+      userId: _userId,
+      now: now,
+    );
+
+    await _cache.saveRecipeDetail(
+      recipe: built.recipe,
+      ingredients: built.ingredients,
+      steps: built.steps,
+      nutrition: built.nutrition,
+      forkedFromId: form.forkedFromId,
+    );
+
+    await _cache.enqueueOperation(
+      entityType: PendingEntity.recipe,
+      opType: PendingOp.create,
+      payload: {
+        'tempId': tempId,
+        'form': RecipeFormDataCodec.toJson(form),
+      },
+    );
+
+    return tempId;
+  }
+
   Future<void> setRecipeVisibility(String id, bool isPublic) async {
     if (isPublic) {
       final recipeData = await supabase
@@ -152,8 +273,37 @@ class RecipesRepository {
           .maybeSingle();
 
       if (recipeData?['forked_from_id'] != null) {
-        throw Exception('Las recetas guardadas de otros usuarios no se pueden publicar');
+        throw Exception(
+          'Las recetas guardadas de otros usuarios no se pueden publicar',
+        );
       }
+    }
+
+    if (!await NetworkStatus.isOnline) {
+      final detail = await _cache.getRecipeDetail(id);
+      if (detail == null) throw Exception('Receta no encontrada');
+      final updated = Recipe(
+        id: detail.recipe.id,
+        userId: detail.recipe.userId,
+        title: detail.recipe.title,
+        photoUrl: detail.recipe.photoUrl,
+        servings: detail.recipe.servings,
+        prepTime: detail.recipe.prepTime,
+        cookTime: detail.recipe.cookTime,
+        tags: detail.recipe.tags,
+        isPublic: isPublic,
+        createdAt: detail.recipe.createdAt,
+        updatedAt: DateTime.now(),
+        tips: detail.recipe.tips,
+      );
+      await _cache.saveRecipeDetail(
+        recipe: updated,
+        ingredients: detail.ingredients,
+        steps: detail.steps,
+        nutrition: detail.nutrition,
+        forkedFromId: detail.forkedFromId,
+      );
+      return;
     }
 
     await supabase
@@ -168,15 +318,58 @@ class RecipesRepository {
     required String recipeId,
     required bool isIncluded,
   }) async {
-    await supabase
-        .from(Ingredient.table_name)
-        .update({Ingredient.c_isIncluded: isIncluded})
-        .eq(Ingredient.c_id, ingredientId)
-        .eq(Ingredient.c_recipeId, recipeId)
-        .eq(Ingredient.c_isOptional, true);
+    if (await NetworkStatus.isOnline) {
+      await supabase
+          .from(Ingredient.table_name)
+          .update({Ingredient.c_isIncluded: isIncluded})
+          .eq(Ingredient.c_id, ingredientId)
+          .eq(Ingredient.c_recipeId, recipeId)
+          .eq(Ingredient.c_isOptional, true);
+    }
+
+    final detail = await _cache.getRecipeDetail(recipeId);
+    if (detail == null) return;
+    final ingredients = detail.ingredients
+        .map(
+          (ingredient) => ingredient.id == ingredientId
+              ? ingredient.copyWith(isIncluded: isIncluded)
+              : ingredient,
+        )
+        .toList();
+    await _cache.saveRecipeDetail(
+      recipe: detail.recipe,
+      ingredients: ingredients,
+      steps: detail.steps,
+      nutrition: detail.nutrition,
+      forkedFromId: detail.forkedFromId,
+    );
   }
 
-  Future<void> updateRecipe(String id, RecipeFormData form) async {
+  Future<void> updateRecipe(
+    String id,
+    RecipeFormData form, {
+    String? householdId,
+  }) async {
+    await _guardOfflineMutation(householdId: householdId);
+    await _guardOfflinePhoto(form);
+
+    if (await NetworkStatus.isOnline) {
+      await updateRecipeRemote(id, form);
+      final detail = await _fetchRecipeDetailRemote(id);
+      await _cache.saveRecipeDetail(
+        recipe: detail.recipe,
+        ingredients: detail.ingredients,
+        steps: detail.steps,
+        nutrition: detail.nutrition,
+        forkedFromId: detail.forkedFromId,
+      );
+      return;
+    }
+
+    await _updateRecipeOffline(id, form);
+  }
+
+  Future<void> updateRecipeRemote(String id, RecipeFormData form) async {
     final validationError = form.validate();
     if (validationError != null) throw Exception(validationError);
 
@@ -200,8 +393,55 @@ class RecipesRepository {
     await _syncPhoto(id, form);
   }
 
-  Future<void> deleteRecipe(String id) async {
-    final detail = await fetchRecipeDetail(id);
+  Future<void> _updateRecipeOffline(String id, RecipeFormData form) async {
+    final validationError = form.validate();
+    if (validationError != null) throw Exception(validationError);
+
+    final now = DateTime.now();
+    final built = _buildModelsFromForm(
+      form: form,
+      recipeId: id,
+      userId: _userId,
+      now: now,
+    );
+
+    await _cache.saveRecipeDetail(
+      recipe: built.recipe,
+      ingredients: built.ingredients,
+      steps: built.steps,
+      nutrition: built.nutrition,
+      forkedFromId: form.forkedFromId,
+    );
+
+    await _cache.enqueueOperation(
+      entityType: PendingEntity.recipe,
+      opType: PendingOp.update,
+      payload: {
+        'recipeId': id,
+        'form': RecipeFormDataCodec.toJson(form),
+      },
+    );
+  }
+
+  Future<void> deleteRecipe(String id, {String? householdId}) async {
+    await _guardOfflineMutation(householdId: householdId);
+
+    if (await NetworkStatus.isOnline) {
+      await deleteRecipeRemote(id);
+      await _cache.deleteRecipe(id);
+      return;
+    }
+
+    await _cache.deleteRecipe(id);
+    await _cache.enqueueOperation(
+      entityType: PendingEntity.recipe,
+      opType: PendingOp.delete,
+      payload: {'recipeId': id},
+    );
+  }
+
+  Future<void> deleteRecipeRemote(String id) async {
+    final detail = await _fetchRecipeDetailRemote(id);
     if (detail.recipe.photoUrl != null) {
       await _deletePhotoFile(detail.recipe.photoUrl!);
     }
@@ -211,6 +451,84 @@ class RecipesRepository {
         .delete()
         .eq(Recipe.c_id, id)
         .eq(Recipe.c_userId, _userId);
+  }
+
+  _BuiltRecipe _buildModelsFromForm({
+    required RecipeFormData form,
+    required String recipeId,
+    required String userId,
+    required DateTime now,
+  }) {
+    final recipe = Recipe(
+      id: recipeId,
+      userId: userId,
+      title: form.title.trim(),
+      photoUrl: form.removePhoto ? null : form.existingPhotoPath,
+      servings: form.servings,
+      prepTime: form.prepTime,
+      cookTime: form.cookTime,
+      tags: List<String>.from(form.tags),
+      isPublic: form.canPublish ? form.isPublic : false,
+      createdAt: now,
+      updatedAt: now,
+      tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
+    );
+
+    final ingredients = form.validIngredients
+        .asMap()
+        .entries
+        .map(
+          (entry) => Ingredient(
+            id: newLocalId(),
+            recipeId: recipeId,
+            name: entry.value.name.trim(),
+            quantity: entry.value.isToTaste ? null : entry.value.quantity,
+            unit: entry.value.isToTaste
+                ? null
+                : normalizeUnit(entry.value.effectiveUnit),
+            category: entry.value.category,
+            position: entry.key,
+            isOptional: entry.value.isOptional,
+            isIncluded:
+                entry.value.isOptional ? entry.value.isIncluded : true,
+            isToTaste: entry.value.isToTaste,
+          ),
+        )
+        .toList();
+
+    final steps = form.validSteps
+        .asMap()
+        .entries
+        .map(
+          (entry) => RecipeStep(
+            id: newLocalId(),
+            recipeId: recipeId,
+            position: entry.key,
+            description: entry.value.description.trim(),
+            isOptional: entry.value.isOptional,
+          ),
+        )
+        .toList();
+
+    NutritionInfo? nutrition;
+    if (form.nutrition.hasAnyValue) {
+      nutrition = NutritionInfo(
+        id: newLocalId(),
+        recipeId: recipeId,
+        calories: form.nutrition.calories,
+        protein: form.nutrition.protein,
+        carbohydrates: form.nutrition.carbohydrates,
+        fat: form.nutrition.fat,
+        fiber: form.nutrition.fiber,
+      );
+    }
+
+    return _BuiltRecipe(
+      recipe: recipe,
+      ingredients: ingredients,
+      steps: steps,
+      nutrition: nutrition,
+    );
   }
 
   Future<void> _syncChildren(String recipeId, RecipeFormData form) async {
@@ -237,15 +555,17 @@ class RecipesRepository {
                   (entry) => Ingredient.insert(
                     recipeId: recipeId,
                     name: entry.value.name.trim(),
-                    quantity: entry.value.isToTaste ? null : entry.value.quantity,
+                    quantity:
+                        entry.value.isToTaste ? null : entry.value.quantity,
                     unit: entry.value.isToTaste
                         ? null
                         : normalizeUnit(entry.value.effectiveUnit),
                     category: entry.value.category,
                     position: entry.key,
                     isOptional: entry.value.isOptional,
-                    isIncluded:
-                        entry.value.isOptional ? entry.value.isIncluded : true,
+                    isIncluded: entry.value.isOptional
+                        ? entry.value.isIncluded
+                        : true,
                     isToTaste: entry.value.isToTaste,
                   ),
                 )
@@ -387,12 +707,12 @@ class RecipesRepository {
                       predefinedUnits.contains(normalizedUnit);
                   return IngredientFormItem(
                     name: ingredient.name,
-                    quantity: ingredient.isToTaste ? null : ingredient.quantity,
+                    quantity:
+                        ingredient.isToTaste ? null : ingredient.quantity,
                     unit: isPredefined ? normalizedUnit : null,
                     category: ingredient.category ?? 'Carnes y pescados',
                     customUnit: isPredefined ? '' : (normalizedUnit ?? ''),
-                    useCustomUnit:
-                        normalizedUnit != null && !isPredefined,
+                    useCustomUnit: normalizedUnit != null && !isPredefined,
                     isOptional: ingredient.isOptional,
                     isIncluded: ingredient.isIncluded,
                     isToTaste: ingredient.isToTaste,
@@ -423,3 +743,21 @@ class RecipesRepository {
     );
   }
 }
+
+class _BuiltRecipe {
+  const _BuiltRecipe({
+    required this.recipe,
+    required this.ingredients,
+    required this.steps,
+    this.nutrition,
+  });
+
+  final Recipe recipe;
+  final List<Ingredient> ingredients;
+  final List<RecipeStep> steps;
+  final NutritionInfo? nutrition;
+}
+
+final recipesRepositoryProvider = Provider<RecipesRepository>((ref) {
+  return RecipesRepository(ref.watch(localCacheStoreProvider));
+});

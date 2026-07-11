@@ -10,10 +10,6 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/shopping/data/shopping_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final shoppingRepositoryProvider = Provider<ShoppingRepository>((ref) {
-  return ShoppingRepository();
-});
-
 final activeShoppingListProvider =
     FutureProvider.autoDispose<ShoppingList>((ref) async {
   ref.watch(currentHouseholdProvider);
@@ -105,6 +101,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
 
   Future<void> toggleItem(String id, bool isChecked) async {
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = AsyncData(
       previous.map((item) {
@@ -116,7 +113,11 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
     );
 
     try {
-      await _repository.toggleItem(id, isChecked);
+      await _repository.toggleItem(
+        id,
+        isChecked,
+        householdId: household?.id,
+      );
     } catch (_) {
       state = AsyncData(previous);
     }
@@ -130,6 +131,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
   }) async {
     final list = await ref.read(activeShoppingListProvider.future);
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     try {
       final created = await _repository.addManualItem(
@@ -138,6 +140,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
         quantity: quantity,
         unit: unit,
         category: category,
+        householdId: household?.id,
       );
       state = AsyncData([...previous, created]);
     } catch (_) {
@@ -153,6 +156,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
     String? category,
   }) async {
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = AsyncData(
       previous.map((item) {
@@ -175,6 +179,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
         quantity: quantity,
         unit: unit,
         category: category,
+        householdId: household?.id,
       );
       state = AsyncData(
         previous.map((item) => item.id == id ? updated : item).toList(),
@@ -186,11 +191,12 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
 
   Future<void> deleteItem(String id) async {
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = AsyncData(previous.where((item) => item.id != id).toList());
 
     try {
-      await _repository.deleteItem(id);
+      await _repository.deleteItem(id, householdId: household?.id);
     } catch (_) {
       state = AsyncData(previous);
     }
@@ -199,11 +205,12 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
   Future<void> clearList() async {
     final list = await ref.read(activeShoppingListProvider.future);
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = const AsyncData([]);
 
     try {
-      await _repository.clearList(list.id);
+      await _repository.clearList(list.id, householdId: household?.id);
     } catch (_) {
       state = AsyncData(previous);
     }

@@ -21,15 +21,16 @@ class SocialRepository {
 
   Future<List<PublicRecipeSummary>> fetchPublicRecipes({
     String? search,
-    String? tag,
+    Set<String>? tags,
     String sort = 'recent',
     int page = 0,
   }) async {
+    final tagList = tags == null || tags.isEmpty ? null : tags.toList();
     final data = await supabase.rpc<List<dynamic>>(
       'list_public_recipes',
       params: {
         'p_search': search?.trim().isEmpty ?? true ? null : search!.trim(),
-        'p_tag': tag,
+        'p_tags': tagList,
         'p_sort': sort,
         'p_limit': _pageSize,
         'p_offset': page * _pageSize,

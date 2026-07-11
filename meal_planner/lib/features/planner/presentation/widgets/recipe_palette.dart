@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
 /// Side panel that lists recipe cards which can be dragged onto planner slots.
 class RecipePalette extends ConsumerStatefulWidget {
@@ -24,6 +25,7 @@ class RecipePalette extends ConsumerStatefulWidget {
 class _RecipePaletteState extends ConsumerState<RecipePalette> {
   final _searchController = TextEditingController();
   String _query = '';
+  Set<String> _selectedTags = {};
 
   @override
   void initState() {
@@ -40,10 +42,11 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
   }
 
   List<Recipe> _filter(List<Recipe> recipes) {
-    if (_query.isEmpty) return recipes;
-    return recipes
-        .where((recipe) => recipe.title.toLowerCase().contains(_query))
-        .toList();
+    return filterRecipesByQueryAndTags(
+      recipes,
+      query: _query,
+      tags: _selectedTags,
+    );
   }
 
   @override
@@ -89,6 +92,11 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                 ),
               ),
             ),
+            RecipeTagFilterBar(
+              selectedTags: _selectedTags,
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              onSelectionChanged: (tags) => setState(() => _selectedTags = tags),
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: recipesAsync.when(
@@ -102,14 +110,16 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                 ),
                 data: (recipes) {
                   final filtered = _filter(recipes);
+                  final hasActiveFilter =
+                      _query.isNotEmpty || _selectedTags.isNotEmpty;
                   if (filtered.isEmpty) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          recipes.isEmpty
-                              ? 'No tienes recetas. Créalas en el recetario.'
-                              : 'Sin resultados',
+                          hasActiveFilter
+                              ? 'Sin resultados'
+                              : 'No tienes recetas. Créalas en el recetario.',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),

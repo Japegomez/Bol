@@ -10,6 +10,7 @@ class ShoppingItemTile extends StatelessWidget {
     required this.onToggle,
     required this.onEdit,
     required this.onDelete,
+    this.canEdit = true,
     super.key,
   });
 
@@ -17,6 +18,7 @@ class ShoppingItemTile extends StatelessWidget {
   final ValueChanged<bool> onToggle;
   final Future<void> Function(Map<String, dynamic> data) onEdit;
   final VoidCallback onDelete;
+  final bool canEdit;
 
   String get _label => formatShoppingItemLabel(
         name: item.name,
@@ -49,7 +51,11 @@ class ShoppingItemTile extends StatelessWidget {
   }
 
   Future<void> _openEdit(BuildContext context) async {
-    final data = await AddEditItemSheet.show(context, item: item);
+    final data = await AddEditItemSheet.show(
+      context,
+      item: item,
+      canSave: canEdit,
+    );
     if (data != null) {
       await onEdit(data);
     }
@@ -65,40 +71,46 @@ class ShoppingItemTile extends StatelessWidget {
 
     return Slidable(
       key: ValueKey(item.id),
-      startActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => _openEdit(context),
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
-            icon: Icons.edit_outlined,
-            label: 'Editar',
-          ),
-        ],
-      ),
-      endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => _confirmDelete(context),
-            backgroundColor: colorScheme.error,
-            foregroundColor: colorScheme.onError,
-            icon: Icons.delete_outline,
-            label: 'Eliminar',
-          ),
-        ],
-      ),
+      startActionPane: canEdit
+          ? ActionPane(
+              motion: const DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) => _openEdit(context),
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  icon: Icons.edit_outlined,
+                  label: 'Editar',
+                ),
+              ],
+            )
+          : null,
+      endActionPane: canEdit
+          ? ActionPane(
+              motion: const DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) => _confirmDelete(context),
+                  backgroundColor: colorScheme.error,
+                  foregroundColor: colorScheme.onError,
+                  icon: Icons.delete_outline,
+                  label: 'Eliminar',
+                ),
+              ],
+            )
+          : null,
       child: ListTile(
         leading: Checkbox(
           value: item.isChecked,
-          onChanged: (value) {
-            if (value != null) onToggle(value);
-          },
+          onChanged: canEdit
+              ? (value) {
+                  if (value != null) onToggle(value);
+                }
+              : null,
         ),
         title: Text(_label, style: textStyle),
-        onTap: () => onToggle(!item.isChecked),
-        onLongPress: () => _openEdit(context),
+        onTap: canEdit ? () => onToggle(!item.isChecked) : null,
+        onLongPress: canEdit ? () => _openEdit(context) : null,
       ),
     );
   }

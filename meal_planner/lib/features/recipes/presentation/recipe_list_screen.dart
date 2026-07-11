@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {
   const RecipeListScreen({super.key});
@@ -37,11 +38,10 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
   @override
   Widget build(BuildContext context) {
     final recipesAsync = ref.watch(recipeListProvider);
-    final tagsAsync = ref.watch(recipeTagsProvider);
     final filter = ref.watch(recipeListFilterProvider);
-    final activeTag = filter.tag;
+    final activeTags = filter.tags;
     final hasActiveFilter =
-        filter.search.trim().isNotEmpty || filter.tag != null;
+        filter.search.trim().isNotEmpty || filter.tags.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recetario')),
@@ -85,49 +85,13 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   : null,
             ),
           ),
-          tagsAsync.when(
-            data: (tags) {
-              if (tags.isEmpty) return const SizedBox.shrink();
-              return SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: const Text('Todas'),
-                        selected: activeTag == null,
-                        onSelected: (_) {
-                          ref.read(recipeListFilterProvider.notifier).state =
-                              ref
-                                  .read(recipeListFilterProvider)
-                                  .copyWith(clearTag: true);
-                        },
-                      ),
-                    ),
-                    ...tags.map(
-                      (tag) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(tag),
-                          selected: activeTag == tag,
-                          onSelected: (_) {
-                            ref.read(recipeListFilterProvider.notifier).state =
-                                ref
-                                    .read(recipeListFilterProvider)
-                                    .copyWith(tag: tag);
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+          RecipeTagFilterBar(
+            selectedTags: activeTags,
+            onSelectionChanged: (tags) {
+              ref.read(recipeListFilterProvider.notifier).state = ref
+                  .read(recipeListFilterProvider)
+                  .copyWith(tags: tags);
             },
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
           ),
           Expanded(
             child: recipesAsync.when(

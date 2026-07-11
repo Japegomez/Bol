@@ -90,13 +90,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Planificador'),
-        actions: [
-          IconButton(
-            icon: Icon(_paletteOpen ? Icons.menu_book : Icons.menu_book_outlined),
-            tooltip: _paletteOpen ? 'Ocultar recetario' : 'Mostrar recetario',
-            onPressed: _togglePalette,
-          ),
-        ],
       ),
       body: planAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

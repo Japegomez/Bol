@@ -12,30 +12,39 @@ class ServingsResult {
 Future<ServingsResult?> showServingsDialog(
   BuildContext context, {
   required int defaultServings,
+  bool canConfirm = true,
 }) {
   return showDialog<ServingsResult>(
     context: context,
-    builder: (context) => _ServingsDialog(defaultServings: defaultServings),
+    builder: (context) => _ServingsDialog(
+      defaultServings: defaultServings,
+      canConfirm: canConfirm,
+    ),
   );
 }
 
 /// Shown when the user taps "Añadir texto" in the recipe picker.
 /// Returns notes text + servings, or null if cancelled.
 Future<({String notes, int servings})?> showAddTextDialog(
-  BuildContext context,
-) {
+  BuildContext context, {
+  bool canConfirm = true,
+}) {
   return showDialog<({String notes, int servings})>(
     context: context,
-    builder: (context) => const _AddTextDialog(),
+    builder: (context) => _AddTextDialog(canConfirm: canConfirm),
   );
 }
 
 // ─── Servings dialog ──────────────────────────────────────────────────────────
 
 class _ServingsDialog extends StatefulWidget {
-  const _ServingsDialog({required this.defaultServings});
+  const _ServingsDialog({
+    required this.defaultServings,
+    this.canConfirm = true,
+  });
 
   final int defaultServings;
+  final bool canConfirm;
 
   @override
   State<_ServingsDialog> createState() => _ServingsDialogState();
@@ -87,7 +96,7 @@ class _ServingsDialogState extends State<_ServingsDialog> {
           child: const Text('Cancelar'),
         ),
         FilledButton(
-          onPressed: _confirm,
+          onPressed: widget.canConfirm ? _confirm : null,
           child: const Text('Confirmar'),
         ),
       ],
@@ -98,7 +107,9 @@ class _ServingsDialogState extends State<_ServingsDialog> {
 // ─── Add-text dialog ──────────────────────────────────────────────────────────
 
 class _AddTextDialog extends StatefulWidget {
-  const _AddTextDialog();
+  const _AddTextDialog({this.canConfirm = true});
+
+  final bool canConfirm;
 
   @override
   State<_AddTextDialog> createState() => _AddTextDialogState();
@@ -162,7 +173,7 @@ class _AddTextDialogState extends State<_AddTextDialog> {
           child: const Text('Cancelar'),
         ),
         FilledButton(
-          onPressed: _confirm,
+          onPressed: widget.canConfirm ? _confirm : null,
           child: const Text('Añadir'),
         ),
       ],

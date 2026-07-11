@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
@@ -26,9 +27,11 @@ class MealSlot extends ConsumerWidget {
     WidgetRef ref,
     Recipe recipe,
   ) async {
+    final canEdit = ref.read(canEditOfflineProvider);
     final result = await showServingsDialog(
       context,
       defaultServings: recipe.servings,
+      canConfirm: canEdit,
     );
     if (result == null || !context.mounted) return;
 
@@ -87,10 +90,12 @@ class MealSlot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final canEdit = ref.watch(canEditOfflineProvider);
 
     return DragTarget<Recipe>(
-      onAcceptWithDetails: (details) =>
-          _addRecipe(context, ref, details.data),
+      onAcceptWithDetails: canEdit
+          ? (details) => _addRecipe(context, ref, details.data)
+          : null,
       builder: (context, candidate, rejected) {
         final isHovering = candidate.isNotEmpty;
 
@@ -127,7 +132,7 @@ class MealSlot extends ConsumerWidget {
                 child: slots.isEmpty
                     ? _EmptySlot(
                         isHovering: isHovering,
-                        onTap: () => _openPicker(context),
+                        onTap: canEdit ? () => _openPicker(context) : null,
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,11 +140,13 @@ class MealSlot extends ConsumerWidget {
                           ...slots.map(
                             (item) => _RecipeChip(
                               item: item,
+                              canRemove: canEdit,
                               onRemove: () =>
                                   _confirmRemove(context, ref, item),
                             ),
                           ),
-                          _AddMoreButton(onTap: () => _openPicker(context)),
+                          if (canEdit)
+                            _AddMoreButton(onTap: () => _openPicker(context)),
                         ],
                       ),
               ),
@@ -152,10 +159,10 @@ class MealSlot extends ConsumerWidget {
 }
 
 class _EmptySlot extends StatelessWidget {
-  const _EmptySlot({required this.isHovering, required this.onTap});
+  const _EmptySlot({required this.isHovering, this.onTap});
 
   final bool isHovering;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -219,10 +226,15 @@ class _AddMoreButton extends StatelessWidget {
 }
 
 class _RecipeChip extends StatelessWidget {
-  const _RecipeChip({required this.item, required this.onRemove});
+  const _RecipeChip({
+    required this.item,
+    required this.onRemove,
+    this.canRemove = true,
+  });
 
   final SlotItem item;
   final VoidCallback onRemove;
+  final bool canRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -280,14 +292,15 @@ class _RecipeChip extends StatelessWidget {
                         ?.copyWith(color: onChipColor),
                   ),
                 ),
-              InkWell(
-                onTap: onRemove,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: Icon(Icons.close, size: 14, color: onChipColor),
+              if (canRemove)
+                InkWell(
+                  onTap: onRemove,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Icon(Icons.close, size: 14, color: onChipColor),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
