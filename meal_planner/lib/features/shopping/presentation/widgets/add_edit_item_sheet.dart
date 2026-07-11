@@ -6,22 +6,25 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 class AddEditItemSheet extends StatefulWidget {
   const AddEditItemSheet({
     this.item,
+    this.canSave = true,
     super.key,
   });
 
   final ShoppingItem? item;
+  final bool canSave;
 
   bool get isEditing => item != null;
 
   static Future<Map<String, dynamic>?> show(
     BuildContext context, {
     ShoppingItem? item,
+    bool canSave = true,
   }) {
     return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => AddEditItemSheet(item: item),
+      builder: (_) => AddEditItemSheet(item: item, canSave: canSave),
     );
   }
 
@@ -222,7 +225,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
             ),
             const SizedBox(height: 20),
             FilledButton(
-              onPressed: _submit,
+              onPressed: widget.canSave ? _submit : null,
               child: Text(widget.isEditing ? 'Guardar' : 'Añadir'),
             ),
           ],
