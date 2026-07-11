@@ -271,9 +271,24 @@ class _DayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isToday = _isToday(date);
     final colorScheme = Theme.of(context).colorScheme;
+    final todayBackground = isToday
+        ? Color.lerp(
+            colorScheme.surface,
+            colorScheme.primary,
+            colorScheme.brightness == Brightness.light ? 0.28 : 0.38,
+          )
+        : null;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
+      color: todayBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: isToday
+            ? BorderSide(color: colorScheme.primary, width: 1.5)
+            : BorderSide.none,
+      ),
+      elevation: isToday ? 2 : 1,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
         child: Column(
@@ -294,12 +309,15 @@ class _DayCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
+                      color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'Hoy',
-                      style: Theme.of(context).textTheme.labelSmall,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: colorScheme.onPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                   ),
                 ],
