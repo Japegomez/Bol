@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:meal_planner/core/firebase/firebase_options.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 
@@ -9,6 +10,11 @@ abstract final class AnalyticsService {
   static bool get isEnabled => _analytics != null;
 
   static Future<void> initialize() async {
+    if (kIsWeb) {
+      log.i('Firebase Analytics skipped on web (not configured)');
+      return;
+    }
+
     if (!DefaultFirebaseOptions.isConfigured) {
       log.w(
         'Firebase Analytics disabled — run `flutterfire configure` in meal_planner/',

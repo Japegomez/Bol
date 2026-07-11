@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
@@ -31,6 +32,7 @@ class SyncService {
   bool _syncing = false;
 
   Future<void> syncIfOnline() async {
+    if (kIsWeb) return;
     if (_syncing) return;
     if (!await NetworkStatus.isOnline) return;
 
@@ -208,8 +210,10 @@ final syncServiceProvider = Provider<SyncService>((ref) {
   );
 });
 
-/// Watches connectivity and triggers sync when back online.
+/// Watches connectivity and triggers sync when back online (mobile only).
 final syncOnReconnectProvider = Provider<void>((ref) {
+  if (kIsWeb) return;
+
   ref.listen(connectivityProvider, (previous, next) {
     final wasOffline = previous?.maybeWhen(
           data: isOfflineFromConnectivity,
