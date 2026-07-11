@@ -12,6 +12,7 @@ import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
+import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/connectivity/connectivity_notifier.dart';
 import 'package:meal_planner/features/planner/data/planner_repository.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
@@ -20,6 +21,7 @@ import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart'
 import 'package:meal_planner/features/shopping/presentation/shopping_provider.dart';
 
 class SyncService {
+  static const int maxRetries = 5;
   SyncService({
     required this.ref,
     required this.cache,
@@ -68,8 +70,23 @@ class SyncService {
         try {
           await _replay(op.entityType, op.opType, op.payloadJson);
           await cache.deletePendingOperation(op.id);
-        } catch (_) {
-          await cache.incrementRetry(op.id);
+        } catch (error, stackTrace) {
+          log.e(
+            'Sync replay failed for operation: ${op.entityType}.${op.opType} '
+            '(id: ${op.id}, retryCount: ${op.retryCount})',
+            error: error,
+            stackTrace: stackTrace,
+          );
+
+          if (op.retryCount >= maxRetries) {
+            log.w(
+              'Max retries ($maxRetries) reached for operation: ${op.entityType}.${op.opType} '
+              '(id: ${op.id}). Removing from pending queue to prevent infinite retries.',
+            );
+            await cache.deletePendingOperation(op.id);
+          } else {
+            await cache.incrementRetry(op.id);
+          }
         }
       }
 
