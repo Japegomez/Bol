@@ -58,7 +58,10 @@ class ShoppingRepository {
       userId: userId,
       createdAt: DateTime.now(),
     );
-    await _cache.cacheShoppingList(tempList);
+    await _cache.cacheShoppingListWithPendingCreate(
+      list: tempList,
+      payload: {'tempId': tempList.id, 'userId': userId},
+    );
     return tempList;
   }
 
@@ -139,18 +142,22 @@ class ShoppingRepository {
           .from(ShoppingItem.table_name)
           .update({ShoppingItem.c_isChecked: isChecked})
           .eq(ShoppingItem.c_id, id);
-    } else {
-      await _cache.enqueueOperation(
-        entityType: PendingEntity.shoppingItem,
-        opType: PendingOp.toggle,
-        payload: {'id': id, 'isChecked': isChecked},
-      );
+
+      final items = await _findItemInCache(id);
+      if (items != null) {
+        await _cache.upsertShoppingItem(items.copyWith(isChecked: isChecked));
+      }
+      return;
     }
 
-    final items = await _findItemInCache(id);
-    if (items != null) {
-      await _cache.upsertShoppingItem(items.copyWith(isChecked: isChecked));
-    }
+    final existing = await _findItemInCache(id);
+    if (existing == null) return;
+
+    await _cache.upsertShoppingItemWithPendingOp(
+      item: existing.copyWith(isChecked: isChecked),
+      opType: PendingOp.toggle,
+      payload: {'id': id, 'isChecked': isChecked},
+    );
   }
 
   Future<ShoppingItem?> _findItemInCache(String id) async {
@@ -201,9 +208,8 @@ class ShoppingRepository {
       isManual: true,
       createdAt: DateTime.now(),
     );
-    await _cache.upsertShoppingItem(item);
-    await _cache.enqueueOperation(
-      entityType: PendingEntity.shoppingItem,
+    await _cache.upsertShoppingItemWithPendingOp(
+      item: item,
       opType: PendingOp.create,
       payload: {
         'tempId': tempId,
@@ -258,9 +264,8 @@ class ShoppingRepository {
       unit: unit,
       category: category,
     );
-    await _cache.upsertShoppingItem(updated);
-    await _cache.enqueueOperation(
-      entityType: PendingEntity.shoppingItem,
+    await _cache.upsertShoppingItemWithPendingOp(
+      item: updated,
       opType: PendingOp.update,
       payload: {
         'id': id,
@@ -278,15 +283,14 @@ class ShoppingRepository {
 
     if (await NetworkStatus.isOnline) {
       await supabase.from(ShoppingItem.table_name).delete().eq(ShoppingItem.c_id, id);
-    } else {
-      await _cache.enqueueOperation(
-        entityType: PendingEntity.shoppingItem,
-        opType: PendingOp.delete,
-        payload: {'id': id},
-      );
+      await _cache.deleteShoppingItem(id);
+      return;
     }
 
-    await _cache.deleteShoppingItem(id);
+    await _cache.deleteShoppingItemWithPendingOp(
+      id: id,
+      payload: {'id': id},
+    );
   }
 
   Future<void> clearList(String listId, {String? householdId}) async {
@@ -297,15 +301,14 @@ class ShoppingRepository {
           .from(ShoppingItem.table_name)
           .delete()
           .eq(ShoppingItem.c_shoppingListId, listId);
-    } else {
-      await _cache.enqueueOperation(
-        entityType: PendingEntity.shoppingItem,
-        opType: PendingOp.clear,
-        payload: {'listId': listId},
-      );
+      await _cache.clearShoppingItems(listId);
+      return;
     }
 
-    await _cache.clearShoppingItems(listId);
+    await _cache.clearShoppingItemsWithPendingOp(
+      listId: listId,
+      payload: {'listId': listId},
+    );
   }
 }
 

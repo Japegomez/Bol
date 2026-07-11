@@ -8,6 +8,7 @@ import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
+import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
@@ -97,8 +98,12 @@ class SyncService {
         await _replayRecipe(opType, payload);
       case PendingEntity.planSlot:
         await _replayPlanSlot(opType, payload);
+      case PendingEntity.shoppingList:
+        await _replayShoppingList(opType, payload);
       case PendingEntity.shoppingItem:
         await _replayShoppingItem(opType, payload);
+      default:
+        throw StateError('Unknown pending entity type: $entityType');
     }
   }
 
@@ -131,6 +136,8 @@ class SyncService {
         final recipeId =
             await cache.resolveIdOrSelf(payload['recipeId'] as String);
         await recipesRepository.deleteRecipeRemote(recipeId);
+      default:
+        throw StateError('Unknown recipe op type: $opType');
     }
   }
 
@@ -168,6 +175,36 @@ class SyncService {
         final slotId =
             await cache.resolveIdOrSelf(payload['slotId'] as String);
         await plannerRepository.removeSlotRemote(slotId);
+      default:
+        throw StateError('Unknown plan slot op type: $opType');
+    }
+  }
+
+  Future<void> _replayShoppingList(
+    String opType,
+    Map<String, dynamic> payload,
+  ) async {
+    switch (opType) {
+      case PendingOp.create:
+        final tempId = payload['tempId'] as String?;
+        if (await _skipIfCreateAlreadyApplied(tempId, ShoppingList.table_name)) {
+          return;
+        }
+        final data = await supabase
+            .from(ShoppingList.table_name)
+            .insert(
+              ShoppingList.insert(
+                id: tempId,
+                userId: payload['userId'] as String?,
+              ),
+            )
+            .select()
+            .single();
+        if (tempId != null) {
+          await _recordTempIdMapping(tempId, data['id'].toString());
+        }
+      default:
+        throw StateError('Unknown shopping list op type: $opType');
     }
   }
 
@@ -233,6 +270,8 @@ class SyncService {
             .from(ShoppingItem.table_name)
             .delete()
             .eq(ShoppingItem.c_shoppingListId, listId);
+      default:
+        throw StateError('Unknown shopping item op type: $opType');
     }
   }
 }

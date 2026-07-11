@@ -10,6 +10,7 @@ import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
+import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:uuid/uuid.dart';
@@ -203,12 +204,24 @@ class LocalCacheStore {
   Future<void> cacheSlots(String planId, List<SlotItem> slots) async {
     if (_db == null) return;
 
+    final protectedIds = await _pendingProtectedPlanSlotIds(planId);
+
     await _db.transaction(() async {
-      await (_db.delete(_db.localPlanSlots)
-            ..where((s) => s.planId.equals(planId)))
-          .go();
+      if (protectedIds.isEmpty) {
+        await (_db.delete(_db.localPlanSlots)
+              ..where((s) => s.planId.equals(planId)))
+            .go();
+      } else {
+        await (_db.delete(_db.localPlanSlots)
+              ..where((s) => s.planId.equals(planId))
+              ..where((s) => s.id.isNotIn(protectedIds)))
+            .go();
+      }
       for (final item in slots) {
-        await _db.into(_db.localPlanSlots).insert(_slotItemToRow(item));
+        if (protectedIds.contains(item.slot.id)) continue;
+        await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
+              _slotItemToRow(item),
+            );
       }
     });
   }
@@ -296,13 +309,26 @@ class LocalCacheStore {
 
   Future<void> cacheShoppingItems(String listId, List<ShoppingItem> items) async {
     if (_db == null) return;
+    if (await _hasPendingClearForList(listId)) return;
+
+    final protectedIds = await _pendingProtectedShoppingItemIds(listId);
 
     await _db.transaction(() async {
-      await (_db.delete(_db.localShoppingItems)
-            ..where((i) => i.shoppingListId.equals(listId)))
-          .go();
+      if (protectedIds.isEmpty) {
+        await (_db.delete(_db.localShoppingItems)
+              ..where((i) => i.shoppingListId.equals(listId)))
+            .go();
+      } else {
+        await (_db.delete(_db.localShoppingItems)
+              ..where((i) => i.shoppingListId.equals(listId))
+              ..where((i) => i.id.isNotIn(protectedIds)))
+            .go();
+      }
       for (final item in items) {
-        await _db.into(_db.localShoppingItems).insert(_shoppingItemToRow(item));
+        if (protectedIds.contains(item.id)) continue;
+        await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
+              _shoppingItemToRow(item),
+            );
       }
     });
   }
@@ -392,14 +418,73 @@ class LocalCacheStore {
 
   // ── Pending operations ─────────────────────────────────────────────────────
 
-  Future<void> enqueueOperation({
+  Future<Set<String>> _pendingProtectedPlanSlotIds(String planId) async {
+    if (_db == null) return const {};
+
+    final ids = <String>{};
+    for (final op in await getPendingOperations()) {
+      if (op.entityType != PendingEntity.planSlot) continue;
+      final payload = jsonDecode(op.payloadJson) as Map<String, dynamic>;
+      switch (op.opType) {
+        case PendingOp.add:
+          if (payload['planId'] == planId) {
+            final tempId = payload['tempId'] as String?;
+            if (tempId != null) ids.add(tempId);
+          }
+        case PendingOp.remove:
+          final slotId = payload['slotId'] as String?;
+          if (slotId != null) ids.add(slotId);
+      }
+    }
+    return ids;
+  }
+
+  Future<Set<String>> _pendingProtectedShoppingItemIds(String listId) async {
+    if (_db == null) return const {};
+
+    final ids = <String>{};
+    for (final op in await getPendingOperations()) {
+      if (op.entityType != PendingEntity.shoppingItem) continue;
+      final payload = jsonDecode(op.payloadJson) as Map<String, dynamic>;
+      switch (op.opType) {
+        case PendingOp.create:
+          if (payload['listId'] == listId) {
+            final tempId = payload['tempId'] as String?;
+            if (tempId != null) ids.add(tempId);
+          }
+        case PendingOp.update:
+        case PendingOp.delete:
+        case PendingOp.toggle:
+          final id = payload['id'] as String?;
+          if (id != null) {
+            final item = await getShoppingItemById(id);
+            if (item?.shoppingListId == listId) ids.add(id);
+          }
+      }
+    }
+    return ids;
+  }
+
+  Future<bool> _hasPendingClearForList(String listId) async {
+    if (_db == null) return false;
+
+    for (final op in await getPendingOperations()) {
+      if (op.entityType != PendingEntity.shoppingItem ||
+          op.opType != PendingOp.clear) {
+        continue;
+      }
+      final payload = jsonDecode(op.payloadJson) as Map<String, dynamic>;
+      if (payload['listId'] == listId) return true;
+    }
+    return false;
+  }
+
+  Future<void> _insertPendingOperation({
     required String entityType,
     required String opType,
     required Map<String, dynamic> payload,
   }) async {
-    if (_db == null) return;
-
-    await _db.into(_db.pendingOperations).insert(
+    await _db!.into(_db.pendingOperations).insert(
           PendingOperationsCompanion.insert(
             id: newLocalId(),
             entityType: entityType,
@@ -408,6 +493,20 @@ class LocalCacheStore {
             createdAt: DateTime.now(),
           ),
         );
+  }
+
+  Future<void> enqueueOperation({
+    required String entityType,
+    required String opType,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    await _insertPendingOperation(
+      entityType: entityType,
+      opType: opType,
+      payload: payload,
+    );
   }
 
   Future<List<PendingOperation>> getPendingOperations() async {
@@ -461,30 +560,123 @@ class LocalCacheStore {
   Future<void> replaceTempId(String tempId, String realId) async {
     if (_db == null) return;
 
-    await saveIdMapping(tempId, realId);
+    await _db.transaction(() async {
+      await _db.into(_db.idMappings).insertOnConflictUpdate(
+            IdMappingsCompanion.insert(tempId: tempId, realId: realId),
+          );
 
-    await (_db.update(_db.localRecipes)..where((r) => r.id.equals(tempId)))
-        .write(LocalRecipesCompanion(id: Value(realId)));
-    await (_db.update(_db.localIngredients)
-          ..where((i) => i.recipeId.equals(tempId)))
-        .write(LocalIngredientsCompanion(recipeId: Value(realId)));
-    await (_db.update(_db.localRecipeSteps)
-          ..where((s) => s.recipeId.equals(tempId)))
-        .write(LocalRecipeStepsCompanion(recipeId: Value(realId)));
-    await (_db.update(_db.localNutritionInfo)
-          ..where((n) => n.recipeId.equals(tempId)))
-        .write(LocalNutritionInfoCompanion(recipeId: Value(realId)));
-    await (_db.update(_db.localPlanSlots)..where((s) => s.recipeId.equals(tempId)))
-        .write(LocalPlanSlotsCompanion(recipeId: Value(realId)));
-    await (_db.update(_db.localPlanSlots)..where((s) => s.id.equals(tempId)))
-        .write(LocalPlanSlotsCompanion(id: Value(realId)));
-    await (_db.update(_db.localShoppingItems)..where((i) => i.id.equals(tempId)))
-        .write(LocalShoppingItemsCompanion(id: Value(realId)));
-    await (_db.update(_db.localShoppingItems)
-          ..where((i) => i.planSlotId.equals(tempId)))
-        .write(LocalShoppingItemsCompanion(planSlotId: Value(realId)));
-    await (_db.update(_db.localIngredients)..where((i) => i.id.equals(tempId)))
-        .write(LocalIngredientsCompanion(id: Value(realId)));
+      await (_db.update(_db.localRecipes)..where((r) => r.id.equals(tempId)))
+          .write(LocalRecipesCompanion(id: Value(realId)));
+      await (_db.update(_db.localIngredients)
+            ..where((i) => i.recipeId.equals(tempId)))
+          .write(LocalIngredientsCompanion(recipeId: Value(realId)));
+      await (_db.update(_db.localRecipeSteps)
+            ..where((s) => s.recipeId.equals(tempId)))
+          .write(LocalRecipeStepsCompanion(recipeId: Value(realId)));
+      await (_db.update(_db.localNutritionInfo)
+            ..where((n) => n.recipeId.equals(tempId)))
+          .write(LocalNutritionInfoCompanion(recipeId: Value(realId)));
+      await (_db.update(_db.localWeeklyPlans)..where((p) => p.id.equals(tempId)))
+          .write(LocalWeeklyPlansCompanion(id: Value(realId)));
+      await (_db.update(_db.localPlanSlots)..where((s) => s.planId.equals(tempId)))
+          .write(LocalPlanSlotsCompanion(planId: Value(realId)));
+      await (_db.update(_db.localPlanSlots)
+            ..where((s) => s.recipeId.equals(tempId)))
+          .write(LocalPlanSlotsCompanion(recipeId: Value(realId)));
+      await (_db.update(_db.localPlanSlots)..where((s) => s.id.equals(tempId)))
+          .write(LocalPlanSlotsCompanion(id: Value(realId)));
+      await (_db.update(_db.localShoppingLists)..where((l) => l.id.equals(tempId)))
+          .write(LocalShoppingListsCompanion(id: Value(realId)));
+      await (_db.update(_db.localShoppingItems)
+            ..where((i) => i.shoppingListId.equals(tempId)))
+          .write(LocalShoppingItemsCompanion(shoppingListId: Value(realId)));
+      await (_db.update(_db.localShoppingItems)..where((i) => i.id.equals(tempId)))
+          .write(LocalShoppingItemsCompanion(id: Value(realId)));
+      await (_db.update(_db.localShoppingItems)
+            ..where((i) => i.planSlotId.equals(tempId)))
+          .write(LocalShoppingItemsCompanion(planSlotId: Value(realId)));
+      await (_db.update(_db.localIngredients)..where((i) => i.id.equals(tempId)))
+          .write(LocalIngredientsCompanion(id: Value(realId)));
+    });
+  }
+
+  // ── Shopping: atomic cache + pending op ────────────────────────────────────
+
+  Future<void> cacheShoppingListWithPendingCreate({
+    required ShoppingList list,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    await _db.transaction(() async {
+      await _db.into(_db.localShoppingLists).insertOnConflictUpdate(
+            LocalShoppingListsCompanion.insert(
+              id: list.id,
+              householdId: Value(list.householdId),
+              userId: Value(list.userId),
+              createdAt: list.createdAt,
+            ),
+          );
+      await _insertPendingOperation(
+        entityType: PendingEntity.shoppingList,
+        opType: PendingOp.create,
+        payload: payload,
+      );
+    });
+  }
+
+  Future<void> upsertShoppingItemWithPendingOp({
+    required ShoppingItem item,
+    required String opType,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    await _db.transaction(() async {
+      await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
+            _shoppingItemToRow(item),
+          );
+      await _insertPendingOperation(
+        entityType: PendingEntity.shoppingItem,
+        opType: opType,
+        payload: payload,
+      );
+    });
+  }
+
+  Future<void> deleteShoppingItemWithPendingOp({
+    required String id,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    await _db.transaction(() async {
+      await (_db.delete(_db.localShoppingItems)..where((i) => i.id.equals(id)))
+          .go();
+      await _insertPendingOperation(
+        entityType: PendingEntity.shoppingItem,
+        opType: PendingOp.delete,
+        payload: payload,
+      );
+    });
+  }
+
+  Future<void> clearShoppingItemsWithPendingOp({
+    required String listId,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    await _db.transaction(() async {
+      await (_db.delete(_db.localShoppingItems)
+            ..where((i) => i.shoppingListId.equals(listId)))
+          .go();
+      await _insertPendingOperation(
+        entityType: PendingEntity.shoppingItem,
+        opType: PendingOp.clear,
+        payload: payload,
+      );
+    });
   }
 
   // ── Mappers ────────────────────────────────────────────────────────────────
