@@ -203,7 +203,7 @@ class RecipesRepository {
     return _createRecipeOffline(form);
   }
 
-  Future<String> createRecipeRemote(RecipeFormData form) async {
+  Future<String> createRecipeRemote(RecipeFormData form, {String? id}) async {
     final validationError = form.validate();
     if (validationError != null) throw Exception(validationError);
 
@@ -211,6 +211,7 @@ class RecipesRepository {
         .from(Recipe.table_name)
         .insert(
           Recipe.insert(
+            id: id,
             userId: _userId,
             title: form.title.trim(),
             servings: form.servings,

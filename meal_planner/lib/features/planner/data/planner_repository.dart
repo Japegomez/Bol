@@ -154,6 +154,7 @@ class PlannerRepository {
     String? householdId,
     bool isLeftover = false,
     String? notes,
+    String? slotId,
   }) async {
     final existingSlots = await _fetchSlotsRemote(planId);
     final position = existingSlots
@@ -168,6 +169,7 @@ class PlannerRepository {
         .from(PlanSlot.table_name)
         .insert(
           PlanSlot.insert(
+            id: slotId,
             planId: planId,
             dayOfWeek: dayOfWeek,
             mealType: mealType,
