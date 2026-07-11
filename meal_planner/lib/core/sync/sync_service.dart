@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
-import 'package:meal_planner/core/sync/pending_operation_types.dart';
-import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
+import 'package:meal_planner/core/sync/pending_operation_types.dart';
+import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
 import 'package:meal_planner/features/connectivity/connectivity_notifier.dart';
 import 'package:meal_planner/features/planner/data/planner_repository.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
@@ -20,9 +20,9 @@ class SyncService {
   SyncService({
     required this.ref,
     required this._cache,
-    required RecipesRepository recipesRepository,
+    required this._recipesRepository,
     required this._plannerRepository,
-  })  : _recipesRepository = recipesRepository;
+  });
 
   final Ref ref;
   final LocalCacheStore _cache;
