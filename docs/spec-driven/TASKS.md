@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 10/07/2026 — glosario culinario, scroll horizontal de etiquetas, marca Recetea, categoría Repostería
+> Actualizado: 11/07/2026 — moderación de fotos (Vision API), destacado del día actual en planificador
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -92,6 +92,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Configurar proveedor Google en Supabase Auth (Client ID + Secret del cliente **Web**; activar **Skip nonce check**)
 - [x] Configurar proveedor OAuth Apple en Supabase Auth (Key ID + Team ID de Apple Developer)
 - [x] Generar modelos Dart con **Supadart** (`meal_planner/lib/core/supabase/models/`)
+
+### Edge Functions
+
+- [x] Edge Function `moderate-image`: moderación de fotos con Google Cloud Vision SafeSearch
+  - Invocada al elegir imagen en formulario de receta y edición de perfil
+  - Secret `GOOGLE_VISION_API_KEY` en Supabase; despliegue documentado en `supabase/README.md` (PR #37)
 
 ### Servicios externos (observabilidad y UX)
 
@@ -209,6 +215,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Subida de avatar a Supabase Storage (bucket `avatars`; compresión antes de subir)
   - `ProfileRepository.uploadAvatar`; path `{userId}/avatar.jpg`; URL firmada al leer
   - Paquete `image_picker` para seleccionar foto de galería o cámara
+- [x] Moderación de avatar al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`)
+  - Validación inmediata en `edit_profile_screen`; diálogo si contenido adulto/explícito; fail-closed si falla el servicio (PR #37)
 
 ### F3 - Hogar compartido
 
@@ -243,6 +251,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Pantalla/formulario de creación de receta
   - [x] Campo: nombre (obligatorio)
   - [x] Campo: foto (opcional; `image_picker` + subida a Supabase Storage bucket `recipe-photos`)
+  - [x] Moderación de foto al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`; PR #37)
   - [x] Campo: raciones (obligatorio)
   - [x] Campo: tiempo de preparación (minutos, opcional)
   - [x] Campo: tiempo de cocción (minutos, opcional)
@@ -289,6 +298,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Términos predefinidos + entradas personalizadas (`shared_preferences`); buscador; ruta `/home/recipes/glossary`
 - [x] Categoría de ingrediente `Repostería` sustituye `Panadería` (migración `018_rename_panaderia_to_reposteria.sql`)
 - [x] Marca visible de la app unificada como **Recetea** (`AppBranding.displayName`; iOS/Android/web)
+- [x] Moderación de contenido en fotos de receta y avatar (`lib/core/moderation/`; Edge Function `moderate-image`)
 
 ---
 
@@ -309,6 +319,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Drag-and-drop de recetas desde el panel al planificador; autoscroll al acercarse a los bordes
 - [x] Navegación entre semanas (flechas anterior / siguiente; etiqueta con rango de fechas)
 - [x] Indicador visual de semana actual
+- [x] Destacar la tarjeta del **día de hoy** con fondo verde más oscuro, borde primario y badge «Hoy»
 - [x] Slot vacío: pulsar o soltar receta para añadir
 - [x] Slot con receta(s): muestra nombre(s) con chips de color según tipo (receta / sobras / texto libre)
 - [x] Slot con varias recetas: lista vertical con botón «Añadir»

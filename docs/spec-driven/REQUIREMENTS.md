@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; pulido post-lanzamiento y fixes de auth en Play
+> **Versión:** 1.0 — Fase 6 en `main`; moderación de imágenes y pulido del planificador en `develop`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight; siguiente: validar Google Sign-In en build Play tras PR #33
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight; `develop`: moderación Vision API (PR #37), destacado del día actual en planificador
 
 ---
 
@@ -44,6 +44,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Gestión de estado | **Riverpod** | Solución reactiva y testeable, primera opción en ecosistema Flutter/Supabase |
 | Navegación | **go_router** | Navegación declarativa, soporte deep links, mantenida por Google |
 | Backend / BaaS | **Supabase** | PostgreSQL real (relaciones complejas entre recetas, ingredientes y planificador), Auth incluida, Storage para fotos, Realtime para el hogar compartido |
+| Moderación de imágenes | **Supabase Edge Functions** + **Google Cloud Vision API** (SafeSearch) | Validación server-side al elegir foto de receta o avatar; rechazo de contenido adulto/explícito |
 | Almacenamiento de fotos | **Supabase Storage** | Bucket privado por usuario |
 | Autenticación | **Supabase Auth** | Email/contraseña + OAuth (Google y Sign in with Apple) en Fase 1 |
 | CI/CD y builds | **Codemagic** | Builds en la nube para iOS y Android, submit automatizado a las stores |
@@ -67,12 +68,12 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-04** El usuario puede iniciar sesión con **Google** (OAuth 2.0 vía Supabase, disponible en iOS y Android).  
 **RF-AUTH-05** El usuario puede iniciar sesión con **Apple** (*Sign in with Apple*, obligatorio en iOS cuando se ofrece cualquier otro proveedor OAuth, según las App Store Review Guidelines).  
 **RF-AUTH-06** Al autenticarse por primera vez (cualquier método) se crea automáticamente un perfil con nombre de usuario y avatar opcional.  
-**RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`).  
+**RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`). Al seleccionar una nueva foto, la app la valida con moderación de contenido antes de aceptarla.  
 **RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
 **RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
 
-> **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros).
+> **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar, `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen.
 
 > **Nota de implementación — Google (nativo):** Flutter usa `google_sign_in` para el flujo nativo del SDK de Google y `supabase_flutter` recibe la sesión con `signInWithIdToken`. En Google Cloud se crean **3 clientes OAuth** (Web, Android, iOS). Supabase Auth se configura con el Client ID + Secret del cliente **Web** y **Skip nonce check** activado (iOS). Android requiere SHA-1 del keystore debug/release **y** del certificado de **App signing** de Google Play en el cliente OAuth Android y en Firebase (sin ello, `ApiException: 10` / `DEVELOPER_ERROR`). Tras registrar huellas, regenerar `google-services.json` (`flutterfire configure`) y verificar que `oauth_client` no está vacío. Errores de configuración se mapean a `AuthGoogleSignInConfigurationException` en `auth_error_mapper.dart`. Guía: `docs/OAUTH_SETUP.md`.
 >
@@ -142,7 +143,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-05** El usuario puede filtrar recetas por etiqueta.  
 **RF-REC-06** Los ingredientes se pueden reordenar dentro de una receta.  
 **RF-REC-07** Los pasos de elaboración se pueden reordenar.  
-**RF-REC-08** La foto se sube a Supabase Storage y se asocia a la receta por URL.  
+**RF-REC-08** La foto se sube a Supabase Storage y se asocia a la receta por URL. Al elegir la imagen en el formulario, la app la valida con moderación de contenido antes de mostrar el preview o permitir guardar.  
 **RF-REC-09** El usuario puede ver el detalle completo de una receta desde el recetario o desde el planificador.  
 **RF-REC-10** El usuario puede marcar un ingrediente como **opcional** al crear/editar la receta. En la ficha de su receta puede **incluir o excluir** cada opcional (checkbox en lugar de viñeta). Si está excluido, se muestra tachado y no se añade a la lista de la compra al planificar. Los ingredientes obligatorios se muestran con viñeta verde.  
 **RF-REC-11** Al eliminar una receta del recetario, el panel lateral del planificador y los slots de la semana se actualizan de inmediato (invalidación de `recipesProvider` y `planSlotsProvider`).  
@@ -154,7 +155,8 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.  
 **RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).  
 **RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
-**RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (icono de libro) con términos y definiciones predefinidos, buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).
+**RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (icono de libro) con términos y definiciones predefinidos, buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
+**RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).
 
 ---
 
@@ -172,7 +174,8 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot para ver su detalle.  
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
 **RF-PLAN-10** Al asignar una receta, el usuario puede marcar **Son sobras**: los ingredientes **no** se añaden a la lista de la compra.  
-**RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.
+**RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
+**RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
 
 > **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono).
 
@@ -365,6 +368,7 @@ lib/
 │
 ├── core/
 │   ├── supabase/              # Cliente Supabase, constantes
+│   ├── moderation/            # PhotoModerationService, diálogos de rechazo
 │   ├── theme/                 # ThemeData, colores, tipografía
 │   ├── utils/                 # Formatters, helpers, extensiones
 │   └── widgets/               # Widgets reutilizables (AppButton, AppCard…)
