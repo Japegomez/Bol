@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/public_recipe_card.dart';
 
@@ -52,7 +53,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     final exploreState = ref.watch(exploreRecipesProvider);
-    final tagsAsync = ref.watch(publicTagsProvider);
     final filter = ref.watch(exploreFilterProvider);
 
     return Scaffold(
@@ -112,45 +112,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ],
             ),
           ),
-          tagsAsync.when(
-            data: (tags) {
-              if (tags.isEmpty) return const SizedBox.shrink();
-              return SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: const Text('Todas'),
-                        selected: filter.tag == null,
-                        onSelected: (_) {
-                          ref.read(exploreFilterProvider.notifier).state =
-                              filter.copyWith(clearTag: true);
-                        },
-                      ),
-                    ),
-                    ...tags.map(
-                      (tag) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(tag),
-                          selected: filter.tag == tag,
-                          onSelected: (_) {
-                            ref.read(exploreFilterProvider.notifier).state =
-                                filter.copyWith(tag: tag);
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+          PublicTagFilterBar(
+            selectedTags: filter.tags,
+            onSelectionChanged: (tags) {
+              ref.read(exploreFilterProvider.notifier).state =
+                  filter.copyWith(tags: tags);
             },
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
           ),
           Expanded(
             child: _buildBody(context, exploreState),
