@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; moderación de imágenes y pulido del planificador en `develop`
+> **Versión:** 1.0 — Fase 6 en `main`; pulido UX y moderación en `develop`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight; `develop`: moderación Vision API (PR #37), destacado del día actual en planificador
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: marca Recetea, glosario culinario, scroll horizontal de etiquetas, categoría Repostería, filtro de etiquetas multi-selección, modo oscuro manual, moderación Vision API (PR #37 mergeado), destacado del día actual en planificador.
 
 ---
 
@@ -25,7 +25,7 @@
 
 ## 1. Visión del producto
 
-MealPlanner es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
+MealPlanner (marca visible **Recetea**) es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
 
 - **Gestionar un recetario personal** con instrucciones, ingredientes e información nutricional.
 - **Planificar las comidas de cada semana** asignando recetas a slots de desayuno, comida y cena.
@@ -46,6 +46,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Backend / BaaS | **Supabase** | PostgreSQL real (relaciones complejas entre recetas, ingredientes y planificador), Auth incluida, Storage para fotos, Realtime para el hogar compartido |
 | Moderación de imágenes | **Supabase Edge Functions** + **Google Cloud Vision API** (SafeSearch) | Validación server-side al elegir foto de receta o avatar; rechazo de contenido adulto/explícito |
 | Almacenamiento de fotos | **Supabase Storage** | Bucket privado por usuario |
+| Glosario (local) | **`shared_preferences`** | Entradas personalizadas del glosario culinario en el dispositivo |
 | Autenticación | **Supabase Auth** | Email/contraseña + OAuth (Google y Sign in with Apple) en Fase 1 |
 | CI/CD y builds | **Codemagic** | Builds en la nube para iOS y Android, submit automatizado a las stores |
 | Crash reporting | **Sentry** | Captura de excepciones, breadcrumbs, performance traces y alertas; SDK Flutter oficial |
@@ -72,6 +73,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
 **RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
+**RF-AUTH-11** El usuario puede activar/desactivar el **modo oscuro** con un toggle en Perfil. Por defecto la app sigue el modo del sistema; al cambiar el toggle, la preferencia manual se persiste en el dispositivo (`shared_preferences`) y prevalece sobre el ajuste del sistema.  
 
 > **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar, `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen.
 
@@ -140,7 +142,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-02** El usuario puede editar cualquier campo de una receta existente.  
 **RF-REC-03** El usuario puede eliminar una receta (con confirmación). Si la receta está en el planificador, los slots quedan vacíos.  
 **RF-REC-04** El usuario puede buscar recetas de su recetario por nombre.  
-**RF-REC-05** El usuario puede filtrar recetas por etiqueta.  
+**RF-REC-05** El usuario puede filtrar recetas por etiqueta, seleccionando **varias etiquetas a la vez** (chips de multi-selección); una receta se muestra solo si contiene **todas** las etiquetas seleccionadas (AND). Disponible en recetario, selector/panel de recetas del planificador y pantalla de exploración.  
 **RF-REC-06** Los ingredientes se pueden reordenar dentro de una receta.  
 **RF-REC-07** Los pasos de elaboración se pueden reordenar.  
 **RF-REC-08** La foto se sube a Supabase Storage y se asocia a la receta por URL. Al elegir la imagen en el formulario, la app la valida con moderación de contenido antes de mostrar el preview o permitir guardar.  
@@ -155,8 +157,9 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.  
 **RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).  
 **RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
-**RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (icono de libro) con términos y definiciones predefinidos, buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
-**RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).
+**RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (FAB con icono de libro, encima de «Nueva receta») con términos y definiciones predefinidos (p. ej. ahumar, al dente, caramelizar, tamizar), buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
+**RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).  
+**RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.
 
 ---
 
@@ -495,6 +498,7 @@ supabase
     /home/explore/user/:userId → Perfil público
     /home/explore/:id     → Detalle de receta pública (valorar, fork)
   /home/recipes           → Lista del recetario
+    /home/recipes/glossary → Glosario culinario (términos + entradas personalizadas)
     /home/recipes/:id     → Detalle de receta (toggle visibilidad pública/privada)
     /home/recipes/new     → Formulario nueva receta
     /home/recipes/:id/edit
@@ -514,7 +518,7 @@ supabase
 Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/social/`.
 
 - **RF-SOC-01** El usuario puede marcar una receta como pública y visible para todos (formulario y detalle). Recetas forkeadas (`forked_from_id`) no se pueden publicar.
-- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtros por etiqueta, orden recientes/top y scroll infinito. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila.
+- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtro **multi-etiqueta** (AND, `list_public_recipes` con `p_tags text[]` y `@>`), orden recientes/top y scroll infinito. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila.
 - **RF-SOC-03** El usuario puede guardar una receta pública de **otro** usuario en su recetario (fork); no puede forkear la propia. Queda privada y no republicable. Si tiene ingredientes opcionales, se muestra un aviso y el usuario puede editar la inclusión en su ficha.
 - **RF-SOC-04** Valoración 1–5 estrellas (una por usuario y receta; no en recetas propias).
 - **RF-SOC-05** Seguir usuarios y feed en `/home/explore/feed`.

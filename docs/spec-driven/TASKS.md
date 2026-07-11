@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 11/07/2026 — moderación de fotos (Vision API), destacado del día actual en planificador
+> Actualizado: 11/07/2026 — filtro multi-etiqueta (recetario, planificador, explorar), etiquetas de tipo de plato, modo oscuro manual en Perfil, limpieza UI planificador
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -299,6 +299,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Categoría de ingrediente `Repostería` sustituye `Panadería` (migración `018_rename_panaderia_to_reposteria.sql`)
 - [x] Marca visible de la app unificada como **Recetea** (`AppBranding.displayName`; iOS/Android/web)
 - [x] Moderación de contenido en fotos de receta y avatar (`lib/core/moderation/`; Edge Function `moderate-image`)
+- [x] Etiquetas sugeridas de tipo de plato: `entrante`, `plato principal`, `postre` (`recipe_constants.dart`)
+- [x] Filtro de etiquetas **multi-selección** (AND) en recetario, selector/panel del planificador y Explorar
+  - `TagFilterChips` (widget compartido) + `RecipeTagFilterBar` / `PublicTagFilterBar`
+  - `RecipeListFilter`/`ExploreFilter` migrados de `tag` (String?) a `tags` (Set\<String\>)
+  - RPC `list_public_recipes` migrado a `p_tags text[]` con `@>` para AND (`019_list_public_recipes_multi_tag.sql`)
+- [x] Botón de recetario eliminado de la AppBar del planificador (acceso solo vía FAB del panel lateral)
 
 ---
 
@@ -419,10 +425,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 ## UX — Cuenta y feedback
 
 - [ ] Prompt de valoración en tienda (`in_app_review`) tras completar la primera semana planificada
-  - Cooldown de 30 días entre prompts (guardar fecha del último en `flutter_secure_storage`)
-  - Fallback: enlace manual «Valorar la app» en pantalla de ajustes → URL de la store
-- [ ] Banner «Sin conexión» persistente cuando no hay red (`connectivity_plus`), con reintentos automáticos al recuperarla
-- [ ] Diálogo de actualización forzada (`upgrader`) cuando el backend requiera versión mínima
+  - `ReviewPromptService` implementado; falta invocar `onFirstWeekCompleted()` desde el planificador
+  - Cooldown 6 días en secure storage; fallback manual «Valorar la app» en ajustes (pendiente)
+- [x] Banner «Sin conexión» persistente cuando no hay red (`ConnectivityBanner` en `app.dart`)
+- [x] Diálogo de actualización de versión (`UpgradeAlert` / `upgrader` en `app.dart`)
+- [x] Modo oscuro manual desde Perfil (`SwitchListTile` en `profile_screen.dart`)
+  - `ThemeModeNotifier` (`theme_mode_provider.dart`) persiste preferencia en `shared_preferences`; por defecto sigue el modo del sistema hasta que el usuario lo cambia
+  - `AppTheme.light`/`AppTheme.dark` cacheados como `static final` (evita recalcular `ColorScheme.fromSeed` en cada rebuild; corrige lag al cambiar de tema en web)
 
 ---
 
@@ -487,3 +496,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Feed: recetas recientes de usuarios a los que sigo (`/home/explore/feed`)
 - [x] Perfil público: foto, nombre, recetas publicadas y valoración media (`/home/explore/user/:userId`)
   - Pendiente: campo bio en perfil (no existe en esquema `profiles`)
+
+---
+
+## Próximas tareas recomendadas
+
+1. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
+2. **Push de `develop`** y release con Recetea + glosario + filtro multi-etiqueta + modo oscuro + moderación de fotos (build TestFlight / Play).
+3. **Onboarding** o tutorial para nuevos usuarios (backlog).
+4. **Tests unitarios** de escalado de ingredientes y consolidación de lista de la compra.
