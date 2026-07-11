@@ -7,6 +7,7 @@ import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
@@ -183,9 +184,14 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
     setState(() => _isUpdatingVisibility = true);
     try {
+      final household = ref.read(currentHouseholdProvider).valueOrNull;
       await ref
           .read(recipesRepositoryProvider)
-          .setRecipeVisibility(widget.recipeId, value);
+          .setRecipeVisibility(
+            widget.recipeId,
+            value,
+            householdId: household?.id,
+          );
       ref.invalidate(recipeDetailProvider(widget.recipeId));
       ref.invalidate(recipeListProvider);
       ref.invalidate(exploreRecipesProvider);
@@ -209,10 +215,12 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
     setState(() => _updatingIngredientIds.add(ingredient.id));
     try {
+      final household = ref.read(currentHouseholdProvider).valueOrNull;
       await ref.read(recipesRepositoryProvider).updateIngredientIncluded(
             ingredientId: ingredient.id,
             recipeId: widget.recipeId,
             isIncluded: isIncluded,
+            householdId: household?.id,
           );
       ref.invalidate(recipeDetailProvider(widget.recipeId));
     } catch (e) {

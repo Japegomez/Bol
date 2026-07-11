@@ -136,6 +136,23 @@ class SyncService {
         final recipeId =
             await cache.resolveIdOrSelf(payload['recipeId'] as String);
         await recipesRepository.deleteRecipeRemote(recipeId);
+      case PendingOp.setVisibility:
+        final recipeId =
+            await cache.resolveIdOrSelf(payload['recipeId'] as String);
+        await recipesRepository.setRecipeVisibilityRemote(
+          recipeId,
+          payload['isPublic'] as bool,
+        );
+      case PendingOp.setIngredientIncluded:
+        final recipeId =
+            await cache.resolveIdOrSelf(payload['recipeId'] as String);
+        final ingredientId =
+            await cache.resolveIdOrSelf(payload['ingredientId'] as String);
+        await recipesRepository.updateIngredientIncludedRemote(
+          ingredientId: ingredientId,
+          recipeId: recipeId,
+          isIncluded: payload['isIncluded'] as bool,
+        );
       default:
         throw StateError('Unknown recipe op type: $opType');
     }

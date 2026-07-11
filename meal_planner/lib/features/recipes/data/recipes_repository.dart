@@ -264,8 +264,27 @@ class RecipesRepository {
     return tempId;
   }
 
-  Future<void> setRecipeVisibility(String id, bool isPublic) async {
-    if (isPublic) {
+  Future<void> setRecipeVisibility(
+    String id,
+    bool isPublic, {
+    String? householdId,
+  }) async {
+    await _guardOfflineMutation(householdId: householdId);
+    await _validateRecipeCanBePublished(id, isPublic);
+
+    if (await NetworkStatus.isOnline) {
+      await setRecipeVisibilityRemote(id, isPublic);
+      await _syncCachedRecipeVisibility(id, isPublic);
+      return;
+    }
+
+    await _setRecipeVisibilityOffline(id, isPublic);
+  }
+
+  Future<void> _validateRecipeCanBePublished(String id, bool isPublic) async {
+    if (!isPublic) return;
+
+    if (await NetworkStatus.isOnline) {
       final recipeData = await supabase
           .from(Recipe.table_name)
           .select('forked_from_id')
@@ -278,34 +297,19 @@ class RecipesRepository {
           'Las recetas guardadas de otros usuarios no se pueden publicar',
         );
       }
-    }
-
-    if (!await NetworkStatus.isOnline) {
-      final detail = await _cache.getRecipeDetail(id);
-      if (detail == null) throw Exception('Receta no encontrada');
-      final updated = Recipe(
-        id: detail.recipe.id,
-        userId: detail.recipe.userId,
-        title: detail.recipe.title,
-        photoUrl: detail.recipe.photoUrl,
-        servings: detail.recipe.servings,
-        prepTime: detail.recipe.prepTime,
-        cookTime: detail.recipe.cookTime,
-        tags: detail.recipe.tags,
-        isPublic: isPublic,
-        createdAt: detail.recipe.createdAt,
-        updatedAt: DateTime.now(),
-        tips: detail.recipe.tips,
-      );
-      await _cache.saveRecipeDetail(
-        recipe: updated,
-        ingredients: detail.ingredients,
-        steps: detail.steps,
-        nutrition: detail.nutrition,
-        forkedFromId: detail.forkedFromId,
-      );
       return;
     }
+
+    final detail = await _cache.getRecipeDetail(id);
+    if (detail?.forkedFromId != null) {
+      throw Exception(
+        'Las recetas guardadas de otros usuarios no se pueden publicar',
+      );
+    }
+  }
+
+  Future<void> setRecipeVisibilityRemote(String id, bool isPublic) async {
+    await _validateRecipeCanBePublished(id, isPublic);
 
     await supabase
         .from(Recipe.table_name)
@@ -314,18 +318,69 @@ class RecipesRepository {
         .eq(Recipe.c_userId, _userId);
   }
 
+  Future<void> _syncCachedRecipeVisibility(String id, bool isPublic) async {
+    final detail = await _cache.getRecipeDetail(id);
+    if (detail == null) return;
+
+    await _cache.saveRecipeDetail(
+      recipe: detail.recipe.copyWith(
+        isPublic: isPublic,
+        updatedAt: DateTime.now(),
+      ),
+      ingredients: detail.ingredients,
+      steps: detail.steps,
+      nutrition: detail.nutrition,
+      forkedFromId: detail.forkedFromId,
+    );
+  }
+
+  Future<void> _setRecipeVisibilityOffline(String id, bool isPublic) async {
+    final detail = await _cache.getRecipeDetail(id);
+    if (detail == null) throw Exception('Receta no encontrada');
+
+    await _cache.saveRecipeDetail(
+      recipe: detail.recipe.copyWith(
+        isPublic: isPublic,
+        updatedAt: DateTime.now(),
+      ),
+      ingredients: detail.ingredients,
+      steps: detail.steps,
+      nutrition: detail.nutrition,
+      forkedFromId: detail.forkedFromId,
+    );
+
+    await _cache.enqueueOperation(
+      entityType: PendingEntity.recipe,
+      opType: PendingOp.setVisibility,
+      payload: {'recipeId': id, 'isPublic': isPublic},
+    );
+  }
+
   Future<void> updateIngredientIncluded({
     required String ingredientId,
     required String recipeId,
     required bool isIncluded,
+    String? householdId,
   }) async {
+    await _guardOfflineMutation(householdId: householdId);
+
     if (await NetworkStatus.isOnline) {
-      await supabase
-          .from(Ingredient.table_name)
-          .update({Ingredient.c_isIncluded: isIncluded})
-          .eq(Ingredient.c_id, ingredientId)
-          .eq(Ingredient.c_recipeId, recipeId)
-          .eq(Ingredient.c_isOptional, true);
+      await updateIngredientIncludedRemote(
+        ingredientId: ingredientId,
+        recipeId: recipeId,
+        isIncluded: isIncluded,
+      );
+    } else {
+      await _cache.enqueueOperation(
+        entityType: PendingEntity.recipe,
+        opType: PendingOp.setIngredientIncluded,
+        payload: {
+          'ingredientId': ingredientId,
+          'recipeId': recipeId,
+          'isIncluded': isIncluded,
+          'householdId': householdId,
+        },
+      );
     }
 
     final detail = await _cache.getRecipeDetail(recipeId);
@@ -344,6 +399,19 @@ class RecipesRepository {
       nutrition: detail.nutrition,
       forkedFromId: detail.forkedFromId,
     );
+  }
+
+  Future<void> updateIngredientIncludedRemote({
+    required String ingredientId,
+    required String recipeId,
+    required bool isIncluded,
+  }) async {
+    await supabase
+        .from(Ingredient.table_name)
+        .update({Ingredient.c_isIncluded: isIncluded})
+        .eq(Ingredient.c_id, ingredientId)
+        .eq(Ingredient.c_recipeId, recipeId)
+        .eq(Ingredient.c_isOptional, true);
   }
 
   Future<void> updateRecipe(

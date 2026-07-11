@@ -126,6 +126,8 @@ class _AddTextDialogState extends State<_AddTextDialog> {
   }
 
   void _confirm() {
+    if (!widget.canConfirm) return;
+
     final notes = _notesController.text.trim();
     if (notes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -153,7 +155,7 @@ class _AddTextDialogState extends State<_AddTextDialog> {
               border: OutlineInputBorder(),
             ),
             textCapitalization: TextCapitalization.sentences,
-            onSubmitted: (_) => _confirm(),
+            onSubmitted: widget.canConfirm ? (_) => _confirm() : null,
           ),
           const SizedBox(height: 12),
           const Align(

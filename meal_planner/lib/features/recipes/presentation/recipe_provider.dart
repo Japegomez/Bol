@@ -218,7 +218,9 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       await ref.read(recipesRepositoryProvider).deleteRecipe(
             current.recipeId!,
             householdId: household?.id,
-          );      ref.invalidate(recipeListProvider);
+          );
+      state = AsyncData(current.copyWith(isSaving: false));
+      ref.invalidate(recipeListProvider);
       ref.invalidate(recipeTagsProvider);
       ref.invalidate(recipesProvider);
       ref.invalidate(planSlotsProvider);
