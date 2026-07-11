@@ -1,7 +1,6 @@
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
-import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
@@ -9,6 +8,7 @@ import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
+import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 
 class PlannerRepository {

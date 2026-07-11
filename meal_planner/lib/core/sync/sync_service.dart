@@ -18,12 +18,10 @@ import 'package:meal_planner/features/shopping/presentation/shopping_provider.da
 class SyncService {
   SyncService({
     required this.ref,
-    required LocalCacheStore cache,
+    required this._cache,
     required RecipesRepository recipesRepository,
-    required PlannerRepository plannerRepository,
-  })  : _cache = cache,
-        _recipesRepository = recipesRepository,
-        _plannerRepository = plannerRepository;
+    required this._plannerRepository,
+  })  : _recipesRepository = recipesRepository;
 
   final Ref ref;
   final LocalCacheStore _cache;
