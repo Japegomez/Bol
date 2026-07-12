@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/public_recipe_card.dart';
+import 'package:meal_planner/features/social/presentation/widgets/social_sort_label.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -119,6 +120,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   filter.copyWith(tags: tags);
             },
           ),
+          SocialSortLabel(label: exploreSortLabel(filter.sort)),
           Expanded(
             child: _buildBody(context, exploreState),
           ),

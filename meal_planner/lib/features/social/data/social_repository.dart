@@ -8,10 +8,10 @@ import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_summary.dart';
 
 class SocialRepository {
+  static const pageSize = 10;
   static const _photoBucket = 'recipe-photos';
   static const _avatarBucket = 'avatars';
   static const _signedUrlExpiry = 3600;
-  static const _pageSize = 20;
 
   String get _userId {
     final id = supabase.auth.currentUser?.id;
@@ -32,8 +32,8 @@ class SocialRepository {
         'p_search': search?.trim().isEmpty ?? true ? null : search!.trim(),
         'p_tags': tagList,
         'p_sort': sort,
-        'p_limit': _pageSize,
-        'p_offset': page * _pageSize,
+        'p_limit': pageSize,
+        'p_offset': page * pageSize,
       },
     );
 
@@ -268,7 +268,10 @@ class SocialRepository {
         .eq('following_id', userId);
   }
 
-  Future<List<PublicRecipeSummary>> fetchFeed({int page = 0}) async {
+  Future<List<PublicRecipeSummary>> fetchFeed({
+    int page = 0,
+    Set<String> tags = const {},
+  }) async {
     final followsData = await supabase
         .from('follows')
         .select('following_id')
@@ -280,13 +283,19 @@ class SocialRepository {
 
     if (followingIds.isEmpty) return [];
 
-    final recipesData = await supabase
+    var query = supabase
         .from(Recipe.table_name)
         .select()
         .eq(Recipe.c_isPublic, true)
-        .inFilter(Recipe.c_userId, followingIds)
+        .inFilter(Recipe.c_userId, followingIds);
+
+    if (tags.isNotEmpty) {
+      query = query.contains(Recipe.c_tags, tags.toList());
+    }
+
+    final recipesData = await query
         .order(Recipe.c_createdAt, ascending: false)
-        .range(page * _pageSize, (page + 1) * _pageSize - 1);
+        .range(page * pageSize, (page + 1) * pageSize - 1);
 
     final recipes = Recipe.converter(List<Map<String, dynamic>>.from(recipesData));
     if (recipes.isEmpty) return [];

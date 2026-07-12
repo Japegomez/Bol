@@ -66,15 +66,20 @@ class PublicRecipeCard extends ConsumerWidget {
                       recipe.title,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     InkWell(
                       onTap: () =>
                           context.push('/home/explore/user/${recipe.userId}'),
-                      child: Text(
-                        recipe.authorName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(
+                          recipe.authorName,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),

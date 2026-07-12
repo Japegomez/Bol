@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `develop`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra, chips amplios en planificador con navegación a ficha de receta.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra, chips amplios en planificador con navegación a ficha de receta, mejoras UX red social (paginación 10, feed con etiquetas, fecha en ficha pública).
 
 ---
 
@@ -540,9 +540,9 @@ supabase
 Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/social/`.
 
 - **RF-SOC-01** El usuario puede marcar una receta como pública y visible para todos (formulario y detalle). Recetas forkeadas (`forked_from_id`) no se pueden publicar.
-- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtro **multi-etiqueta** (AND, `list_public_recipes` con `p_tags text[]` y `@>`), orden recientes/top y scroll infinito. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila.
+- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtro **multi-etiqueta** (AND, `list_public_recipes` con `p_tags text[]` y `@>`), chips de orden recientes/top, scroll infinito (**10** recetas por página) e indicador «Ordenado por: …» (icono de orden) debajo de las etiquetas. Orden por defecto: fecha de creación descendente. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila. Nombre del autor enlazado al perfil público, con tipografía destacada.
 - **RF-SOC-03** El usuario puede guardar una receta pública de **otro** usuario en su recetario (fork); no puede forkear la propia. Queda privada y no republicable. Si tiene ingredientes opcionales, se muestra un aviso y el usuario puede editar la inclusión en su ficha.
 - **RF-SOC-04** Valoración 1–5 estrellas (una por usuario y receta; no en recetas propias).
-- **RF-SOC-05** Seguir usuarios y feed en `/home/explore/feed`.
+- **RF-SOC-05** Seguir usuarios (desde perfil público; acceso al perfil desde el nombre del autor en tarjeta o detalle) y feed en `/home/explore/feed` con filtro multi-etiqueta, orden por fecha de creación e indicador «Ordenado por: Más reciente».
 - **RF-SOC-06** Perfil público con avatar, nombre, recetas publicadas y valoración media. Sin campo bio (no está en `profiles`).
-- **RF-SOC-07** En el detalle de receta pública: texto «Receta creada por » (sin enlace) + nombre del autor (enlace al perfil), o «Receta creada por ti» si es la propia receta.
+- **RF-SOC-07** En el detalle de receta pública: texto «Receta creada por » (sin enlace) + nombre del autor (enlace al perfil), o «Receta creada por ti» si es la propia receta; fecha de creación visible junto a valoración y raciones.

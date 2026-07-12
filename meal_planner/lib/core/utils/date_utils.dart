@@ -17,3 +17,7 @@ String formatDayHeader(DateTime date) {
   if (formatted.isEmpty) return formatted;
   return formatted[0].toUpperCase() + formatted.substring(1);
 }
+
+String formatRecipeCreatedAt(DateTime date) {
+  return DateFormat('d MMM yyyy', 'es').format(date.toLocal());
+}

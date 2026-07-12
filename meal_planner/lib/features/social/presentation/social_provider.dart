@@ -35,6 +35,11 @@ class ExploreFilter {
 final exploreFilterProvider =
     StateProvider<ExploreFilter>((ref) => const ExploreFilter());
 
+final feedTagsFilterProvider = StateProvider<Set<String>>((ref) => {});
+
+String exploreSortLabel(String sort) =>
+    sort == 'top' ? 'Mejor valoradas' : 'Más reciente';
+
 final publicTagsProvider = FutureProvider<Set<String>>((ref) async {
   return ref.watch(socialRepositoryProvider).fetchPublicTags();
 });
@@ -98,7 +103,7 @@ class ExploreRecipesNotifier extends Notifier<ExploreRecipesState> {
       );
       state = ExploreRecipesState(
         recipes: recipes,
-        hasMore: recipes.length >= 20,
+        hasMore: recipes.length >= SocialRepository.pageSize,
         page: 0,
       );
     } catch (e) {
@@ -121,7 +126,7 @@ class ExploreRecipesNotifier extends Notifier<ExploreRecipesState> {
       state = state.copyWith(
         recipes: [...state.recipes, ...recipes],
         page: nextPage,
-        hasMore: recipes.length >= 20,
+        hasMore: recipes.length >= SocialRepository.pageSize,
         isLoadingMore: false,
       );
     } catch (e) {
@@ -188,6 +193,7 @@ class FeedNotifier extends Notifier<FeedState> {
 
   @override
   FeedState build() {
+    ref.listen(feedTagsFilterProvider, (_, _) => reload());
     Future.microtask(reload);
     return const FeedState(isLoading: true);
   }
@@ -195,10 +201,11 @@ class FeedNotifier extends Notifier<FeedState> {
   Future<void> reload() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final recipes = await _repo.fetchFeed(page: 0);
+      final tags = ref.read(feedTagsFilterProvider);
+      final recipes = await _repo.fetchFeed(page: 0, tags: tags);
       state = FeedState(
         recipes: recipes,
-        hasMore: recipes.length >= 20,
+        hasMore: recipes.length >= SocialRepository.pageSize,
         page: 0,
       );
     } catch (e) {
@@ -211,11 +218,12 @@ class FeedNotifier extends Notifier<FeedState> {
     state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final nextPage = state.page + 1;
-      final recipes = await _repo.fetchFeed(page: nextPage);
+      final tags = ref.read(feedTagsFilterProvider);
+      final recipes = await _repo.fetchFeed(page: nextPage, tags: tags);
       state = state.copyWith(
         recipes: [...state.recipes, ...recipes],
         page: nextPage,
-        hasMore: recipes.length >= 20,
+        hasMore: recipes.length >= SocialRepository.pageSize,
         isLoadingMore: false,
       );
     } catch (e) {
