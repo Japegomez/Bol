@@ -3,6 +3,7 @@ import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
@@ -31,7 +32,8 @@ class ShoppingRepository {
         );
         await _cache.cacheShoppingList(list);
         return list;
-      } catch (_) {
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
         final cached = await _cache.getShoppingList(
           userId: householdId == null ? userId : null,
           householdId: householdId,
@@ -122,7 +124,8 @@ class ShoppingRepository {
         );
         await _cache.cacheShoppingItems(listId, items);
         return items;
-      } catch (_) {
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
         return _cache.getShoppingItems(listId);
       }
     }

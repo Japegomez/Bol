@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -31,6 +32,13 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     if (confirmed != true || !context.mounted) return;
+
+    final authState = ref.read(authStateProvider).valueOrNull;
+    if (authState is AuthAuthenticated) {
+      await ref
+          .read(localCacheStoreProvider)
+          .clearUserSyncState(authState.user.id);
+    }
     await ref.read(authRepositoryProvider).signOut(manual: true);
   }
 

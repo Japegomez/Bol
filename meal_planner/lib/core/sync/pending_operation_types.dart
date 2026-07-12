@@ -1,6 +1,7 @@
 abstract final class PendingEntity {
   static const recipe = 'recipe';
   static const planSlot = 'plan_slot';
+  static const weeklyPlan = 'weekly_plan';
   static const shoppingList = 'shopping_list';
   static const shoppingItem = 'shopping_item';
 }

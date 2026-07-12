@@ -10,6 +10,7 @@ import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
+import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
@@ -480,6 +481,7 @@ class LocalCacheStore {
   }
 
   Future<void> _insertPendingOperation({
+    required String userId,
     required String entityType,
     required String opType,
     required Map<String, dynamic> payload,
@@ -487,12 +489,17 @@ class LocalCacheStore {
     await _db!.into(_db.pendingOperations).insert(
           PendingOperationsCompanion.insert(
             id: newLocalId(),
+            userId: Value(userId),
             entityType: entityType,
             opType: opType,
             payloadJson: jsonEncode(payload),
             createdAt: DateTime.now(),
           ),
         );
+  }
+
+  String? _requireCurrentUserId() {
+    return supabase.auth.currentUser?.id;
   }
 
   Future<void> enqueueOperation({
@@ -502,20 +509,43 @@ class LocalCacheStore {
   }) async {
     if (_db == null) return;
 
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
     await _insertPendingOperation(
+      userId: userId,
       entityType: entityType,
       opType: opType,
       payload: payload,
     );
   }
 
-  Future<List<PendingOperation>> getPendingOperations() async {
+  Future<List<PendingOperation>> getPendingOperations({String? userId}) async {
     if (_db == null) return const [];
 
-    final rows = await (_db.select(_db.pendingOperations)
-          ..orderBy([(o) => OrderingTerm.asc(o.createdAt)]))
-        .get();
-    return rows;
+    final resolvedUserId = userId ?? _requireCurrentUserId();
+    final query = _db.select(_db.pendingOperations)
+      ..orderBy([(o) => OrderingTerm.asc(o.createdAt)]);
+
+    if (resolvedUserId != null) {
+      query.where(
+        (o) =>
+            o.userId.equals(resolvedUserId) | o.userId.isNull(),
+      );
+    }
+
+    return query.get();
+  }
+
+  Future<void> clearUserSyncState(String userId) async {
+    if (_db == null) return;
+
+    await _db.transaction(() async {
+      await (_db.delete(_db.pendingOperations)
+            ..where((o) => o.userId.equals(userId) | o.userId.isNull()))
+          .go();
+      await _db.delete(_db.idMappings).go();
+    });
   }
 
   Future<void> deletePendingOperation(String id) async {
@@ -600,6 +630,36 @@ class LocalCacheStore {
     });
   }
 
+  // ── Planner: atomic cache + pending op ───────────────────────────────────────
+
+  Future<void> cacheWeeklyPlanWithPendingCreate({
+    required WeeklyPlan plan,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
+    await _db.transaction(() async {
+      await _db.into(_db.localWeeklyPlans).insertOnConflictUpdate(
+            LocalWeeklyPlansCompanion.insert(
+              id: plan.id,
+              householdId: Value(plan.householdId),
+              userId: Value(plan.userId),
+              weekStart: plan.weekStart.toIso8601String().split('T').first,
+              createdAt: plan.createdAt,
+            ),
+          );
+      await _insertPendingOperation(
+        userId: userId,
+        entityType: PendingEntity.weeklyPlan,
+        opType: PendingOp.create,
+        payload: payload,
+      );
+    });
+  }
+
   // ── Shopping: atomic cache + pending op ────────────────────────────────────
 
   Future<void> cacheShoppingListWithPendingCreate({
@@ -607,6 +667,9 @@ class LocalCacheStore {
     required Map<String, dynamic> payload,
   }) async {
     if (_db == null) return;
+
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
 
     await _db.transaction(() async {
       await _db.into(_db.localShoppingLists).insertOnConflictUpdate(
@@ -618,6 +681,7 @@ class LocalCacheStore {
             ),
           );
       await _insertPendingOperation(
+        userId: userId,
         entityType: PendingEntity.shoppingList,
         opType: PendingOp.create,
         payload: payload,
@@ -632,11 +696,15 @@ class LocalCacheStore {
   }) async {
     if (_db == null) return;
 
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
     await _db.transaction(() async {
       await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
             _shoppingItemToRow(item),
           );
       await _insertPendingOperation(
+        userId: userId,
         entityType: PendingEntity.shoppingItem,
         opType: opType,
         payload: payload,
@@ -650,10 +718,14 @@ class LocalCacheStore {
   }) async {
     if (_db == null) return;
 
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
     await _db.transaction(() async {
       await (_db.delete(_db.localShoppingItems)..where((i) => i.id.equals(id)))
           .go();
       await _insertPendingOperation(
+        userId: userId,
         entityType: PendingEntity.shoppingItem,
         opType: PendingOp.delete,
         payload: payload,
@@ -667,11 +739,15 @@ class LocalCacheStore {
   }) async {
     if (_db == null) return;
 
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
     await _db.transaction(() async {
       await (_db.delete(_db.localShoppingItems)
             ..where((i) => i.shoppingListId.equals(listId)))
           .go();
       await _insertPendingOperation(
+        userId: userId,
         entityType: PendingEntity.shoppingItem,
         opType: PendingOp.clear,
         payload: payload,

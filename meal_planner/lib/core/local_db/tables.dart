@@ -121,6 +121,7 @@ class LocalShoppingItems extends Table {
 
 class PendingOperations extends Table {
   TextColumn get id => text()();
+  TextColumn get userId => text().nullable()();
   TextColumn get entityType => text()();
   TextColumn get opType => text()();
   TextColumn get payloadJson => text()();

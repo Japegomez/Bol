@@ -85,7 +85,8 @@ La función `moderate-image` analiza fotos de recetas y avatares con Google Clou
 
 ```bash
 supabase link --project-ref hxtynisikjpwlvpdgdbt
-supabase secrets set GOOGLE_VISION_API_KEY=tu_api_key
+# Crea un .env.local (gitignored) con GOOGLE_VISION_API_KEY=tu_api_key
+supabase secrets set --env-file .env.local
 supabase functions deploy moderate-image --no-verify-jwt=false
 ```
 

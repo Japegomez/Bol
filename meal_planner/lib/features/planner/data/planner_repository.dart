@@ -68,7 +68,14 @@ class PlannerRepository {
       weekStart: DateTime.parse(dateStr),
       createdAt: DateTime.now(),
     );
-    await _cache.cacheWeeklyPlan(tempPlan);
+    await _cache.cacheWeeklyPlanWithPendingCreate(
+      plan: tempPlan,
+      payload: {
+        'tempId': tempPlan.id,
+        'userId': userId,
+        'weekStart': dateStr,
+      },
+    );
     return tempPlan;
   }
 
@@ -186,13 +193,21 @@ class PlannerRepository {
     final slot = PlanSlot.fromJson(data);
 
     if (recipeId != null && !isLeftover) {
-      await _syncShoppingListAdd(
-        slot: slot,
-        recipeId: recipeId,
-        servings: servings,
-        userId: userId,
-        householdId: householdId,
-      );
+      try {
+        await _syncShoppingListAdd(
+          slot: slot,
+          recipeId: recipeId,
+          servings: servings,
+          userId: userId,
+          householdId: householdId,
+        );
+      } catch (error) {
+        await supabase
+            .from(PlanSlot.table_name)
+            .delete()
+            .eq(PlanSlot.c_id, slot.id);
+        rethrow;
+      }
     }
 
     return slot;
@@ -429,6 +444,13 @@ class PlannerRepository {
     required String userId,
     String? householdId,
   }) async {
+    final existingLinked = await supabase
+        .from(ShoppingItem.table_name)
+        .select(ShoppingItem.c_id)
+        .eq(ShoppingItem.c_planSlotId, slot.id)
+        .limit(1);
+    if ((existingLinked as List).isNotEmpty) return;
+
     final list = await getOrCreateShoppingList(
       userId: userId,
       householdId: householdId,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/local_db/app_database.dart';
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
@@ -9,6 +10,7 @@ import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
+import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
@@ -63,34 +65,21 @@ class SyncService {
     if (_syncing) return;
     if (!await NetworkStatus.isOnline) return;
 
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
     _syncing = true;
     try {
-      final ops = await cache.getPendingOperations();
-      for (final op in ops) {
-        try {
-          await _replay(op.entityType, op.opType, op.payloadJson);
-          await cache.deletePendingOperation(op.id);
-        } catch (error, stackTrace) {
-          log.e(
-            'Sync replay failed for operation: ${op.entityType}.${op.opType} '
-            '(id: ${op.id}, retryCount: ${op.retryCount})',
-            error: error,
-            stackTrace: stackTrace,
-          );
+      final ops = await cache.getPendingOperations(userId: userId);
+      var syncedAny = false;
 
-          if (op.retryCount >= maxRetries) {
-            log.w(
-              'Max retries ($maxRetries) reached for operation: ${op.entityType}.${op.opType} '
-              '(id: ${op.id}). Removing from pending queue to prevent infinite retries.',
-            );
-            await cache.deletePendingOperation(op.id);
-          } else {
-            await cache.incrementRetry(op.id);
-          }
+      for (final op in ops) {
+        if (await _replayWithRetries(op)) {
+          syncedAny = true;
         }
       }
 
-      if (ops.isNotEmpty) {
+      if (syncedAny) {
         ref.invalidate(recipesProvider);
         ref.invalidate(recipeListProvider);
         ref.invalidate(planSlotsProvider);
@@ -98,6 +87,49 @@ class SyncService {
       }
     } finally {
       _syncing = false;
+    }
+  }
+
+  int _backoffDelayMs(int attempt) {
+    final seconds = 1 << attempt.clamp(0, 5);
+    return (seconds * 1000).clamp(1000, 30000);
+  }
+
+  Future<bool> _replayWithRetries(PendingOperation op) async {
+    var attempts = op.retryCount;
+
+    while (true) {
+      if (!await NetworkStatus.isOnline) return false;
+
+      try {
+        await _replay(op.entityType, op.opType, op.payloadJson);
+        await cache.deletePendingOperation(op.id);
+        return true;
+      } catch (error, stackTrace) {
+        attempts++;
+        log.e(
+          'Sync replay failed for operation: ${op.entityType}.${op.opType} '
+          '(id: ${op.id}, attempt: $attempts/$maxRetries)',
+          error: error,
+          stackTrace: stackTrace,
+        );
+
+        if (attempts >= maxRetries) {
+          log.w(
+            'Max retries ($maxRetries) reached for operation: ${op.entityType}.${op.opType} '
+            '(id: ${op.id}). Removing from pending queue.',
+          );
+          await cache.deletePendingOperation(op.id);
+          return false;
+        }
+
+        await cache.incrementRetry(op.id);
+        if (!await NetworkStatus.isOnline) return false;
+
+        await Future<void>.delayed(
+          Duration(milliseconds: _backoffDelayMs(attempts)),
+        );
+      }
     }
   }
 
@@ -115,6 +147,8 @@ class SyncService {
         await _replayRecipe(opType, payload);
       case PendingEntity.planSlot:
         await _replayPlanSlot(opType, payload);
+      case PendingEntity.weeklyPlan:
+        await _replayWeeklyPlan(opType, payload);
       case PendingEntity.shoppingList:
         await _replayShoppingList(opType, payload);
       case PendingEntity.shoppingItem:
@@ -211,6 +245,35 @@ class SyncService {
         await plannerRepository.removeSlotRemote(slotId);
       default:
         throw StateError('Unknown plan slot op type: $opType');
+    }
+  }
+
+  Future<void> _replayWeeklyPlan(
+    String opType,
+    Map<String, dynamic> payload,
+  ) async {
+    switch (opType) {
+      case PendingOp.create:
+        final tempId = payload['tempId'] as String?;
+        if (await _skipIfCreateAlreadyApplied(tempId, WeeklyPlan.table_name)) {
+          return;
+        }
+        final data = await supabase
+            .from(WeeklyPlan.table_name)
+            .insert(
+              WeeklyPlan.insert(
+                id: tempId,
+                userId: payload['userId'] as String?,
+                weekStart: DateTime.parse(payload['weekStart'] as String),
+              ),
+            )
+            .select()
+            .single();
+        if (tempId != null) {
+          await _recordTempIdMapping(tempId, data['id'].toString());
+        }
+      default:
+        throw StateError('Unknown weekly plan op type: $opType');
     }
   }
 

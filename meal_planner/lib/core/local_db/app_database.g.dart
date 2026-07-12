@@ -4193,6 +4193,15 @@ class $PendingOperationsTable extends PendingOperations
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _entityTypeMeta = const VerificationMeta(
     'entityType',
   );
@@ -4250,6 +4259,7 @@ class $PendingOperationsTable extends PendingOperations
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    userId,
     entityType,
     opType,
     payloadJson,
@@ -4272,6 +4282,12 @@ class $PendingOperationsTable extends PendingOperations
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
     }
     if (data.containsKey('entity_type')) {
       context.handle(
@@ -4327,6 +4343,10 @@ class $PendingOperationsTable extends PendingOperations
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
       entityType: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}entity_type'],
@@ -4359,6 +4379,7 @@ class $PendingOperationsTable extends PendingOperations
 class PendingOperation extends DataClass
     implements Insertable<PendingOperation> {
   final String id;
+  final String? userId;
   final String entityType;
   final String opType;
   final String payloadJson;
@@ -4366,6 +4387,7 @@ class PendingOperation extends DataClass
   final int retryCount;
   const PendingOperation({
     required this.id,
+    this.userId,
     required this.entityType,
     required this.opType,
     required this.payloadJson,
@@ -4376,6 +4398,9 @@ class PendingOperation extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
     map['entity_type'] = Variable<String>(entityType);
     map['op_type'] = Variable<String>(opType);
     map['payload_json'] = Variable<String>(payloadJson);
@@ -4387,6 +4412,9 @@ class PendingOperation extends DataClass
   PendingOperationsCompanion toCompanion(bool nullToAbsent) {
     return PendingOperationsCompanion(
       id: Value(id),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
       entityType: Value(entityType),
       opType: Value(opType),
       payloadJson: Value(payloadJson),
@@ -4402,6 +4430,7 @@ class PendingOperation extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PendingOperation(
       id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String?>(json['userId']),
       entityType: serializer.fromJson<String>(json['entityType']),
       opType: serializer.fromJson<String>(json['opType']),
       payloadJson: serializer.fromJson<String>(json['payloadJson']),
@@ -4414,6 +4443,7 @@ class PendingOperation extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String?>(userId),
       'entityType': serializer.toJson<String>(entityType),
       'opType': serializer.toJson<String>(opType),
       'payloadJson': serializer.toJson<String>(payloadJson),
@@ -4424,6 +4454,7 @@ class PendingOperation extends DataClass
 
   PendingOperation copyWith({
     String? id,
+    Value<String?> userId = const Value.absent(),
     String? entityType,
     String? opType,
     String? payloadJson,
@@ -4431,6 +4462,7 @@ class PendingOperation extends DataClass
     int? retryCount,
   }) => PendingOperation(
     id: id ?? this.id,
+    userId: userId.present ? userId.value : this.userId,
     entityType: entityType ?? this.entityType,
     opType: opType ?? this.opType,
     payloadJson: payloadJson ?? this.payloadJson,
@@ -4440,6 +4472,7 @@ class PendingOperation extends DataClass
   PendingOperation copyWithCompanion(PendingOperationsCompanion data) {
     return PendingOperation(
       id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
       entityType: data.entityType.present
           ? data.entityType.value
           : this.entityType,
@@ -4458,6 +4491,7 @@ class PendingOperation extends DataClass
   String toString() {
     return (StringBuffer('PendingOperation(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('entityType: $entityType, ')
           ..write('opType: $opType, ')
           ..write('payloadJson: $payloadJson, ')
@@ -4468,13 +4502,21 @@ class PendingOperation extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, entityType, opType, payloadJson, createdAt, retryCount);
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    entityType,
+    opType,
+    payloadJson,
+    createdAt,
+    retryCount,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PendingOperation &&
           other.id == this.id &&
+          other.userId == this.userId &&
           other.entityType == this.entityType &&
           other.opType == this.opType &&
           other.payloadJson == this.payloadJson &&
@@ -4484,6 +4526,7 @@ class PendingOperation extends DataClass
 
 class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
   final Value<String> id;
+  final Value<String?> userId;
   final Value<String> entityType;
   final Value<String> opType;
   final Value<String> payloadJson;
@@ -4492,6 +4535,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
   final Value<int> rowid;
   const PendingOperationsCompanion({
     this.id = const Value.absent(),
+    this.userId = const Value.absent(),
     this.entityType = const Value.absent(),
     this.opType = const Value.absent(),
     this.payloadJson = const Value.absent(),
@@ -4501,6 +4545,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
   });
   PendingOperationsCompanion.insert({
     required String id,
+    this.userId = const Value.absent(),
     required String entityType,
     required String opType,
     required String payloadJson,
@@ -4514,6 +4559,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
        createdAt = Value(createdAt);
   static Insertable<PendingOperation> custom({
     Expression<String>? id,
+    Expression<String>? userId,
     Expression<String>? entityType,
     Expression<String>? opType,
     Expression<String>? payloadJson,
@@ -4523,6 +4569,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
       if (entityType != null) 'entity_type': entityType,
       if (opType != null) 'op_type': opType,
       if (payloadJson != null) 'payload_json': payloadJson,
@@ -4534,6 +4581,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
 
   PendingOperationsCompanion copyWith({
     Value<String>? id,
+    Value<String?>? userId,
     Value<String>? entityType,
     Value<String>? opType,
     Value<String>? payloadJson,
@@ -4543,6 +4591,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
   }) {
     return PendingOperationsCompanion(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       entityType: entityType ?? this.entityType,
       opType: opType ?? this.opType,
       payloadJson: payloadJson ?? this.payloadJson,
@@ -4557,6 +4606,9 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
     }
     if (entityType.present) {
       map['entity_type'] = Variable<String>(entityType.value);
@@ -4583,6 +4635,7 @@ class PendingOperationsCompanion extends UpdateCompanion<PendingOperation> {
   String toString() {
     return (StringBuffer('PendingOperationsCompanion(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('entityType: $entityType, ')
           ..write('opType: $opType, ')
           ..write('payloadJson: $payloadJson, ')
@@ -7006,6 +7059,7 @@ typedef $$LocalShoppingItemsTableProcessedTableManager =
 typedef $$PendingOperationsTableCreateCompanionBuilder =
     PendingOperationsCompanion Function({
       required String id,
+      Value<String?> userId,
       required String entityType,
       required String opType,
       required String payloadJson,
@@ -7016,6 +7070,7 @@ typedef $$PendingOperationsTableCreateCompanionBuilder =
 typedef $$PendingOperationsTableUpdateCompanionBuilder =
     PendingOperationsCompanion Function({
       Value<String> id,
+      Value<String?> userId,
       Value<String> entityType,
       Value<String> opType,
       Value<String> payloadJson,
@@ -7035,6 +7090,11 @@ class $$PendingOperationsTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7078,6 +7138,11 @@ class $$PendingOperationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get entityType => $composableBuilder(
     column: $table.entityType,
     builder: (column) => ColumnOrderings(column),
@@ -7115,6 +7180,9 @@ class $$PendingOperationsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get entityType => $composableBuilder(
     column: $table.entityType,
@@ -7179,6 +7247,7 @@ class $$PendingOperationsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
                 Value<String> entityType = const Value.absent(),
                 Value<String> opType = const Value.absent(),
                 Value<String> payloadJson = const Value.absent(),
@@ -7187,6 +7256,7 @@ class $$PendingOperationsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PendingOperationsCompanion(
                 id: id,
+                userId: userId,
                 entityType: entityType,
                 opType: opType,
                 payloadJson: payloadJson,
@@ -7197,6 +7267,7 @@ class $$PendingOperationsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                Value<String?> userId = const Value.absent(),
                 required String entityType,
                 required String opType,
                 required String payloadJson,
@@ -7205,6 +7276,7 @@ class $$PendingOperationsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PendingOperationsCompanion.insert(
                 id: id,
+                userId: userId,
                 entityType: entityType,
                 opType: opType,
                 payloadJson: payloadJson,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 
@@ -40,6 +41,12 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     });
 
     try {
+      final authState = ref.read(authStateProvider).valueOrNull;
+      if (authState is AuthAuthenticated) {
+        await ref
+            .read(localCacheStoreProvider)
+            .clearUserSyncState(authState.user.id);
+      }
       await ref.read(authRepositoryProvider).deleteAccount();
       if (!mounted) return;
       context.go('/auth/login');
