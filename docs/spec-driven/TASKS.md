@@ -15,7 +15,7 @@
 | Fase 4 — Planificador   | Completada | Vista semanal vertical, slots, drag-and-drop, sobras, texto libre, Realtime |
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
-| Fase 7 — Acceso offline | Completada (código) | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
+| Fase 7 — Acceso offline | Completada | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
 
 ---
 
@@ -438,7 +438,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Fase 7 — Acceso offline (móvil)
 
-> Rama `feature/offline-access`. Caché local con **Drift** + SQLite nativo (`sqlite3_flutter_libs`). **Web:** sin base de datos local ni modo offline (`kIsWeb`); probar solo en dispositivo/emulador.
+> Integrado en `develop` y release. Caché local con **Drift** + SQLite nativo (`sqlite3_flutter_libs`). **Web:** sin base de datos local ni modo offline (`kIsWeb`); probar solo en dispositivo/emulador.
 
 ### Infraestructura local
 
@@ -539,6 +539,6 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 1. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
 2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-3. **Merge `feature/offline-access` → `develop`** y release TestFlight / Play con offline + multi-etiqueta + modo oscuro.
+3. **Release TestFlight / Play** con offline + multi-etiqueta + modo oscuro (offline ya integrado en `develop`).
 4. **Onboarding** o tutorial para nuevos usuarios (backlog).
 5. **Tests unitarios** de escalado de ingredientes y consolidación de lista de la compra.
