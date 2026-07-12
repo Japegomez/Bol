@@ -60,18 +60,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    const visionRes = await fetch(`${VISION_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        requests: [
-          {
-            image: { content: image },
-            features: [{ type: "SAFE_SEARCH_DETECTION", maxResults: 1 }],
-          },
-        ],
-      }),
-    });
+    const visionTimeoutMs = 15_000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), visionTimeoutMs);
+
+    let visionRes: Response;
+    try {
+      visionRes = await fetch(`${VISION_URL}?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requests: [
+            {
+              image: { content: image },
+              features: [{ type: "SAFE_SEARCH_DETECTION", maxResults: 1 }],
+            },
+          ],
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!visionRes.ok) {
       const errText = await visionRes.text();

@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
+import 'package:meal_planner/core/utils/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ModerationResult {
   const ModerationResult({
@@ -23,37 +25,53 @@ class PhotoModerationException implements Exception {
   String toString() => message;
 }
 
+const _genericModerationFailure =
+    'No se pudo comprobar la imagen. Inténtalo de nuevo.';
+
 class PhotoModerationService {
   Future<ModerationResult> check(Uint8List bytes) async {
-    final response = await supabase.functions.invoke(
-      'moderate-image',
-      body: {'image': base64Encode(bytes)},
-    );
+    try {
+      final response = await supabase.functions.invoke(
+        'moderate-image',
+        body: {'image': base64Encode(bytes)},
+      );
 
-    if (response.status != 200) {
-      final detail = _extractErrorDetail(response.data);
+      if (response.status != 200) {
+        final detail = _extractErrorDetail(response.data);
+        log.w('Photo moderation HTTP ${response.status}: $detail');
+        throw PhotoModerationException(
+          _userFacingModerationMessage(detail),
+        );
+      }
+
+      final data = response.data;
+      if (data is! Map<String, dynamic>) {
+        throw PhotoModerationException(_genericModerationFailure);
+      }
+
+      final error = data['error'];
+      if (error != null) {
+        final detail = _extractErrorDetail(data);
+        log.w('Photo moderation error response: $detail');
+        throw PhotoModerationException(
+          _userFacingModerationMessage(detail),
+        );
+      }
+
+      return ModerationResult(
+        allowed: data['allowed'] as bool? ?? false,
+        reasons: (data['reasons'] as List?)?.cast<String>() ?? const [],
+      );
+    } on FunctionException catch (error) {
+      final detail = _extractErrorDetail(error.details);
+      log.w(
+        'Photo moderation function exception (${error.status})',
+        error: error,
+      );
       throw PhotoModerationException(
-        detail ?? 'No se pudo comprobar la imagen. Inténtalo de nuevo.',
+        _userFacingModerationMessage(detail),
       );
     }
-
-    final data = response.data;
-    if (data is! Map<String, dynamic>) {
-      throw PhotoModerationException('No se pudo comprobar la imagen.');
-    }
-
-    final error = data['error'];
-    if (error != null) {
-      throw PhotoModerationException(
-        _extractErrorDetail(data) ??
-            'No se pudo comprobar la imagen. Inténtalo de nuevo.',
-      );
-    }
-
-    return ModerationResult(
-      allowed: data['allowed'] as bool? ?? false,
-      reasons: (data['reasons'] as List?)?.cast<String>() ?? const [],
-    );
   }
 }
 
@@ -65,21 +83,29 @@ String? _extractErrorDetail(dynamic data) {
   if (data is! Map) return null;
   final detail = data['detail'];
   if (detail is String && detail.isNotEmpty) {
-    if (detail.contains('billing')) {
-      return 'La moderación de imágenes no está disponible: activa facturación en Google Cloud Vision.';
-    }
-    if (detail.contains('API key not valid') ||
-        detail.contains('invalid API key')) {
-      return 'Clave de Google Vision inválida. Revisa GOOGLE_VISION_API_KEY en Supabase.';
-    }
-    if (detail.contains('has not been used') ||
-        detail.contains('is disabled')) {
-      return 'Activa Cloud Vision API en tu proyecto de Google Cloud.';
-    }
-    if (detail.contains('referer') || detail.contains('API_KEY_HTTP_REFERRER')) {
-      return 'La API key tiene restricción de referrer; quítala o usa "Ninguna" para llamadas desde servidor.';
-    }
     return detail;
   }
   return null;
+}
+
+bool _isConfigurationDetail(String detail) {
+  final lower = detail.toLowerCase();
+  return lower.contains('billing') ||
+      lower.contains('api key') ||
+      lower.contains('google_vision_api_key') ||
+      lower.contains('has not been used') ||
+      lower.contains('is disabled') ||
+      lower.contains('referer') ||
+      lower.contains('api_key_http_referrer') ||
+      lower.contains('moderation not configured');
+}
+
+String _userFacingModerationMessage(String? detail) {
+  if (detail == null || detail.isEmpty) {
+    return _genericModerationFailure;
+  }
+  if (_isConfigurationDetail(detail)) {
+    return _genericModerationFailure;
+  }
+  return detail;
 }
