@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `feature/offline-access`
+> **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `develop`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop` / `feature/offline-access`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, moderación Vision API.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra, chips amplios en planificador con navegación a ficha de receta.
 
 ---
 
@@ -176,7 +176,7 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-05** Al asignar una receta, el usuario puede ajustar el **número de raciones** para esa ocasión (por defecto las raciones de la receta) mediante un stepper **− / número / +** en el diálogo de confirmación. Los ingredientes de la lista de la compra se escalan proporcionalmente.  
 **RF-PLAN-06** El usuario puede eliminar una comida concreta de un slot sin afectar al resto del mismo slot.  
 **RF-PLAN-07** Al eliminar una receta del planificador, sus ingredientes generados por esa asignación se eliminan de la lista de la compra (por `plan_slot_id`).  
-**RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot para ver su detalle.  
+**RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot (chip ampliado) para abrir su ficha en el recetario. Las entradas de texto libre no navegan.  
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
 **RF-PLAN-10** Al asignar una receta, el usuario puede marcar **Son sobras**: los ingredientes **no** se añaden a la lista de la compra.  
 **RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
@@ -192,7 +192,7 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 
 **RF-SHOP-01** Cuando se añade una receta al planificador, sus ingredientes **incluidos** (`is_included = true`) y **no al gusto** (`is_to_taste = false`) se agregan automáticamente a la lista de la compra (escalados según raciones y **redondeados a enteros**). Los opcionales excluidos en la ficha no se sincronizan.  
 **RF-SHOP-02** Los ingredientes se agrupan visualmente por su **categoría** (Verduras, Lácteos, etc.).  
-**RF-SHOP-03** Si el mismo ingrediente aparece en varias comidas planificadas, cada asignación genera ítems vinculados por `plan_slot_id` (pueden mostrarse filas separadas con el mismo nombre/unidad).  
+**RF-SHOP-03** Si el mismo ingrediente aparece en varias comidas planificadas, cada asignación se persiste con su `plan_slot_id`, pero la **UI consolida** filas de receta con mismo nombre, categoría y unidad (normalizando singular/plural) sumando cantidades al mostrar y al compartir. Marcar como comprado o eliminar aplica al grupo consolidado; la edición manual queda deshabilitada en filas fusionadas.  
 **RF-SHOP-04** El usuario puede añadir ítems manualmente (sin estar vinculados a ninguna receta).  
 **RF-SHOP-05** El usuario puede editar la cantidad/unidad/nombre de cualquier ítem.  
 **RF-SHOP-06** El usuario puede marcar ítems como **comprados** (tachado visual). Los ítems comprados se colapsan al final de su categoría.  
@@ -202,7 +202,7 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 **RF-SHOP-10** El usuario puede **exportar la lista** como texto plano y compartirla por WhatsApp u otras apps del sistema (usando el `share_plus` de Flutter).  
 **RF-SHOP-11** En modo hogar, todos los miembros ven la misma lista en tiempo real y pueden marcar/desmarcar ítems.
 
-> **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included` y no `is_to_taste`. Etiquetas con `formatShoppingItemLabel` (misma regla que ficha de receta). Al quitar: `_syncShoppingListRemove` borra por slot o resta cantidades en datos legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
+> **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included` y no `is_to_taste`. Etiquetas con `formatShoppingItemLabel` (misma regla que ficha de receta). Consolidación visual: `consolidateShoppingItems` agrupa por nombre + categoría + `normalizeUnit(unit)`; toggle/delete propagan a todos los IDs del grupo. Al quitar slot: `_syncShoppingListRemove` borra por `plan_slot_id` o resta cantidades legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
 
 ---
 

@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 11/07/2026 — acceso offline en móvil (Drift + sync), filtro multi-etiqueta, modo oscuro manual, limpieza UI planificador
+> Actualizado: 12/07/2026 — consolidación visual lista de la compra, chips de receta más grandes en planificador, navegación a ficha desde slot
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -328,9 +328,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Indicador visual de semana actual
 - [x] Destacar la tarjeta del **día de hoy** con fondo verde más oscuro, borde primario y badge «Hoy»
 - [x] Slot vacío: pulsar o soltar receta para añadir
-- [x] Slot con receta(s): muestra nombre(s) con chips de color según tipo (receta / sobras / texto libre)
+- [x] Slot con receta(s): chips amplios (altura mín. 52 px, título hasta 2 líneas, raciones legibles) con color según tipo (receta / sobras / texto libre)
 - [x] Slot con varias recetas: lista vertical con botón «Añadir»
-- [x] Desde el planificador: pulsar una receta de un slot → navegar a detalle de receta
+- [x] Desde el planificador: pulsar una receta del recetario en un slot → navegar a detalle (`/home/recipes/:id`); entradas de texto libre no navegan
 
 ### F7 - Gestión de slots
 
@@ -377,6 +377,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Cada ingrediente se inserta con `plan_slot_id` (sin fusionar filas entre comidas distintas)
 - [x] Al eliminar receta del planificador: eliminar ítems por `plan_slot_id` o restar cantidad en datos legacy consolidados
   - `_syncShoppingListRemove` en `PlannerRepository`
+- [x] Consolidación visual al mostrar la lista: ítems de recetas con mismo nombre, categoría y unidad (singular/plural normalizado vía `normalizeUnit`) se suman en pantalla y al compartir; marcar/eliminar aplica al grupo (`consolidateShoppingItems` en `shopping_provider.dart`); ítems manuales no se fusionan; edición deshabilitada en filas consolidadas
 
 ### F11 - Exportación
 
@@ -489,7 +490,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `flutter_launcher_icons`; assets en `docs/store-assets/` (PR #15)
 - [ ] README de desarrollo con instrucciones de setup local
 - [ ] Protección de ramas `main` / `develop` en GitHub
-- [ ] Tests unitarios: escalado de ingredientes, lógica de consolidación de lista de la compra
+- [x] Tests unitarios: lógica de consolidación de lista de la compra (`test/shopping_item_consolidation_test.dart`)
+- [ ] Tests unitarios: escalado de ingredientes al planificar
 
 ---
 
@@ -541,4 +543,4 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
 3. **Release TestFlight / Play** con offline + multi-etiqueta + modo oscuro (offline ya integrado en `develop`).
 4. **Onboarding** o tutorial para nuevos usuarios (backlog).
-5. **Tests unitarios** de escalado de ingredientes y consolidación de lista de la compra.
+5. **Tests unitarios** de escalado de ingredientes al planificar.
