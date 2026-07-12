@@ -12,10 +12,20 @@ class CookingGlossaryRepository {
     final raw = prefs.getString(_storageKey);
     if (raw == null || raw.isEmpty) return [];
 
-    final decoded = jsonDecode(raw) as List<dynamic>;
-    return decoded
-        .map((item) => CookingGlossaryEntry.fromJson(item as Map<String, dynamic>))
-        .toList();
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return [];
+
+      return decoded
+          .map((item) {
+            if (item is! Map<String, dynamic>) return null;
+            return CookingGlossaryEntry.fromJson(item);
+          })
+          .whereType<CookingGlossaryEntry>()
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> saveCustomEntries(List<CookingGlossaryEntry> entries) async {
