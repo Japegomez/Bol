@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/locale_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -8,6 +9,9 @@ import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
+
+/// Error message keys resolved to localized strings in the form UI.
+const householdLoadErrorKey = 'householdLoadError';
 
 /// Used by the planner recipe picker (F7).
 final recipesProvider =
@@ -186,11 +190,13 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       state = AsyncData(
         current.copyWith(
           isSaving: false,
-          error: 'No se pudo cargar tu hogar. Inténtalo de nuevo.',
+          error: householdLoadErrorKey,
         ),
       );
       return null;
     }
+
+    final sourceLang = ref.read(localeProvider.notifier).currentLanguageCode;
 
     try {
       if (current.isEditing) {
@@ -198,6 +204,7 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
           current.recipeId!,
           current.data,
           householdId: householdId,
+          sourceLang: sourceLang,
         );
         ref.invalidate(recipeListProvider);
         ref.invalidate(recipeDetailProvider(current.recipeId!));
@@ -212,6 +219,7 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       final id = await repo.createRecipe(
         current.data,
         householdId: householdId,
+        sourceLang: sourceLang,
       );
       ref.invalidate(recipeListProvider);
       ref.invalidate(recipeTagsProvider);
@@ -243,7 +251,7 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
         state = AsyncData(
           current.copyWith(
             isSaving: false,
-            error: 'No se pudo cargar tu hogar. Inténtalo de nuevo.',
+            error: householdLoadErrorKey,
           ),
         );
         return false;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 
@@ -12,23 +13,21 @@ Future<ForkOptionalNoticeAction?> showForkOptionalIngredientsNoticeDialog(
   return showDialog<ForkOptionalNoticeAction>(
     context: context,
     builder: (dialogContext) {
+      final l10n = dialogContext.l10n;
       return AlertDialog(
-        title: const Text('Ingredientes opcionales'),
+        title: Text(l10n.optionalIngredientsTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Esta receta contiene ingredientes opcionales. '
-                'Añádelos o elimínalos en tu receta.',
-              ),
+              Text(l10n.optionalIngredientsMessage),
               const SizedBox(height: 16),
               ...optionalIngredients.map(
                 (ingredient) => CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
                   controlAffinity: ListTileControlAffinity.leading,
-                  title: Text(formatIngredientLabel(ingredient)),
+                  title: Text(formatIngredientLabel(l10n, ingredient)),
                   value: true,
                   onChanged: null,
                 ),
@@ -40,12 +39,12 @@ Future<ForkOptionalNoticeAction?> showForkOptionalIngredientsNoticeDialog(
           TextButton(
             onPressed: () => Navigator.of(dialogContext)
                 .pop(ForkOptionalNoticeAction.close),
-            child: const Text('Cerrar'),
+            child: Text(l10n.understood),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext)
                 .pop(ForkOptionalNoticeAction.edit),
-            child: const Text('Editar receta'),
+            child: Text(l10n.editRecipe),
           ),
         ],
       );

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/legal_urls.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/auth/presentation/forgot_password_screen.dart';
@@ -64,15 +65,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/legal/terms',
-        builder: (_, _) => LegalDocumentScreen(
-          title: 'Términos y Condiciones',
+        builder: (context, _) => LegalDocumentScreen(
+          title: context.l10n.termsAndConditions,
           url: LegalUrls.terms,
         ),
       ),
       GoRoute(
         path: '/legal/privacy',
-        builder: (_, _) => LegalDocumentScreen(
-          title: 'Política de Privacidad',
+        builder: (context, _) => LegalDocumentScreen(
+          title: context.l10n.privacyPolicy,
           url: LegalUrls.privacy,
         ),
       ),

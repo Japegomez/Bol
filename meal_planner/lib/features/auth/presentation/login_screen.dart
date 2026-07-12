@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/config/env.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
@@ -79,6 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final sessionExpired = ref.watch(authStateProvider).maybeWhen(
           data: (state) =>
@@ -105,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Planifica tus comidas semanales',
+                      l10n.loginTagline,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -126,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Tu sesión ha caducado. Inicia sesión de nuevo.',
+                                  l10n.sessionExpiredMessage,
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color:
                                         theme.colorScheme.onSecondaryContainer,
@@ -140,13 +142,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 16),
                     ],
                     if (!Env.hasSupabase)
-                      const Card(
+                      Card(
                         child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Text(
-                            'Supabase no configurado. Copia dart_defines.example.json '
-                            'a dart_defines.json y añade SUPABASE_URL / SUPABASE_ANON_KEY.',
-                          ),
+                          padding: const EdgeInsets.all(12),
+                          child: Text(l10n.supabaseNotConfigured),
                         ),
                       ),
                     if (_errorMessage != null) ...[
@@ -159,16 +158,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.emailLabel,
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
                       enabled: !_isLoading && Env.hasSupabase,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Introduce tu email';
+                          return l10n.enterEmail;
                         }
                         return null;
                       },
@@ -176,12 +175,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 12),
                     PasswordTextField(
                       controller: _passwordController,
-                      labelText: 'Contraseña',
+                      labelText: l10n.passwordLabel,
                       autofillHints: const [AutofillHints.password],
                       enabled: !_isLoading && Env.hasSupabase,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Introduce tu contraseña';
+                          return l10n.enterPassword;
                         }
                         return null;
                       },
@@ -197,7 +196,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Iniciar sesión'),
+                          : Text(l10n.signIn),
                     ),
                     if (Env.hasGoogleSignIn) ...[
                       const SizedBox(height: 12),
@@ -205,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed:
                             _isLoading || !Env.hasSupabase ? null : _signInWithGoogle,
                         icon: const Icon(Icons.g_mobiledata, size: 28),
-                        label: const Text('Continuar con Google'),
+                        label: Text(l10n.continueWithGoogle),
                       ),
                     ],
                     if (_canUseAppleSignIn) ...[
@@ -214,7 +213,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed:
                             _isLoading || !Env.hasSupabase ? null : _signInWithApple,
                         icon: const Icon(Icons.apple),
-                        label: const Text('Continuar con Apple'),
+                        label: Text(l10n.continueWithApple),
                       ),
                     ],
                     const SizedBox(height: 16),
@@ -224,13 +223,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: _isLoading
                             ? null
                             : () => context.go('/auth/forgot-password'),
-                        child: const Text('¿Olvidaste tu contraseña?'),
+                        child: Text(l10n.forgotPasswordLink),
                       ),
                     ),
                     TextButton(
                       onPressed:
                           _isLoading ? null : () => context.go('/auth/register'),
-                      child: const Text('¿No tienes cuenta? Regístrate'),
+                      child: Text(l10n.noAccountRegister),
                     ),
                   ],
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 
 /// Shows the active sort order above social recipe lists.
 class SocialSortLabel extends StatelessWidget {
@@ -22,7 +23,7 @@ class SocialSortLabel extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              'Ordenado por: $label',
+              context.l10n.sortedBy(label),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("GOOGLE_VISION_API_KEY");
+    const apiKey = Deno.env.get("GOOGLE_API_KEY");
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "Moderation not configured" }),

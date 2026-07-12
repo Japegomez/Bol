@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
+import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/public_recipe_card.dart';
@@ -42,7 +45,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final selectedTags = ref.watch(feedTagsFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Feed')),
+      appBar: AppBar(title: Text(context.l10n.feedTitle)),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -52,7 +55,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               ref.read(feedTagsFilterProvider.notifier).state = tags;
             },
           ),
-          const SocialSortLabel(label: 'Más reciente'),
+          SocialSortLabel(label: context.l10n.mostRecent),
           Expanded(child: _buildBody(context, feedState, selectedTags)),
         ],
       ),
@@ -73,11 +76,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Error: ${state.error}'),
+            Text(context.l10n.errorWithMessage(state.error!)),
             const SizedBox(height: 8),
             FilledButton(
               onPressed: () => ref.read(feedProvider.notifier).reload(),
-              child: const Text('Reintentar'),
+              child: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -100,15 +103,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               const SizedBox(height: 16),
               Text(
                 hasTagFilter
-                    ? 'Sin recetas con estas etiquetas'
-                    : 'Tu feed está vacío',
+                    ? context.l10n.noRecipesWithTags
+                    : context.l10n.feedEmpty,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Text(
                 hasTagFilter
-                    ? 'Prueba con otras etiquetas o quita el filtro.'
-                    : 'Sigue a otros usuarios desde sus perfiles para ver sus recetas públicas aquí.',
+                    ? context.l10n.tryOtherTags
+                    : context.l10n.followUsersHint,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
@@ -117,6 +120,19 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         ),
       );
     }
+
+    final targetLang = ref.watch(currentLanguageCodeProvider);
+    final titles = ref
+            .watch(
+              listTitleTranslationsProvider(
+                TitleTranslationRequest(
+                  targetLang: targetLang,
+                  ids: state.recipes.map((r) => r.id),
+                ),
+              ),
+            )
+            .valueOrNull ??
+        const <String, String>{};
 
     return RefreshIndicator(
       onRefresh: () => ref.read(feedProvider.notifier).reload(),
@@ -131,7 +147,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               child: Center(child: CircularProgressIndicator()),
             );
           }
-          return PublicRecipeCard(recipe: state.recipes[index]);
+          final recipe = state.recipes[index];
+          return PublicRecipeCard(
+            recipe: recipe,
+            titleOverride: titles[recipe.id],
+          );
         },
       ),
     );

@@ -2,19 +2,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_summary.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/star_rating_bar.dart';
 
 class PublicRecipeCard extends ConsumerWidget {
-  const PublicRecipeCard({required this.recipe, super.key});
+  const PublicRecipeCard({required this.recipe, this.titleOverride, super.key});
 
   final PublicRecipeSummary recipe;
+
+  /// Machine-translated title to display instead of [recipe.title], when the
+  /// current app language differs from the recipe's source language.
+  final String? titleOverride;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photoUrlAsync = ref.watch(socialPhotoUrlProvider(recipe.photoUrl));
+    final l10n = context.l10n;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -63,7 +69,7 @@ class PublicRecipeCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      recipe.title,
+                      titleOverride ?? recipe.title,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 6),
@@ -91,7 +97,7 @@ class PublicRecipeCard extends ConsumerWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          '${recipe.servings} raciones',
+                          l10n.servingsCount(recipe.servings),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],

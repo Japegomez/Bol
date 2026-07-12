@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:meal_planner/app.dart';
 import 'package:meal_planner/core/analytics/analytics_service.dart';
 import 'package:meal_planner/core/config/env.dart';
+import 'package:meal_planner/core/locale/supported_locales.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -12,7 +13,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   Future<void> bootstrap() async {
-    await initializeDateFormatting('es', null);
+    for (final code in supportedAppLanguageCodes) {
+      await initializeDateFormatting(code, null);
+    }
 
     if (Env.hasSupabase) {
       await SupabaseConfig.initialize(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/app_button.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
 
@@ -46,11 +47,12 @@ class _CreateHouseholdScreenState extends ConsumerState<CreateHouseholdScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear hogar'),
+        title: Text(l10n.createHousehold),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -60,7 +62,7 @@ class _CreateHouseholdScreenState extends ConsumerState<CreateHouseholdScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Dale un nombre a tu hogar compartido. Podrás invitar a otros miembros con un código.',
+                l10n.createHouseholdDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -68,15 +70,15 @@ class _CreateHouseholdScreenState extends ConsumerState<CreateHouseholdScreen> {
               const SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del hogar',
-                  prefixIcon: Icon(Icons.home_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.householdNameLabel,
+                  prefixIcon: const Icon(Icons.home_outlined),
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 enabled: !_isLoading,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Introduce un nombre';
+                    return l10n.enterName;
                   }
                   return null;
                 },
@@ -90,7 +92,7 @@ class _CreateHouseholdScreenState extends ConsumerState<CreateHouseholdScreen> {
               ],
               const SizedBox(height: 24),
               AppButton(
-                label: 'Crear hogar',
+                label: l10n.createHousehold,
                 isLoading: _isLoading,
                 onPressed: _create,
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 
 class PasswordTextField extends StatefulWidget {
   const PasswordTextField({
@@ -29,6 +30,8 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return TextFormField(
       controller: widget.controller,
       obscureText: _obscure,
@@ -47,7 +50,7 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
           icon: Icon(
             _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           ),
-          tooltip: _obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
+          tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
         ),
       ),
     );

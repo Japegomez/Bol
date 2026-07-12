@@ -4,8 +4,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
+import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
+import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
@@ -37,6 +40,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final recipesAsync = ref.watch(recipeListProvider);
     final filter = ref.watch(recipeListFilterProvider);
     final activeTags = filter.tags;
@@ -44,21 +48,21 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
         filter.search.trim().isNotEmpty || filter.tags.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Recetario')),
+      appBar: AppBar(title: Text(l10n.recipeBookTitle)),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton.small(
             heroTag: 'cooking-glossary',
             onPressed: () => context.push('/home/recipes/glossary'),
-            tooltip: 'Glosario culinario',
+            tooltip: l10n.cookingGlossaryTooltip,
             child: const Icon(Icons.book),
           ),
           const SizedBox(height: 12),
           FloatingActionButton(
             heroTag: 'new-recipe',
             onPressed: () => context.push('/home/recipes/new'),
-            tooltip: 'Nueva receta',
+            tooltip: l10n.newRecipeTooltip,
             child: const Icon(Icons.add),
           ),
         ],
@@ -69,7 +73,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
               controller: _searchController,
-              hintText: 'Buscar por nombre',
+              hintText: l10n.searchByName,
               leading: const Icon(Icons.search),
               onChanged: _onSearchChanged,
               trailing: _searchController.text.isNotEmpty
@@ -111,8 +115,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No se ha encontrado ninguna receta relacionada '
-                              'con la búsqueda. Créala tú mismo.',
+                              l10n.noRecipesFoundForSearch,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
@@ -132,17 +135,30 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                           color: Theme.of(context).colorScheme.outline,
                         ),
                         const SizedBox(height: 16),
-                        const Text('No hay recetas todavía'),
+                        Text(l10n.noRecipesYet),
                         const SizedBox(height: 8),
                         FilledButton.icon(
                           onPressed: () => context.push('/home/recipes/new'),
                           icon: const Icon(Icons.add),
-                          label: const Text('Crear primera receta'),
+                          label: Text(l10n.createFirstRecipe),
                         ),
                       ],
                     ),
                   );
                 }
+
+                final targetLang = ref.watch(currentLanguageCodeProvider);
+                final titles = ref
+                        .watch(
+                          listTitleTranslationsProvider(
+                            TitleTranslationRequest(
+                              targetLang: targetLang,
+                              ids: recipes.map((r) => r.id),
+                            ),
+                          ),
+                        )
+                        .valueOrNull ??
+                    const <String, String>{};
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -154,13 +170,18 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                     padding: const EdgeInsets.all(16),
                     itemCount: recipes.length,
                     itemBuilder: (context, index) {
-                      return _RecipeCard(recipe: recipes[index]);
+                      final recipe = recipes[index];
+                      return _RecipeCard(
+                        recipe: recipe,
+                        titleOverride: titles[recipe.id],
+                      );
                     },
                   ),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Error: $error')),
+              error: (error, _) =>
+                  Center(child: Text(l10n.errorWithMessage('$error'))),
             ),
           ),
         ],
@@ -170,12 +191,14 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
 }
 
 class _RecipeCard extends ConsumerWidget {
-  const _RecipeCard({required this.recipe});
+  const _RecipeCard({required this.recipe, this.titleOverride});
 
   final Recipe recipe;
+  final String? titleOverride;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final photoUrlAsync = ref.watch(recipePhotoUrlProvider(recipe.photoUrl));
 
     return Card(
@@ -225,12 +248,12 @@ class _RecipeCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      recipe.title,
+                      titleOverride ?? recipe.title,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${recipe.servings} raciones',
+                      l10n.servingsCount(recipe.servings),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     if (recipe.tags.isNotEmpty) ...[

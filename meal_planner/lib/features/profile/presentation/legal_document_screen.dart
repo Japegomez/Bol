@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -41,7 +42,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
     } else {
       setState(() {
         _isLoading = false;
-        _error = 'No se pudo abrir el documento';
+        _error = context.l10n.couldNotOpenDocument;
       });
     }
   }
@@ -71,6 +72,8 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -81,7 +84,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
               mode: LaunchMode.externalApplication,
             ),
             icon: const Icon(Icons.open_in_browser),
-            tooltip: 'Abrir en el navegador',
+            tooltip: l10n.openInBrowser,
           ),
         ],
       ),

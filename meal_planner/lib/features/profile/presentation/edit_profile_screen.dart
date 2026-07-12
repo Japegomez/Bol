@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
 import 'package:meal_planner/core/widgets/app_button.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
@@ -68,6 +69,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _showImageSourceSheet() async {
+    final l10n = context.l10n;
     await showModalBottomSheet<void>(
       context: context,
       builder: (context) => SafeArea(
@@ -75,7 +77,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Galería'),
+              title: Text(l10n.gallery),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -84,7 +86,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             if (!kIsWeb)
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: const Text('Cámara'),
+                title: Text(l10n.camera),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -128,6 +130,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final profileAsync = ref.watch(profileProvider);
     final profile = profileAsync.valueOrNull;
@@ -139,7 +142,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar perfil'),
+        title: Text(l10n.editProfile),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -186,31 +189,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               Center(
                 child: _isModeratingImage
                     ? Text(
-                        'Comprobando imagen...',
+                        l10n.checkingImage,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       )
                     : TextButton(
                         onPressed: _isSaving ? null : _showImageSourceSheet,
-                        child: const Text('Cambiar foto'),
+                        child: Text(l10n.changePhoto),
                       ),
               ),
               const SizedBox(height: 24),
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de usuario',
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: l10n.usernameLabel,
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
                 textInputAction: TextInputAction.done,
                 enabled: !_isSaving,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Introduce un nombre de usuario';
+                    return l10n.enterUsername;
                   }
                   if (value.trim().length < 2) {
-                    return 'Mínimo 2 caracteres';
+                    return l10n.minTwoCharacters;
                   }
                   return null;
                 },
@@ -224,7 +227,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ],
               const SizedBox(height: 24),
               AppButton(
-                label: 'Guardar',
+                label: l10n.save,
                 isLoading: _isSaving,
                 onPressed: _save,
               ),

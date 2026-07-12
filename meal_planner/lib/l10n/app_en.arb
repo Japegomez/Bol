@@ -1,0 +1,500 @@
+{
+  "@@locale": "en",
+
+  "appName": "MealPlanner",
+
+  "languageEnglish": "English",
+  "languageSpanish": "Spanish",
+  "languageBasque": "Basque",
+  "languageCatalan": "Catalan",
+  "languageGalician": "Galician",
+  "languagePortuguese": "Portuguese",
+  "languageSystemDefault": "System default",
+  "languageTitle": "Language",
+
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "add": "Add",
+  "edit": "Edit",
+  "remove": "Remove",
+  "clear": "Clear",
+  "retry": "Retry",
+  "understood": "Got it",
+  "optional": "Optional",
+  "requiredField": "Required",
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "navExplore": "Explore",
+  "navRecipeBook": "Recipe book",
+  "navPlanner": "Planner",
+  "navShopping": "Shopping",
+  "navProfile": "Profile",
+  "exploreUnavailableOffline": "Explore is unavailable offline",
+
+  "loginTagline": "Plan your weekly meals",
+  "sessionExpiredMessage": "Your session has expired. Please sign in again.",
+  "supabaseNotConfigured": "Supabase is not configured. Copy dart_defines.example.json to dart_defines.json and add SUPABASE_URL / SUPABASE_ANON_KEY.",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "enterEmail": "Enter your email",
+  "enterPassword": "Enter your password",
+  "signIn": "Sign in",
+  "continueWithGoogle": "Continue with Google",
+  "continueWithApple": "Continue with Apple",
+  "forgotPasswordLink": "Forgot your password?",
+  "noAccountRegister": "Don't have an account? Sign up",
+  "createAccountTitle": "Create account",
+  "registerInApp": "Sign up for {appName}",
+  "@registerInApp": {
+    "placeholders": {
+      "appName": {"type": "String"}
+    }
+  },
+  "usernameLabel": "Username",
+  "enterUsername": "Enter your username",
+  "minTwoCharacters": "Minimum 2 characters",
+  "invalidEmail": "Invalid email",
+  "enterPasswordRegister": "Enter a password",
+  "minSixCharacters": "Minimum 6 characters",
+  "confirmPasswordLabel": "Confirm password",
+  "confirmYourPassword": "Confirm your password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "mustAcceptTerms": "You must accept the Terms and Privacy Policy",
+  "acceptTermsPrefix": "I accept the",
+  "termsLink": "Terms",
+  "andThe": "and the",
+  "privacyPolicyLink": "Privacy Policy",
+  "alreadyHaveAccount": "Already have an account? Sign in",
+  "checkYourEmail": "Check your email",
+  "confirmationEmailSent": "We sent a confirmation link to {email}. Confirm your account before signing in.",
+  "@confirmationEmailSent": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "goToSignIn": "Go to sign in",
+  "recoverPasswordTitle": "Recover password",
+  "forgotPasswordInstructions": "Enter your email and we'll send you a link to reset your password.",
+  "sendResetLink": "Send link",
+  "backToSignIn": "Back to sign in",
+  "emailSent": "Email sent",
+  "resetEmailSentIfExists": "If an account exists for {email}, you will receive a link to reset your password.",
+  "@resetEmailSentIfExists": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+
+  "recipeBookTitle": "Recipe book",
+  "cookingGlossaryTooltip": "Cooking glossary",
+  "newRecipeTooltip": "New recipe",
+  "searchByName": "Search by name",
+  "noRecipesFoundForSearch": "No recipe matched your search. Create it yourself.",
+  "noRecipesYet": "No recipes yet",
+  "createFirstRecipe": "Create first recipe",
+  "servingsCount": "{count, plural, =1{1 serving} other{{count} servings}}",
+  "@servingsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "deleteRecipeTitle": "Delete recipe",
+  "deleteRecipeConfirm": "Are you sure you want to delete \"{title}\"?",
+  "@deleteRecipeConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "publishRecipeTitle": "Publish recipe",
+  "publishRecipeMessage": "This recipe will be visible to all {appName} users. You can unpublish it at any time.",
+  "@publishRecipeMessage": {
+    "placeholders": {
+      "appName": {"type": "String"}
+    }
+  },
+  "makeRecipePrivateTitle": "Make recipe private",
+  "makeRecipePrivateMessageDetail": "The recipe will no longer be visible in Explore. Existing ratings will be kept.",
+  "makeRecipePrivateMessageForm": "The recipe will no longer be visible in Explore.",
+  "publish": "Publish",
+  "makePrivate": "Make private",
+  "visibilityChangeError": "Error changing visibility: {error}",
+  "@visibilityChangeError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "publicBadge": "Public",
+  "prepTimeMin": "Prep: {minutes} min",
+  "@prepTimeMin": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "cookTimeMin": "Cook: {minutes} min",
+  "@cookTimeMin": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "forkedRecipeTitle": "Recipe saved from another user",
+  "forkedRecipeCannotPublish": "Forked recipes cannot be published in Explore.",
+  "publicRecipeSwitch": "Public recipe",
+  "visibleInExplore": "Visible in Explore for all users",
+  "onlyInRecipeBook": "Only visible in your recipe book",
+  "ingredientsSection": "Ingredients",
+  "noIngredients": "No ingredients",
+  "preparationSection": "Preparation",
+  "noSteps": "No steps",
+  "tipsSection": "Tips",
+  "nutritionPerServing": "Nutrition (per serving)",
+  "calories": "Calories",
+  "protein": "Protein",
+  "carbohydrates": "Carbohydrates",
+  "fat": "Fat",
+  "fiber": "Fiber",
+  "nutritionChip": "{label}: {value}",
+  "@nutritionChip": {
+    "placeholders": {
+      "label": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "newRecipeTitle": "New recipe",
+  "editRecipeTitle": "Edit recipe",
+  "photoRequiresConnection": "You need a connection to add or change the recipe photo",
+  "householdEditRequiresConnection": "Offline: editing in household mode requires a connection",
+  "nameLabel": "Name",
+  "servingsLabel": "Servings",
+  "minOneServing": "Minimum 1",
+  "prepMinLabel": "Prep (min)",
+  "cookMinLabel": "Cook (min)",
+  "tagsSection": "Tags",
+  "customTagLabel": "Custom tag",
+  "stepsSection": "Steps",
+  "tipsLabel": "Tips",
+  "tipsHint": "Tricks, variations, or useful notes",
+  "visibleInExploreShort": "Visible to all users in Explore",
+  "addIngredient": "Add ingredient",
+  "addStep": "Add step",
+  "stepLabel": "Step {number}",
+  "@stepLabel": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "optionalStepPrefix": "Optional:",
+  "checkingImage": "Checking image...",
+  "choosePhoto": "Choose photo",
+  "caloriesKcal": "Calories (kcal)",
+  "proteinG": "Protein (g)",
+  "carbohydratesG": "Carbohydrates (g)",
+  "fatG": "Fat (g)",
+  "fiberG": "Fiber (g)",
+  "householdLoadError": "Could not load your household. Try again.",
+  "ingredientLabel": "Ingredient",
+  "removeIngredientTooltip": "Remove ingredient",
+  "quantityLabel": "Quantity",
+  "enterValidNumber": "Enter a valid number",
+  "unitLabel": "Unit",
+  "customUnitLabel": "Custom unit",
+  "categoryLabel": "Category",
+  "toTaste": "To taste",
+  "toTasteShoppingHint": "Not added to the shopping list (e.g. salt, pepper)",
+  "optionalIngredientHint": "You can include or exclude it on the recipe page",
+  "clearTags": "Clear",
+  "cookingGlossaryTitle": "Cooking glossary",
+  "addTermTooltip": "Add term",
+  "newGlossaryEntry": "New entry",
+  "termLabel": "Term",
+  "enterTerm": "Enter a term",
+  "definitionLabel": "Definition",
+  "enterDefinition": "Enter a definition",
+  "duplicateGlossaryTerm": "That term already exists in the glossary",
+  "searchTermOrDefinition": "Search term or definition",
+  "noGlossaryEntries": "No glossary entries",
+  "noGlossaryTermsFound": "No terms found",
+  "deleteEntryTooltip": "Delete entry",
+  "deleteGlossaryEntryTitle": "Delete entry",
+  "deleteGlossaryEntryConfirm": "Do you want to remove \"{term}\" from the glossary?",
+  "@deleteGlossaryEntryConfirm": {
+    "placeholders": {
+      "term": {"type": "String"}
+    }
+  },
+  "autoTranslatedBadge": "Automatically translated",
+  "viewOriginal": "View original",
+  "viewTranslation": "View translation",
+  "translatingRecipe": "Translating recipe...",
+  "translationFailed": "Could not translate this recipe",
+
+  "plannerTitle": "Planner",
+  "thisWeek": "This week",
+  "today": "Today",
+  "showRecipeBookTooltip": "Show recipe book",
+  "removeMealTitle": "Remove meal",
+  "removeMealConfirm": "Remove \"{title}\" from the planner?",
+  "@removeMealConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "dropHere": "Drop here",
+  "dragOrTap": "Drag or tap",
+  "servingsTitle": "Servings",
+  "servingsCountLabel": "Number of servings",
+  "addTextTitle": "Add text",
+  "mealNameLabel": "Name (e.g. Takeout)",
+  "enterMealName": "Enter a name for the meal",
+  "fewerServingsTooltip": "Fewer servings",
+  "moreServingsTooltip": "More servings",
+  "leftovers": "These are leftovers",
+  "leftoversShoppingHint": "Ingredients will not be added to the shopping list",
+  "recipeBookPanel": "Recipe book",
+  "closeTooltip": "Close",
+  "searchHint": "Search...",
+  "noResults": "No results",
+  "noRecipesCreateInBook": "You have no recipes. Create them in the recipe book.",
+  "chooseRecipe": "Choose recipe",
+  "searchRecipeHint": "Search recipe...",
+  "addFreeText": "Add free text",
+  "noRecipeExample": "No recipe (e.g. takeout, eating out, etc.)",
+
+  "clearListTitle": "Clear list",
+  "clearListConfirm": "Delete all items from the shopping list?",
+  "shoppingListTitle": "Shopping list",
+  "shareListTooltip": "Share list",
+  "clearListTooltip": "Clear list",
+  "shoppingListLoadError": "Could not load the list: {error}",
+  "@shoppingListLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "shoppingListEmpty": "Your list is empty",
+  "shoppingListEmptyHint": "Add recipes to the planner or items manually with the + button.",
+  "addItemTooltip": "Add item",
+  "deleteItemTitle": "Delete item",
+  "deleteItemConfirm": "Remove \"{name}\" from the list?",
+  "@deleteItemConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "editItem": "Edit item",
+  "addItem": "Add item",
+  "nameRequired": "Name is required",
+  "othersCategory": "Other",
+
+  "feedTitle": "Feed",
+  "mostRecent": "Most recent",
+  "sortedBy": "Sorted by: {label}",
+  "@sortedBy": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "noRecipesWithTags": "No recipes with these tags",
+  "feedEmpty": "Your feed is empty",
+  "tryOtherTags": "Try other tags or remove the filter.",
+  "followUsersHint": "Follow other users from their profiles to see their public recipes here.",
+  "exploreTitle": "Explore",
+  "feedTooltip": "Feed",
+  "searchPublicRecipes": "Search public recipes",
+  "recent": "Recent",
+  "topRated": "Top rated",
+  "noPublicRecipesYet": "No public recipes yet",
+  "publishToExploreHint": "Publish a recipe from your recipe book so others can discover it.",
+  "publicProfileTitle": "Public profile",
+  "publicRecipesCount": "{count, plural, =1{1 public recipe} other{{count} public recipes}}",
+  "@publicRecipesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "unfollow": "Unfollow",
+  "follow": "Follow",
+  "noPublicRecipes": "No public recipes",
+  "recipeSavedToBook": "Recipe saved to your recipe book",
+  "saveToMyRecipeBookTooltip": "Save to my recipe book",
+  "recipeCreatedBy": "Recipe created by",
+  "you": "you",
+  "yourRating": "Your rating",
+  "optionalIngredientSuffix": "(optional)",
+  "saveToMyRecipeBook": "Save to my recipe book",
+  "optionalIngredientsTitle": "Optional ingredients",
+  "optionalIngredientsMessage": "This recipe contains optional ingredients. Add or remove them in your recipe.",
+  "editRecipe": "Edit recipe",
+
+  "inviteCodeCopied": "Code copied to clipboard",
+  "regenerateCodeTitle": "Regenerate code",
+  "regenerateCodeMessage": "The previous code will stop working. Generate a new one?",
+  "regenerate": "Regenerate",
+  "codeRegenerated": "Code regenerated",
+  "kickMemberTitle": "Remove member",
+  "kickMemberConfirm": "Remove {username} from the household?",
+  "@kickMemberConfirm": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "kick": "Remove",
+  "leaveHouseholdTitle": "Leave household",
+  "leaveHouseholdMessage": "You will lose access to the shared planner and list. Continue?",
+  "leave": "Leave",
+  "myHouseholdTitle": "My household",
+  "inviteCode": "Invitation code",
+  "copyTooltip": "Copy",
+  "members": "Members",
+  "leaveHousehold": "Leave household",
+  "noSharedHousehold": "No shared household",
+  "individualModeDescription": "In individual mode you use your own planner and shopping list. Create a household or join with a code to share them with others.",
+  "createHousehold": "Create household",
+  "joinWithCode": "Join with code",
+  "currentUserSuffix": "{username} (you)",
+  "@currentUserSuffix": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "admin": "Admin",
+  "member": "Member",
+  "joinHouseholdTitle": "Join a household",
+  "joinCodeInstructions": "Enter the 6-character code shared by a household member.",
+  "invalidInviteCode": "Invalid invitation code",
+  "alreadyMember": "You already belong to this household",
+  "codeMustBeSixChars": "The code must be 6 characters",
+  "join": "Join",
+  "createHouseholdDescription": "Give your shared household a name. You can invite other members with a code.",
+  "householdNameLabel": "Household name",
+  "enterName": "Enter a name",
+
+  "signOutTitle": "Sign out",
+  "signOutConfirm": "Are you sure you want to sign out?",
+  "profileTitle": "Profile",
+  "defaultUsername": "User",
+  "individualModeNoHousehold": "Individual mode (no household)",
+  "darkMode": "Dark mode",
+  "editProfile": "Edit profile",
+  "myHousehold": "My household",
+  "createOrJoinHousehold": "Create or join a household",
+  "termsAndConditions": "Terms and Conditions",
+  "privacyPolicy": "Privacy Policy",
+  "signOut": "Sign out",
+  "deleteAccount": "Delete account",
+  "deleteAccountConfirmTitle": "Delete account?",
+  "deleteAccountConfirmMessage": "This action is permanent. Your profile, recipes, personal planner, and associated lists will be deleted.",
+  "deletePermanently": "Delete permanently",
+  "gdprRightToErasure": "Right to erasure (GDPR)",
+  "deleteAccountBulletsIntro": "Deleting your account will permanently delete:",
+  "deleteBulletProfile": "Your profile and avatar",
+  "deleteBulletRecipes": "All your recipes and associated images",
+  "deleteBulletPlans": "Your plans and shopping lists in individual mode",
+  "deleteBulletMembership": "Your membership in shared households",
+  "soleAdminWarning": "If you are the only admin of a household with other members, transfer the admin role or ask members to leave before deleting your account.",
+  "deleteAcknowledgement": "I understand this action is irreversible and I want to delete my account.",
+  "typeDeleteToConfirm": "Type DELETE to confirm",
+  "accountEmail": "Account: {email}",
+  "@accountEmail": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "deleteMyAccount": "Delete my account",
+  "gallery": "Gallery",
+  "camera": "Camera",
+  "changePhoto": "Change photo",
+  "couldNotOpenDocument": "Could not open the document",
+  "openInBrowser": "Open in browser",
+
+  "noConnection": "No connection",
+  "offlineModeTitle": "Offline mode",
+  "offlineHouseholdMessage": "You are offline. You can view the last saved version of your recipe book, planner, and shopping list, but editing is not available in household mode offline (to avoid conflicts with other members). Explore is also unavailable.",
+  "offlineIndividualMessage": "You are offline. You can view and edit your recipe book, planner, and shopping list; changes will sync when you reconnect. Recipe photos and the Explore tab are unavailable offline.",
+
+  "imageNotAllowedTitle": "Image not allowed",
+  "imageNotAllowedMessage": "The selected image contains adult or explicit content that is not allowed. Please choose another image.",
+  "imageCheckFailedTitle": "Could not verify image",
+  "imageCheckFailedRetry": "Could not verify the image. Please try again.",
+
+  "mealBreakfast": "Breakfast",
+  "mealLunch": "Lunch",
+  "mealDinner": "Dinner",
+  "dayMon": "Mon",
+  "dayTue": "Tue",
+  "dayWed": "Wed",
+  "dayThu": "Thu",
+  "dayFri": "Fri",
+  "daySat": "Sat",
+  "daySun": "Sun",
+
+  "categoryMeatFish": "Meat and fish",
+  "categoryVegetables": "Vegetables",
+  "categoryFruits": "Fruits",
+  "categoryDairy": "Dairy",
+  "categoryGrains": "Grains",
+  "categoryLegumes": "Legumes",
+  "categorySpices": "Spices",
+  "categoryOilsVinegars": "Oils and vinegars",
+  "categoryCanned": "Canned goods",
+  "categoryNuts": "Nuts",
+  "categoryBeverages": "Beverages",
+  "categoryBaking": "Baking",
+  "categoryFrozen": "Frozen",
+  "categorySauces": "Sauces and condiments",
+  "categoryOther": "Other",
+
+  "unitCustomOption": "Other",
+  "unitCount": "unit",
+  "unitPinch": "pinch",
+  "unitTeaspoon": "teaspoon",
+  "unitTablespoon": "tablespoon",
+  "unitGlass": "glass",
+  "unitCup": "cup",
+  "unitHandful": "handful",
+  "unitLeaf": "leaf",
+  "unitClove": "clove",
+  "unitSplash": "splash",
+  "unitSlice": "slice",
+  "unitSprig": "sprig",
+  "unitPiece": "piece",
+  "unitFillet": "fillet",
+  "unitRound": "round slice",
+  "unitCan": "can",
+  "unitJar": "jar",
+  "unitPackage": "package",
+  "unitSachet": "sachet",
+
+  "tagStarter": "starter",
+  "tagMainCourse": "main course",
+  "tagDessert": "dessert",
+  "tagVegetarian": "vegetarian",
+  "tagVegan": "vegan",
+  "tagPescatarian": "pescatarian",
+  "tagGlutenFree": "gluten-free",
+  "tagLactoseFree": "lactose-free",
+  "tagEggFree": "egg-free",
+  "tagNutFree": "nut-free",
+  "tagSoyFree": "soy-free",
+  "tagShellfishFree": "shellfish-free",
+  "tagSugarFree": "sugar-free",
+  "tagHighProtein": "high protein",
+  "tagLowCalorie": "low calorie",
+  "tagLowCarb": "low carb",
+  "tagHighFiber": "high fiber",
+  "tagMediterranean": "Mediterranean",
+  "tagQuick": "quick",
+  "tagBudget": "budget-friendly",
+  "tagBatchCooking": "batch cooking",
+  "tagFreezerFriendly": "freezer-friendly",
+  "tagSpicy": "spicy",
+  "tagKidFriendly": "kid-friendly"
+}

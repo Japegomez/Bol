@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/locale_provider.dart';
 import 'package:meal_planner/features/recipes/data/cooking_glossary_repository.dart';
 import 'package:meal_planner/features/recipes/domain/cooking_glossary_entry.dart';
 import 'package:meal_planner/features/recipes/domain/default_cooking_glossary.dart';
@@ -11,16 +13,24 @@ final cookingGlossaryProvider =
 class CookingGlossaryNotifier extends AsyncNotifier<List<CookingGlossaryEntry>> {
   @override
   Future<List<CookingGlossaryEntry>> build() async {
+    ref.watch(localeProvider);
     final custom =
         await ref.read(cookingGlossaryRepositoryProvider).loadCustomEntries();
     return _mergeEntries(custom);
+  }
+
+  List<CookingGlossaryEntry> _defaultEntries() {
+    final locale = ref.read(localeProvider);
+    final languageCode = locale?.languageCode ??
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    return defaultGlossaryForLocale(languageCode);
   }
 
   List<CookingGlossaryEntry> _mergeEntries(
     List<CookingGlossaryEntry> customEntries,
   ) {
     final merged = <String, CookingGlossaryEntry>{
-      for (final entry in defaultCookingGlossaryEntries)
+      for (final entry in _defaultEntries())
         _normalizeTerm(entry.term): entry,
       for (final entry in customEntries) _normalizeTerm(entry.term): entry,
     };

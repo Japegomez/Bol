@@ -11,6 +11,7 @@ class RecipeDetail {
     this.nutrition,
     this.photoDisplayUrl,
     this.forkedFromId,
+    this.sourceLang = 'es',
   });
 
   final Recipe recipe;
@@ -19,6 +20,27 @@ class RecipeDetail {
   final NutritionInfo? nutrition;
   final String? photoDisplayUrl;
   final String? forkedFromId;
+  final String sourceLang;
 
   bool get isForked => forkedFromId != null;
+
+  RecipeDetail copyWith({
+    Recipe? recipe,
+    List<Ingredient>? ingredients,
+    List<RecipeStep>? steps,
+    NutritionInfo? nutrition,
+    String? photoDisplayUrl,
+    String? forkedFromId,
+    String? sourceLang,
+  }) {
+    return RecipeDetail(
+      recipe: recipe ?? this.recipe,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+      nutrition: nutrition ?? this.nutrition,
+      photoDisplayUrl: photoDisplayUrl ?? this.photoDisplayUrl,
+      forkedFromId: forkedFromId ?? this.forkedFromId,
+      sourceLang: sourceLang ?? this.sourceLang,
+    );
+  }
 }
