@@ -31,10 +31,12 @@ const _genericModerationFailure =
 class PhotoModerationService {
   Future<ModerationResult> check(Uint8List bytes) async {
     try {
-      final response = await supabase.functions.invoke(
-        'moderate-image',
-        body: {'image': base64Encode(bytes)},
-      );
+      final response = await supabase.functions
+          .invoke(
+            'moderate-image',
+            body: {'image': base64Encode(bytes)},
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.status != 200) {
         final detail = _extractErrorDetail(response.data);
@@ -71,6 +73,9 @@ class PhotoModerationService {
       throw PhotoModerationException(
         _userFacingModerationMessage(detail),
       );
+    } catch (error) {
+      log.w('Photo moderation unexpected error', error: error);
+      throw PhotoModerationException(_genericModerationFailure);
     }
   }
 }

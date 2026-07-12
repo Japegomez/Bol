@@ -157,6 +157,15 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
     state = AsyncData(current.copyWith(data: data, clearError: true));
   }
 
+  Future<String?> _resolveHouseholdId() async {
+    try {
+      final household = await ref.read(currentHouseholdProvider.future);
+      return household?.id;
+    } catch (_) {
+      rethrow;
+    }
+  }
+
   Future<String?> save() async {
     final current = state.valueOrNull;
     if (current == null) return null;
@@ -172,8 +181,7 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
 
     String? householdId;
     try {
-      final household = await ref.read(currentHouseholdProvider.future);
-      householdId = household?.id;
+      householdId = await _resolveHouseholdId();
     } catch (_) {
       state = AsyncData(
         current.copyWith(
@@ -230,8 +238,7 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
     try {
       String? householdId;
       try {
-        final household = await ref.read(currentHouseholdProvider.future);
-        householdId = household?.id;
+        householdId = await _resolveHouseholdId();
       } catch (_) {
         state = AsyncData(
           current.copyWith(
