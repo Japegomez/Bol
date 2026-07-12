@@ -70,11 +70,11 @@ class LocalCacheStore {
     return recipes;
   }
 
-  Future<RecipeDetail?> getRecipeDetail(String id) async {
+  Future<RecipeDetail?> getRecipeDetail(String id, {required String userId}) async {
     if (_db == null) return null;
 
     final recipeRow = await (_db.select(_db.localRecipes)
-          ..where((r) => r.id.equals(id)))
+          ..where((r) => r.id.equals(id) & r.userId.equals(userId)))
         .getSingleOrNull();
     if (recipeRow == null) return null;
 

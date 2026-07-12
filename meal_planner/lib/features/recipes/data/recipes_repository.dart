@@ -4,6 +4,7 @@ import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
@@ -99,14 +100,15 @@ class RecipesRepository {
           forkedFromId: detail.forkedFromId,
         );
         return detail;
-      } catch (_) {
-        final cached = await _cache.getRecipeDetail(id);
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
+        final cached = await _cache.getRecipeDetail(id, userId: _userId);
         if (cached != null) return cached;
         rethrow;
       }
     }
 
-    final cached = await _cache.getRecipeDetail(id);
+    final cached = await _cache.getRecipeDetail(id, userId: _userId);
     if (cached != null) return cached;
     throw Exception('Receta no encontrada');
   }
@@ -188,7 +190,23 @@ class RecipesRepository {
     await _guardOfflinePhoto(form);
 
     if (await NetworkStatus.isOnline) {
-      final id = await createRecipeRemote(form);
+      try {
+        final id = await createRecipeRemote(form);
+        await _cacheRecipeDetailBestEffort(id);
+        return id;
+      } catch (error) {
+        if (shouldFallbackToCache(error)) {
+          return _createRecipeOffline(form);
+        }
+        rethrow;
+      }
+    }
+
+    return _createRecipeOffline(form);
+  }
+
+  Future<void> _cacheRecipeDetailBestEffort(String id) async {
+    try {
       final detail = await _fetchRecipeDetailRemote(id);
       await _cache.saveRecipeDetail(
         recipe: detail.recipe,
@@ -197,10 +215,9 @@ class RecipesRepository {
         nutrition: detail.nutrition,
         forkedFromId: detail.forkedFromId,
       );
-      return id;
+    } catch (_) {
+      // Remote create succeeded; cache refresh is best-effort only.
     }
-
-    return _createRecipeOffline(form);
   }
 
   Future<String> createRecipeRemote(RecipeFormData form, {String? id}) async {
@@ -300,7 +317,7 @@ class RecipesRepository {
       return;
     }
 
-    final detail = await _cache.getRecipeDetail(id);
+    final detail = await _cache.getRecipeDetail(id, userId: _userId);
     if (detail?.forkedFromId != null) {
       throw Exception(
         'Las recetas guardadas de otros usuarios no se pueden publicar',
@@ -319,7 +336,7 @@ class RecipesRepository {
   }
 
   Future<void> _syncCachedRecipeVisibility(String id, bool isPublic) async {
-    final detail = await _cache.getRecipeDetail(id);
+    final detail = await _cache.getRecipeDetail(id, userId: _userId);
     if (detail == null) return;
 
     await _cache.saveRecipeDetail(
@@ -335,7 +352,7 @@ class RecipesRepository {
   }
 
   Future<void> _setRecipeVisibilityOffline(String id, bool isPublic) async {
-    final detail = await _cache.getRecipeDetail(id);
+    final detail = await _cache.getRecipeDetail(id, userId: _userId);
     if (detail == null) throw Exception('Receta no encontrada');
 
     await _cache.saveRecipeDetail(
@@ -383,7 +400,7 @@ class RecipesRepository {
       );
     }
 
-    final detail = await _cache.getRecipeDetail(recipeId);
+    final detail = await _cache.getRecipeDetail(recipeId, userId: _userId);
     if (detail == null) return;
     final ingredients = detail.ingredients
         .map(
@@ -423,16 +440,17 @@ class RecipesRepository {
     await _guardOfflinePhoto(form);
 
     if (await NetworkStatus.isOnline) {
-      await updateRecipeRemote(id, form);
-      final detail = await _fetchRecipeDetailRemote(id);
-      await _cache.saveRecipeDetail(
-        recipe: detail.recipe,
-        ingredients: detail.ingredients,
-        steps: detail.steps,
-        nutrition: detail.nutrition,
-        forkedFromId: detail.forkedFromId,
-      );
-      return;
+      try {
+        await updateRecipeRemote(id, form);
+        await _cacheRecipeDetailBestEffort(id);
+        return;
+      } catch (error) {
+        if (shouldFallbackToCache(error)) {
+          await _updateRecipeOffline(id, form);
+          return;
+        }
+        rethrow;
+      }
     }
 
     await _updateRecipeOffline(id, form);
@@ -467,11 +485,13 @@ class RecipesRepository {
     if (validationError != null) throw Exception(validationError);
 
     final now = DateTime.now();
+    final existing = await _cache.getRecipeDetail(id, userId: _userId);
     final built = _buildModelsFromForm(
       form: form,
       recipeId: id,
       userId: _userId,
       now: now,
+      createdAt: existing?.recipe.createdAt,
     );
 
     await _cache.saveRecipeDetail(
@@ -496,9 +516,22 @@ class RecipesRepository {
     await _guardOfflineMutation(householdId: householdId);
 
     if (await NetworkStatus.isOnline) {
-      await deleteRecipeRemote(id);
-      await _cache.deleteRecipe(id);
-      return;
+      try {
+        await deleteRecipeRemote(id);
+        await _cache.deleteRecipe(id);
+        return;
+      } catch (error) {
+        if (shouldFallbackToCache(error)) {
+          await _cache.deleteRecipe(id);
+          await _cache.enqueueOperation(
+            entityType: PendingEntity.recipe,
+            opType: PendingOp.delete,
+            payload: {'recipeId': id},
+          );
+          return;
+        }
+        rethrow;
+      }
     }
 
     await _cache.deleteRecipe(id);
@@ -527,6 +560,7 @@ class RecipesRepository {
     required String recipeId,
     required String userId,
     required DateTime now,
+    DateTime? createdAt,
   }) {
     final recipe = Recipe(
       id: recipeId,
@@ -538,7 +572,7 @@ class RecipesRepository {
       cookTime: form.cookTime,
       tags: List<String>.from(form.tags),
       isPublic: form.canPublish ? form.isPublic : false,
-      createdAt: now,
+      createdAt: createdAt ?? now,
       updatedAt: now,
       tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
     );

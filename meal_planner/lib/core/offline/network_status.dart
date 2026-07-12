@@ -1,9 +1,19 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 abstract final class NetworkStatus {
+  static const _connectivityTimeout = Duration(seconds: 3);
+
   static Future<bool> get isOnline async {
-    final results = await Connectivity().checkConnectivity();
-    return results.isNotEmpty && !results.contains(ConnectivityResult.none);
+    try {
+      final results = await Connectivity()
+          .checkConnectivity()
+          .timeout(_connectivityTimeout);
+      return results.isNotEmpty && !results.contains(ConnectivityResult.none);
+    } on TimeoutException {
+      return false;
+    }
   }
 }
 
