@@ -62,37 +62,40 @@ abstract final class RecipeFormDataCodec {
     // Validate required fields
     final title = json['title'];
     if (title == null || title is! String || title.trim().isEmpty) {
-      throw FormatException('Recipe title is required and must be non-empty');
+      throw const FormatException(
+        'Recipe title is required and must be non-empty',
+      );
     }
 
     final servings = json['servings'];
     if (servings == null || servings is! int || servings < 1) {
-      throw FormatException('Recipe servings must be a positive integer');
+      throw const FormatException('Recipe servings must be a positive integer');
     }
 
     // Validate ingredients structure
     final ingredientsJson = json['ingredients'];
     if (ingredientsJson is! List) {
-      throw FormatException('Recipe ingredients must be a list');
+      throw const FormatException('Recipe ingredients must be a list');
     }
 
     // Validate steps structure
     final stepsJson = json['steps'];
     if (stepsJson is! List) {
-      throw FormatException('Recipe steps must be a list');
+      throw const FormatException('Recipe steps must be a list');
     }
 
-    // Validate nutrition structure
-    final nutritionJson = json['nutrition'];
-    if (nutritionJson != null && nutritionJson is! Map) {
-      throw FormatException('Recipe nutrition must be a map');
+    final rawNutrition = json['nutrition'];
+    Map<String, dynamic> nutritionMap = {};
+    if (rawNutrition != null) {
+      if (rawNutrition is! Map) {
+        throw const FormatException('Recipe nutrition must be a map');
+      }
+      nutritionMap = Map<String, dynamic>.from(rawNutrition);
     }
-
-    final nutritionMap = nutritionJson as Map<String, dynamic>? ?? {};
 
     return RecipeFormData(
-      title: title as String,
-      servings: servings as int,
+      title: title,
+      servings: servings,
       prepTime: json['prepTime'] as int?,
       cookTime: json['cookTime'] as int?,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
@@ -105,15 +108,15 @@ abstract final class RecipeFormDataCodec {
           .map(
             (raw) {
               if (raw is! Map) {
-                throw FormatException('Each ingredient must be a map');
+                throw const FormatException('Each ingredient must be a map');
               }
-              final i = Map<String, dynamic>.from(raw as Map);
+              final i = Map<String, dynamic>.from(raw);
               final name = i['name'];
               if (name == null || name is! String || name.trim().isEmpty) {
-                throw FormatException('Ingredient name is required');
+                throw const FormatException('Ingredient name is required');
               }
               return IngredientFormItem(
-                name: name as String,
+                name: name,
                 quantity: i['quantity'] as num?,
                 unit: i['unit'] as String?,
                 category: i['category'] as String? ?? 'Carnes y pescados',
@@ -130,17 +133,17 @@ abstract final class RecipeFormDataCodec {
           .map(
             (raw) {
               if (raw is! Map) {
-                throw FormatException('Each step must be a map');
+                throw const FormatException('Each step must be a map');
               }
-              final s = Map<String, dynamic>.from(raw as Map);
+              final s = Map<String, dynamic>.from(raw);
               final description = s['description'];
               if (description == null ||
                   description is! String ||
                   description.trim().isEmpty) {
-                throw FormatException('Step description is required');
+                throw const FormatException('Step description is required');
               }
               return StepFormItem(
-                description: description as String,
+                description: description,
                 isOptional: s['isOptional'] as bool? ?? false,
               );
             },

@@ -9,7 +9,6 @@ import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
-import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 
 class PlannerRepository {
@@ -372,13 +371,6 @@ class PlannerRepository {
     );
   }
 
-  Future<SlotItem?> _findSlotAcrossPlans(String slotId) async {
-    // Slots are keyed by id in local db; read directly via getSlots if needed.
-    // Query all plan slots with matching id through cache helper.
-    final row = await _cache.getSlotsForPlanBySlotId(slotId);
-    return row;
-  }
-
   Future<ShoppingList> getOrCreateShoppingList({
     required String userId,
     String? householdId,
@@ -530,42 +522,6 @@ class PlannerRepository {
     }
   }
 
-  Future<void> _syncShoppingListAddOffline({
-    required PlanSlot slot,
-    required String recipeId,
-    required int servings,
-    required String userId,
-  }) async {
-    final list = await getOrCreateShoppingList(userId: userId);
-    final recipe = await _cache.getRecipeById(recipeId);
-    if (recipe == null || recipe.servings <= 0) return;
-
-    final scale = servings / recipe.servings;
-    final ingredients = await _cache.getIngredientsForRecipe(recipeId);
-    if (ingredients.isEmpty) return;
-
-    for (final ingredient in ingredients) {
-      if (!ingredient.isIncluded) continue;
-      if (ingredient.isToTaste) continue;
-
-      final scaledQty = _scaleQuantity(ingredient.quantity, scale);
-      final item = ShoppingItem(
-        id: newLocalId(),
-        shoppingListId: list.id,
-        name: ingredient.name,
-        quantity: scaledQty,
-        unit: ingredient.unit,
-        category: ingredient.category,
-        isChecked: false,
-        isManual: false,
-        planSlotId: slot.id,
-        ingredientId: ingredient.id,
-        createdAt: DateTime.now(),
-      );
-      await _cache.upsertShoppingItem(item);
-    }
-  }
-
   Future<void> _syncShoppingListRemove({
     required PlanSlot slot,
     required String userId,
@@ -668,13 +624,6 @@ class PlannerRepository {
         match.copyWith(quantity: newQty),
         ...existingItems.sublist(matchIndex + 1),
       ];
-    }
-  }
-
-  Future<void> _syncShoppingListRemoveOffline({required PlanSlot slot}) async {
-    final linked = await _cache.getShoppingItemsByPlanSlot(slot.id);
-    for (final item in linked) {
-      await _cache.deleteShoppingItem(item.id);
     }
   }
 

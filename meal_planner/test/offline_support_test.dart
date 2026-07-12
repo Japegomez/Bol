@@ -25,6 +25,10 @@ void main() {
         servings: 2,
         tags: ['entrante'],
         tips: 'Servir caliente',
+        ingredients: [
+          IngredientFormItem(name: 'Huevo', quantity: 3, unit: 'unidad'),
+        ],
+        steps: [StepFormItem(description: 'Batir y freír')],
       );
 
       final restored = RecipeFormDataCodec.fromJson(
