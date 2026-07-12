@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; pulido post-lanzamiento y fixes de auth en Play
+> **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `develop`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight; siguiente: validar Google Sign-In en build Play tras PR #33
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra, chips amplios en planificador con navegación a ficha de receta.
 
 ---
 
@@ -16,6 +16,7 @@
    - 3.3 [Recetario](#33-recetario)
    - 3.4 [Planificador semanal](#34-planificador-semanal)
    - 3.5 [Lista de la compra](#35-lista-de-la-compra)
+   - 3.6 [Acceso offline (móvil)](#36-acceso-offline-móvil)
 4. [Modelo de datos](#4-modelo-de-datos)
 5. [Arquitectura Flutter](#5-arquitectura-flutter)
 6. [Navegación](#6-navegación)
@@ -25,7 +26,7 @@
 
 ## 1. Visión del producto
 
-MealPlanner es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
+MealPlanner (marca visible **Recetea**) es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
 
 - **Gestionar un recetario personal** con instrucciones, ingredientes e información nutricional.
 - **Planificar las comidas de cada semana** asignando recetas a slots de desayuno, comida y cena.
@@ -44,7 +45,9 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Gestión de estado | **Riverpod** | Solución reactiva y testeable, primera opción en ecosistema Flutter/Supabase |
 | Navegación | **go_router** | Navegación declarativa, soporte deep links, mantenida por Google |
 | Backend / BaaS | **Supabase** | PostgreSQL real (relaciones complejas entre recetas, ingredientes y planificador), Auth incluida, Storage para fotos, Realtime para el hogar compartido |
+| Moderación de imágenes | **Supabase Edge Functions** + **Google Cloud Vision API** (SafeSearch) | Validación server-side al elegir foto de receta o avatar; rechazo de contenido adulto/explícito |
 | Almacenamiento de fotos | **Supabase Storage** | Bucket privado por usuario |
+| Glosario (local) | **`shared_preferences`** | Entradas personalizadas del glosario culinario en el dispositivo |
 | Autenticación | **Supabase Auth** | Email/contraseña + OAuth (Google y Sign in with Apple) en Fase 1 |
 | CI/CD y builds | **Codemagic** | Builds en la nube para iOS y Android, submit automatizado a las stores |
 | Crash reporting | **Sentry** | Captura de excepciones, breadcrumbs, performance traces y alertas; SDK Flutter oficial |
@@ -52,7 +55,8 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Logs en cliente | **`logger`** (Dart) | Logs con niveles (`debug`→`error`), pretty-print en dev, redirigibles a Sentry en prod |
 | Actualizaciones forzadas | **`upgrader`** | Diálogo nativo cuando existe una versión mínima requerida en la store |
 | Valoración en tienda | **`in_app_review`** | Prompt nativo de iOS/Android tras hitos clave (ej. primera semana completada) |
-| Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase |
+| Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase (solo iOS/Android) |
+| Caché offline (móvil) | **Drift** + **sqlite3_flutter_libs** | SQLite local en iOS/Android: espejo de recetario, planificador y lista de compra; cola de operaciones pendientes |
 | Almacenamiento seguro | **`flutter_secure_storage`** | Token de sesión en Keychain (iOS) / Keystore (Android) en lugar de SharedPreferences |
 
 ---
@@ -67,12 +71,13 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-04** El usuario puede iniciar sesión con **Google** (OAuth 2.0 vía Supabase, disponible en iOS y Android).  
 **RF-AUTH-05** El usuario puede iniciar sesión con **Apple** (*Sign in with Apple*, obligatorio en iOS cuando se ofrece cualquier otro proveedor OAuth, según las App Store Review Guidelines).  
 **RF-AUTH-06** Al autenticarse por primera vez (cualquier método) se crea automáticamente un perfil con nombre de usuario y avatar opcional.  
-**RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`).  
+**RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`). Al seleccionar una nueva foto, la app la valida con moderación de contenido antes de aceptarla.  
 **RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
 **RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
+**RF-AUTH-11** El usuario puede activar/desactivar el **modo oscuro** con un toggle en Perfil. Por defecto la app sigue el modo del sistema; al cambiar el toggle, la preferencia manual se persiste en el dispositivo (`shared_preferences`) y prevalece sobre el ajuste del sistema.  
 
-> **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros).
+> **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar, `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen.
 
 > **Nota de implementación — Google (nativo):** Flutter usa `google_sign_in` para el flujo nativo del SDK de Google y `supabase_flutter` recibe la sesión con `signInWithIdToken`. En Google Cloud se crean **3 clientes OAuth** (Web, Android, iOS). Supabase Auth se configura con el Client ID + Secret del cliente **Web** y **Skip nonce check** activado (iOS). Android requiere SHA-1 del keystore debug/release **y** del certificado de **App signing** de Google Play en el cliente OAuth Android y en Firebase (sin ello, `ApiException: 10` / `DEVELOPER_ERROR`). Tras registrar huellas, regenerar `google-services.json` (`flutterfire configure`) y verificar que `oauth_client` no está vacío. Errores de configuración se mapean a `AuthGoogleSignInConfigurationException` en `auth_error_mapper.dart`. Guía: `docs/OAUTH_SETUP.md`.
 >
@@ -125,7 +130,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 | Nombre | Nombre del ingrediente | "Pechuga de pollo", "Pimiento rojo" |
 | Cantidad | Número (solo dígitos; opcional) | 500, 1, 0.5 |
 | Unidad | Unidad en **singular** (lista predefinida o libre) | `g`, `kg`, `ml`, `l`, `unidad`, `hoja`, `diente`, `chorrito`, `pizca`, `cucharada`, etc. |
-| Categoría | Agrupación para la lista de la compra (no visible en ficha) | `Carnes y pescados`, `Verduras`, `Lácteos`, `Legumbres`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Panadería`, `Congelados`, `Salsas y condimentos`, `Otros` |
+| Categoría | Agrupación para la lista de la compra (no visible en ficha) | `Carnes y pescados`, `Verduras`, `Lácteos`, `Legumbres`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Repostería`, `Congelados`, `Salsas y condimentos`, `Otros` |
 | Opcional | El ingrediente puede omitirse al cocinar / en la compra | `is_optional` (autor); `is_included` (usuario en su ficha) |
 | Al gusto | Sin cantidad/unidad; no se añade a la lista de la compra | `is_to_taste` (p. ej. sal, pimienta) |
 
@@ -139,10 +144,10 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-02** El usuario puede editar cualquier campo de una receta existente.  
 **RF-REC-03** El usuario puede eliminar una receta (con confirmación). Si la receta está en el planificador, los slots quedan vacíos.  
 **RF-REC-04** El usuario puede buscar recetas de su recetario por nombre.  
-**RF-REC-05** El usuario puede filtrar recetas por etiqueta.  
+**RF-REC-05** El usuario puede filtrar recetas por etiqueta, seleccionando **varias etiquetas a la vez** (chips de multi-selección); una receta se muestra solo si contiene **todas** las etiquetas seleccionadas (AND). Disponible en recetario, selector/panel de recetas del planificador y pantalla de exploración.  
 **RF-REC-06** Los ingredientes se pueden reordenar dentro de una receta.  
 **RF-REC-07** Los pasos de elaboración se pueden reordenar.  
-**RF-REC-08** La foto se sube a Supabase Storage y se asocia a la receta por URL.  
+**RF-REC-08** La foto se sube a Supabase Storage y se asocia a la receta por URL. Al elegir la imagen en el formulario, la app la valida con moderación de contenido antes de mostrar el preview o permitir guardar.  
 **RF-REC-09** El usuario puede ver el detalle completo de una receta desde el recetario o desde el planificador.  
 **RF-REC-10** El usuario puede marcar un ingrediente como **opcional** al crear/editar la receta. En la ficha de su receta puede **incluir o excluir** cada opcional (checkbox en lugar de viñeta). Si está excluido, se muestra tachado y no se añade a la lista de la compra al planificar. Los ingredientes obligatorios se muestran con viñeta verde.  
 **RF-REC-11** Al eliminar una receta del recetario, el panel lateral del planificador y los slots de la semana se actualizan de inmediato (invalidación de `recipesProvider` y `planSlotsProvider`).  
@@ -152,7 +157,11 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-15** Los pasos de elaboración pueden marcarse como **opcionales** (`recipe_steps.is_optional`); en ficha y detalle público se muestran con el prefijo **Opcional:** en negrita seguido de la descripción.  
 **RF-REC-16** Las unidades se almacenan en singular; si la cantidad es > 1, el plural se deriva de `unitPluralMap` (`unit_mappings.dart`).  
 **RF-REC-17** Formato de etiqueta en ficha y lista de compra (`ingredient_label.dart`): peso/volumen pegado a la cantidad con «de» + nombre en minúsculas (`200g de pasta`, `125ml de leche`); resto de unidades con espacio y «de» (`2 unidades de huevos`, `4 ramas de apio`). La categoría del ingrediente no se muestra en la ficha.  
-**RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).
+**RF-REC-18** El formulario de creación/edición debe mantenerse fluido en recetas largas: edición in-place sin rebuild global por tecla; listas de ingredientes y pasos con render perezoso (`SliverReorderableList`); auto-scroll al reordenar arrastrando cerca del borde de la pantalla (long-press en la fila o asa de arrastre).  
+**RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
+**RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (FAB con icono de libro, encima de «Nueva receta») con términos y definiciones predefinidos (p. ej. ahumar, al dente, caramelizar, tamizar), buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
+**RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).  
+**RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.
 
 ---
 
@@ -167,10 +176,11 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-05** Al asignar una receta, el usuario puede ajustar el **número de raciones** para esa ocasión (por defecto las raciones de la receta) mediante un stepper **− / número / +** en el diálogo de confirmación. Los ingredientes de la lista de la compra se escalan proporcionalmente.  
 **RF-PLAN-06** El usuario puede eliminar una comida concreta de un slot sin afectar al resto del mismo slot.  
 **RF-PLAN-07** Al eliminar una receta del planificador, sus ingredientes generados por esa asignación se eliminan de la lista de la compra (por `plan_slot_id`).  
-**RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot para ver su detalle.  
+**RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot (chip ampliado) para abrir su ficha en el recetario. Las entradas de texto libre no navegan.  
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
 **RF-PLAN-10** Al asignar una receta, el usuario puede marcar **Son sobras**: los ingredientes **no** se añaden a la lista de la compra.  
-**RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.
+**RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
+**RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
 
 > **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono).
 
@@ -182,7 +192,7 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 
 **RF-SHOP-01** Cuando se añade una receta al planificador, sus ingredientes **incluidos** (`is_included = true`) y **no al gusto** (`is_to_taste = false`) se agregan automáticamente a la lista de la compra (escalados según raciones y **redondeados a enteros**). Los opcionales excluidos en la ficha no se sincronizan.  
 **RF-SHOP-02** Los ingredientes se agrupan visualmente por su **categoría** (Verduras, Lácteos, etc.).  
-**RF-SHOP-03** Si el mismo ingrediente aparece en varias comidas planificadas, cada asignación genera ítems vinculados por `plan_slot_id` (pueden mostrarse filas separadas con el mismo nombre/unidad).  
+**RF-SHOP-03** Si el mismo ingrediente aparece en varias comidas planificadas, cada asignación se persiste con su `plan_slot_id`, pero la **UI consolida** filas de receta con mismo nombre, categoría y unidad (normalizando singular/plural) sumando cantidades al mostrar y al compartir. Marcar como comprado o eliminar aplica al grupo consolidado; la edición manual queda deshabilitada en filas fusionadas.  
 **RF-SHOP-04** El usuario puede añadir ítems manualmente (sin estar vinculados a ninguna receta).  
 **RF-SHOP-05** El usuario puede editar la cantidad/unidad/nombre de cualquier ítem.  
 **RF-SHOP-06** El usuario puede marcar ítems como **comprados** (tachado visual). Los ítems comprados se colapsan al final de su categoría.  
@@ -192,7 +202,23 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 **RF-SHOP-10** El usuario puede **exportar la lista** como texto plano y compartirla por WhatsApp u otras apps del sistema (usando el `share_plus` de Flutter).  
 **RF-SHOP-11** En modo hogar, todos los miembros ven la misma lista en tiempo real y pueden marcar/desmarcar ítems.
 
-> **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included` y no `is_to_taste`. Etiquetas con `formatShoppingItemLabel` (misma regla que ficha de receta). Al quitar: `_syncShoppingListRemove` borra por slot o resta cantidades en datos legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
+> **Nota de implementación — lista de la compra:** `ShoppingRepository` + `ShoppingItemsNotifier` (`shopping_provider.dart`). Modelos Supadart en `core/supabase/models/`. Realtime: canal `shopping_items:{listId}`. Al añadir desde planificador: `_syncShoppingListAdd` inserta filas con `plan_slot_id` solo si `ingredient.is_included` y no `is_to_taste`. Etiquetas con `formatShoppingItemLabel` (misma regla que ficha de receta). Consolidación visual: `consolidateShoppingItems` agrupa por nombre + categoría + `normalizeUnit(unit)`; toggle/delete propagan a todos los IDs del grupo. Al quitar slot: `_syncShoppingListRemove` borra por `plan_slot_id` o resta cantidades legacy; la UI se refresca con `reload()` al cambiar el planificador o al abrir la tab Compra. Compartir en iOS requiere `sharePositionOrigin` en `share_plus`.
+
+---
+
+### 3.6 Acceso offline (móvil)
+
+> **Alcance:** iOS y Android únicamente. En **web** no hay caché local ni modo offline (`kIsWeb`); la app requiere conexión a Supabase. La sesión sigue persistiendo en web vía `flutter_secure_storage` / almacenamiento del navegador según plataforma.
+
+**RF-OFF-01** Si el usuario **está autenticado** y pierde la conexión en móvil, la app muestra un diálogo informativo **una vez por sesión offline** (se resetea al volver online) con las limitaciones según el modo (individual vs hogar).  
+**RF-OFF-02** En **modo individual** sin conexión, el usuario puede **consultar y editar** recetario, planificador y lista de la compra; los cambios se encolan localmente y se sincronizan con Supabase al reconectar.  
+**RF-OFF-03** En **modo hogar** sin conexión, el usuario puede **consultar la última versión en caché** del recetario, planificador y lista de la compra, pero **no editar** (evita conflictos con Realtime de otros miembros).  
+**RF-OFF-04** Sin conexión, la pestaña **Explorar** queda deshabilitada.  
+**RF-OFF-05** Sin conexión, **no se pueden subir fotos** de receta (fail-closed, coherente con moderación server-side).  
+**RF-OFF-06** Un banner persistente «Sin conexión» se muestra en la parte superior de la app mientras no hay red (solo móvil).  
+**RF-OFF-07** Al recuperar la conexión, `SyncService` reproduce las operaciones pendientes en orden y resuelve IDs temporales locales.
+
+> **Nota de implementación — caché local:** `lib/core/local_db/` (`AppDatabase` Drift, `LocalCacheStore`, conexión nativa SQLite). Cola en tabla local `pending_operations`. Providers: `isOfflineProvider`, `canEditOfflineProvider`. UI: `OfflineEntryListener`, `ConnectivityBanner`, gating en formularios y `home_shell.dart`. **No** se usa Drift/WASM en web.
 
 ---
 
@@ -363,9 +389,13 @@ lib/
 │
 ├── core/
 │   ├── supabase/              # Cliente Supabase, constantes
-│   ├── theme/                 # ThemeData, colores, tipografía
+│   ├── local_db/              # AppDatabase (Drift), LocalCacheStore, conexión nativa
+│   ├── offline/               # isOfflineProvider, canEditOfflineProvider, excepciones
+│   ├── sync/                  # SyncService, cola pending_operations
+│   ├── moderation/            # PhotoModerationService, diálogos de rechazo
+│   ├── theme/                 # ThemeData, colores, tipografía, theme_mode_provider
 │   ├── utils/                 # Formatters, helpers, extensiones
-│   └── widgets/               # Widgets reutilizables (AppButton, AppCard…)
+│   └── widgets/               # ConnectivityBanner, OfflineEntryListener, etc.
 │
 ├── features/
 │   ├── auth/
@@ -423,7 +453,8 @@ lib/
 | `logger` | Logs estructurados con niveles en cliente |
 | `upgrader` | Diálogo de actualización forzada desde la store |
 | `in_app_review` | Prompt nativo de valoración en tienda |
-| `connectivity_plus` | Detección de estado de red |
+| `connectivity_plus` | Detección de estado de red (móvil) |
+| `drift` + `sqlite3_flutter_libs` | Caché SQLite offline en iOS/Android |
 | `flutter_secure_storage` | Almacenamiento seguro de tokens (Keychain / Keystore) |
 
 > **Web:** `supabase_flutter` arrastra `passkeys_web` (WebAuthn). Incluir `web/passkeys_bundle.js` en `index.html` antes de `flutter_bootstrap.js`.
@@ -489,6 +520,7 @@ supabase
     /home/explore/user/:userId → Perfil público
     /home/explore/:id     → Detalle de receta pública (valorar, fork)
   /home/recipes           → Lista del recetario
+    /home/recipes/glossary → Glosario culinario (términos + entradas personalizadas)
     /home/recipes/:id     → Detalle de receta (toggle visibilidad pública/privada)
     /home/recipes/new     → Formulario nueva receta
     /home/recipes/:id/edit
@@ -508,7 +540,7 @@ supabase
 Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/social/`.
 
 - **RF-SOC-01** El usuario puede marcar una receta como pública y visible para todos (formulario y detalle). Recetas forkeadas (`forked_from_id`) no se pueden publicar.
-- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtros por etiqueta, orden recientes/top y scroll infinito.
+- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtro **multi-etiqueta** (AND, `list_public_recipes` con `p_tags text[]` y `@>`), orden recientes/top y scroll infinito. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila.
 - **RF-SOC-03** El usuario puede guardar una receta pública de **otro** usuario en su recetario (fork); no puede forkear la propia. Queda privada y no republicable. Si tiene ingredientes opcionales, se muestra un aviso y el usuario puede editar la inclusión en su ficha.
 - **RF-SOC-04** Valoración 1–5 estrellas (una por usuario y receta; no en recetas propias).
 - **RF-SOC-05** Seguir usuarios y feed en `/home/explore/feed`.

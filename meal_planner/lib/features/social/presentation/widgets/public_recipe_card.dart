@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_summary.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/star_rating_bar.dart';
@@ -92,21 +93,7 @@ class PublicRecipeCard extends ConsumerWidget {
                     ),
                     if (recipe.tags.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: recipe.tags
-                            .take(3)
-                            .map(
-                              (tag) => Chip(
-                                label: Text(tag),
-                                visualDensity: VisualDensity.compact,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              ),
-                            )
-                            .toList(),
-                      ),
+                      HorizontalTagList(tags: recipe.tags),
                     ],
                   ],
                 ),

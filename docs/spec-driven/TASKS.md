@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 06/07/2026 — GitHub Pages clásico desde `/docs`; eliminado workflow `pages.yml`
+> Actualizado: 12/07/2026 — consolidación visual lista de la compra, chips de receta más grandes en planificador, navegación a ficha desde slot
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -15,6 +15,7 @@
 | Fase 4 — Planificador   | Completada | Vista semanal vertical, slots, drag-and-drop, sobras, texto libre, Realtime |
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
+| Fase 7 — Acceso offline | Completada | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
 
 ---
 
@@ -92,6 +93,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Configurar proveedor Google en Supabase Auth (Client ID + Secret del cliente **Web**; activar **Skip nonce check**)
 - [x] Configurar proveedor OAuth Apple en Supabase Auth (Key ID + Team ID de Apple Developer)
 - [x] Generar modelos Dart con **Supadart** (`meal_planner/lib/core/supabase/models/`)
+
+### Edge Functions
+
+- [x] Edge Function `moderate-image`: moderación de fotos con Google Cloud Vision SafeSearch
+  - Invocada al elegir imagen en formulario de receta y edición de perfil
+  - Secret `GOOGLE_VISION_API_KEY` en Supabase; despliegue documentado en `supabase/README.md` (PR #37)
 
 ### Servicios externos (observabilidad y UX)
 
@@ -209,6 +216,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Subida de avatar a Supabase Storage (bucket `avatars`; compresión antes de subir)
   - `ProfileRepository.uploadAvatar`; path `{userId}/avatar.jpg`; URL firmada al leer
   - Paquete `image_picker` para seleccionar foto de galería o cámara
+- [x] Moderación de avatar al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`)
+  - Validación inmediata en `edit_profile_screen`; diálogo si contenido adulto/explícito; fail-closed si falla el servicio (PR #37)
 
 ### F3 - Hogar compartido
 
@@ -243,6 +252,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Pantalla/formulario de creación de receta
   - [x] Campo: nombre (obligatorio)
   - [x] Campo: foto (opcional; `image_picker` + subida a Supabase Storage bucket `recipe-photos`)
+  - [x] Moderación de foto al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`; PR #37)
   - [x] Campo: raciones (obligatorio)
   - [x] Campo: tiempo de preparación (minutos, opcional)
   - [x] Campo: tiempo de cocción (minutos, opcional)
@@ -265,7 +275,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Conteo/relativas: `unidad`, `pizca`, `cucharadita`, `cucharada`, `vaso`, `taza`, `puñado`, `hoja`, `diente`, `chorrito`, `ramita`, `rebanada`, `lámina`, `rama`, `trozo`, `filete`, `rodaja`, `lata`, `bote`, `paquete`, `sobre`
   - Plural automático si cantidad > 1 según `unitPluralMap` (editable)
 - [x] Selector de categoría de ingrediente:
-  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Panadería`, `Congelados`, `Salsas y condimentos`, `Otros`
+  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Repostería`, `Congelados`, `Salsas y condimentos`, `Otros`
 - [x] Añadir/eliminar ingrediente desde el formulario de receta
   - Botones «Añadir ingrediente» / «Añadir paso» al final de cada lista (mejor UX en recetas largas)
 - [x] Ampliar etiquetas sugeridas (dietas, alérgenos, estilos de cocina: sin lactosa, vegano, etc.)
@@ -284,6 +294,18 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] `fetchRecipeDetail`: ingredientes, pasos, nutrición y foto en paralelo (`Future.wait`)
 - [x] Formulario con `CustomScrollView` + `SliverReorderableList` (solo filas visibles); `RepaintBoundary` por fila; items de dropdown cacheados
 - [x] Reordenar ingredientes/pasos: auto-scroll al arrastrar cerca del borde; long-press en fila o asa `drag_handle`; `proxyDecorator` con sombra
+- [x] Etiquetas en tarjetas del recetario con scroll horizontal (`HorizontalTagList`; altura fija de ficha)
+- [x] Glosario culinario desde recetario (FAB libro encima de «Nueva receta»)
+  - Términos predefinidos + entradas personalizadas (`shared_preferences`); buscador; ruta `/home/recipes/glossary`
+- [x] Categoría de ingrediente `Repostería` sustituye `Panadería` (migración `018_rename_panaderia_to_reposteria.sql`)
+- [x] Marca visible de la app unificada como **Recetea** (`AppBranding.displayName`; iOS/Android/web)
+- [x] Moderación de contenido en fotos de receta y avatar (`lib/core/moderation/`; Edge Function `moderate-image`)
+- [x] Etiquetas sugeridas de tipo de plato: `entrante`, `plato principal`, `postre` (`recipe_constants.dart`)
+- [x] Filtro de etiquetas **multi-selección** (AND) en recetario, selector/panel del planificador y Explorar
+  - `TagFilterChips` (widget compartido) + `RecipeTagFilterBar` / `PublicTagFilterBar`
+  - `RecipeListFilter`/`ExploreFilter` migrados de `tag` (String?) a `tags` (Set\<String\>)
+  - RPC `list_public_recipes` migrado a `p_tags text[]` con `@>` para AND (`019_list_public_recipes_multi_tag.sql`)
+- [x] Botón de recetario eliminado de la AppBar del planificador (acceso solo vía FAB del panel lateral)
 
 ---
 
@@ -304,10 +326,11 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Drag-and-drop de recetas desde el panel al planificador; autoscroll al acercarse a los bordes
 - [x] Navegación entre semanas (flechas anterior / siguiente; etiqueta con rango de fechas)
 - [x] Indicador visual de semana actual
+- [x] Destacar la tarjeta del **día de hoy** con fondo verde más oscuro, borde primario y badge «Hoy»
 - [x] Slot vacío: pulsar o soltar receta para añadir
-- [x] Slot con receta(s): muestra nombre(s) con chips de color según tipo (receta / sobras / texto libre)
+- [x] Slot con receta(s): chips amplios (altura mín. 52 px, título hasta 2 líneas, raciones legibles) con color según tipo (receta / sobras / texto libre)
 - [x] Slot con varias recetas: lista vertical con botón «Añadir»
-- [x] Desde el planificador: pulsar una receta de un slot → navegar a detalle de receta
+- [x] Desde el planificador: pulsar una receta del recetario en un slot → navegar a detalle (`/home/recipes/:id`); entradas de texto libre no navegan
 
 ### F7 - Gestión de slots
 
@@ -354,6 +377,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Cada ingrediente se inserta con `plan_slot_id` (sin fusionar filas entre comidas distintas)
 - [x] Al eliminar receta del planificador: eliminar ítems por `plan_slot_id` o restar cantidad en datos legacy consolidados
   - `_syncShoppingListRemove` en `PlannerRepository`
+- [x] Consolidación visual al mostrar la lista: ítems de recetas con mismo nombre, categoría y unidad (singular/plural normalizado vía `normalizeUnit`) se suman en pantalla y al compartir; marcar/eliminar aplica al grupo (`consolidateShoppingItems` en `shopping_provider.dart`); ítems manuales no se fusionan; edición deshabilitada en filas consolidadas
 
 ### F11 - Exportación
 
@@ -403,10 +427,48 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 ## UX — Cuenta y feedback
 
 - [ ] Prompt de valoración en tienda (`in_app_review`) tras completar la primera semana planificada
-  - Cooldown de 30 días entre prompts (guardar fecha del último en `flutter_secure_storage`)
-  - Fallback: enlace manual «Valorar la app» en pantalla de ajustes → URL de la store
-- [ ] Banner «Sin conexión» persistente cuando no hay red (`connectivity_plus`), con reintentos automáticos al recuperarla
-- [ ] Diálogo de actualización forzada (`upgrader`) cuando el backend requiera versión mínima
+  - `ReviewPromptService` implementado; falta invocar `onFirstWeekCompleted()` desde el planificador
+  - Cooldown 6 días en secure storage; fallback manual «Valorar la app» en ajustes (pendiente)
+- [x] Banner «Sin conexión» persistente cuando no hay red (`ConnectivityBanner` en `app.dart`; solo móvil, desactivado en web)
+- [x] Diálogo de actualización de versión (`UpgradeAlert` / `upgrader` en `app.dart`)
+- [x] Modo oscuro manual desde Perfil (`SwitchListTile` en `profile_screen.dart`)
+  - `ThemeModeNotifier` (`theme_mode_provider.dart`) persiste preferencia en `shared_preferences`; por defecto sigue el modo del sistema hasta que el usuario lo cambia
+  - `AppTheme.light`/`AppTheme.dark` cacheados como `static final` (evita recalcular `ColorScheme.fromSeed` en cada rebuild; corrige lag al cambiar de tema en web)
+
+---
+
+## Fase 7 — Acceso offline (móvil)
+
+> Integrado en `develop` y release. Caché local con **Drift** + SQLite nativo (`sqlite3_flutter_libs`). **Web:** sin base de datos local ni modo offline (`kIsWeb`); probar solo en dispositivo/emulador.
+
+### Infraestructura local
+
+- [x] Dependencias: `drift`, `drift_dev`, `build_runner`, `sqlite3_flutter_libs`, `path_provider`, `path`, `uuid`
+- [x] `AppDatabase` con tablas espejo: recetas, ingredientes, pasos, nutrición, planes, slots, listas e ítems de compra
+- [x] Tablas `pending_operations` (cola de sync) e `id_mappings` (IDs temporales → reales)
+- [x] `LocalCacheStore` + providers Riverpod (`local_db_provider.dart`)
+- [x] Conexión nativa condicional (`database_connection_native.dart`); stub en plataformas sin FFI
+- [x] Helpers: `NetworkStatus`, `isOfflineProvider`, `canEditOfflineProvider`
+- [x] `SyncService`: drena `pending_operations` al reconectar e invalida providers afectados
+
+### Repositorios local-first
+
+- [x] `RecipesRepository`: lectura con fallback a caché; escritura offline en modo individual (sin foto)
+- [x] `PlannerRepository`: slots y sync de lista de compra offline en modo individual
+- [x] `ShoppingRepository`: CRUD offline en modo individual
+
+### UI y reglas de negocio
+
+- [x] Popup «Modo sin conexión» al entrar offline (`OfflineEntryListener`; texto distinto hogar vs individual; una vez por sesión offline)
+- [x] Pestaña **Explorar** deshabilitada offline (`home_shell.dart`)
+- [x] Modo **hogar** offline: solo lectura (sin edición; evita conflictos Realtime)
+- [x] Fotos de receta bloqueadas offline (fail-closed, alineado con moderación)
+- [x] Gating de edición en formularios, planificador, lista de compra (`canEditOfflineProvider`)
+- [x] Tests: codec de formulario + helper de conectividad (`test/offline_support_test.dart`)
+
+### Pendiente
+
+- [ ] Validación manual en móvil: modo avión → lectura/edición caché → reconexión → sync (individual y hogar)
 
 ---
 
@@ -428,7 +490,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `flutter_launcher_icons`; assets en `docs/store-assets/` (PR #15)
 - [ ] README de desarrollo con instrucciones de setup local
 - [ ] Protección de ramas `main` / `develop` en GitHub
-- [ ] Tests unitarios: escalado de ingredientes, lógica de consolidación de lista de la compra
+- [x] Tests unitarios: lógica de consolidación de lista de la compra (`test/shopping_item_consolidation_test.dart`)
+- [ ] Tests unitarios: escalado de ingredientes al planificar
 
 ---
 
@@ -457,7 +520,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Pantalla de exploración de recetas públicas (buscador + filtros por etiqueta)
   - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | **Planificador** | Compra | Perfil)
 - [x] Paginación / scroll infinito
-- [x] Tarjeta de receta pública: foto, nombre, autor, valoración media, etiquetas
+- [x] Tarjeta de receta pública: foto, nombre, autor, valoración media, etiquetas (scroll horizontal si hay varias)
 
 ### F15 - Interacción social
 
@@ -471,3 +534,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Feed: recetas recientes de usuarios a los que sigo (`/home/explore/feed`)
 - [x] Perfil público: foto, nombre, recetas publicadas y valoración media (`/home/explore/user/:userId`)
   - Pendiente: campo bio en perfil (no existe en esquema `profiles`)
+
+---
+
+## Próximas tareas recomendadas
+
+1. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
+2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
+3. **Release TestFlight / Play** con offline + multi-etiqueta + modo oscuro (offline ya integrado en `develop`).
+4. **Onboarding** o tutorial para nuevos usuarios (backlog).
+5. **Tests unitarios** de escalado de ingredientes al planificar.

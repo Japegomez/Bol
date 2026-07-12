@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/features/connectivity/connectivity_notifier.dart';
@@ -12,7 +13,8 @@ class ConnectivityBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final connectivity = ref.watch(connectivityProvider);
-    final isOffline = connectivity.maybeWhen(
+    final isOffline = !kIsWeb &&
+        connectivity.maybeWhen(
       data: (results) =>
           results.isEmpty || results.contains(ConnectivityResult.none),
       orElse: () => false,

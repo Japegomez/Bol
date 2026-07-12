@@ -12,13 +12,16 @@ const ingredientCategories = [
   'Conservas',
   'Frutos secos',
   'Bebidas',
-  'Panadería',
+  'Repostería',
   'Congelados',
   'Salsas y condimentos',
   'Otros',
 ];
 
 const suggestedRecipeTags = [
+  'entrante',
+  'plato principal',
+  'postre',
   'vegetariana',
   'vegano',
   'pescetariana',

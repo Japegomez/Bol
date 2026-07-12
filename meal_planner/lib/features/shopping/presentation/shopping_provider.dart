@@ -10,10 +10,6 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/shopping/data/shopping_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final shoppingRepositoryProvider = Provider<ShoppingRepository>((ref) {
-  return ShoppingRepository();
-});
-
 final activeShoppingListProvider =
     FutureProvider.autoDispose<ShoppingList>((ref) async {
   ref.watch(currentHouseholdProvider);
@@ -105,10 +101,12 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
 
   Future<void> toggleItem(String id, bool isChecked) async {
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final itemIds = _consolidatedItemIds(previous, id);
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = AsyncData(
       previous.map((item) {
-        if (item.id == id) {
+        if (itemIds.contains(item.id)) {
           return item.copyWith(isChecked: isChecked);
         }
         return item;
@@ -116,7 +114,15 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
     );
 
     try {
-      await _repository.toggleItem(id, isChecked);
+      await Future.wait(
+        itemIds.map(
+          (itemId) => _repository.toggleItem(
+            itemId,
+            isChecked,
+            householdId: household?.id,
+          ),
+        ),
+      );
     } catch (_) {
       state = AsyncData(previous);
     }
@@ -130,6 +136,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
   }) async {
     final list = await ref.read(activeShoppingListProvider.future);
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     try {
       final created = await _repository.addManualItem(
@@ -138,6 +145,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
         quantity: quantity,
         unit: unit,
         category: category,
+        householdId: household?.id,
       );
       state = AsyncData([...previous, created]);
     } catch (_) {
@@ -153,6 +161,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
     String? category,
   }) async {
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = AsyncData(
       previous.map((item) {
@@ -175,6 +184,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
         quantity: quantity,
         unit: unit,
         category: category,
+        householdId: household?.id,
       );
       state = AsyncData(
         previous.map((item) => item.id == id ? updated : item).toList(),
@@ -186,24 +196,47 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
 
   Future<void> deleteItem(String id) async {
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final itemIds = _consolidatedItemIds(previous, id);
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
-    state = AsyncData(previous.where((item) => item.id != id).toList());
+    state = AsyncData(
+      previous.where((item) => !itemIds.contains(item.id)).toList(),
+    );
 
     try {
-      await _repository.deleteItem(id);
+      await Future.wait(
+        itemIds.map(
+          (itemId) =>
+              _repository.deleteItem(itemId, householdId: household?.id),
+        ),
+      );
     } catch (_) {
       state = AsyncData(previous);
     }
   }
 
+  Set<String> _consolidatedItemIds(List<ShoppingItem> items, String id) {
+    final target = items.where((item) => item.id == id).firstOrNull;
+    if (target == null) return {id};
+
+    final key = shoppingItemConsolidationKey(target);
+    if (key == null) return {id};
+
+    return {
+      for (final item in items)
+        if (shoppingItemConsolidationKey(item) == key) item.id,
+    };
+  }
+
   Future<void> clearList() async {
     final list = await ref.read(activeShoppingListProvider.future);
     final previous = state.valueOrNull ?? const <ShoppingItem>[];
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
 
     state = const AsyncData([]);
 
     try {
-      await _repository.clearList(list.id);
+      await _repository.clearList(list.id, householdId: household?.id);
     } catch (_) {
       state = AsyncData(previous);
     }
@@ -216,7 +249,7 @@ Map<String, List<ShoppingItem>> groupShoppingItemsByCategory(
 ) {
   final grouped = <String, List<ShoppingItem>>{};
 
-  for (final item in items) {
+  for (final item in consolidateShoppingItems(items)) {
     final category = item.category ?? 'Otros';
     grouped.putIfAbsent(category, () => []).add(item);
   }
@@ -241,6 +274,42 @@ Map<String, List<ShoppingItem>> groupShoppingItemsByCategory(
   }
 
   return {for (final category in orderedCategories) category: grouped[category]!};
+}
+
+String? shoppingItemConsolidationKey(ShoppingItem item) {
+  if (item.isManual || item.quantity == null) return null;
+
+  final normalizedName = item.name.trim().toLowerCase();
+  if (normalizedName.isEmpty) return null;
+
+  final normalizedUnit = normalizeUnit(item.unit) ?? '';
+  final normalizedCategory = (item.category ?? '').trim().toLowerCase();
+  return '$normalizedCategory|$normalizedName|$normalizedUnit|${item.isChecked}';
+}
+
+List<ShoppingItem> consolidateShoppingItems(List<ShoppingItem> items) {
+  final consolidated = <String, ShoppingItem>{};
+  final ungrouped = <ShoppingItem>[];
+
+  for (final item in items) {
+    final key = shoppingItemConsolidationKey(item);
+    if (key == null) {
+      ungrouped.add(item);
+      continue;
+    }
+
+    final existing = consolidated[key];
+    if (existing == null) {
+      consolidated[key] = item.copyWith(unit: normalizeUnit(item.unit));
+      continue;
+    }
+
+    consolidated[key] = existing.copyWith(
+      quantity: existing.quantity! + item.quantity!,
+    );
+  }
+
+  return [...ungrouped, ...consolidated.values];
 }
 
 String formatShoppingListForShare(Map<String, List<ShoppingItem>> grouped) {

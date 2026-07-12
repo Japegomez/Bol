@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
+import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -57,6 +60,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   TextEditingController? _tipsController;
 
   Uint8List? _localPhotoPreview;
+  bool _isModeratingPhoto = false;
+  String? _photoModerationError;
 
   @override
   void dispose() {
@@ -82,6 +87,19 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   }
 
   Future<void> _pickPhoto() async {
+    if (ref.read(isOfflineProvider)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Necesitas conexión para añadir o cambiar la foto de la receta',
+          ),
+        ),
+      );
+      return;
+    }
+    if (_isModeratingPhoto) return;
+
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -92,10 +110,28 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
 
     final bytes = await file.readAsBytes();
     setState(() {
-      _localPhotoPreview = bytes;
-      _data!
-        ..pendingPhoto = file
-        ..removePhoto = false;
+      _isModeratingPhoto = true;
+      _photoModerationError = null;
+    });
+
+    if (!mounted) return;
+
+    final allowed = await moderatePickedImage(
+      context: context,
+      ref: ref,
+      bytes: bytes,
+      onServiceError: (message) => _photoModerationError = message,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isModeratingPhoto = false;
+      if (allowed) {
+        _localPhotoPreview = bytes;
+        _data!
+          ..pendingPhoto = file
+          ..removePhoto = false;
+      }
     });
   }
 
@@ -128,8 +164,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
         builder: (context) => AlertDialog(
           title: const Text('Publicar receta'),
           content: const Text(
-            'Esta receta será visible para todos los usuarios de MealPlanner. '
-            'Podrás despublicarla en cualquier momento.',
+            'Esta receta será visible para todos los usuarios de '
+            '${AppBranding.displayName}. Podrás despublicarla en cualquier momento.',
           ),
           actions: [
             TextButton(
@@ -173,6 +209,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   @override
   Widget build(BuildContext context) {
     final formAsync = ref.watch(recipeFormProvider(widget.recipeId));
+    final canEdit = ref.watch(canEditOfflineProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -193,7 +230,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     ),
                   )
                 : TextButton(
-                    onPressed: _save,
+                    onPressed: canEdit ? _save : null,
                     child: const Text('Guardar'),
                   ),
             orElse: () => const SizedBox.shrink(),
@@ -203,7 +240,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       body: formAsync.when(
         data: (state) {
           if (!_initialized) _initFrom(state.data);
-          return _buildForm(context, state.error);
+          return _buildForm(context, state.error, canEdit: canEdit);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Error: $error')),
@@ -211,38 +248,62 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     );
   }
 
-  Widget _buildForm(BuildContext context, String? error) {
+  Widget _buildForm(
+    BuildContext context,
+    String? error, {
+    required bool canEdit,
+  }) {
     final data = _data!;
     const hPad = EdgeInsets.symmetric(horizontal: 16);
 
     return Form(
       key: _formKey,
-      child: CustomScrollView(
-        slivers: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!canEdit)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Card(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Sin conexión: la edición en modo hogar requiere conexión',
+                  ),
+                ),
+              ),
+            ),
+          if (error != null || _photoModerationError != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Card(
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    error ?? _photoModerationError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Expanded(
+            child: AbsorbPointer(
+              absorbing: !canEdit,
+              child: CustomScrollView(
+                slivers: [
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                if (error != null) ...[
-                  Card(
-                    color: Theme.of(context).colorScheme.errorContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        error,
-                        style: TextStyle(
-                          color:
-                              Theme.of(context).colorScheme.onErrorContainer,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
                 _PhotoSection(
                   localPreview: _localPhotoPreview,
                   existingPhotoPath:
                       data.removePhoto ? null : data.existingPhotoPath,
+                  isModerating: _isModeratingPhoto,
                   onPick: _pickPhoto,
                   onRemove: _removePhoto,
                 ),
@@ -443,6 +504,10 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     ),
                   ),
               ]),
+            ),
+          ),
+        ],
+              ),
             ),
           ),
         ],
@@ -668,12 +733,14 @@ class _PhotoSection extends ConsumerWidget {
   const _PhotoSection({
     required this.localPreview,
     required this.existingPhotoPath,
+    required this.isModerating,
     required this.onPick,
     required this.onRemove,
   });
 
   final Uint8List? localPreview;
   final String? existingPhotoPath;
+  final bool isModerating;
   final VoidCallback onPick;
   final VoidCallback onRemove;
 
@@ -683,7 +750,21 @@ class _PhotoSection extends ConsumerWidget {
         ref.watch(recipePhotoUrlProvider(existingPhotoPath));
 
     Widget? preview;
-    if (localPreview != null) {
+    if (isModerating) {
+      preview = const SizedBox(
+        height: 180,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 12),
+              Text('Comprobando imagen...'),
+            ],
+          ),
+        ),
+      );
+    } else if (localPreview != null) {
       preview = Image.memory(localPreview!, height: 180, fit: BoxFit.cover);
     } else if (existingPhotoPath != null) {
       preview = existingUrlAsync.when(
@@ -719,11 +800,11 @@ class _PhotoSection extends ConsumerWidget {
         Row(
           children: [
             FilledButton.tonalIcon(
-              onPressed: onPick,
+              onPressed: isModerating ? null : onPick,
               icon: const Icon(Icons.photo_library_outlined),
               label: const Text('Elegir foto'),
             ),
-            if (preview != null) ...[
+            if (preview != null && !isModerating) ...[
               const SizedBox(width: 8),
               TextButton(
                 onPressed: onRemove,

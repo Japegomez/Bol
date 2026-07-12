@@ -2,15 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
-
-final recipesRepositoryProvider = Provider<RecipesRepository>((ref) {
-  return RecipesRepository();
-});
 
 /// Used by the planner recipe picker (F7).
 final recipesProvider =
@@ -39,15 +36,19 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
 }
 
 class RecipeListFilter {
-  const RecipeListFilter({this.search = '', this.tag});
+  const RecipeListFilter({this.search = '', this.tags = const {}});
 
   final String search;
-  final String? tag;
+  final Set<String> tags;
 
-  RecipeListFilter copyWith({String? search, String? tag, bool clearTag = false}) {
+  RecipeListFilter copyWith({
+    String? search,
+    Set<String>? tags,
+    bool clearTags = false,
+  }) {
     return RecipeListFilter(
       search: search ?? this.search,
-      tag: clearTag ? null : (tag ?? this.tag),
+      tags: clearTags ? {} : (tags ?? this.tags),
     );
   }
 }
@@ -62,7 +63,7 @@ final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
 
   final filter = ref.watch(recipeListFilterProvider);
   final repo = ref.watch(recipesRepositoryProvider);
-  return repo.fetchRecipes(search: filter.search, tag: filter.tag);
+  return repo.fetchRecipes(search: filter.search, tags: filter.tags);
 });
 
 final recipeTagsProvider = FutureProvider<Set<String>>((ref) async {
@@ -156,6 +157,15 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
     state = AsyncData(current.copyWith(data: data, clearError: true));
   }
 
+  Future<String?> _resolveHouseholdId() async {
+    try {
+      final household = await ref.read(currentHouseholdProvider.future);
+      return household?.id;
+    } catch (_) {
+      rethrow;
+    }
+  }
+
   Future<String?> save() async {
     final current = state.valueOrNull;
     if (current == null) return null;
@@ -169,9 +179,26 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
     state = AsyncData(current.copyWith(isSaving: true, clearError: true));
     final repo = ref.read(recipesRepositoryProvider);
 
+    String? householdId;
+    try {
+      householdId = await _resolveHouseholdId();
+    } catch (_) {
+      state = AsyncData(
+        current.copyWith(
+          isSaving: false,
+          error: 'No se pudo cargar tu hogar. Inténtalo de nuevo.',
+        ),
+      );
+      return null;
+    }
+
     try {
       if (current.isEditing) {
-        await repo.updateRecipe(current.recipeId!, current.data);
+        await repo.updateRecipe(
+          current.recipeId!,
+          current.data,
+          householdId: householdId,
+        );
         ref.invalidate(recipeListProvider);
         ref.invalidate(recipeDetailProvider(current.recipeId!));
         ref.invalidate(recipeTagsProvider);
@@ -182,7 +209,10 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
         return current.recipeId;
       }
 
-      final id = await repo.createRecipe(current.data);
+      final id = await repo.createRecipe(
+        current.data,
+        householdId: householdId,
+      );
       ref.invalidate(recipeListProvider);
       ref.invalidate(recipeTagsProvider);
       ref.invalidate(recipesProvider);
@@ -206,9 +236,24 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
 
     state = AsyncData(current!.copyWith(isSaving: true, clearError: true));
     try {
-      await ref
-          .read(recipesRepositoryProvider)
-          .deleteRecipe(current.recipeId!);
+      String? householdId;
+      try {
+        householdId = await _resolveHouseholdId();
+      } catch (_) {
+        state = AsyncData(
+          current.copyWith(
+            isSaving: false,
+            error: 'No se pudo cargar tu hogar. Inténtalo de nuevo.',
+          ),
+        );
+        return false;
+      }
+
+      await ref.read(recipesRepositoryProvider).deleteRecipe(
+            current.recipeId!,
+            householdId: householdId,
+          );
+      state = AsyncData(current.copyWith(isSaving: false));
       ref.invalidate(recipeListProvider);
       ref.invalidate(recipeTagsProvider);
       ref.invalidate(recipesProvider);

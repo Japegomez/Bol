@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/local_db/local_db_provider.dart';
+import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
@@ -30,7 +32,13 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     if (confirmed != true || !context.mounted) return;
+
+    final authState = ref.read(authStateProvider).valueOrNull;
+    if (authState is! AuthAuthenticated) return;
+
+    final userId = authState.user.id;
     await ref.read(authRepositoryProvider).signOut(manual: true);
+    await ref.read(localCacheStoreProvider).clearUserSyncState(userId);
   }
 
   @override
@@ -39,6 +47,7 @@ class ProfileScreen extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final profileAsync = ref.watch(profileProvider);
     final householdAsync = ref.watch(currentHouseholdProvider);
+    final isDarkMode = ref.watch(themeModeProvider) == ThemeMode.dark;
 
     final user = authState.maybeWhen(
       data: (value) => value is AuthAuthenticated ? value.user : null,
@@ -104,6 +113,16 @@ class ProfileScreen extends ConsumerWidget {
                     label: Text(
                       household?.name ?? 'Modo individual (sin hogar)',
                     ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  child: SwitchListTile(
+                    secondary: const Icon(Icons.dark_mode_outlined),
+                    title: const Text('Modo oscuro'),
+                    value: isDarkMode,
+                    onChanged: (enabled) =>
+                        ref.read(themeModeProvider.notifier).setDarkMode(enabled),
                   ),
                 ),
                 const SizedBox(height: 24),

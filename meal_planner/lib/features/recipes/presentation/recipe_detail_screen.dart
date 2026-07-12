@@ -2,11 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
+import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
@@ -139,8 +142,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
         builder: (context) => AlertDialog(
           title: const Text('Publicar receta'),
           content: const Text(
-            'Esta receta será visible para todos los usuarios de MealPlanner. '
-            'Podrás despublicarla en cualquier momento.',
+            'Esta receta será visible para todos los usuarios de '
+            '${AppBranding.displayName}. Podrás despublicarla en cualquier momento.',
           ),
           actions: [
             TextButton(
@@ -181,9 +184,14 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
     setState(() => _isUpdatingVisibility = true);
     try {
+      final household = ref.read(currentHouseholdProvider).valueOrNull;
       await ref
           .read(recipesRepositoryProvider)
-          .setRecipeVisibility(widget.recipeId, value);
+          .setRecipeVisibility(
+            widget.recipeId,
+            value,
+            householdId: household?.id,
+          );
       ref.invalidate(recipeDetailProvider(widget.recipeId));
       ref.invalidate(recipeListProvider);
       ref.invalidate(exploreRecipesProvider);
@@ -207,10 +215,12 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
     setState(() => _updatingIngredientIds.add(ingredient.id));
     try {
+      final household = ref.read(currentHouseholdProvider).valueOrNull;
       await ref.read(recipesRepositoryProvider).updateIngredientIncluded(
             ingredientId: ingredient.id,
             recipeId: widget.recipeId,
             isIncluded: isIncluded,
+            householdId: household?.id,
           );
       ref.invalidate(recipeDetailProvider(widget.recipeId));
     } catch (e) {

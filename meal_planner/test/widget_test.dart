@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meal_planner/app.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 
 void main() {
   testWidgets('shows login screen when unauthenticated', (tester) async {
@@ -9,6 +10,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('MealPlanner'), findsOneWidget);
+    expect(find.text(AppBranding.displayName), findsOneWidget);
   });
 }

@@ -10,23 +10,23 @@ final socialRepositoryProvider = Provider<SocialRepository>((ref) {
 class ExploreFilter {
   const ExploreFilter({
     this.search = '',
-    this.tag,
+    this.tags = const {},
     this.sort = 'recent',
   });
 
   final String search;
-  final String? tag;
+  final Set<String> tags;
   final String sort;
 
   ExploreFilter copyWith({
     String? search,
-    String? tag,
-    bool clearTag = false,
+    Set<String>? tags,
+    bool clearTags = false,
     String? sort,
   }) {
     return ExploreFilter(
       search: search ?? this.search,
-      tag: clearTag ? null : (tag ?? this.tag),
+      tags: clearTags ? {} : (tags ?? this.tags),
       sort: sort ?? this.sort,
     );
   }
@@ -92,7 +92,7 @@ class ExploreRecipesNotifier extends Notifier<ExploreRecipesState> {
       final filter = ref.read(exploreFilterProvider);
       final recipes = await _repo.fetchPublicRecipes(
         search: filter.search,
-        tag: filter.tag,
+        tags: filter.tags,
         sort: filter.sort,
         page: 0,
       );
@@ -114,7 +114,7 @@ class ExploreRecipesNotifier extends Notifier<ExploreRecipesState> {
       final nextPage = state.page + 1;
       final recipes = await _repo.fetchPublicRecipes(
         search: filter.search,
-        tag: filter.tag,
+        tags: filter.tags,
         sort: filter.sort,
         page: nextPage,
       );

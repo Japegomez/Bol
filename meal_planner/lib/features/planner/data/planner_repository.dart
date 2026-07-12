@@ -1,3 +1,7 @@
+import 'package:meal_planner/core/local_db/local_cache_store.dart';
+import 'package:meal_planner/core/offline/network_status.dart';
+import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
@@ -8,6 +12,19 @@ import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 
 class PlannerRepository {
+  PlannerRepository(this._cache);
+
+  final LocalCacheStore _cache;
+
+  Future<void> _guardOfflineMutation({
+    String? householdId,
+    required bool isOnline,
+  }) async {
+    if (householdId != null && !isOnline) {
+      throw OfflineEditBlockedException();
+    }
+  }
+
   Future<WeeklyPlan> getOrCreateWeeklyPlan({
     required DateTime weekStart,
     required String userId,
@@ -15,15 +32,72 @@ class PlannerRepository {
   }) async {
     final dateStr = _formatDate(weekStart);
 
-    final data = await supabase.rpc<Map<String, dynamic>>(
-      'get_or_create_weekly_plan',
-      params: {'p_week_start': dateStr},
-    );
+    if (await NetworkStatus.isOnline) {
+      try {
+        final data = await supabase.rpc<Map<String, dynamic>>(
+          'get_or_create_weekly_plan',
+          params: {'p_week_start': dateStr},
+        );
+        final plan = WeeklyPlan.fromJson(data);
+        await _cache.cacheWeeklyPlan(plan);
+        return plan;
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
+        final cached = await _cache.getWeeklyPlan(
+          weekStart: dateStr,
+          userId: householdId == null ? userId : null,
+          householdId: householdId,
+        );
+        if (cached != null) return cached;
+        rethrow;
+      }
+    }
 
-    return WeeklyPlan.fromJson(data);
+    final cached = await _cache.getWeeklyPlan(
+      weekStart: dateStr,
+      userId: householdId == null ? userId : null,
+      householdId: householdId,
+    );
+    if (cached != null) return cached;
+
+    if (householdId != null) {
+      throw OfflineEditBlockedException(
+        'Sin conexión: no hay planificador guardado para esta semana',
+      );
+    }
+
+    final tempPlan = WeeklyPlan(
+      id: newLocalId(),
+      userId: userId,
+      weekStart: DateTime.parse(dateStr),
+      createdAt: DateTime.now(),
+    );
+    await _cache.cacheWeeklyPlanWithPendingCreate(
+      plan: tempPlan,
+      payload: {
+        'tempId': tempPlan.id,
+        'userId': userId,
+        'weekStart': dateStr,
+      },
+    );
+    return tempPlan;
   }
 
   Future<List<SlotItem>> getSlotsForPlan(String planId) async {
+    if (await NetworkStatus.isOnline) {
+      try {
+        final slots = await _fetchSlotsRemote(planId);
+        await _cache.cacheSlots(planId, slots);
+        return slots;
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
+        return _cache.getSlotsForPlan(planId);
+      }
+    }
+    return _cache.getSlotsForPlan(planId);
+  }
+
+  Future<List<SlotItem>> _fetchSlotsRemote(String planId) async {
     final data = await supabase
         .from(PlanSlot.table_name)
         .select('*, recipes(id, title, servings)')
@@ -48,8 +122,63 @@ class PlannerRepository {
     String? householdId,
     bool isLeftover = false,
     String? notes,
+    String? recipeTitle,
   }) async {
-    final existingSlots = await getSlotsForPlan(planId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
+
+    if (isOnline) {
+      final slot = await addSlotRemote(
+        planId: planId,
+        dayOfWeek: dayOfWeek,
+        mealType: mealType,
+        recipeId: recipeId,
+        servings: servings,
+        userId: userId,
+        householdId: householdId,
+        isLeftover: isLeftover,
+        notes: notes,
+      );
+      // Update cache with the returned slot immediately
+      await _cache.upsertSlot(
+        SlotItem(slot: slot, recipeTitle: recipeTitle),
+      );
+      // Best-effort full refresh
+      try {
+        final slots = await _fetchSlotsRemote(planId);
+        await _cache.cacheSlots(planId, slots);
+      } catch (_) {
+        // Ignore refresh errors; the operation succeeded
+      }
+      return slot;
+    }
+
+    return _addSlotOffline(
+      planId: planId,
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      recipeId: recipeId,
+      servings: servings,
+      userId: userId,
+      isLeftover: isLeftover,
+      notes: notes,
+      recipeTitle: recipeTitle,
+    );
+  }
+
+  Future<PlanSlot> addSlotRemote({
+    required String planId,
+    required int dayOfWeek,
+    required String mealType,
+    String? recipeId,
+    required int servings,
+    required String userId,
+    String? householdId,
+    bool isLeftover = false,
+    String? notes,
+    String? slotId,
+  }) async {
+    final existingSlots = await _fetchSlotsRemote(planId);
     final position = existingSlots
         .where(
           (item) =>
@@ -62,6 +191,7 @@ class PlannerRepository {
         .from(PlanSlot.table_name)
         .insert(
           PlanSlot.insert(
+            id: slotId,
             planId: planId,
             dayOfWeek: dayOfWeek,
             mealType: mealType,
@@ -78,19 +208,124 @@ class PlannerRepository {
     final slot = PlanSlot.fromJson(data);
 
     if (recipeId != null && !isLeftover) {
-      await _syncShoppingListAdd(
-        slot: slot,
-        recipeId: recipeId,
-        servings: servings,
-        userId: userId,
-        householdId: householdId,
-      );
+      try {
+        await _syncShoppingListAdd(
+          slot: slot,
+          recipeId: recipeId,
+          servings: servings,
+          userId: userId,
+          householdId: householdId,
+        );
+      } catch (error) {
+        await supabase
+            .from(PlanSlot.table_name)
+            .delete()
+            .eq(PlanSlot.c_id, slot.id);
+        rethrow;
+      }
     }
 
     return slot;
   }
 
-  Future<void> removeSlot(String slotId) async {
+  Future<PlanSlot> _addSlotOffline({
+    required String planId,
+    required int dayOfWeek,
+    required String mealType,
+    String? recipeId,
+    required int servings,
+    required String userId,
+    bool isLeftover = false,
+    String? notes,
+    String? recipeTitle,
+  }) async {
+    final existingSlots = await _cache.getSlotsForPlan(planId);
+    final position = existingSlots
+        .where(
+          (item) =>
+              item.slot.dayOfWeek == dayOfWeek &&
+              item.slot.mealType == mealType,
+        )
+        .length;
+
+    final tempId = newLocalId();
+    final slot = PlanSlot(
+      id: tempId,
+      planId: planId,
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      recipeId: recipeId,
+      servings: servings,
+      position: position,
+      isLeftover: isLeftover,
+      notes: notes,
+    );
+
+    final shoppingItems = <ShoppingItem>[];
+    if (recipeId != null && !isLeftover) {
+      final list = await getOrCreateShoppingList(userId: userId);
+      final recipe = await _cache.getRecipeById(recipeId);
+      if (recipe != null && recipe.servings > 0) {
+        final scale = servings / recipe.servings;
+        final ingredients = await _cache.getIngredientsForRecipe(recipeId);
+        for (final ingredient in ingredients) {
+          if (!ingredient.isIncluded || ingredient.isToTaste) continue;
+          final scaledQty = _scaleQuantity(ingredient.quantity, scale);
+          shoppingItems.add(
+            ShoppingItem(
+              id: newLocalId(),
+              shoppingListId: list.id,
+              name: ingredient.name,
+              quantity: scaledQty,
+              unit: ingredient.unit,
+              category: ingredient.category,
+              isChecked: false,
+              isManual: false,
+              planSlotId: slot.id,
+              ingredientId: ingredient.id,
+              createdAt: DateTime.now(),
+            ),
+          );
+        }
+      }
+    }
+
+    // Atomic: upsert slot, add shopping items, enqueue operation
+    await _cache.upsertSlotWithShoppingAndPendingOp(
+      slotItem: SlotItem(slot: slot, recipeTitle: recipeTitle),
+      shoppingItems: shoppingItems,
+      payload: {
+        'tempId': tempId,
+        'planId': planId,
+        'dayOfWeek': dayOfWeek,
+        'mealType': mealType,
+        'recipeId': recipeId,
+        'servings': servings,
+        'userId': userId,
+        'householdId': null,
+        'isLeftover': isLeftover,
+        'notes': notes,
+      },
+    );
+
+    return slot;
+  }
+
+  Future<void> removeSlot(String slotId, {String? householdId}) async {
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
+
+    if (isOnline) {
+      await removeSlotRemote(slotId);
+      // Delete from cache immediately after remote deletion
+      await _cache.deleteSlot(slotId);
+      return;
+    }
+
+    await _removeSlotOffline(slotId, householdId: householdId);
+  }
+
+  Future<void> removeSlotRemote(String slotId) async {
     final slotRow = await supabase
         .from(PlanSlot.table_name)
         .select('*, weekly_plans(user_id, household_id)')
@@ -121,7 +356,69 @@ class PlannerRepository {
     await supabase.from(PlanSlot.table_name).delete().eq(PlanSlot.c_id, slotId);
   }
 
+  Future<void> _removeSlotOffline(
+    String slotId, {
+    String? householdId,
+  }) async {
+    final linked = await _cache.getShoppingItemsByPlanSlot(slotId);
+    final itemIds = linked.map((item) => item.id).toList();
+
+    // Atomic: delete shopping items, delete slot, enqueue operation
+    await _cache.deleteSlotWithShoppingAndPendingOp(
+      slotId: slotId,
+      shoppingItemIds: itemIds,
+      payload: {'slotId': slotId},
+    );
+  }
+
   Future<ShoppingList> getOrCreateShoppingList({
+    required String userId,
+    String? householdId,
+  }) async {
+    if (await NetworkStatus.isOnline) {
+      try {
+        final list = await _getOrCreateShoppingListRemote(
+          userId: userId,
+          householdId: householdId,
+        );
+        await _cache.cacheShoppingList(list);
+        return list;
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
+        final cached = await _cache.getShoppingList(
+          userId: householdId == null ? userId : null,
+          householdId: householdId,
+        );
+        if (cached != null) return cached;
+        rethrow;
+      }
+    }
+
+    final cached = await _cache.getShoppingList(
+      userId: householdId == null ? userId : null,
+      householdId: householdId,
+    );
+    if (cached != null) return cached;
+
+    if (householdId != null) {
+      throw OfflineEditBlockedException(
+        'Sin conexión: no hay lista de la compra guardada',
+      );
+    }
+
+    final tempList = ShoppingList(
+      id: newLocalId(),
+      userId: userId,
+      createdAt: DateTime.now(),
+    );
+    await _cache.cacheShoppingListWithPendingCreate(
+      list: tempList,
+      payload: {'tempId': tempList.id, 'userId': userId},
+    );
+    return tempList;
+  }
+
+  Future<ShoppingList> _getOrCreateShoppingListRemote({
     required String userId,
     String? householdId,
   }) async {
@@ -164,11 +461,18 @@ class PlannerRepository {
 
   Future<void> _syncShoppingListAdd({
     required PlanSlot slot,
-    required String recipeId, // never null when this method is called
+    required String recipeId,
     required int servings,
     required String userId,
     String? householdId,
   }) async {
+    final existingLinked = await supabase
+        .from(ShoppingItem.table_name)
+        .select(ShoppingItem.c_id)
+        .eq(ShoppingItem.c_planSlotId, slot.id)
+        .limit(1);
+    if ((existingLinked as List).isNotEmpty) return;
+
     final list = await getOrCreateShoppingList(
       userId: userId,
       householdId: householdId,
@@ -246,7 +550,6 @@ class PlannerRepository {
       return;
     }
 
-    // Legacy fallback: quantities merged into shared rows without a slot link.
     final recipeId = slot.recipeId;
     if (recipeId == null) return;
 
@@ -332,7 +635,6 @@ class PlannerRepository {
     return item.name.toLowerCase() == name.toLowerCase() && item.unit == unit;
   }
 
-  /// Scales an ingredient quantity for the planner and rounds to a whole number.
   num? _scaleQuantity(num? quantity, double scale) {
     if (quantity == null) return null;
     return (quantity * scale).round();

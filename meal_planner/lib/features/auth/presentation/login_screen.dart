@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
@@ -98,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'MealPlanner',
+                      AppBranding.displayName,
                       style: theme.textTheme.headlineMedium,
                       textAlign: TextAlign.center,
                     ),

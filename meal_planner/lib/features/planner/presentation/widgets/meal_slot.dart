@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
@@ -26,9 +28,11 @@ class MealSlot extends ConsumerWidget {
     WidgetRef ref,
     Recipe recipe,
   ) async {
+    final canEdit = ref.read(canEditOfflineProvider);
     final result = await showServingsDialog(
       context,
       defaultServings: recipe.servings,
+      canConfirm: canEdit,
     );
     if (result == null || !context.mounted) return;
 
@@ -87,17 +91,19 @@ class MealSlot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final canEdit = ref.watch(canEditOfflineProvider);
 
     return DragTarget<Recipe>(
-      onAcceptWithDetails: (details) =>
-          _addRecipe(context, ref, details.data),
+      onAcceptWithDetails: canEdit
+          ? (details) => _addRecipe(context, ref, details.data)
+          : null,
       builder: (context, candidate, rejected) {
         final isHovering = candidate.isNotEmpty;
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
             color: isHovering
                 ? colorScheme.primaryContainer.withValues(alpha: 0.5)
@@ -127,7 +133,7 @@ class MealSlot extends ConsumerWidget {
                 child: slots.isEmpty
                     ? _EmptySlot(
                         isHovering: isHovering,
-                        onTap: () => _openPicker(context),
+                        onTap: canEdit ? () => _openPicker(context) : null,
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,11 +141,18 @@ class MealSlot extends ConsumerWidget {
                           ...slots.map(
                             (item) => _RecipeChip(
                               item: item,
+                              canRemove: canEdit,
+                              onOpenRecipe: item.isTextSlot
+                                  ? null
+                                  : () => context.push(
+                                        '/home/recipes/${item.slot.recipeId}',
+                                      ),
                               onRemove: () =>
                                   _confirmRemove(context, ref, item),
                             ),
                           ),
-                          _AddMoreButton(onTap: () => _openPicker(context)),
+                          if (canEdit)
+                            _AddMoreButton(onTap: () => _openPicker(context)),
                         ],
                       ),
               ),
@@ -152,10 +165,10 @@ class MealSlot extends ConsumerWidget {
 }
 
 class _EmptySlot extends StatelessWidget {
-  const _EmptySlot({required this.isHovering, required this.onTap});
+  const _EmptySlot({required this.isHovering, this.onTap});
 
   final bool isHovering;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -219,16 +232,24 @@ class _AddMoreButton extends StatelessWidget {
 }
 
 class _RecipeChip extends StatelessWidget {
-  const _RecipeChip({required this.item, required this.onRemove});
+  const _RecipeChip({
+    required this.item,
+    required this.onRemove,
+    this.onOpenRecipe,
+    this.canRemove = true,
+  });
 
   final SlotItem item;
+  final VoidCallback? onOpenRecipe;
   final VoidCallback onRemove;
+  final bool canRemove;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isText = item.isTextSlot;
     final isLeftover = !isText && item.slot.isLeftover;
+    final isRecipe = onOpenRecipe != null;
 
     final chipColor = isText
         ? Colors.orange.shade100
@@ -243,53 +264,74 @@ class _RecipeChip extends StatelessWidget {
             : colorScheme.onPrimaryContainer;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 2),
+      margin: const EdgeInsets.only(bottom: 6),
+      constraints: const BoxConstraints(minHeight: 52),
       child: Material(
         color: chipColor,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 4, 4, 4),
-          child: Row(
-            children: [
-              if (isText) ...[
-                Icon(Icons.edit_note, size: 14, color: onChipColor),
-                const SizedBox(width: 4),
-              ] else if (isLeftover) ...[
-                Icon(Icons.replay_rounded, size: 14, color: onChipColor),
-                const SizedBox(width: 4),
-              ],
-              Expanded(
-                child: Text(
-                  item.displayTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(color: onChipColor),
-                ),
-              ),
-              if (item.slot.servings > 0)
-                Padding(
-                  padding: const EdgeInsets.only(right: 2),
-                  child: Text(
-                    '${item.slot.servings}r',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(color: onChipColor),
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: onOpenRecipe,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                  child: Row(
+                    children: [
+                      if (isText) ...[
+                        Icon(Icons.edit_note, size: 18, color: onChipColor),
+                        const SizedBox(width: 8),
+                      ] else if (isLeftover) ...[
+                        Icon(Icons.replay_rounded, size: 18, color: onChipColor),
+                        const SizedBox(width: 8),
+                      ] else ...[
+                        Icon(Icons.restaurant_menu, size: 18, color: onChipColor),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: Text(
+                          item.displayTitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: onChipColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                      if (item.slot.servings > 0) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '${item.slot.servings} raciones',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: onChipColor.withValues(alpha: 0.85),
+                              ),
+                        ),
+                      ],
+                      if (isRecipe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 20,
+                          color: onChipColor.withValues(alpha: 0.7),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              InkWell(
-                onTap: onRemove,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: Icon(Icons.close, size: 14, color: onChipColor),
-                ),
               ),
-            ],
-          ),
+            ),
+            if (canRemove)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                onPressed: onRemove,
+                icon: Icon(Icons.close, size: 18, color: onChipColor),
+                tooltip: 'Quitar',
+              ),
+          ],
         ),
       ),
     );

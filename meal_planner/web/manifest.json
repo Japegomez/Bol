@@ -1,6 +1,6 @@
 {
-    "name": "meal_planner",
-    "short_name": "meal_planner",
+    "name": "Recetea",
+    "short_name": "Recetea",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
