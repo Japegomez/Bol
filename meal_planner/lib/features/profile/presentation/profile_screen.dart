@@ -34,12 +34,11 @@ class ProfileScreen extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     final authState = ref.read(authStateProvider).valueOrNull;
-    if (authState is AuthAuthenticated) {
-      await ref
-          .read(localCacheStoreProvider)
-          .clearUserSyncState(authState.user.id);
-    }
+    if (authState is! AuthAuthenticated) return;
+
+    final userId = authState.user.id;
     await ref.read(authRepositoryProvider).signOut(manual: true);
+    await ref.read(localCacheStoreProvider).clearUserSyncState(userId);
   }
 
   @override

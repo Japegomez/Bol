@@ -36,7 +36,12 @@ class LocalCacheStore {
         batch.insert(
           _db.localRecipes,
           _recipeToRow(recipe),
-          mode: InsertMode.insertOrReplace,
+          mode: InsertMode.insertOrIgnore,
+        );
+        batch.update(
+          _db.localRecipes,
+          _recipeToRow(recipe).copyWith(forkedFromId: const Value.absent()),
+          where: (_) => _db.localRecipes.id.equals(recipe.id),
         );
       }
     });
@@ -746,6 +751,64 @@ class LocalCacheStore {
         userId: userId,
         entityType: PendingEntity.shoppingItem,
         opType: PendingOp.clear,
+        payload: payload,
+      );
+    });
+  }
+
+  // ── Planner Slots: atomic cache + pending op + shopping items ──────────────
+
+  Future<void> upsertSlotWithShoppingAndPendingOp({
+    required SlotItem slotItem,
+    required List<ShoppingItem> shoppingItems,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
+    await _db.transaction(() async {
+      await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
+            _slotItemToRow(slotItem),
+          );
+      for (final item in shoppingItems) {
+        await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
+              _shoppingItemToRow(item),
+            );
+      }
+      await _insertPendingOperation(
+        userId: userId,
+        entityType: PendingEntity.planSlot,
+        opType: PendingOp.add,
+        payload: payload,
+      );
+    });
+  }
+
+  Future<void> deleteSlotWithShoppingAndPendingOp({
+    required String slotId,
+    required List<String> shoppingItemIds,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
+    await _db.transaction(() async {
+      for (final itemId in shoppingItemIds) {
+        await (_db.delete(_db.localShoppingItems)
+              ..where((i) => i.id.equals(itemId)))
+            .go();
+      }
+      await (_db.delete(_db.localPlanSlots)
+            ..where((s) => s.id.equals(slotId)))
+          .go();
+      await _insertPendingOperation(
+        userId: userId,
+        entityType: PendingEntity.planSlot,
+        opType: PendingOp.remove,
         payload: payload,
       );
     });

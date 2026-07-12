@@ -23,10 +23,12 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
     if (!_scrollController.hasClients) return;
 
     final position = _scrollController.position;
-    final offset = (_scrollController.offset - delta).clamp(
-      position.minScrollExtent,
-      position.maxScrollExtent,
-    );
+    final offset = (_scrollController.offset - delta)
+        .clamp(
+          position.minScrollExtent,
+          position.maxScrollExtent,
+        )
+        .toDouble();
     _scrollController.jumpTo(offset);
   }
 
@@ -36,7 +38,8 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
     final position = _scrollController.position;
     final target = (_scrollController.offset -
             details.velocity.pixelsPerSecond.dx * 0.15)
-        .clamp(position.minScrollExtent, position.maxScrollExtent);
+        .clamp(position.minScrollExtent, position.maxScrollExtent)
+        .toDouble();
 
     _scrollController.animateTo(
       target,

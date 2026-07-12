@@ -14,8 +14,11 @@ class ShoppingRepository {
 
   final LocalCacheStore _cache;
 
-  Future<void> _guardOfflineMutation({String? householdId}) async {
-    if (householdId != null && !await NetworkStatus.isOnline) {
+  Future<void> _guardOfflineMutation({
+    String? householdId,
+    required bool isOnline,
+  }) async {
+    if (householdId != null && !isOnline) {
       throw OfflineEditBlockedException();
     }
   }
@@ -138,9 +141,10 @@ class ShoppingRepository {
     bool isChecked, {
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       await supabase
           .from(ShoppingItem.table_name)
           .update({ShoppingItem.c_isChecked: isChecked})
@@ -176,9 +180,10 @@ class ShoppingRepository {
     String? category,
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       final data = await supabase
           .from(ShoppingItem.table_name)
           .insert(
@@ -234,9 +239,10 @@ class ShoppingRepository {
     String? category,
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       final data = await supabase
           .from(ShoppingItem.table_name)
           .update(
@@ -282,9 +288,10 @@ class ShoppingRepository {
   }
 
   Future<void> deleteItem(String id, {String? householdId}) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       await supabase.from(ShoppingItem.table_name).delete().eq(ShoppingItem.c_id, id);
       await _cache.deleteShoppingItem(id);
       return;
@@ -297,9 +304,10 @@ class ShoppingRepository {
   }
 
   Future<void> clearList(String listId, {String? householdId}) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       await supabase
           .from(ShoppingItem.table_name)
           .delete()

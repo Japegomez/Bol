@@ -42,12 +42,14 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
     try {
       final authState = ref.read(authStateProvider).valueOrNull;
-      if (authState is AuthAuthenticated) {
-        await ref
-            .read(localCacheStoreProvider)
-            .clearUserSyncState(authState.user.id);
+      if (authState is! AuthAuthenticated) {
+        throw Exception('User not authenticated');
       }
+      final userId = authState.user.id;
+
       await ref.read(authRepositoryProvider).deleteAccount();
+      await ref.read(localCacheStoreProvider).clearUserSyncState(userId);
+
       if (!mounted) return;
       context.go('/auth/login');
     } catch (error) {

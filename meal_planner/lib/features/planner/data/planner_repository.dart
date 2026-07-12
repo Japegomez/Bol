@@ -1,6 +1,7 @@
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
@@ -16,8 +17,11 @@ class PlannerRepository {
 
   final LocalCacheStore _cache;
 
-  Future<void> _guardOfflineMutation({String? householdId}) async {
-    if (householdId != null && !await NetworkStatus.isOnline) {
+  Future<void> _guardOfflineMutation({
+    String? householdId,
+    required bool isOnline,
+  }) async {
+    if (householdId != null && !isOnline) {
       throw OfflineEditBlockedException();
     }
   }
@@ -38,7 +42,8 @@ class PlannerRepository {
         final plan = WeeklyPlan.fromJson(data);
         await _cache.cacheWeeklyPlan(plan);
         return plan;
-      } catch (_) {
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
         final cached = await _cache.getWeeklyPlan(
           weekStart: dateStr,
           userId: householdId == null ? userId : null,
@@ -85,7 +90,8 @@ class PlannerRepository {
         final slots = await _fetchSlotsRemote(planId);
         await _cache.cacheSlots(planId, slots);
         return slots;
-      } catch (_) {
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
         return _cache.getSlotsForPlan(planId);
       }
     }
@@ -119,9 +125,10 @@ class PlannerRepository {
     String? notes,
     String? recipeTitle,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       final slot = await addSlotRemote(
         planId: planId,
         dayOfWeek: dayOfWeek,
@@ -133,8 +140,17 @@ class PlannerRepository {
         isLeftover: isLeftover,
         notes: notes,
       );
-      final slots = await _fetchSlotsRemote(planId);
-      await _cache.cacheSlots(planId, slots);
+      // Update cache with the returned slot immediately
+      await _cache.upsertSlot(
+        SlotItem(slot: slot, recipeTitle: recipeTitle),
+      );
+      // Best-effort full refresh
+      try {
+        final slots = await _fetchSlotsRemote(planId);
+        await _cache.cacheSlots(planId, slots);
+      } catch (_) {
+        // Ignore refresh errors; the operation succeeded
+      }
       return slot;
     }
 
@@ -246,22 +262,39 @@ class PlannerRepository {
       notes: notes,
     );
 
-    await _cache.upsertSlot(
-      SlotItem(slot: slot, recipeTitle: recipeTitle),
-    );
-
+    final shoppingItems = <ShoppingItem>[];
     if (recipeId != null && !isLeftover) {
-      await _syncShoppingListAddOffline(
-        slot: slot,
-        recipeId: recipeId,
-        servings: servings,
-        userId: userId,
-      );
+      final list = await getOrCreateShoppingList(userId: userId);
+      final recipe = await _cache.getRecipeById(recipeId);
+      if (recipe != null && recipe.servings > 0) {
+        final scale = servings / recipe.servings;
+        final ingredients = await _cache.getIngredientsForRecipe(recipeId);
+        for (final ingredient in ingredients) {
+          if (!ingredient.isIncluded || ingredient.isToTaste) continue;
+          final scaledQty = _scaleQuantity(ingredient.quantity, scale);
+          shoppingItems.add(
+            ShoppingItem(
+              id: newLocalId(),
+              shoppingListId: list.id,
+              name: ingredient.name,
+              quantity: scaledQty,
+              unit: ingredient.unit,
+              category: ingredient.category,
+              isChecked: false,
+              isManual: false,
+              planSlotId: slot.id,
+              ingredientId: ingredient.id,
+              createdAt: DateTime.now(),
+            ),
+          );
+        }
+      }
     }
 
-    await _cache.enqueueOperation(
-      entityType: PendingEntity.planSlot,
-      opType: PendingOp.add,
+    // Atomic: upsert slot, add shopping items, enqueue operation
+    await _cache.upsertSlotWithShoppingAndPendingOp(
+      slotItem: SlotItem(slot: slot, recipeTitle: recipeTitle),
+      shoppingItems: shoppingItems,
       payload: {
         'tempId': tempId,
         'planId': planId,
@@ -280,10 +313,13 @@ class PlannerRepository {
   }
 
   Future<void> removeSlot(String slotId, {String? householdId}) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       await removeSlotRemote(slotId);
+      // Delete from cache immediately after remote deletion
+      await _cache.deleteSlot(slotId);
       return;
     }
 
@@ -325,23 +361,13 @@ class PlannerRepository {
     String slotId, {
     String? householdId,
   }) async {
-    final slots = await _findSlotAcrossPlans(slotId);
-    if (slots != null) {
-      final slot = slots.slot;
-      if (slot.recipeId != null && !slot.isLeftover) {
-        await _syncShoppingListRemoveOffline(slot: slot);
-      } else {
-        final linked = await _cache.getShoppingItemsByPlanSlot(slotId);
-        for (final item in linked) {
-          await _cache.deleteShoppingItem(item.id);
-        }
-      }
-      await _cache.deleteSlot(slotId);
-    }
+    final linked = await _cache.getShoppingItemsByPlanSlot(slotId);
+    final itemIds = linked.map((item) => item.id).toList();
 
-    await _cache.enqueueOperation(
-      entityType: PendingEntity.planSlot,
-      opType: PendingOp.remove,
+    // Atomic: delete shopping items, delete slot, enqueue operation
+    await _cache.deleteSlotWithShoppingAndPendingOp(
+      slotId: slotId,
+      shoppingItemIds: itemIds,
       payload: {'slotId': slotId},
     );
   }
@@ -365,7 +391,8 @@ class PlannerRepository {
         );
         await _cache.cacheShoppingList(list);
         return list;
-      } catch (_) {
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
         final cached = await _cache.getShoppingList(
           userId: householdId == null ? userId : null,
           householdId: householdId,
@@ -392,7 +419,10 @@ class PlannerRepository {
       userId: userId,
       createdAt: DateTime.now(),
     );
-    await _cache.cacheShoppingList(tempList);
+    await _cache.cacheShoppingListWithPendingCreate(
+      list: tempList,
+      payload: {'tempId': tempList.id, 'userId': userId},
+    );
     return tempList;
   }
 

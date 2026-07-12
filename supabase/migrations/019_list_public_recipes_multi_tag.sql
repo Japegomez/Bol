@@ -56,8 +56,8 @@ AS $$
   ORDER BY
     CASE WHEN p_sort = 'top' THEN COALESCE(stats.avg_score, 0) END DESC NULLS LAST,
     r.created_at DESC
-  LIMIT GREATEST(p_limit, 1)
-  OFFSET GREATEST(p_offset, 0);
+  LIMIT LEAST(GREATEST(p_limit, 1), 100)
+  OFFSET LEAST(GREATEST(p_offset, 0), 10000);
 $$;
 
 GRANT EXECUTE ON FUNCTION public.list_public_recipes(text, text[], text, int, int)

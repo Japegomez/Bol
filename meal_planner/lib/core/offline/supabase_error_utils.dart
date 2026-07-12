@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -28,10 +27,16 @@ bool isAuthOrSessionError(Object error) {
 
 /// Returns true for connectivity/transport failures where cache fallback is OK.
 bool isTransientNetworkError(Object error) {
-  if (error is SocketException) return true;
+  // Check for SocketException and HttpException via runtime type name
+  // to maintain web compatibility (dart:io is not available on web)
+  final errorType = error.runtimeType.toString();
+  if (errorType == 'SocketException' ||
+      errorType == 'HttpException' ||
+      errorType == 'ClientException') {
+    return true;
+  }
+
   if (error is TimeoutException) return true;
-  if (error is HttpException) return true;
-  if (error.runtimeType.toString() == 'ClientException') return true;
 
   if (error is PostgrestException) {
     final code = error.code;

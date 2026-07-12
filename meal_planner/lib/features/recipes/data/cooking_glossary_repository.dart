@@ -31,7 +31,10 @@ class CookingGlossaryRepository {
   Future<void> saveCustomEntries(List<CookingGlossaryEntry> entries) async {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(entries.map((entry) => entry.toJson()).toList());
-    await prefs.setString(_storageKey, encoded);
+    final success = await prefs.setString(_storageKey, encoded);
+    if (!success) {
+      throw Exception('Failed to persist cooking glossary entries');
+    }
   }
 }
 

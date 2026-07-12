@@ -31,14 +31,20 @@ class RecipesRepository {
     return id;
   }
 
-  Future<void> _guardOfflineMutation({String? householdId}) async {
-    if (householdId != null && !await NetworkStatus.isOnline) {
+  Future<void> _guardOfflineMutation({
+    String? householdId,
+    required bool isOnline,
+  }) async {
+    if (householdId != null && !isOnline) {
       throw OfflineEditBlockedException();
     }
   }
 
-  Future<void> _guardOfflinePhoto(RecipeFormData form) async {
-    if (form.pendingPhoto != null && !await NetworkStatus.isOnline) {
+  Future<void> _guardOfflinePhoto({
+    required RecipeFormData form,
+    required bool isOnline,
+  }) async {
+    if (form.pendingPhoto != null && !isOnline) {
       throw OfflinePhotoBlockedException();
     }
   }
@@ -63,7 +69,8 @@ class RecipesRepository {
             Recipe.converter(List<Map<String, dynamic>>.from(data));
         await _cache.cacheRecipes(recipes);
         return recipes;
-      } catch (_) {
+      } catch (error) {
+        if (!shouldFallbackToCache(error)) rethrow;
         return _cache.getRecipes(
           userId: _userId,
           search: search,
@@ -186,16 +193,23 @@ class RecipesRepository {
     RecipeFormData form, {
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
-    await _guardOfflinePhoto(form);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
+    await _guardOfflinePhoto(form: form, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       try {
         final id = await createRecipeRemote(form);
         await _cacheRecipeDetailBestEffort(id);
         return id;
       } catch (error) {
         if (shouldFallbackToCache(error)) {
+          // Revalidate constraints before falling back
+          await _guardOfflineMutation(
+            householdId: householdId,
+            isOnline: false,
+          );
+          await _guardOfflinePhoto(form: form, isOnline: false);
           return _createRecipeOffline(form);
         }
         rethrow;
@@ -286,13 +300,27 @@ class RecipesRepository {
     bool isPublic, {
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
     await _validateRecipeCanBePublished(id, isPublic);
 
-    if (await NetworkStatus.isOnline) {
-      await setRecipeVisibilityRemote(id, isPublic);
-      await _syncCachedRecipeVisibility(id, isPublic);
-      return;
+    if (isOnline) {
+      try {
+        await setRecipeVisibilityRemote(id, isPublic);
+        await _syncCachedRecipeVisibility(id, isPublic);
+        return;
+      } catch (error) {
+        if (shouldFallbackToCache(error)) {
+          // Revalidate household constraint before falling back
+          await _guardOfflineMutation(
+            householdId: householdId,
+            isOnline: false,
+          );
+          await _setRecipeVisibilityOffline(id, isPublic);
+          return;
+        }
+        rethrow;
+      }
     }
 
     await _setRecipeVisibilityOffline(id, isPublic);
@@ -379,9 +407,10 @@ class RecipesRepository {
     required bool isIncluded,
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       await updateIngredientIncludedRemote(
         ingredientId: ingredientId,
         recipeId: recipeId,
@@ -436,16 +465,23 @@ class RecipesRepository {
     RecipeFormData form, {
     String? householdId,
   }) async {
-    await _guardOfflineMutation(householdId: householdId);
-    await _guardOfflinePhoto(form);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
+    await _guardOfflinePhoto(form: form, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       try {
         await updateRecipeRemote(id, form);
         await _cacheRecipeDetailBestEffort(id);
         return;
       } catch (error) {
         if (shouldFallbackToCache(error)) {
+          // Revalidate constraints before falling back
+          await _guardOfflineMutation(
+            householdId: householdId,
+            isOnline: false,
+          );
+          await _guardOfflinePhoto(form: form, isOnline: false);
           await _updateRecipeOffline(id, form);
           return;
         }
@@ -513,15 +549,21 @@ class RecipesRepository {
   }
 
   Future<void> deleteRecipe(String id, {String? householdId}) async {
-    await _guardOfflineMutation(householdId: householdId);
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
-    if (await NetworkStatus.isOnline) {
+    if (isOnline) {
       try {
         await deleteRecipeRemote(id);
         await _cache.deleteRecipe(id);
         return;
       } catch (error) {
         if (shouldFallbackToCache(error)) {
+          // Revalidate household constraint before falling back
+          await _guardOfflineMutation(
+            householdId: householdId,
+            isOnline: false,
+          );
           await _cache.deleteRecipe(id);
           await _cache.enqueueOperation(
             entityType: PendingEntity.recipe,

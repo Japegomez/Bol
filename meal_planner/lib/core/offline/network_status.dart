@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/services.dart';
 
 abstract final class NetworkStatus {
   static const _connectivityTimeout = Duration(seconds: 3);
@@ -12,6 +13,10 @@ abstract final class NetworkStatus {
           .timeout(_connectivityTimeout);
       return results.isNotEmpty && !results.contains(ConnectivityResult.none);
     } on TimeoutException {
+      return false;
+    } on PlatformException {
+      return false;
+    } catch (_) {
       return false;
     }
   }

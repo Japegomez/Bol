@@ -60,6 +60,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validate Base64 format and size (10MB limit = ~13.3MB Base64)
+    const base64Pattern = /^[A-Za-z0-9+/]+=*$/;
+    if (!base64Pattern.test(image)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid Base64 image" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const maxBase64Size = 14 * 1024 * 1024; // ~10MB decoded
+    if (image.length > maxBase64Size) {
+      return new Response(
+        JSON.stringify({ error: "Image too large (max 10MB)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const visionTimeoutMs = 15_000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), visionTimeoutMs);
