@@ -524,15 +524,11 @@ class LocalCacheStore {
     if (_db == null) return const [];
 
     final resolvedUserId = userId ?? _requireCurrentUserId();
-    final query = _db.select(_db.pendingOperations)
-      ..orderBy([(o) => OrderingTerm.asc(o.createdAt)]);
+    if (resolvedUserId == null) return const [];
 
-    if (resolvedUserId != null) {
-      query.where(
-        (o) =>
-            o.userId.equals(resolvedUserId) | o.userId.isNull(),
-      );
-    }
+    final query = _db.select(_db.pendingOperations)
+      ..where((o) => o.userId.equals(resolvedUserId))
+      ..orderBy([(o) => OrderingTerm.asc(o.createdAt)]);
 
     return query.get();
   }
