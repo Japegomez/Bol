@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/features/shopping/presentation/shopping_provider.dart';
 
@@ -13,8 +14,8 @@ class HomeShell extends ConsumerWidget {
     final isOffline = ref.read(isOfflineProvider);
     if (index == 0 && isOffline) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Explorar no está disponible sin conexión'),
+        SnackBar(
+          content: Text(context.l10n.exploreUnavailableOffline),
         ),
       );
       return;
@@ -33,6 +34,7 @@ class HomeShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOffline = ref.watch(isOfflineProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       body: navigationShell,
@@ -53,27 +55,27 @@ class HomeShell extends ConsumerWidget {
                   ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)
                   : null,
             ),
-            label: 'Explorar',
+            label: l10n.navExplore,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Recetario',
+          NavigationDestination(
+            icon: const Icon(Icons.menu_book_outlined),
+            selectedIcon: const Icon(Icons.menu_book),
+            label: l10n.navRecipeBook,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'Planificador',
+          NavigationDestination(
+            icon: const Icon(Icons.calendar_month_outlined),
+            selectedIcon: const Icon(Icons.calendar_month),
+            label: l10n.navPlanner,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.shopping_cart_outlined),
-            selectedIcon: Icon(Icons.shopping_cart),
-            label: 'Compra',
+          NavigationDestination(
+            icon: const Icon(Icons.shopping_cart_outlined),
+            selectedIcon: const Icon(Icons.shopping_cart),
+            label: l10n.navShopping,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Perfil',
+          NavigationDestination(
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person),
+            label: l10n.navProfile,
           ),
         ],
       ),

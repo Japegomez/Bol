@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/config/env.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -38,7 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptedTerms) {
       setState(() {
-        _errorMessage = 'Debes aceptar los Términos y la Política de Privacidad';
+        _errorMessage = context.l10n.mustAcceptTerms;
       });
       return;
     }
@@ -70,11 +71,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear cuenta'),
+        title: Text(l10n.createAccountTitle),
       ),
       body: SafeArea(
         child: Center(
@@ -90,19 +92,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Regístrate en ${AppBranding.displayName}',
+                            l10n.registerInApp(AppBranding.displayName),
                             style: theme.textTheme.headlineSmall,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
                           if (!Env.hasSupabase)
-                            const Card(
+                            Card(
                               child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  'Supabase no configurado. Copia dart_defines.example.json '
-                                  'a dart_defines.json y añade SUPABASE_URL / SUPABASE_ANON_KEY.',
-                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l10n.supabaseNotConfigured),
                               ),
                             ),
                           if (_errorMessage != null) ...[
@@ -114,18 +113,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ],
                           TextFormField(
                             controller: _usernameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombre de usuario',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.usernameLabel,
+                              border: const OutlineInputBorder(),
                             ),
                             textCapitalization: TextCapitalization.words,
                             enabled: !_isLoading && Env.hasSupabase,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Introduce tu nombre de usuario';
+                                return l10n.enterUsername;
                               }
                               if (value.trim().length < 2) {
-                                return 'Mínimo 2 caracteres';
+                                return l10n.minTwoCharacters;
                               }
                               return null;
                             },
@@ -133,19 +132,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.emailLabel,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             autofillHints: const [AutofillHints.email],
                             enabled: !_isLoading && Env.hasSupabase,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Introduce tu email';
+                                return l10n.enterEmail;
                               }
                               if (!value.contains('@')) {
-                                return 'Email no válido';
+                                return l10n.invalidEmail;
                               }
                               return null;
                             },
@@ -153,15 +152,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 12),
                           PasswordTextField(
                             controller: _passwordController,
-                            labelText: 'Contraseña',
+                            labelText: l10n.passwordLabel,
                             autofillHints: const [AutofillHints.newPassword],
                             enabled: !_isLoading && Env.hasSupabase,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Introduce una contraseña';
+                                return l10n.enterPasswordRegister;
                               }
                               if (value.length < 6) {
-                                return 'Mínimo 6 caracteres';
+                                return l10n.minSixCharacters;
                               }
                               return null;
                             },
@@ -169,15 +168,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 12),
                           PasswordTextField(
                             controller: _confirmPasswordController,
-                            labelText: 'Confirmar contraseña',
+                            labelText: l10n.confirmPasswordLabel,
                             autofillHints: const [AutofillHints.newPassword],
                             enabled: !_isLoading && Env.hasSupabase,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Confirma tu contraseña';
+                                return l10n.confirmYourPassword;
                               }
                               if (value != _passwordController.text) {
-                                return 'Las contraseñas no coinciden';
+                                return l10n.passwordsDoNotMatch;
                               }
                               return null;
                             },
@@ -195,7 +194,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             title: Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                const Text('Acepto los '),
+                                Text(l10n.acceptTermsPrefix),
                                 TextButton(
                                   onPressed: _isLoading
                                       ? null
@@ -206,9 +205,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  child: const Text('Términos'),
+                                  child: Text(l10n.termsLink),
                                 ),
-                                const Text(' y la '),
+                                Text(l10n.andThe),
                                 TextButton(
                                   onPressed: _isLoading
                                       ? null
@@ -219,7 +218,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  child: const Text('Política de Privacidad'),
+                                  child: Text(l10n.privacyPolicyLink),
                                 ),
                               ],
                             ),
@@ -237,14 +236,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Crear cuenta'),
+                                : Text(l10n.createAccountTitle),
                           ),
                           const SizedBox(height: 16),
                           TextButton(
                             onPressed: _isLoading
                                 ? null
                                 : () => context.go('/auth/login'),
-                            child: const Text('¿Ya tienes cuenta? Inicia sesión'),
+                            child: Text(l10n.alreadyHaveAccount),
                           ),
                         ],
                       ),
@@ -264,6 +263,7 @@ class _SuccessView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Column(
@@ -276,14 +276,13 @@ class _SuccessView extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Revisa tu email',
+          l10n.checkYourEmail,
           style: theme.textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
-          'Hemos enviado un enlace de confirmación a $email. '
-          'Confirma tu cuenta antes de iniciar sesión.',
+          l10n.confirmationEmailSent(email),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -292,7 +291,7 @@ class _SuccessView extends StatelessWidget {
         const SizedBox(height: 24),
         FilledButton(
           onPressed: () => context.go('/auth/login'),
-          child: const Text('Ir al inicio de sesión'),
+          child: Text(l10n.goToSignIn),
         ),
       ],
     );

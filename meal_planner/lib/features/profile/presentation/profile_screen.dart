@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/language_selector_tile.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
@@ -13,19 +15,20 @@ class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text('¿Seguro que quieres cerrar sesión?'),
+        title: Text(l10n.signOutTitle),
+        content: Text(l10n.signOutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Cerrar sesión'),
+            child: Text(l10n.signOut),
           ),
         ],
       ),
@@ -37,12 +40,16 @@ class ProfileScreen extends ConsumerWidget {
     if (authState is! AuthAuthenticated) return;
 
     final userId = authState.user.id;
-    await ref.read(authRepositoryProvider).signOut(manual: true);
-    await ref.read(localCacheStoreProvider).clearUserSyncState(userId);
+    final localCache = ref.read(localCacheStoreProvider);
+    final authRepository = ref.read(authRepositoryProvider);
+
+    await localCache.clearUserSyncState(userId);
+    await authRepository.signOut(manual: true);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final authState = ref.watch(authStateProvider);
     final profileAsync = ref.watch(profileProvider);
@@ -57,14 +64,14 @@ class ProfileScreen extends ConsumerWidget {
     final profile = profileAsync.valueOrNull;
     final username = profile?.username ??
         user?.userMetadata?['username'] as String? ??
-        'Usuario';
+        l10n.defaultUsername;
     final email = user?.email;
     final avatarUrl = profile?.avatarUrl;
     final household = householdAsync.valueOrNull;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil'),
+        title: Text(l10n.profileTitle),
       ),
       body: profileAsync.isLoading && profile == null
           ? const Center(child: CircularProgressIndicator())
@@ -111,18 +118,25 @@ class ProfileScreen extends ConsumerWidget {
                       size: 18,
                     ),
                     label: Text(
-                      household?.name ?? 'Modo individual (sin hogar)',
+                      household?.name ?? l10n.individualModeNoHousehold,
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
                 Card(
-                  child: SwitchListTile(
-                    secondary: const Icon(Icons.dark_mode_outlined),
-                    title: const Text('Modo oscuro'),
-                    value: isDarkMode,
-                    onChanged: (enabled) =>
-                        ref.read(themeModeProvider.notifier).setDarkMode(enabled),
+                  child: Column(
+                    children: [
+                      const LanguageSelectorTile(),
+                      const Divider(height: 1),
+                      SwitchListTile(
+                        secondary: const Icon(Icons.dark_mode_outlined),
+                        title: Text(l10n.darkMode),
+                        value: isDarkMode,
+                        onChanged: (enabled) => ref
+                            .read(themeModeProvider.notifier)
+                            .setDarkMode(enabled),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -131,18 +145,18 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.edit_outlined),
-                        title: const Text('Editar perfil'),
+                        title: Text(l10n.editProfile),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/home/profile/edit'),
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.home_outlined),
-                        title: const Text('Mi hogar'),
+                        title: Text(l10n.myHousehold),
                         subtitle: Text(
                           household != null
                               ? household.name
-                              : 'Crear o unirse a un hogar',
+                              : l10n.createOrJoinHousehold,
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/home/profile/household'),
@@ -156,14 +170,14 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.description_outlined),
-                        title: const Text('Términos y Condiciones'),
+                        title: Text(l10n.termsAndConditions),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/legal/terms'),
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.privacy_tip_outlined),
-                        title: const Text('Política de Privacidad'),
+                        title: Text(l10n.privacyPolicy),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/legal/privacy'),
                       ),
@@ -176,7 +190,7 @@ class ProfileScreen extends ConsumerWidget {
                       ? null
                       : () => _confirmSignOut(context, ref),
                   icon: const Icon(Icons.logout),
-                  label: const Text('Cerrar sesión'),
+                  label: Text(l10n.signOut),
                 ),
                 const SizedBox(height: 12),
                 TextButton(
@@ -186,7 +200,7 @@ class ProfileScreen extends ConsumerWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: theme.colorScheme.error,
                   ),
-                  child: const Text('Eliminar cuenta'),
+                  child: Text(l10n.deleteAccount),
                 ),
                 if (profileAsync.hasError) ...[
                   const SizedBox(height: 16),

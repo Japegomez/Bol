@@ -1,3 +1,6 @@
+import 'package:meal_planner/core/offline/network_status.dart';
+import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/profile.dart';
@@ -61,6 +64,21 @@ class SocialRepository {
   }
 
   Future<PublicRecipeDetail> fetchPublicRecipeDetail(String id) async {
+    if (!await NetworkStatus.isOnline) {
+      throw OfflinePublicRecipeBlockedException();
+    }
+
+    try {
+      return await _fetchPublicRecipeDetailRemote(id);
+    } catch (error) {
+      if (shouldFallbackToCache(error)) {
+        throw OfflinePublicRecipeBlockedException();
+      }
+      rethrow;
+    }
+  }
+
+  Future<PublicRecipeDetail> _fetchPublicRecipeDetailRemote(String id) async {
     final recipeData = await supabase
         .from(Recipe.table_name)
         .select()
@@ -75,6 +93,7 @@ class SocialRepository {
     final recipe = Recipe.converterSingle(
       Map<String, dynamic>.from(recipeData),
     );
+    final sourceLang = recipeData['source_lang']?.toString() ?? 'es';
 
     final profileData = await supabase
         .from(Profile.table_name)
@@ -142,6 +161,7 @@ class SocialRepository {
       avgScore: avgScore,
       ratingCount: ratings.length,
       myRating: myRating,
+      sourceLang: sourceLang,
     );
   }
 

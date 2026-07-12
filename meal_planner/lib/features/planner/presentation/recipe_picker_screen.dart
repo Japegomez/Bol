@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
@@ -81,6 +82,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
     final recipesAsync = ref.watch(recipesProvider);
     final hasActiveFilter =
         _searchController.text.trim().isNotEmpty || _selectedTags.isNotEmpty;
+    final l10n = context.l10n;
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -92,7 +94,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    'Elegir receta',
+                    l10n.chooseRecipe,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
@@ -107,10 +109,10 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Buscar receta...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.searchRecipeHint,
+                prefixIcon: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
                 isDense: true,
               ),
             ),
@@ -128,8 +130,8 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                 borderRadius: BorderRadius.circular(8),
               ),
               leading: const Icon(Icons.edit_note),
-              title: const Text('Añadir texto libre'),
-              subtitle: const Text('Sin receta (ej. pedido, fuera, etc.)'),
+              title: Text(l10n.addFreeText),
+              subtitle: Text(l10n.noRecipeExample),
               onTap: _addTextEntry,
             ),
           ),
@@ -137,7 +139,8 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
           Expanded(
             child: recipesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Error: $error')),
+              error: (error, _) =>
+                  Center(child: Text(l10n.errorWithMessage('$error'))),
               data: (recipes) {
                 final displayRecipes = filterRecipesByQueryAndTags(
                   recipes,
@@ -149,8 +152,8 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                   return Center(
                     child: Text(
                       hasActiveFilter
-                          ? 'Sin resultados'
-                          : 'No tienes recetas. Créalas en el recetario.',
+                          ? l10n.noResults
+                          : l10n.noRecipesCreateInBook,
                     ),
                   );
                 }
@@ -163,7 +166,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                     final recipe = displayRecipes[index];
                     return ListTile(
                       title: Text(recipe.title),
-                      subtitle: Text('${recipe.servings} raciones'),
+                      subtitle: Text(l10n.servingsCount(recipe.servings)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _selectRecipe(recipe),
                     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/domain/household_member_info.dart';
@@ -15,7 +16,7 @@ class HouseholdScreen extends ConsumerWidget {
     await Clipboard.setData(ClipboardData(text: code));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código copiado al portapapeles')),
+        SnackBar(content: Text(context.l10n.inviteCodeCopied)),
       );
     }
   }
@@ -24,21 +25,20 @@ class HouseholdScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Regenerar código'),
-        content: const Text(
-          'El código anterior dejará de funcionar. ¿Quieres generar uno nuevo?',
-        ),
+        title: Text(l10n.regenerateCodeTitle),
+        content: Text(l10n.regenerateCodeMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Regenerar'),
+            child: Text(l10n.regenerate),
           ),
         ],
       ),
@@ -50,7 +50,7 @@ class HouseholdScreen extends ConsumerWidget {
       await ref.read(currentHouseholdProvider.notifier).regenerateCode();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Código regenerado')),
+          SnackBar(content: Text(context.l10n.codeRegenerated)),
         );
       }
     } catch (e) {
@@ -67,21 +67,20 @@ class HouseholdScreen extends ConsumerWidget {
     WidgetRef ref,
     HouseholdMemberInfo member,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Expulsar miembro'),
-        content: Text(
-          '¿Expulsar a ${member.username} del hogar?',
-        ),
+        title: Text(l10n.kickMemberTitle),
+        content: Text(l10n.kickMemberConfirm(member.username)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Expulsar'),
+            child: Text(l10n.kick),
           ),
         ],
       ),
@@ -110,21 +109,20 @@ class HouseholdScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Abandonar hogar'),
-        content: const Text(
-          'Perderás acceso al planificador y lista compartidos. ¿Continuar?',
-        ),
+        title: Text(l10n.leaveHouseholdTitle),
+        content: Text(l10n.leaveHouseholdMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Abandonar'),
+            child: Text(l10n.leave),
           ),
         ],
       ),
@@ -146,13 +144,14 @@ class HouseholdScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final householdAsync = ref.watch(currentHouseholdProvider);
     final household = householdAsync.valueOrNull;
 
     if (householdAsync.isLoading && household == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Mi hogar')),
+        appBar: AppBar(title: Text(l10n.myHouseholdTitle)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -176,7 +175,7 @@ class HouseholdScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi hogar'),
+        title: Text(l10n.myHouseholdTitle),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -194,7 +193,7 @@ class HouseholdScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Código de invitación',
+              l10n.inviteCode,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -213,14 +212,14 @@ class HouseholdScreen extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Copiar',
+                      tooltip: l10n.copyTooltip,
                       onPressed: () =>
                           _copyInviteCode(context, household.inviteCode),
                       icon: const Icon(Icons.copy),
                     ),
                     if (isAdmin)
                       IconButton(
-                        tooltip: 'Regenerar',
+                        tooltip: l10n.regenerate,
                         onPressed: () =>
                             _confirmRegenerateCode(context, ref),
                         icon: const Icon(Icons.refresh),
@@ -231,7 +230,7 @@ class HouseholdScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Miembros',
+              l10n.members,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -261,7 +260,7 @@ class HouseholdScreen extends ConsumerWidget {
             OutlinedButton.icon(
               onPressed: () => _confirmLeaveHousehold(context, ref),
               icon: const Icon(Icons.exit_to_app),
-              label: const Text('Abandonar hogar'),
+              label: Text(l10n.leaveHousehold),
             ),
           ],
         ),
@@ -281,11 +280,12 @@ class _NoHouseholdView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi hogar'),
+        title: Text(l10n.myHouseholdTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -299,14 +299,13 @@ class _NoHouseholdView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Sin hogar compartido',
+              l10n.noSharedHousehold,
               style: theme.textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'En modo individual usas tu propio planificador y lista de la compra. '
-              'Crea un hogar o únete con un código para compartirlos con otros.',
+              l10n.individualModeDescription,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -316,13 +315,13 @@ class _NoHouseholdView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onCreate,
               icon: const Icon(Icons.add),
-              label: const Text('Crear hogar'),
+              label: Text(l10n.createHousehold),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: onJoin,
               icon: const Icon(Icons.group_add_outlined),
-              label: const Text('Unirse con código'),
+              label: Text(l10n.joinWithCode),
             ),
           ],
         ),
@@ -346,6 +345,7 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Card(
@@ -364,12 +364,14 @@ class _MemberTile extends StatelessWidget {
               : null,
         ),
         title: Text(
-          isCurrentUser ? '${member.username} (tú)' : member.username,
+          isCurrentUser
+              ? l10n.currentUserSuffix(member.username)
+              : member.username,
         ),
-        subtitle: Text(member.isAdmin ? 'Administrador' : 'Miembro'),
+        subtitle: Text(member.isAdmin ? l10n.admin : l10n.member),
         trailing: canKick
             ? IconButton(
-                tooltip: 'Expulsar',
+                tooltip: l10n.kick,
                 onPressed: onKick,
                 icon: Icon(
                   Icons.person_remove_outlined,

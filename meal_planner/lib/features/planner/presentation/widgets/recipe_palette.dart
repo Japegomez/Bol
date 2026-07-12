@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
@@ -53,6 +54,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
   Widget build(BuildContext context) {
     final recipesAsync = ref.watch(recipesProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Material(
       elevation: 8,
@@ -67,7 +69,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Recetario',
+                      l10n.recipeBookPanel,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
@@ -75,7 +77,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                     icon: const Icon(Icons.close),
                     visualDensity: VisualDensity.compact,
                     onPressed: widget.onClose,
-                    tooltip: 'Cerrar',
+                    tooltip: l10n.closeTooltip,
                   ),
                 ],
               ),
@@ -84,11 +86,11 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: TextField(
                 controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Buscar...',
-                  prefixIcon: Icon(Icons.search, size: 20),
+                decoration: InputDecoration(
+                  hintText: l10n.searchHint,
+                  prefixIcon: const Icon(Icons.search, size: 20),
                   isDense: true,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -105,7 +107,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                 error: (error, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Text('Error: $error'),
+                    child: Text(l10n.errorWithMessage('$error')),
                   ),
                 ),
                 data: (recipes) {
@@ -118,8 +120,8 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                         padding: const EdgeInsets.all(16),
                         child: Text(
                           hasActiveFilter
-                              ? 'Sin resultados'
-                              : 'No tienes recetas. Créalas en el recetario.',
+                              ? l10n.noResults
+                              : l10n.noRecipesCreateInBook,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
@@ -185,6 +187,7 @@ class _RecipeCardContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photoUrlAsync = ref.watch(recipePhotoUrlProvider(recipe.photoUrl));
+    final l10n = context.l10n;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -236,7 +239,7 @@ class _RecipeCardContent extends ConsumerWidget {
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                   Text(
-                    '${recipe.servings} raciones',
+                    l10n.servingsCount(recipe.servings),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],

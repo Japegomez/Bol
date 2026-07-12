@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
+import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 class AddEditItemSheet extends StatefulWidget {
   const AddEditItemSheet({
@@ -60,9 +63,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
       _unit = itemUnit ?? predefinedUnits.first;
     }
 
-    _category = ingredientCategories.contains(item?.category)
-        ? item!.category!
-        : ingredientCategories.first;
+    _category = normalizeCategoryKey(item?.category);
   }
 
   @override
@@ -99,8 +100,16 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
     });
   }
 
+  String _unitLabel(String unit) {
+    final l10n = context.l10n;
+    if (unit == customUnitOption) return l10n.unitCustomOption;
+    final localized = localizedUnitLabel(l10n, unit);
+    return localized.isEmpty ? unit : localized;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Padding(
@@ -112,19 +121,19 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.isEditing ? 'Editar ítem' : 'Añadir ítem',
+              widget.isEditing ? l10n.editItem : l10n.addItem,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
+              decoration: InputDecoration(
+                labelText: l10n.nameLabel,
               ),
               textCapitalization: TextCapitalization.sentences,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'El nombre es obligatorio';
+                  return l10n.nameRequired;
                 }
                 return null;
               },
@@ -135,8 +144,8 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _quantityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Cantidad',
+                    decoration: InputDecoration(
+                      labelText: l10n.quantityLabel,
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -152,7 +161,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                       final parsed =
                           num.tryParse(value.trim().replaceAll(',', '.'));
                       if (parsed == null) {
-                        return 'Introduce un número válido';
+                        return l10n.enterValidNumber;
                       }
                       return null;
                     },
@@ -163,8 +172,8 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                   child: DropdownButtonFormField<String>(
                     key: ValueKey('unit-$_useCustomUnit-$_unit'),
                     initialValue: _useCustomUnit ? customUnitOption : _unit,
-                    decoration: const InputDecoration(
-                      labelText: 'Unidad',
+                    decoration: InputDecoration(
+                      labelText: l10n.unitLabel,
                     ),
                     items: [
                       ...predefinedUnits,
@@ -173,7 +182,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                         .map(
                           (unit) => DropdownMenuItem(
                             value: unit,
-                            child: Text(unit),
+                            child: Text(_unitLabel(unit)),
                           ),
                         )
                         .toList(),
@@ -197,8 +206,8 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _customUnitController,
-                decoration: const InputDecoration(
-                  labelText: 'Unidad personalizada',
+                decoration: InputDecoration(
+                  labelText: l10n.customUnitLabel,
                 ),
               ),
             ],
@@ -206,14 +215,14 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
             DropdownButtonFormField<String>(
               key: ValueKey('category-$_category'),
               initialValue: _category,
-              decoration: const InputDecoration(
-                labelText: 'Categoría',
+              decoration: InputDecoration(
+                labelText: l10n.categoryLabel,
               ),
               items: ingredientCategories
                   .map(
                     (category) => DropdownMenuItem(
                       value: category,
-                      child: Text(category),
+                      child: Text(localizedCategoryLabel(l10n, category)),
                     ),
                   )
                   .toList(),
@@ -226,7 +235,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
             const SizedBox(height: 20),
             FilledButton(
               onPressed: widget.canSave ? _submit : null,
-              child: Text(widget.isEditing ? 'Guardar' : 'Añadir'),
+              child: Text(widget.isEditing ? l10n.save : l10n.add),
             ),
           ],
         ),

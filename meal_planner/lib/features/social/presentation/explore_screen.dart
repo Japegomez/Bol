@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
+import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/public_recipe_card.dart';
@@ -55,14 +58,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget build(BuildContext context) {
     final exploreState = ref.watch(exploreRecipesProvider);
     final filter = ref.watch(exploreFilterProvider);
+    final sortLabel =
+        filter.sort == 'top' ? context.l10n.topRated : context.l10n.recent;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explorar'),
+        title: Text(context.l10n.exploreTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.rss_feed_outlined),
-            tooltip: 'Feed',
+            tooltip: context.l10n.feedTooltip,
             onPressed: () => context.push('/home/explore/feed'),
           ),
         ],
@@ -73,7 +78,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
               controller: _searchController,
-              hintText: 'Buscar recetas públicas',
+              hintText: context.l10n.searchPublicRecipes,
               leading: const Icon(Icons.search),
               onChanged: _onSearchChanged,
               trailing: _searchController.text.isNotEmpty
@@ -94,7 +99,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             child: Row(
               children: [
                 FilterChip(
-                  label: const Text('Recientes'),
+                  label: Text(context.l10n.recent),
                   selected: filter.sort == 'recent',
                   onSelected: (_) {
                     ref.read(exploreFilterProvider.notifier).state =
@@ -103,7 +108,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
                 const SizedBox(width: 8),
                 FilterChip(
-                  label: const Text('Mejor valoradas'),
+                  label: Text(context.l10n.topRated),
                   selected: filter.sort == 'top',
                   onSelected: (_) {
                     ref.read(exploreFilterProvider.notifier).state =
@@ -120,7 +125,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   filter.copyWith(tags: tags);
             },
           ),
-          SocialSortLabel(label: exploreSortLabel(filter.sort)),
+          SocialSortLabel(label: sortLabel),
           Expanded(
             child: _buildBody(context, exploreState),
           ),
@@ -139,12 +144,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Error: ${state.error}'),
+            Text(context.l10n.errorWithMessage(state.error!)),
             const SizedBox(height: 8),
             FilledButton(
               onPressed: () =>
                   ref.read(exploreRecipesProvider.notifier).reload(),
-              child: const Text('Reintentar'),
+              child: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -162,16 +167,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               color: Theme.of(context).colorScheme.outline,
             ),
             const SizedBox(height: 16),
-            const Text('No hay recetas públicas todavía'),
+            Text(context.l10n.noPublicRecipesYet),
             const SizedBox(height: 8),
-            const Text(
-              'Publica una receta desde tu recetario para que otros la descubran.',
+            Text(
+              context.l10n.publishToExploreHint,
               textAlign: TextAlign.center,
             ),
           ],
         ),
       );
     }
+
+    final targetLang = ref.watch(currentLanguageCodeProvider);
+    final titles = ref
+            .watch(
+              listTitleTranslationsProvider(
+                TitleTranslationRequest(
+                  targetLang: targetLang,
+                  ids: state.recipes.map((r) => r.id),
+                ),
+              ),
+            )
+            .valueOrNull ??
+        const <String, String>{};
 
     return RefreshIndicator(
       onRefresh: () => ref.read(exploreRecipesProvider.notifier).reload(),
@@ -186,7 +204,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: Center(child: CircularProgressIndicator()),
             );
           }
-          return PublicRecipeCard(recipe: state.recipes[index]);
+          final recipe = state.recipes[index];
+          return PublicRecipeCard(
+            recipe: recipe,
+            titleOverride: titles[recipe.id],
+          );
         },
       ),
     );

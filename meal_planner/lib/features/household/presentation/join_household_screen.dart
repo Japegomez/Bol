@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/app_button.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 
 class JoinHouseholdScreen extends ConsumerStatefulWidget {
   const JoinHouseholdScreen({super.key});
@@ -39,29 +41,30 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
           .join(_codeController.text.trim().toUpperCase());
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _errorMessage = _mapJoinError(e.toString()));
+      setState(() => _errorMessage = _mapJoinError(context.l10n, e.toString()));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  String _mapJoinError(String message) {
+  String _mapJoinError(AppLocalizations l10n, String message) {
     if (message.contains('Invalid invite code')) {
-      return 'Código de invitación no válido';
+      return l10n.invalidInviteCode;
     }
     if (message.contains('Already a member')) {
-      return 'Ya perteneces a este hogar';
+      return l10n.alreadyMember;
     }
     return message;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unirse a un hogar'),
+        title: Text(l10n.joinHouseholdTitle),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -71,7 +74,7 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Introduce el código de 6 caracteres que te ha compartido un miembro del hogar.',
+                l10n.joinCodeInstructions,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -79,9 +82,9 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
               const SizedBox(height: 24),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(
-                  labelText: 'Código de invitación',
-                  prefixIcon: Icon(Icons.vpn_key_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.inviteCode,
+                  prefixIcon: const Icon(Icons.vpn_key_outlined),
                   hintText: 'ABC123',
                 ),
                 textCapitalization: TextCapitalization.characters,
@@ -93,7 +96,7 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
                 enabled: !_isLoading,
                 validator: (value) {
                   if (value == null || value.trim().length != 6) {
-                    return 'El código debe tener 6 caracteres';
+                    return l10n.codeMustBeSixChars;
                   }
                   return null;
                 },
@@ -107,7 +110,7 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
               ],
               const SizedBox(height: 24),
               AppButton(
-                label: 'Unirse',
+                label: l10n.join,
                 isLoading: _isLoading,
                 onPressed: _join,
               ),

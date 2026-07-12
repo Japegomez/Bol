@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/connectivity/connectivity_notifier.dart';
 
 /// Persistent offline banner shown as a [MaterialBanner] inside the nearest
@@ -64,7 +65,7 @@ class _OfflineBannerListenerState extends State<_OfflineBannerListener> {
           leading: const Icon(Icons.wifi_off, color: Colors.white, size: 18),
           backgroundColor: Theme.of(context).colorScheme.error,
           content: Text(
-            'Sin conexión',
+            context.l10n.noConnection,
             style: Theme.of(context)
                 .textTheme
                 .bodySmall

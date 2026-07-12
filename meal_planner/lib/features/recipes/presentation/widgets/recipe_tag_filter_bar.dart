@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
@@ -21,6 +23,7 @@ class TagFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final sorted = tags.toList()..sort();
     if (sorted.isEmpty) return const SizedBox.shrink();
 
@@ -34,7 +37,7 @@ class TagFilterChips extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: const Text('Limpiar'),
+                label: Text(l10n.clearTags),
                 selected: false,
                 onSelected: (_) => onSelectionChanged({}),
               ),
@@ -43,7 +46,7 @@ class TagFilterChips extends StatelessWidget {
             (tag) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(tag),
+                label: Text(localizedTagLabel(l10n, tag)),
                 selected: selectedTags.contains(tag),
                 onSelected: (selected) {
                   final next = Set<String>.from(selectedTags);

@@ -37,9 +37,6 @@ final exploreFilterProvider =
 
 final feedTagsFilterProvider = StateProvider<Set<String>>((ref) => {});
 
-String exploreSortLabel(String sort) =>
-    sort == 'top' ? 'Mejor valoradas' : 'Más reciente';
-
 final publicTagsProvider = FutureProvider<Set<String>>((ref) async {
   return ref.watch(socialRepositoryProvider).fetchPublicTags();
 });

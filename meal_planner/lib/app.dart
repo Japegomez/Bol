@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/core/auth/session_lifecycle_handler.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/locale/locale_provider.dart';
 import 'package:meal_planner/core/sync/sync_service.dart';
 import 'package:meal_planner/core/theme/app_theme.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
@@ -18,6 +20,7 @@ class MealPlannerApp extends ConsumerWidget {
     ref.watch(syncOnReconnectProvider);
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
 
     return SessionLifecycleHandler(
       child: MaterialApp.router(
@@ -25,6 +28,9 @@ class MealPlannerApp extends ConsumerWidget {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: themeMode,
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
         builder: (context, child) {
           return UpgradeAlert(

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 
 class DeleteAccountScreen extends ConsumerStatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -18,22 +21,22 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
   var _isDeleting = false;
   String? _error;
 
-  static const _confirmWord = 'ELIMINAR';
-
   @override
   void dispose() {
     _confirmController.dispose();
     super.dispose();
   }
 
-  bool get _canSubmit {
+  bool _canSubmit(AppLocalizations l10n) {
     return _acknowledged &&
         !_isDeleting &&
-        _confirmController.text.trim().toUpperCase() == _confirmWord;
+        _confirmController.text.trim().toUpperCase() ==
+            deleteConfirmationWord(l10n);
   }
 
   Future<void> _deleteAccount() async {
-    if (!_canSubmit) return;
+    final l10n = context.l10n;
+    if (!_canSubmit(l10n)) return;
 
     setState(() {
       _isDeleting = true;
@@ -46,9 +49,11 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
         throw Exception('User not authenticated');
       }
       final userId = authState.user.id;
+      final localCache = ref.read(localCacheStoreProvider);
+      final authRepository = ref.read(authRepositoryProvider);
 
-      await ref.read(authRepositoryProvider).deleteAccount();
-      await ref.read(localCacheStoreProvider).clearUserSyncState(userId);
+      await localCache.clearUserSyncState(userId);
+      await authRepository.deleteAccount();
 
       if (!mounted) return;
       context.go('/auth/login');
@@ -62,20 +67,18 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
   }
 
   Future<void> _showFinalConfirm() async {
-    if (!_canSubmit) return;
+    final l10n = context.l10n;
+    if (!_canSubmit(l10n)) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Eliminar cuenta?'),
-        content: const Text(
-          'Esta acción es permanente. Se borrarán tu perfil, recetas, '
-          'planificador personal y listas asociadas.',
-        ),
+        title: Text(l10n.deleteAccountConfirmTitle),
+        content: Text(l10n.deleteAccountConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -83,7 +86,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar definitivamente'),
+            child: Text(l10n.deletePermanently),
           ),
         ],
       ),
@@ -96,6 +99,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final authState = ref.watch(authStateProvider);
     final email = authState.maybeWhen(
@@ -105,7 +109,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Eliminar cuenta'),
+        title: Text(l10n.deleteAccount),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -117,24 +121,22 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Derecho de supresión (RGPD)',
+            l10n.gdprRightToErasure,
             style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
           Text(
-            'Al eliminar tu cuenta se borrarán de forma permanente:',
+            l10n.deleteAccountBulletsIntro,
             style: theme.textTheme.bodyLarge,
           ),
           const SizedBox(height: 8),
-          const _Bullet('Tu perfil y avatar'),
-          const _Bullet('Todas tus recetas e imágenes asociadas'),
-          const _Bullet('Tus planes y listas de la compra en modo individual'),
-          const _Bullet('Tu membresía en hogares compartidos'),
+          _Bullet(l10n.deleteBulletProfile),
+          _Bullet(l10n.deleteBulletRecipes),
+          _Bullet(l10n.deleteBulletPlans),
+          _Bullet(l10n.deleteBulletMembership),
           const SizedBox(height: 16),
           Text(
-            'Si eres el único administrador de un hogar con otros miembros, '
-            'debes transferir el rol de administrador o pedir a los miembros '
-            'que abandonen el hogar antes de eliminar la cuenta.',
+            l10n.soleAdminWarning,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -147,17 +149,15 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 : (value) => setState(() => _acknowledged = value ?? false),
             contentPadding: EdgeInsets.zero,
             controlAffinity: ListTileControlAffinity.leading,
-            title: const Text(
-              'Entiendo que esta acción es irreversible y deseo eliminar mi cuenta.',
-            ),
+            title: Text(l10n.deleteAcknowledgement),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _confirmController,
             enabled: !_isDeleting,
-            decoration: const InputDecoration(
-              labelText: 'Escribe ELIMINAR para confirmar',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.typeDeleteToConfirm,
+              border: const OutlineInputBorder(),
             ),
             textCapitalization: TextCapitalization.characters,
             onChanged: (_) => setState(() {}),
@@ -165,7 +165,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
           if (email != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Cuenta: $email',
+              l10n.accountEmail(email),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -184,14 +184,14 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
               backgroundColor: theme.colorScheme.error,
               foregroundColor: theme.colorScheme.onError,
             ),
-            onPressed: _canSubmit ? _showFinalConfirm : null,
+            onPressed: _canSubmit(l10n) ? _showFinalConfirm : null,
             child: _isDeleting
                 ? const SizedBox(
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Eliminar mi cuenta'),
+                : Text(l10n.deleteMyAccount),
           ),
         ],
       ),

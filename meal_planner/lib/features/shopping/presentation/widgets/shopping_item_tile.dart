@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/add_edit_item_sheet.dart';
 
 class ShoppingItemTile extends StatelessWidget {
@@ -22,26 +24,28 @@ class ShoppingItemTile extends StatelessWidget {
   final bool canEdit;
   final bool canEditDetails;
 
-  String get _label => formatShoppingItemLabel(
+  String _label(AppLocalizations l10n) => formatShoppingItemLabel(
+        l10n,
         name: item.name,
         quantity: item.quantity,
         unit: item.unit,
       );
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar ítem'),
-        content: Text('¿Eliminar «${item.name}» de la lista?'),
+        title: Text(l10n.deleteItemTitle),
+        content: Text(l10n.deleteItemConfirm(item.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -65,6 +69,7 @@ class ShoppingItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final textStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
           decoration: item.isChecked ? TextDecoration.lineThrough : null,
@@ -82,7 +87,7 @@ class ShoppingItemTile extends StatelessWidget {
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
                   icon: Icons.edit_outlined,
-                  label: 'Editar',
+                  label: l10n.edit,
                 ),
               ],
             )
@@ -96,7 +101,7 @@ class ShoppingItemTile extends StatelessWidget {
                   backgroundColor: colorScheme.error,
                   foregroundColor: colorScheme.onError,
                   icon: Icons.delete_outline,
-                  label: 'Eliminar',
+                  label: l10n.delete,
                 ),
               ],
             )
@@ -110,7 +115,7 @@ class ShoppingItemTile extends StatelessWidget {
                 }
               : null,
         ),
-        title: Text(_label, style: textStyle),
+        title: Text(_label(l10n), style: textStyle),
         onTap: canEdit ? () => onToggle(!item.isChecked) : null,
         onLongPress: canEdit && canEditDetails ? () => _openEdit(context) : null,
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
@@ -254,7 +256,7 @@ Map<String, List<ShoppingItem>> groupShoppingItemsByCategory(
   final grouped = <String, List<ShoppingItem>>{};
 
   for (final item in consolidateShoppingItems(items)) {
-    final category = item.category ?? 'Otros';
+    final category = normalizeCategoryKey(item.category);
     grouped.putIfAbsent(category, () => []).add(item);
   }
 
@@ -316,13 +318,17 @@ List<ShoppingItem> consolidateShoppingItems(List<ShoppingItem> items) {
   return [...ungrouped, ...consolidated.values];
 }
 
-String formatShoppingListForShare(Map<String, List<ShoppingItem>> grouped) {
-  final buffer = StringBuffer('Lista de la compra\n\n');
+String formatShoppingListForShare(
+  AppLocalizations l10n,
+  Map<String, List<ShoppingItem>> grouped,
+) {
+  final buffer = StringBuffer('${l10n.shoppingListTitle}\n\n');
 
   for (final entry in grouped.entries) {
-    buffer.writeln('${entry.key}:');
+    buffer.writeln('${localizedCategoryLabel(l10n, entry.key)}:');
     for (final item in entry.value) {
       buffer.writeln('• ${formatShoppingItemLabel(
+        l10n,
         name: item.name,
         quantity: item.quantity,
         unit: item.unit,

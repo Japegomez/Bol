@@ -17,3 +17,10 @@ class OfflinePhotoBlockedException implements Exception {
   @override
   String toString() => message;
 }
+
+class OfflinePublicRecipeBlockedException implements Exception {
+  OfflinePublicRecipeBlockedException();
+
+  @override
+  String toString() => 'OfflinePublicRecipeBlockedException';
+}

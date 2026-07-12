@@ -1,46 +1,8 @@
 export 'unit_mappings.dart';
 
-const ingredientCategories = [
-  'Carnes y pescados',
-  'Verduras',
-  'Frutas',
-  'Lácteos',
-  'Cereales',
-  'Legumbres',
-  'Especias',
-  'Aceites y vinagres',
-  'Conservas',
-  'Frutos secos',
-  'Bebidas',
-  'Repostería',
-  'Congelados',
-  'Salsas y condimentos',
-  'Otros',
-];
+import 'package:meal_planner/core/locale/localized_data.dart';
 
-const suggestedRecipeTags = [
-  'entrante',
-  'plato principal',
-  'postre',
-  'vegetariana',
-  'vegano',
-  'pescetariana',
-  'sin gluten',
-  'sin lactosa',
-  'sin huevo',
-  'sin frutos secos',
-  'sin soja',
-  'sin marisco',
-  'sin azúcar',
-  'alto en proteínas',
-  'baja en calorías',
-  'baja en carbohidratos',
-  'alta en fibra',
-  'mediterránea',
-  'rápida',
-  'económica',
-  'batch cooking',
-  'para congelar',
-  'picante',
-  'para niños',
-];
+/// Backward-compatible alias used across the app.
+const ingredientCategories = ingredientCategoryKeys;
+
+const suggestedRecipeTags = suggestedRecipeTagKeys;

@@ -6,12 +6,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/ingredient_row.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
+
+String _resolveFormError(String error, AppLocalizations l10n) {
+  return switch (error) {
+    householdLoadErrorKey => l10n.householdLoadError,
+    _ => error,
+  };
+}
 
 /// Elevates the dragged row while reordering (SliverReorderableList has no
 /// default proxy decoration unlike ReorderableListView).
@@ -90,10 +100,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     if (ref.read(isOfflineProvider)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Necesitas conexión para añadir o cambiar la foto de la receta',
-          ),
+        SnackBar(
+          content: Text(context.l10n.photoRequiresConnection),
         ),
       );
       return;
@@ -161,44 +169,47 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     if (value) {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Publicar receta'),
-          content: const Text(
-            'Esta receta será visible para todos los usuarios de '
-            '${AppBranding.displayName}. Podrás despublicarla en cualquier momento.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+        builder: (dialogContext) {
+          final dialogL10n = dialogContext.l10n;
+          return AlertDialog(
+            title: Text(dialogL10n.publishRecipeTitle),
+            content: Text(
+              dialogL10n.publishRecipeMessage(AppBranding.displayName),
             ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Publicar'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(dialogL10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(dialogL10n.publish),
+              ),
+            ],
+          );
+        },
       );
       if (confirmed != true || !mounted) return;
     } else if (data.isPublic) {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Hacer receta privada'),
-          content: const Text(
-            'La receta dejará de ser visible en Explorar.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Hacer privada'),
-            ),
-          ],
-        ),
+        builder: (dialogContext) {
+          final dialogL10n = dialogContext.l10n;
+          return AlertDialog(
+            title: Text(dialogL10n.makeRecipePrivateTitle),
+            content: Text(dialogL10n.makeRecipePrivateMessageForm),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(dialogL10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(dialogL10n.makePrivate),
+              ),
+            ],
+          );
+        },
       );
       if (confirmed != true || !mounted) return;
     }
@@ -208,12 +219,15 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final formAsync = ref.watch(recipeFormProvider(widget.recipeId));
     final canEdit = ref.watch(canEditOfflineProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.recipeId == null ? 'Nueva receta' : 'Editar receta'),
+        title: Text(
+          widget.recipeId == null ? l10n.newRecipeTitle : l10n.editRecipeTitle,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.pop(),
@@ -231,7 +245,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                   )
                 : TextButton(
                     onPressed: canEdit ? _save : null,
-                    child: const Text('Guardar'),
+                    child: Text(l10n.save),
                   ),
             orElse: () => const SizedBox.shrink(),
           ),
@@ -243,7 +257,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
           return _buildForm(context, state.error, canEdit: canEdit);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (error, _) =>
+            Center(child: Text(l10n.errorWithMessage('$error'))),
       ),
     );
   }
@@ -253,6 +268,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     String? error, {
     required bool canEdit,
   }) {
+    final l10n = context.l10n;
     final data = _data!;
     const hPad = EdgeInsets.symmetric(horizontal: 16);
 
@@ -266,11 +282,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Card(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Text(
-                    'Sin conexión: la edición en modo hogar requiere conexión',
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(l10n.householdEditRequiresConnection),
                 ),
               ),
             ),
@@ -282,7 +296,10 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text(
-                    error ?? _photoModerationError!,
+                    _resolveFormError(
+                      error ?? _photoModerationError!,
+                      l10n,
+                    ),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
@@ -310,12 +327,12 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.nameLabel,
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Obligatorio' : null,
+                      v == null || v.trim().isEmpty ? l10n.requiredField : null,
                   onChanged: (v) => data.title = v,
                 ),
                 const SizedBox(height: 16),
@@ -324,14 +341,14 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _servingsController,
-                        decoration: const InputDecoration(
-                          labelText: 'Raciones',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.servingsLabel,
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                         validator: (v) {
                           final n = int.tryParse(v ?? '');
-                          return (n == null || n < 1) ? 'Mínimo 1' : null;
+                          return (n == null || n < 1) ? l10n.minOneServing : null;
                         },
                         onChanged: (v) {
                           final n = int.tryParse(v);
@@ -343,9 +360,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _prepController,
-                        decoration: const InputDecoration(
-                          labelText: 'Prep (min)',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.prepMinLabel,
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (v) => data.prepTime = int.tryParse(v),
@@ -355,9 +372,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _cookController,
-                        decoration: const InputDecoration(
-                          labelText: 'Cocción (min)',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.cookMinLabel,
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (v) => data.cookTime = int.tryParse(v),
@@ -367,7 +384,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Etiquetas',
+                  l10n.tagsSection,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
@@ -377,7 +394,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                   children: [
                     ...suggestedRecipeTags.map(
                       (tag) => FilterChip(
-                        label: Text(tag),
+                        label: Text(localizedTagLabel(l10n, tag)),
                         selected: data.tags.contains(tag),
                         onSelected: (selected) => setState(() {
                           if (selected) {
@@ -392,7 +409,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                         .where((t) => !suggestedRecipeTags.contains(t))
                         .map(
                           (tag) => InputChip(
-                            label: Text(tag),
+                            label: Text(localizedTagLabel(l10n, tag)),
                             onDeleted: () =>
                                 setState(() => data.tags.remove(tag)),
                           ),
@@ -405,9 +422,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     Expanded(
                       child: TextField(
                         controller: _tagController,
-                        decoration: const InputDecoration(
-                          labelText: 'Etiqueta personalizada',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.customTagLabel,
+                          border: const OutlineInputBorder(),
                           isDense: true,
                         ),
                       ),
@@ -432,7 +449,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
             padding: hPad.copyWith(top: 24),
             sliver: SliverToBoxAdapter(
               child: Text(
-                'Ingredientes',
+                l10n.ingredientsSection,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -447,7 +464,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
             padding: hPad.copyWith(top: 24),
             sliver: SliverToBoxAdapter(
               child: Text(
-                'Pasos',
+                l10n.stepsSection,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -464,10 +481,10 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
               delegate: SliverChildListDelegate([
                 TextFormField(
                   controller: _tipsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Consejos',
-                    hintText: 'Trucos, variaciones o notas útiles',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.tipsLabel,
+                    hintText: l10n.tipsHint,
+                    border: const OutlineInputBorder(),
                     alignLabelWithHint: true,
                   ),
                   maxLines: 4,
@@ -475,29 +492,25 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Nutrición (por ración)',
+                  l10n.nutritionPerServing,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
                 _NutritionFields(data: data.nutrition),
                 const SizedBox(height: 24),
                 if (!data.canPublish)
-                  const Card(
+                  Card(
                     child: ListTile(
-                      leading: Icon(Icons.bookmark_added_outlined),
-                      title: Text('Receta guardada de otro usuario'),
-                      subtitle: Text(
-                        'Las recetas forkeadas no se pueden publicar en Explorar.',
-                      ),
+                      leading: const Icon(Icons.bookmark_added_outlined),
+                      title: Text(l10n.forkedRecipeTitle),
+                      subtitle: Text(l10n.forkedRecipeCannotPublish),
                     ),
                   )
                 else
                   Card(
                     child: SwitchListTile(
-                      title: const Text('Publicar receta'),
-                      subtitle: const Text(
-                        'Visible para todos los usuarios en Explorar',
-                      ),
+                      title: Text(l10n.publishRecipeTitle),
+                      subtitle: Text(l10n.visibleInExploreShort),
                       secondary: const Icon(Icons.public),
                       value: data.isPublic,
                       onChanged: _togglePublic,
@@ -533,6 +546,7 @@ class _IngredientsSliverSection extends StatefulWidget {
 class _IngredientsSliverSectionState extends State<_IngredientsSliverSection> {
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final items = widget.ingredients;
     return SliverMainAxisGroup(
       slivers: [
@@ -566,7 +580,7 @@ class _IngredientsSliverSectionState extends State<_IngredientsSliverSection> {
               onPressed: () =>
                   setState(() => items.add(IngredientFormItem())),
               icon: const Icon(Icons.add),
-              label: const Text('Añadir ingrediente'),
+              label: Text(l10n.addIngredient),
             ),
           ),
         ),
@@ -591,6 +605,7 @@ class _StepsSliverSection extends StatefulWidget {
 class _StepsSliverSectionState extends State<_StepsSliverSection> {
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final items = widget.steps;
     return SliverMainAxisGroup(
       slivers: [
@@ -623,7 +638,7 @@ class _StepsSliverSectionState extends State<_StepsSliverSection> {
             child: TextButton.icon(
               onPressed: () => setState(() => items.add(StepFormItem())),
               icon: const Icon(Icons.add),
-              label: const Text('Añadir paso'),
+              label: Text(l10n.addStep),
             ),
           ),
         ),
@@ -670,6 +685,7 @@ class _StepRowState extends State<_StepRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return RepaintBoundary(
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -693,7 +709,7 @@ class _StepRowState extends State<_StepRow> {
                     child: TextFormField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        labelText: 'Paso ${widget.index + 1}',
+                        labelText: l10n.stepLabel(widget.index + 1),
                         isDense: true,
                       ),
                       maxLines: 3,
@@ -711,7 +727,7 @@ class _StepRowState extends State<_StepRow> {
                 contentPadding: EdgeInsets.zero,
                 dense: true,
                 controlAffinity: ListTileControlAffinity.leading,
-                title: const Text('Opcional'),
+                title: Text(l10n.optional),
                 value: widget.step.isOptional,
                 onChanged: (v) {
                   if (v != null) setState(() => widget.step.isOptional = v);
@@ -746,20 +762,21 @@ class _PhotoSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final existingUrlAsync =
         ref.watch(recipePhotoUrlProvider(existingPhotoPath));
 
     Widget? preview;
     if (isModerating) {
-      preview = const SizedBox(
+      preview = SizedBox(
         height: 180,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 12),
-              Text('Comprobando imagen...'),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 12),
+              Text(l10n.checkingImage),
             ],
           ),
         ),
@@ -802,13 +819,13 @@ class _PhotoSection extends ConsumerWidget {
             FilledButton.tonalIcon(
               onPressed: isModerating ? null : onPick,
               icon: const Icon(Icons.photo_library_outlined),
-              label: const Text('Elegir foto'),
+              label: Text(l10n.choosePhoto),
             ),
             if (preview != null && !isModerating) ...[
               const SizedBox(width: 8),
               TextButton(
                 onPressed: onRemove,
-                child: const Text('Quitar'),
+                child: Text(l10n.remove),
               ),
             ],
           ],
@@ -863,14 +880,15 @@ class _NutritionFieldsState extends State<_NutritionFields> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       children: [
-        _field('Calorías (kcal)', _calories, (v) => widget.data.calories = v),
-        _field('Proteínas (g)', _protein, (v) => widget.data.protein = v),
-        _field('Carbohidratos (g)', _carbohydrates,
+        _field(l10n.caloriesKcal, _calories, (v) => widget.data.calories = v),
+        _field(l10n.proteinG, _protein, (v) => widget.data.protein = v),
+        _field(l10n.carbohydratesG, _carbohydrates,
             (v) => widget.data.carbohydrates = v),
-        _field('Grasas (g)', _fat, (v) => widget.data.fat = v),
-        _field('Fibra (g)', _fiber, (v) => widget.data.fiber = v),
+        _field(l10n.fatG, _fat, (v) => widget.data.fat = v),
+        _field(l10n.fiberG, _fiber, (v) => widget.data.fiber = v),
       ],
     );
   }
