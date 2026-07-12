@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
-import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
@@ -10,6 +9,7 @@ import 'package:meal_planner/features/household/presentation/household_provider.
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/shopping/data/shopping_repository.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final activeShoppingListProvider =

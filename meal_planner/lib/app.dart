@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/core/auth/session_lifecycle_handler.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/locale/locale_provider.dart';
@@ -9,6 +8,7 @@ import 'package:meal_planner/core/theme/app_theme.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/core/widgets/connectivity_banner.dart';
 import 'package:meal_planner/core/widgets/offline_entry_listener.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/router/app_router.dart';
 import 'package:upgrader/upgrader.dart';
 

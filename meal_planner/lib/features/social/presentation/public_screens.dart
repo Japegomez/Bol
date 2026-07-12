@@ -6,9 +6,9 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
 import 'package:meal_planner/core/offline/supabase_error_utils.dart';
-import 'package:meal_planner/core/utils/date_utils.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
+import 'package:meal_planner/core/utils/date_utils.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
@@ -147,7 +147,7 @@ class _PublicRecipeDetailScreenState
     super.initState();
     // Reset "view original" toggle whenever the app language changes so the
     // screen automatically shows the new translation instead of the old one.
-    ref.listenManual(currentLanguageCodeProvider, (_, __) {
+    ref.listenManual(currentLanguageCodeProvider, (_, _) {
       if (mounted) setState(() => _showOriginal = false);
     });
   }

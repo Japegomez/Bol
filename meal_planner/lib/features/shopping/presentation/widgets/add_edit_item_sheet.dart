@@ -4,7 +4,6 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
-import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 class AddEditItemSheet extends StatefulWidget {
   const AddEditItemSheet({

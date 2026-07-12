@@ -3,8 +3,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
-import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/add_edit_item_sheet.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 
 class ShoppingItemTile extends StatelessWidget {
   const ShoppingItemTile({

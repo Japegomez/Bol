@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
-import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
@@ -19,6 +18,7 @@ import 'package:meal_planner/features/recipes/presentation/recipe_display_provid
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   const RecipeDetailScreen({required this.recipeId, super.key});
@@ -36,7 +36,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   @override
   void initState() {
     super.initState();
-    ref.listenManual(currentLanguageCodeProvider, (_, __) {
+    ref.listenManual(currentLanguageCodeProvider, (_, _) {
       if (mounted) setState(() => _showOriginal = false);
     });
   }
