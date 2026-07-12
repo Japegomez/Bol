@@ -169,14 +169,27 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
 
     state = AsyncData(current.copyWith(isSaving: true, clearError: true));
     final repo = ref.read(recipesRepositoryProvider);
-    final household = ref.read(currentHouseholdProvider).valueOrNull;
+
+    String? householdId;
+    try {
+      final household = await ref.read(currentHouseholdProvider.future);
+      householdId = household?.id;
+    } catch (_) {
+      state = AsyncData(
+        current.copyWith(
+          isSaving: false,
+          error: 'No se pudo cargar tu hogar. Inténtalo de nuevo.',
+        ),
+      );
+      return null;
+    }
 
     try {
       if (current.isEditing) {
         await repo.updateRecipe(
           current.recipeId!,
           current.data,
-          householdId: household?.id,
+          householdId: householdId,
         );
         ref.invalidate(recipeListProvider);
         ref.invalidate(recipeDetailProvider(current.recipeId!));
@@ -190,8 +203,9 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
 
       final id = await repo.createRecipe(
         current.data,
-        householdId: household?.id,
-      );      ref.invalidate(recipeListProvider);
+        householdId: householdId,
+      );
+      ref.invalidate(recipeListProvider);
       ref.invalidate(recipeTagsProvider);
       ref.invalidate(recipesProvider);
       ref.invalidate(exploreRecipesProvider);
@@ -214,10 +228,23 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
 
     state = AsyncData(current!.copyWith(isSaving: true, clearError: true));
     try {
-      final household = ref.read(currentHouseholdProvider).valueOrNull;
+      String? householdId;
+      try {
+        final household = await ref.read(currentHouseholdProvider.future);
+        householdId = household?.id;
+      } catch (_) {
+        state = AsyncData(
+          current.copyWith(
+            isSaving: false,
+            error: 'No se pudo cargar tu hogar. Inténtalo de nuevo.',
+          ),
+        );
+        return false;
+      }
+
       await ref.read(recipesRepositoryProvider).deleteRecipe(
             current.recipeId!,
-            householdId: household?.id,
+            householdId: householdId,
           );
       state = AsyncData(current.copyWith(isSaving: false));
       ref.invalidate(recipeListProvider);

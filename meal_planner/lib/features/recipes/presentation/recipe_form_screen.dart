@@ -258,40 +258,47 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
 
     return Form(
       key: _formKey,
-      child: CustomScrollView(
-        slivers: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!canEdit)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Card(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Sin conexión: la edición en modo hogar requiere conexión',
+                  ),
+                ),
+              ),
+            ),
+          if (error != null || _photoModerationError != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Card(
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    error ?? _photoModerationError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Expanded(
+            child: AbsorbPointer(
+              absorbing: !canEdit,
+              child: CustomScrollView(
+                slivers: [
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                if (!canEdit) ...[
-                  Card(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Text(
-                        'Sin conexión: la edición en modo hogar requiere conexión',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                if (error != null || _photoModerationError != null) ...[
-                  Card(
-                    color: Theme.of(context).colorScheme.errorContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        error ?? _photoModerationError!,
-                        style: TextStyle(
-                          color:
-                              Theme.of(context).colorScheme.onErrorContainer,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
                 _PhotoSection(
                   localPreview: _localPhotoPreview,
                   existingPhotoPath:
@@ -497,6 +504,10 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     ),
                   ),
               ]),
+            ),
+          ),
+        ],
+              ),
             ),
           ),
         ],

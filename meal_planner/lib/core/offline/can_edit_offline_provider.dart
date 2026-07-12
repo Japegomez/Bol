@@ -17,6 +17,10 @@ final isOfflineProvider = Provider<bool>((ref) {
 /// True when the user can mutate data while offline (individual mode only).
 final canEditOfflineProvider = Provider<bool>((ref) {
   if (!ref.watch(isOfflineProvider)) return true;
-  final household = ref.watch(currentHouseholdProvider).valueOrNull;
-  return household == null;
+
+  final householdAsync = ref.watch(currentHouseholdProvider);
+  return householdAsync.maybeWhen(
+    data: (household) => household == null,
+    orElse: () => false,
+  );
 });
