@@ -414,6 +414,26 @@ class LocalCacheStore {
     return rows.map(_rowToIngredient).toList();
   }
 
+  /// Persists [ingredients] for [recipeId] without touching other recipe data.
+  /// Replaces any previously cached ingredients for that recipe.
+  Future<void> cacheIngredientsForRecipe(
+    String recipeId,
+    List<Ingredient> ingredients,
+  ) async {
+    if (_db == null) return;
+
+    await _db.transaction(() async {
+      await (_db.delete(_db.localIngredients)
+            ..where((i) => i.recipeId.equals(recipeId)))
+          .go();
+      for (final ingredient in ingredients) {
+        await _db
+            .into(_db.localIngredients)
+            .insert(_ingredientToRow(ingredient));
+      }
+    });
+  }
+
   Future<Recipe?> getRecipeById(String id) async {
     if (_db == null) return null;
 
