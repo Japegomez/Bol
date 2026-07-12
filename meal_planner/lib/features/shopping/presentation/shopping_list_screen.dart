@@ -154,6 +154,7 @@ class ShoppingListScreen extends ConsumerWidget {
                   ShoppingItemTile(
                     item: item,
                     canEdit: canEdit,
+                    canEditDetails: !_isConsolidated(items, item),
                     onToggle: (checked) => ref
                         .read(shoppingItemsProvider.notifier)
                         .toggleItem(item.id, checked),
@@ -182,4 +183,14 @@ class ShoppingListScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+bool _isConsolidated(List<ShoppingItem> items, ShoppingItem item) {
+  final key = shoppingItemConsolidationKey(item);
+  if (key == null) return false;
+
+  return items
+          .where((source) => shoppingItemConsolidationKey(source) == key)
+          .length >
+      1;
 }

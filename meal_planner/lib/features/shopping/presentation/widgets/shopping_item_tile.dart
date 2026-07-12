@@ -11,6 +11,7 @@ class ShoppingItemTile extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.canEdit = true,
+    this.canEditDetails = true,
     super.key,
   });
 
@@ -19,6 +20,7 @@ class ShoppingItemTile extends StatelessWidget {
   final Future<void> Function(Map<String, dynamic> data) onEdit;
   final VoidCallback onDelete;
   final bool canEdit;
+  final bool canEditDetails;
 
   String get _label => formatShoppingItemLabel(
         name: item.name,
@@ -71,7 +73,7 @@ class ShoppingItemTile extends StatelessWidget {
 
     return Slidable(
       key: ValueKey(item.id),
-      startActionPane: canEdit
+      startActionPane: canEdit && canEditDetails
           ? ActionPane(
               motion: const DrawerMotion(),
               children: [
@@ -110,7 +112,7 @@ class ShoppingItemTile extends StatelessWidget {
         ),
         title: Text(_label, style: textStyle),
         onTap: canEdit ? () => onToggle(!item.isChecked) : null,
-        onLongPress: canEdit ? () => _openEdit(context) : null,
+        onLongPress: canEdit && canEditDetails ? () => _openEdit(context) : null,
       ),
     );
   }
