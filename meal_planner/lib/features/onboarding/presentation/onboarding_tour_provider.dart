@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_provider.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 
 /// Bottom-nav branch index for each main tab.
 abstract final class OnboardingTabIndex {
@@ -15,48 +16,57 @@ abstract final class OnboardingTabIndex {
 class OnboardingTourStep {
   const OnboardingTourStep({
     required this.tabIndex,
-    this.fabClearance = 0,
+    this.targets = const [],
   });
 
   final int tabIndex;
 
-  /// Horizontal space reserved on the right so bottom-right FABs stay visible.
-  final double fabClearance;
+  /// UI elements to spotlight; empty for centered card without spotlight.
+  final List<OnboardingTarget> targets;
 }
 
-/// Room for a standard FAB (56) plus scaffold margin.
-const _singleFabClearance = 88.0;
-
-/// Room for stacked small + standard FABs on the recipe list screen.
-const _doubleFabClearance = 140.0;
-
 const onboardingTourSteps = <OnboardingTourStep>[
+  OnboardingTourStep(tabIndex: OnboardingTabIndex.planner),
   OnboardingTourStep(
     tabIndex: OnboardingTabIndex.planner,
-    fabClearance: _singleFabClearance,
+    targets: [OnboardingTarget.plannerWeekHeader],
   ),
   OnboardingTourStep(
     tabIndex: OnboardingTabIndex.planner,
-    fabClearance: _singleFabClearance,
-  ),
-  OnboardingTourStep(
-    tabIndex: OnboardingTabIndex.planner,
-    fabClearance: _singleFabClearance,
+    targets: [OnboardingTarget.plannerFab],
   ),
   OnboardingTourStep(
     tabIndex: OnboardingTabIndex.recipes,
-    fabClearance: _doubleFabClearance,
+    targets: [
+      OnboardingTarget.recipesSearchBar,
+      OnboardingTarget.recipesGlossaryFab,
+    ],
   ),
   OnboardingTourStep(
     tabIndex: OnboardingTabIndex.recipes,
-    fabClearance: _doubleFabClearance,
+    targets: [OnboardingTarget.recipesFab],
+  ),
+  OnboardingTourStep(tabIndex: OnboardingTabIndex.shopping),
+  OnboardingTourStep(
+    tabIndex: OnboardingTabIndex.shopping,
+    targets: [OnboardingTarget.shoppingAddFab],
   ),
   OnboardingTourStep(
     tabIndex: OnboardingTabIndex.shopping,
-    fabClearance: _singleFabClearance,
+    targets: [OnboardingTarget.shoppingShareButton],
   ),
   OnboardingTourStep(tabIndex: OnboardingTabIndex.explore),
-  OnboardingTourStep(tabIndex: OnboardingTabIndex.profile),
+  OnboardingTourStep(
+    tabIndex: OnboardingTabIndex.explore,
+    targets: [OnboardingTarget.exploreFeedButton],
+  ),
+  OnboardingTourStep(
+    tabIndex: OnboardingTabIndex.profile,
+    targets: [
+      OnboardingTarget.profileEditTile,
+      OnboardingTarget.profileHouseholdTile,
+    ],
+  ),
 ];
 
 final onboardingTourStepProvider =

@@ -1251,40 +1251,61 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toca un slot vacío para asignar una receta. También puedes pulsar el icono de libro (abajo a la derecha) para abrir el recetario lateral y arrastrar recetas directamente al día.';
+      'Toca un slot vacío para asignar una receta. También puedes pulsar el icono de libro para abrir el recetario lateral y arrastrar recetas directamente al día.';
 
   @override
   String get onboardingStep3Title => 'Tu recetario';
 
   @override
   String get onboardingStep3Body =>
-      'Todas tus recetas en un vistazo. La lupa busca por nombre y los chips de etiquetas filtran por categoría. El icono de libro abre el glosario culinario.';
+      'Todas tus recetas en un vistazo. La lupa busca por nombre y el icono de libro abre el glosario culinario.';
 
   @override
   String get onboardingStep4Title => 'Crea una receta';
 
   @override
   String get onboardingStep4Body =>
-      'El botón + (abajo a la derecha) abre el formulario: foto, ingredientes con cantidades, pasos de elaboración, nutrición y etiquetas. Puedes publicarla para que otros la descubran.';
+      'El botón + abre el formulario: foto, ingredientes con cantidades, pasos de elaboración, nutrición y etiquetas. Puedes publicarla para que otros la descubran.';
 
   @override
   String get onboardingStep5Title => 'Lista de la compra';
 
   @override
   String get onboardingStep5Body =>
-      'Cuando planificas comidas, los ingredientes aparecen aquí automáticamente agrupados por categoría. Marca los ítems al comprarlos. El icono de compartir (arriba a la derecha) genera un texto listo para WhatsApp.';
+      'Cuando planificas comidas, los ingredientes aparecen aquí automáticamente agrupados por categoría. Marca los ítems al comprarlos.';
 
   @override
-  String get onboardingStep6Title => 'Descubre la comunidad';
+  String get onboardingStep6Title => 'Añade ingredientes';
 
   @override
   String get onboardingStep6Body =>
-      'Busca recetas de otros usuarios por nombre o etiquetas. Valóralas, guárdalas en tu recetario y sigue a tus cocineros favoritos desde su perfil.';
+      'Pulsa el botón + para añadir ingredientes manualmente a tu lista de la compra.';
 
   @override
-  String get onboardingStep7Title => 'Tu perfil y hogar';
+  String get onboardingStep7Title => 'Comparte tu lista';
 
   @override
   String get onboardingStep7Body =>
+      'El icono de compartir genera un texto listo para enviar por WhatsApp u otras apps.';
+
+  @override
+  String get onboardingStep8Title => 'Descubre la comunidad';
+
+  @override
+  String get onboardingStep8Body =>
+      'Busca recetas de otros usuarios por nombre o etiquetas. Valóralas y guárdalas en tu recetario.';
+
+  @override
+  String get onboardingStep9Title => 'Tu feed de cocineros';
+
+  @override
+  String get onboardingStep9Body =>
+      'Sigue a tus cocineros favoritos desde su perfil y consulta sus últimas recetas pulsando el botón del feed.';
+
+  @override
+  String get onboardingStep10Title => 'Tu perfil y hogar';
+
+  @override
+  String get onboardingStep10Body =>
       'Edita tu nombre y foto. En la sección Mi hogar puedes planificar con tu familia en tiempo real. Desde aquí también cambias el idioma y el modo oscuro.';
 }

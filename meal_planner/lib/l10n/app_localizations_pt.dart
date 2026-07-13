@@ -1253,40 +1253,61 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toque num espaço vazio para atribuir uma receita. Também pode premir o ícone de livro (canto inferior direito) para abrir o painel lateral de receitas e arrastar receitas diretamente para o dia.';
+      'Toque num espaço vazio para atribuir uma receita. Também pode premir o ícone de livro para abrir o painel lateral de receitas e arrastar receitas diretamente para o dia.';
 
   @override
   String get onboardingStep3Title => 'O seu livro de receitas';
 
   @override
   String get onboardingStep3Body =>
-      'Todas as suas receitas num relance. A lupa pesquisa por nome e as etiquetas filtram por categoria. O ícone de livro abre o glossário culinário.';
+      'Todas as suas receitas num relance. A lupa pesquisa por nome e o ícone de livro abre o glossário culinário.';
 
   @override
   String get onboardingStep4Title => 'Crie uma receita';
 
   @override
   String get onboardingStep4Body =>
-      'O botão + (canto inferior direito) abre o formulário: foto, ingredientes com quantidades, passos, nutrição e etiquetas. Pode publicá-la para que outros a descubram.';
+      'O botão + abre o formulário: foto, ingredientes com quantidades, passos, nutrição e etiquetas. Pode publicá-la para que outros a descubram.';
 
   @override
   String get onboardingStep5Title => 'Lista de compras';
 
   @override
   String get onboardingStep5Body =>
-      'Quando planifica refeições, os ingredientes aparecem aqui automaticamente agrupados por categoria. Marque os itens ao comprar. O ícone de partilhar (canto superior direito) gera texto pronto para o WhatsApp.';
+      'Quando planifica refeições, os ingredientes aparecem aqui automaticamente agrupados por categoria. Marque os itens ao comprar.';
 
   @override
-  String get onboardingStep6Title => 'Descubra a comunidade';
+  String get onboardingStep6Title => 'Adicione ingredientes';
 
   @override
   String get onboardingStep6Body =>
-      'Pesquise receitas de outros utilizadores por nome ou etiquetas. Avalie-as, guarde-as no seu livro e siga os seus cozinheiros favoritos a partir do perfil.';
+      'Toque no botão + para adicionar ingredientes manualmente à sua lista de compras.';
 
   @override
-  String get onboardingStep7Title => 'O seu perfil e lar';
+  String get onboardingStep7Title => 'Partilhe a sua lista';
 
   @override
   String get onboardingStep7Body =>
+      'O ícone de partilhar gera texto pronto para enviar por WhatsApp ou outras apps.';
+
+  @override
+  String get onboardingStep8Title => 'Descubra a comunidade';
+
+  @override
+  String get onboardingStep8Body =>
+      'Pesquise receitas de outros utilizadores por nome ou etiquetas. Avalie-as e guarde-as no seu livro.';
+
+  @override
+  String get onboardingStep9Title => 'O seu feed de cozinheiros';
+
+  @override
+  String get onboardingStep9Body =>
+      'Siga os seus cozinheiros favoritos a partir do perfil e consulte as suas últimas receitas premindo o botão do feed.';
+
+  @override
+  String get onboardingStep10Title => 'O seu perfil e casa';
+
+  @override
+  String get onboardingStep10Body =>
       'Edite o seu nome e foto. Na secção A minha casa pode planear com a família em tempo real. A partir daqui também muda o idioma e o modo escuro.';
 }
