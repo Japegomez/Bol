@@ -1250,10 +1250,10 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toca un espazo baleiro para asignar unha receita. Tamén podes premer a icona de libro (abaixo á dereita) para abrir o recetario lateral e arrastrar receitas directamente ao día.';
+      'Toca un espazo baleiro para asignar unha receita. Tamén podes premer a icona de libro (abaixo á dereita) para abrir o receitar lateral e arrastrar receitas directamente ao día.';
 
   @override
-  String get onboardingStep3Title => 'O teu recetario';
+  String get onboardingStep3Title => 'O teu receitar';
 
   @override
   String get onboardingStep3Body =>
