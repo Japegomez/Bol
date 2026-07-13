@@ -67,6 +67,12 @@ class OnboardingTourNotifier extends Notifier<int> {
 
   @override
   int build() {
+    final initialUserId = switch (ref.read(authStateProvider).valueOrNull) {
+      AuthAuthenticated(user: final user) => user.id,
+      _ => null,
+    };
+    _activeUserId = initialUserId;
+
     ref.listen<AsyncValue<AuthState>>(authStateProvider, (previous, next) {
       final userId = switch (next.valueOrNull) {
         AuthAuthenticated(user: final user) => user.id,
@@ -76,7 +82,7 @@ class OnboardingTourNotifier extends Notifier<int> {
       if (userId == _activeUserId) return;
       _activeUserId = userId;
       state = 0;
-    }, fireImmediately: true);
+    });
 
     return 0;
   }

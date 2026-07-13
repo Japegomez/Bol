@@ -5,6 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 String _storageKeyFor(String userId) => 'app.onboarding_completed.$userId';
 
+String? _userIdFromAuth(AsyncValue<AuthState> authAsync) {
+  return switch (authAsync.valueOrNull) {
+    AuthAuthenticated(user: final user) => user.id,
+    _ => null,
+  };
+}
+
 /// `null` = loading or signed out, `false` = tour pending, `true` = completed.
 final onboardingCompletedProvider =
     NotifierProvider<OnboardingCompletedNotifier, bool?>(
@@ -16,17 +23,22 @@ class OnboardingCompletedNotifier extends Notifier<bool?> {
 
   @override
   bool? build() {
+    final initialUserId = _userIdFromAuth(ref.read(authStateProvider));
+    _activeUserId = initialUserId;
+
     ref.listen<AsyncValue<AuthState>>(authStateProvider, (previous, next) {
       _syncForAuth(next);
-    }, fireImmediately: true);
+    });
+
+    if (initialUserId != null) {
+      Future.microtask(() => _restore(initialUserId));
+    }
+
     return null;
   }
 
   void _syncForAuth(AsyncValue<AuthState> authAsync) {
-    final userId = switch (authAsync.valueOrNull) {
-      AuthAuthenticated(user: final user) => user.id,
-      _ => null,
-    };
+    final userId = _userIdFromAuth(authAsync);
 
     if (userId == _activeUserId) return;
     _activeUserId = userId;
