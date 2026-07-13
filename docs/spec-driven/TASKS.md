@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 12/07/2026 — UX red social: paginación 10, filtros en feed, fecha en ficha pública, autor más visible
+> Actualizado: 13/07/2026 — Onboarding guiado: tour 8 pasos en pantallas reales, persistencia por usuario, bloqueo de tabs durante el tutorial (PR #43)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -485,7 +485,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Flujo de eliminación de cuenta (derecho de supresión RGPD)
   - RPC `delete_user_account` (migración `010`); pantalla Perfil → Eliminar cuenta
   - Pendiente: aplicar migración `010` en Supabase remoto
-- [ ] Onboarding para nuevos usuarios (pantallas de bienvenida / tutorial)
+- [x] Onboarding para nuevos usuarios (tour guiado por pantallas reales)
+  - `OnboardingOverlay` en `home_shell.dart`: 8 pasos (Planificador → Recetario → Compra → Explorar → Perfil)
+  - Tarjeta flotante con Omitir / Anterior / Siguiente / Finalizar; navegación automática entre tabs
+  - Completado persistido por `userId` en `SharedPreferences` (`app.onboarding_completed.<id>`)
+  - Bottom nav deshabilitado durante el tour (`IgnorePointer`); la pantalla actual sigue siendo interactiva
+  - Textos en 6 idiomas (es, en, ca, eu, gl, pt); PR #43
 - [x] Icono de app y splash screen
   - `flutter_launcher_icons`; assets en `docs/store-assets/` (PR #15)
 - [ ] README de desarrollo con instrucciones de setup local
@@ -544,6 +549,6 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 1. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
 2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-3. **Release TestFlight / Play** con offline + multi-etiqueta + modo oscuro (offline ya integrado en `develop`).
-4. **Onboarding** o tutorial para nuevos usuarios (backlog).
-5. **Tests unitarios** de escalado de ingredientes al planificar.
+3. **Release TestFlight / Play** con onboarding + offline + multi-etiqueta + modo oscuro.
+4. **Tests unitarios** de escalado de ingredientes al planificar.
+5. **README de desarrollo** con instrucciones de setup local.
