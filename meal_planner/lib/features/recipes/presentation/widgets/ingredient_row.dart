@@ -29,6 +29,8 @@ class IngredientRow extends StatefulWidget {
 }
 
 class _IngredientRowState extends State<IngredientRow> {
+  static const _compactFieldsBreakpoint = 600.0;
+
   late final TextEditingController _nameController;
   late final TextEditingController _quantityController;
   late final TextEditingController _customUnitController;
@@ -52,6 +54,130 @@ class _IngredientRowState extends State<IngredientRow> {
     _quantityController.dispose();
     _customUnitController.dispose();
     super.dispose();
+  }
+
+  Widget _buildQuantityField(BuildContext context) {
+    final l10n = context.l10n;
+    return TextFormField(
+      controller: _quantityController,
+      decoration: InputDecoration(
+        labelText: l10n.quantityLabel,
+        isDense: true,
+      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*[.,]?\d*')),
+      ],
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) return null;
+        final parsed = num.tryParse(value.trim().replaceAll(',', '.'));
+        if (parsed == null) return l10n.enterValidNumber;
+        return null;
+      },
+      onChanged: (value) {
+        _ingredient.quantity = value.trim().isEmpty
+            ? null
+            : num.tryParse(value.replaceAll(',', '.'));
+      },
+    );
+  }
+
+  Widget _buildUnitDropdown(
+    List<DropdownMenuItem<String>> unitDropdownItems,
+  ) {
+    return DropdownButtonFormField<String>(
+      key: ValueKey(
+        'unit-${widget.ingredient.key}-${_ingredient.useCustomUnit}',
+      ),
+      isExpanded: true,
+      initialValue:
+          _ingredient.useCustomUnit ? customUnitOption : _ingredient.unit,
+      decoration: InputDecoration(
+        labelText: context.l10n.unitLabel,
+        isDense: true,
+      ),
+      items: unitDropdownItems,
+      onChanged: (value) {
+        if (value == customUnitOption) {
+          setState(() {
+            _ingredient.useCustomUnit = true;
+            _ingredient.unit = null;
+          });
+        } else {
+          setState(() {
+            _ingredient.useCustomUnit = false;
+            _ingredient.unit = value;
+            _ingredient.customUnit = '';
+            _customUnitController.clear();
+          });
+        }
+      },
+    );
+  }
+
+  Widget _buildCategoryDropdown(
+    List<DropdownMenuItem<String>> categoryDropdownItems,
+  ) {
+    return DropdownButtonFormField<String>(
+      isExpanded: true,
+      initialValue: ingredientCategoryKeys.contains(_ingredient.category)
+          ? _ingredient.category
+          : ingredientCategoryKeys.first,
+      decoration: InputDecoration(
+        labelText: context.l10n.categoryLabel,
+        isDense: true,
+      ),
+      items: categoryDropdownItems,
+      onChanged: (value) {
+        if (value != null) _ingredient.category = value;
+      },
+    );
+  }
+
+  Widget _buildQuantityUnitCategorySection(
+    BuildContext context,
+    List<DropdownMenuItem<String>> unitDropdownItems,
+    List<DropdownMenuItem<String>> categoryDropdownItems,
+  ) {
+    final categoryField = _buildCategoryDropdown(categoryDropdownItems);
+
+    if (_ingredient.isToTaste) {
+      return categoryField;
+    }
+
+    final compact =
+        MediaQuery.sizeOf(context).width < _compactFieldsBreakpoint;
+    final quantityField = _buildQuantityField(context);
+    final unitField = _buildUnitDropdown(unitDropdownItems);
+
+    if (compact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 2, child: quantityField),
+              const SizedBox(width: 8),
+              Expanded(flex: 2, child: unitField),
+            ],
+          ),
+          const SizedBox(height: 8),
+          categoryField,
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 2, child: quantityField),
+        const SizedBox(width: 8),
+        Expanded(flex: 2, child: unitField),
+        const SizedBox(width: 8),
+        Expanded(flex: 3, child: categoryField),
+      ],
+    );
   }
 
   @override
@@ -115,92 +241,10 @@ class _IngredientRowState extends State<IngredientRow> {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!_ingredient.isToTaste) ...[
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _quantityController,
-                      decoration: InputDecoration(
-                        labelText: l10n.quantityLabel,
-                        isDense: true,
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*[.,]?\d*'),
-                        ),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) return null;
-                        final parsed =
-                            num.tryParse(value.trim().replaceAll(',', '.'));
-                        if (parsed == null) return l10n.enterValidNumber;
-                        return null;
-                      },
-                      onChanged: (value) {
-                        _ingredient.quantity = value.trim().isEmpty
-                            ? null
-                            : num.tryParse(value.replaceAll(',', '.'));
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<String>(
-                      key: ValueKey(
-                        'unit-${widget.ingredient.key}-${_ingredient.useCustomUnit}',
-                      ),
-                      initialValue: _ingredient.useCustomUnit
-                          ? customUnitOption
-                          : _ingredient.unit,
-                      decoration: InputDecoration(
-                        labelText: l10n.unitLabel,
-                        isDense: true,
-                      ),
-                      items: unitDropdownItems,
-                      onChanged: (value) {
-                        if (value == customUnitOption) {
-                          setState(() {
-                            _ingredient.useCustomUnit = true;
-                            _ingredient.unit = null;
-                          });
-                        } else {
-                          setState(() {
-                            _ingredient.useCustomUnit = false;
-                            _ingredient.unit = value;
-                            _ingredient.customUnit = '';
-                            _customUnitController.clear();
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  flex: _ingredient.isToTaste ? 1 : 3,
-                  child: DropdownButtonFormField<String>(
-                    initialValue:
-                        ingredientCategoryKeys.contains(_ingredient.category)
-                            ? _ingredient.category
-                            : ingredientCategoryKeys.first,
-                    decoration: InputDecoration(
-                      labelText: l10n.categoryLabel,
-                      isDense: true,
-                    ),
-                    items: categoryDropdownItems,
-                    onChanged: (value) {
-                      if (value != null) _ingredient.category = value;
-                    },
-                  ),
-                ),
-              ],
+            _buildQuantityUnitCategorySection(
+              context,
+              unitDropdownItems,
+              categoryDropdownItems,
             ),
             if (_ingredient.useCustomUnit && !_ingredient.isToTaste) ...[
               const SizedBox(height: 8),
