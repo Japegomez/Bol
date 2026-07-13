@@ -7,10 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
-import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {

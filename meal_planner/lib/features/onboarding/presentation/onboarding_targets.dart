@@ -37,8 +37,8 @@ abstract final class OnboardingTargets {
   static List<Rect> boundsForTargets(List<OnboardingTarget> targets) {
     return [
       for (final target in targets)
-        if (boundsFor(target) case final rect?) rect,
-    ];
+        ?boundsFor(target),
+    ].nonNulls.toList();
   }
 
   static Rect? unionBounds(List<OnboardingTarget> targets) {

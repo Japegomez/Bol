@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/utils/date_utils.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/meal_slot.dart';
-import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/recipe_palette.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
