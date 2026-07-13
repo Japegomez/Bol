@@ -3,6 +3,9 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
 
+const SUPPORTED_LANGS = ["en", "es", "ca", "eu", "gl", "pt"];
+const MAX_RECIPE_IDS = 100;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -74,6 +77,18 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+    if (!SUPPORTED_LANGS.includes(targetLang)) {
+      return new Response(JSON.stringify({ error: "Unsupported target_lang" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (recipeIds.length > MAX_RECIPE_IDS) {
+      return new Response(JSON.stringify({ error: "Too many recipe_ids" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const ids = [...new Set(recipeIds.map((id: unknown) => String(id)))];

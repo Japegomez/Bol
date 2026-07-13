@@ -80,8 +80,11 @@ La función `moderate-image` analiza fotos de recetas y avatares con Google Clou
 **Requisitos:** API key de Google Cloud con [Cloud Vision API](https://console.cloud.google.com/apis/library/vision.googleapis.com) y, para traducción de recetas, [Cloud Translation API](https://console.cloud.google.com/apis/library/translate.googleapis.com) habilitadas en el mismo proyecto, con **facturación activada** (tier gratuito generoso en ambas).
 
 **Configuración de la API key (importante):**
-- Restricción de aplicación: **Ninguna** (las funciones corren en servidores de Supabase, no en el navegador).
+- Restricción de aplicación: **Ninguna** (las Edge Functions de Supabase no tienen egress IP estático; la restricción por IP no aplica).
 - Restricción de API: **Cloud Vision API** y **Cloud Translation API** (según funciones que uses).
+- Usa un proyecto y API key **dedicados por entorno** (dev/staging/prod) si es posible.
+- Configura **cuotas y alertas** en Google Cloud para detectar uso anómalo.
+- Restringir solo las APIs permitidas **no protege** ante una filtración de la clave: trata `GOOGLE_API_KEY` como secreto y rota si se expone.
 
 Secreto compartido en Supabase: `GOOGLE_API_KEY`.
 

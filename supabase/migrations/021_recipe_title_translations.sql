@@ -10,9 +10,6 @@ CREATE TABLE IF NOT EXISTS public.recipe_title_translations (
   PRIMARY KEY (recipe_id, lang)
 );
 
-CREATE INDEX IF NOT EXISTS idx_recipe_title_translations_recipe_id
-  ON public.recipe_title_translations(recipe_id);
-
 ALTER TABLE public.recipe_title_translations ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "recipe_title_translations_select_public_or_own"

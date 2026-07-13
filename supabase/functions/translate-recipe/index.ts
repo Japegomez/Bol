@@ -124,6 +124,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    const sourceLang = (recipe.source_lang as string) || "es";
+    if (sourceLang === targetLang) {
+      return new Response(JSON.stringify({ error: "Same language" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: cached, error: cacheError } = await adminClient
       .from("recipe_translations")
       .select("payload, status")
@@ -139,14 +147,6 @@ Deno.serve(async (req) => {
         JSON.stringify({ payload: cached.payload, cached: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
-    }
-
-    const sourceLang = (recipe.source_lang as string) || "es";
-    if (sourceLang === targetLang) {
-      return new Response(JSON.stringify({ error: "Same language" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     const [ingredientsRes, stepsRes] = await Promise.all([
