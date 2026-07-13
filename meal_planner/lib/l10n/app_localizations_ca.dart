@@ -1249,40 +1249,61 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toca un slot buit per assignar una recepta. També pots prémer la icona de llibre (a baix a la dreta) per obrir el receptari lateral i arrossegar receptes directament al dia.';
+      'Toca un slot buit per assignar una recepta. També pots prémer la icona de llibre per obrir el receptari lateral i arrossegar receptes directament al dia.';
 
   @override
   String get onboardingStep3Title => 'El teu receptari';
 
   @override
   String get onboardingStep3Body =>
-      'Totes les teves receptes d\'un cop d\'ull. La lupa cerca per nom i els xips d\'etiquetes filtren per categoria. La icona de llibre obre el glossari culinari.';
+      'Totes les teves receptes d\'un cop d\'ull. La lupa cerca per nom i la icona de llibre obre el glossari culinari.';
 
   @override
   String get onboardingStep4Title => 'Crea una recepta';
 
   @override
   String get onboardingStep4Body =>
-      'El botó + (a baix a la dreta) obre el formulari: foto, ingredients amb quantitats, passos d\'elaboració, nutrició i etiquetes. Pots publicar-la perquè altres la descobreixin.';
+      'El botó + obre el formulari: foto, ingredients amb quantitats, passos d\'elaboració, nutrició i etiquetes. Pots publicar-la perquè altres la descobreixin.';
 
   @override
   String get onboardingStep5Title => 'Llista de la compra';
 
   @override
   String get onboardingStep5Body =>
-      'Quan planifiques àpats, els ingredients apareixen aquí automàticament agrupats per categoria. Marca els ítems en comprar-los. La icona de compartir (a dalt a la dreta) genera un text llest per a WhatsApp.';
+      'Quan planifiques àpats, els ingredients apareixen aquí automàticament agrupats per categoria. Marca els ítems en comprar-los.';
 
   @override
-  String get onboardingStep6Title => 'Descobreix la comunitat';
+  String get onboardingStep6Title => 'Afegeix ingredients';
 
   @override
   String get onboardingStep6Body =>
-      'Cerca receptes d\'altres usuaris per nom o etiquetes. Valora-les, guarda-les al teu receptari i segueix els teus cuiners preferits des del seu perfil.';
+      'Prem el botó + per afegir ingredients manualment a la teva llista de la compra.';
 
   @override
-  String get onboardingStep7Title => 'El teu perfil i llar';
+  String get onboardingStep7Title => 'Comparteix la teva llista';
 
   @override
   String get onboardingStep7Body =>
+      'La icona de compartir genera un text llest per enviar per WhatsApp o altres apps.';
+
+  @override
+  String get onboardingStep8Title => 'Descobreix la comunitat';
+
+  @override
+  String get onboardingStep8Body =>
+      'Cerca receptes d\'altres usuaris per nom o etiquetes. Valora-les i guarda-les al teu receptari.';
+
+  @override
+  String get onboardingStep9Title => 'El teu feed de cuiners';
+
+  @override
+  String get onboardingStep9Body =>
+      'Segueix els teus cuiners preferits des del seu perfil i consulta les seves últimes receptes prement el botó del feed.';
+
+  @override
+  String get onboardingStep10Title => 'El teu perfil i llar';
+
+  @override
+  String get onboardingStep10Body =>
       'Edita el teu nom i foto. A la secció La meva llar pots planificar amb la teva família en temps real. Des d\'aquí també canvies l\'idioma i el mode fosc.';
 }

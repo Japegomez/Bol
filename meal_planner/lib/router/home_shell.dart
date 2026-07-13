@@ -44,18 +44,15 @@ class HomeShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOffline = ref.watch(isOfflineProvider);
     final l10n = context.l10n;
-
-    final onboardingPending = ref.watch(onboardingCompletedProvider) == false;
     final theme = Theme.of(context);
     final navDisabledColor =
         theme.colorScheme.onSurface.withValues(alpha: 0.38);
 
+    final onboardingPending = ref.watch(onboardingCompletedProvider) == false;
+
     Color? navIconColor(int index) {
-      if (!onboardingPending) {
-        return index == 0 && isOffline ? navDisabledColor : null;
-      }
-      if (index == navigationShell.currentIndex) return null;
-      return navDisabledColor;
+      if (index == 0 && isOffline) return navDisabledColor;
+      return null;
     }
 
     return Stack(
@@ -65,70 +62,70 @@ class HomeShell extends ConsumerWidget {
           bottomNavigationBar: IgnorePointer(
             ignoring: onboardingPending,
             child: NavigationBar(
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: (index) => _onTap(
-              index,
-              ref,
-              context,
-              onboardingActive: onboardingPending,
-            ),
-            destinations: [
-              NavigationDestination(
-                icon: Icon(
-                  Icons.explore_outlined,
-                  color: navIconColor(0),
-                ),
-                selectedIcon: Icon(
-                  Icons.explore,
-                  color: navIconColor(0),
-                ),
-                label: l10n.navExplore,
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: (index) => _onTap(
+                index,
+                ref,
+                context,
+                onboardingActive: onboardingPending,
               ),
-              NavigationDestination(
-                icon: Icon(
-                  Icons.menu_book_outlined,
-                  color: navIconColor(1),
+              destinations: [
+                NavigationDestination(
+                  icon: Icon(
+                    Icons.explore_outlined,
+                    color: navIconColor(0),
+                  ),
+                  selectedIcon: Icon(
+                    Icons.explore,
+                    color: navIconColor(0),
+                  ),
+                  label: l10n.navExplore,
                 ),
-                selectedIcon: Icon(
-                  Icons.menu_book,
-                  color: navIconColor(1),
+                NavigationDestination(
+                  icon: Icon(
+                    Icons.menu_book_outlined,
+                    color: navIconColor(1),
+                  ),
+                  selectedIcon: Icon(
+                    Icons.menu_book,
+                    color: navIconColor(1),
+                  ),
+                  label: l10n.navRecipeBook,
                 ),
-                label: l10n.navRecipeBook,
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Icons.calendar_month_outlined,
-                  color: navIconColor(2),
+                NavigationDestination(
+                  icon: Icon(
+                    Icons.calendar_month_outlined,
+                    color: navIconColor(2),
+                  ),
+                  selectedIcon: Icon(
+                    Icons.calendar_month,
+                    color: navIconColor(2),
+                  ),
+                  label: l10n.navPlanner,
                 ),
-                selectedIcon: Icon(
-                  Icons.calendar_month,
-                  color: navIconColor(2),
+                NavigationDestination(
+                  icon: Icon(
+                    Icons.shopping_cart_outlined,
+                    color: navIconColor(3),
+                  ),
+                  selectedIcon: Icon(
+                    Icons.shopping_cart,
+                    color: navIconColor(3),
+                  ),
+                  label: l10n.navShopping,
                 ),
-                label: l10n.navPlanner,
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Icons.shopping_cart_outlined,
-                  color: navIconColor(3),
+                NavigationDestination(
+                  icon: Icon(
+                    Icons.person_outline,
+                    color: navIconColor(4),
+                  ),
+                  selectedIcon: Icon(
+                    Icons.person,
+                    color: navIconColor(4),
+                  ),
+                  label: l10n.navProfile,
                 ),
-                selectedIcon: Icon(
-                  Icons.shopping_cart,
-                  color: navIconColor(3),
-                ),
-                label: l10n.navShopping,
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Icons.person_outline,
-                  color: navIconColor(4),
-                ),
-                selectedIcon: Icon(
-                  Icons.person,
-                  color: navIconColor(4),
-                ),
-                label: l10n.navProfile,
-              ),
-            ],
+              ],
             ),
           ),
         ),

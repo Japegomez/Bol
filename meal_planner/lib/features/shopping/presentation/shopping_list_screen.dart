@@ -4,6 +4,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/shopping/presentation/shopping_provider.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/add_edit_item_sheet.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/shopping_item_tile.dart';
@@ -85,6 +86,7 @@ class ShoppingListScreen extends ConsumerWidget {
         title: Text(l10n.shoppingListTitle),
         actions: [
           IconButton(
+            key: OnboardingTargets.keyFor(OnboardingTarget.shoppingShareButton),
             onPressed: isEmpty ? null : () => _shareList(context, items),
             icon: const Icon(Icons.share_outlined),
             tooltip: l10n.shareListTooltip,
@@ -179,6 +181,7 @@ class ShoppingListScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        key: OnboardingTargets.keyFor(OnboardingTarget.shoppingAddFab),
         onPressed: canEdit ? () => _openAddSheet(context, ref, canEdit: canEdit) : null,
         tooltip: l10n.addItemTooltip,
         child: const Icon(Icons.add),

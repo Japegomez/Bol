@@ -10,6 +10,7 @@ import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {
@@ -53,6 +54,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton.small(
+            key: OnboardingTargets.keyFor(OnboardingTarget.recipesGlossaryFab),
             heroTag: 'cooking-glossary',
             onPressed: () => context.push('/home/recipes/glossary'),
             tooltip: l10n.cookingGlossaryTooltip,
@@ -60,6 +62,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
           ),
           const SizedBox(height: 12),
           FloatingActionButton(
+            key: OnboardingTargets.keyFor(OnboardingTarget.recipesFab),
             heroTag: 'new-recipe',
             onPressed: () => context.push('/home/recipes/new'),
             tooltip: l10n.newRecipeTooltip,
@@ -72,6 +75,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
+              key: OnboardingTargets.keyFor(OnboardingTarget.recipesSearchBar),
               controller: _searchController,
               hintText: l10n.searchByName,
               leading: const Icon(Icons.search),

@@ -1250,40 +1250,61 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toca un espazo baleiro para asignar unha receita. Tamén podes premer a icona de libro (abaixo á dereita) para abrir o receitar lateral e arrastrar receitas directamente ao día.';
+      'Toca un espazo baleiro para asignar unha receita. Tamén podes premer a icona de libro para abrir o receitar lateral e arrastrar receitas directamente ao día.';
 
   @override
   String get onboardingStep3Title => 'O teu receitar';
 
   @override
   String get onboardingStep3Body =>
-      'Todas as túas receitas dunha ollada. A lupa busca por nome e as etiquetas filtran por categoría. A icona de libro abre o glosario culinario.';
+      'Todas as túas receitas dunha ollada. A lupa busca por nome e a icona de libro abre o glosario culinario.';
 
   @override
   String get onboardingStep4Title => 'Crea unha receita';
 
   @override
   String get onboardingStep4Body =>
-      'O botón + (abaixo á dereita) abre o formulario: foto, ingredientes con cantidades, pasos de elaboración, nutrición e etiquetas. Podes publicala para que outros a descubran.';
+      'O botón + abre o formulario: foto, ingredientes con cantidades, pasos de elaboración, nutrición e etiquetas. Podes publicala para que outros a descubran.';
 
   @override
   String get onboardingStep5Title => 'Lista da compra';
 
   @override
   String get onboardingStep5Body =>
-      'Cando planificas comidas, os ingredientes aparecen aquí automaticamente agrupados por categoría. Marca os ítems ao compralos. A icona de compartir (arriba á dereita) xera un texto listo para WhatsApp.';
+      'Cando planificas comidas, os ingredientes aparecen aquí automaticamente agrupados por categoría. Marca os ítems ao compralos.';
 
   @override
-  String get onboardingStep6Title => 'Descobre a comunidade';
+  String get onboardingStep6Title => 'Engade ingredientes';
 
   @override
   String get onboardingStep6Body =>
-      'Busca receitas doutros usuarios por nome ou etiquetas. Valóraas, gárdalas no teu recetario e segue aos teus cociñeiros favoritos desde o seu perfil.';
+      'Preme o botón + para engadir ingredientes manualmente á túa lista da compra.';
 
   @override
-  String get onboardingStep7Title => 'O teu perfil e fogar';
+  String get onboardingStep7Title => 'Comparte a túa lista';
 
   @override
   String get onboardingStep7Body =>
+      'A icona de compartir xera un texto listo para enviar por WhatsApp ou outras apps.';
+
+  @override
+  String get onboardingStep8Title => 'Descobre a comunidade';
+
+  @override
+  String get onboardingStep8Body =>
+      'Busca receitas doutros usuarios por nome ou etiquetas. Valóraas e gárdalas no teu recetario.';
+
+  @override
+  String get onboardingStep9Title => 'O teu feed de cociñeiros';
+
+  @override
+  String get onboardingStep9Body =>
+      'Segue aos teus cociñeiros favoritos desde o seu perfil e consulta as súas últimas receitas premendo o botón do feed.';
+
+  @override
+  String get onboardingStep10Title => 'O teu perfil e fogar';
+
+  @override
+  String get onboardingStep10Body =>
       'Edita o teu nome e foto. Na sección O meu fogar podes planificar coa túa familia en tempo real. Desde aquí tamén cambias o idioma e o modo escuro.';
 }

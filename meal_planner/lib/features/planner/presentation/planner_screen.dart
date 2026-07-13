@@ -8,6 +8,7 @@ import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/meal_slot.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/recipe_palette.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
@@ -100,7 +101,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           children: [
             Column(
               children: [
-                _WeekNavigationHeader(weekStart: weekStart),
+                KeyedSubtree(
+                  key: OnboardingTargets.keyFor(
+                    OnboardingTarget.plannerWeekHeader,
+                  ),
+                  child: _WeekNavigationHeader(weekStart: weekStart),
+                ),
                 Expanded(
                   child: AnimatedPadding(
                     duration: const Duration(milliseconds: 220),
@@ -143,6 +149,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       floatingActionButton: _paletteOpen
           ? null
           : FloatingActionButton(
+              key: OnboardingTargets.keyFor(OnboardingTarget.plannerFab),
               onPressed: _togglePalette,
               tooltip: l10n.showRecipeBookTooltip,
               child: const Icon(Icons.menu_book),

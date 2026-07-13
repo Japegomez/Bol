@@ -2407,7 +2407,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep2Body.
   ///
   /// In en, this message translates to:
-  /// **'Tap an empty slot to assign a recipe. You can also tap the book icon (bottom right) to open the side recipe panel and drag recipes onto a day.'**
+  /// **'Tap an empty slot to assign a recipe. You can also tap the book icon to open the side recipe panel and drag recipes onto a day.'**
   String get onboardingStep2Body;
 
   /// No description provided for @onboardingStep3Title.
@@ -2419,7 +2419,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep3Body.
   ///
   /// In en, this message translates to:
-  /// **'All your recipes at a glance. The search icon finds recipes by name and tag chips filter by category. The book icon opens the cooking glossary.'**
+  /// **'All your recipes at a glance. The search icon finds recipes by name and the book icon opens the cooking glossary.'**
   String get onboardingStep3Body;
 
   /// No description provided for @onboardingStep4Title.
@@ -2431,7 +2431,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep4Body.
   ///
   /// In en, this message translates to:
-  /// **'The + button (bottom right) opens the form: photo, ingredients with quantities, steps, nutrition and tags. You can publish it so others can discover it.'**
+  /// **'The + button opens the form: photo, ingredients with quantities, steps, nutrition and tags. You can publish it so others can discover it.'**
   String get onboardingStep4Body;
 
   /// No description provided for @onboardingStep5Title.
@@ -2443,32 +2443,68 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep5Body.
   ///
   /// In en, this message translates to:
-  /// **'When you plan meals, ingredients appear here automatically grouped by category. Check items off as you shop. The share icon (top right) creates text ready for WhatsApp.'**
+  /// **'When you plan meals, ingredients appear here automatically grouped by category. Check items off as you shop.'**
   String get onboardingStep5Body;
 
   /// No description provided for @onboardingStep6Title.
   ///
   /// In en, this message translates to:
-  /// **'Discover the community'**
+  /// **'Add ingredients'**
   String get onboardingStep6Title;
 
   /// No description provided for @onboardingStep6Body.
   ///
   /// In en, this message translates to:
-  /// **'Search other users\' recipes by name or tags. Rate them, save them to your book and follow your favourite cooks from their profile.'**
+  /// **'Tap the + button to add ingredients manually to your shopping list.'**
   String get onboardingStep6Body;
 
   /// No description provided for @onboardingStep7Title.
   ///
   /// In en, this message translates to:
-  /// **'Your profile and household'**
+  /// **'Share your list'**
   String get onboardingStep7Title;
 
   /// No description provided for @onboardingStep7Body.
   ///
   /// In en, this message translates to:
-  /// **'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.'**
+  /// **'The share icon creates text ready to send via WhatsApp or other apps.'**
   String get onboardingStep7Body;
+
+  /// No description provided for @onboardingStep8Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover the community'**
+  String get onboardingStep8Title;
+
+  /// No description provided for @onboardingStep8Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Search other users\' recipes by name or tags. Rate them and save them to your recipe book.'**
+  String get onboardingStep8Body;
+
+  /// No description provided for @onboardingStep9Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cooks feed'**
+  String get onboardingStep9Title;
+
+  /// No description provided for @onboardingStep9Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow your favourite cooks from their profile and see their latest recipes by tapping the feed button.'**
+  String get onboardingStep9Body;
+
+  /// No description provided for @onboardingStep10Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile and household'**
+  String get onboardingStep10Title;
+
+  /// No description provided for @onboardingStep10Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.'**
+  String get onboardingStep10Body;
 }
 
 class _AppLocalizationsDelegate

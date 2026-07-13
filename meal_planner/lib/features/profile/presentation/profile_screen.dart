@@ -9,6 +9,7 @@ import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -148,6 +149,9 @@ class ProfileScreen extends ConsumerWidget {
                   child: Column(
                     children: [
                       ListTile(
+                        key: OnboardingTargets.keyFor(
+                          OnboardingTarget.profileEditTile,
+                        ),
                         leading: const Icon(Icons.edit_outlined),
                         title: Text(l10n.editProfile),
                         trailing: const Icon(Icons.chevron_right),
@@ -155,6 +159,9 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const Divider(height: 1),
                       ListTile(
+                        key: OnboardingTargets.keyFor(
+                          OnboardingTarget.profileHouseholdTile,
+                        ),
                         leading: const Icon(Icons.home_outlined),
                         title: Text(l10n.myHousehold),
                         subtitle: Text(
