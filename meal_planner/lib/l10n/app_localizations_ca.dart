@@ -1108,7 +1108,7 @@ class AppLocalizationsCa extends AppLocalizations {
   String get unitCup => 'tassa';
 
   @override
-  String get unitHandful => 'mànega';
+  String get unitHandful => 'grapat';
 
   @override
   String get unitLeaf => 'fulla';

@@ -992,11 +992,11 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get offlineHouseholdMessage =>
-      'Estás sen conexión. Podes consultar a última versión gardada do teu receitar, planificador e lista da compra, pero a edición non está dispoñible en modo fogar sen conexión. Explorar tampoco está dispoñible.';
+      'Estás sen conexión. Podes consultar a última versión gardada do teu receitar, planificador e lista da compra, pero a edición non está dispoñible en modo fogar sen conexión. Explorar tampouco está dispoñible.';
 
   @override
   String get offlineIndividualMessage =>
-      'Estás sen conexión. Podes consultar e editar o teu receitar, planificador e lista da compra; os cambios sincronizaranse ao recuperar a conexión. A foto de receitas e a pestaña Explorar non están dispoñibles sen conexión.';
+      'Estás sen conexión. Podes consultar e editar o teu receitar, planificador e lista da compra; os cambios sincronizaranse ao recuperar a conexión. A foto de receitas e a lapela Explorar non están dispoñibles sen conexión.';
 
   @override
   String get imageNotAllowedTitle => 'Imaxe non permitida';

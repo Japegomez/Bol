@@ -1093,7 +1093,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get unitCount => 'unitate';
 
   @override
-  String get unitPinch => 'pinch';
+  String get unitPinch => 'atximur';
 
   @override
   String get unitTeaspoon => 'koilaratxo';
@@ -1108,7 +1108,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get unitCup => 'katilu';
 
   @override
-  String get unitHandful => 'mutil';
+  String get unitHandful => 'eskutada';
 
   @override
   String get unitLeaf => 'orri';

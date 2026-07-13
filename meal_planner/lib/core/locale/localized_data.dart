@@ -189,7 +189,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'ca': ['rodanxa', 'rodanxes'],
     'eu': ['xerra biribil', 'xerra biribil'],
     'gl': ['rolda', 'roldas'],
-    'pt': ['rodelas', 'rodelas'],
+    'pt': ['rodela', 'rodelas'],
   },
   'lata': {
     'es': ['lata', 'latas'],

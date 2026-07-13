@@ -1136,7 +1136,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get unitFillet => 'filete';
 
   @override
-  String get unitRound => 'rodelas';
+  String get unitRound => 'rodela';
 
   @override
   String get unitCan => 'lata';
