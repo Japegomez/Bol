@@ -115,10 +115,12 @@ class _IngredientRowState extends State<IngredientRow> {
               ],
             ),
             const SizedBox(height: 8),
-            if (!_ingredient.isToTaste)
-              Row(
-                children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!_ingredient.isToTaste) ...[
                   Expanded(
+                    flex: 2,
                     child: TextFormField(
                       controller: _quantityController,
                       decoration: InputDecoration(
@@ -149,9 +151,8 @@ class _IngredientRowState extends State<IngredientRow> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
+                    flex: 2,
                     child: DropdownButtonFormField<String>(
-                      // Key forces recreation when useCustomUnit changes so
-                      // the displayed value resets to the model's current state.
                       key: ValueKey(
                         'unit-${widget.ingredient.key}-${_ingredient.useCustomUnit}',
                       ),
@@ -180,8 +181,27 @@ class _IngredientRowState extends State<IngredientRow> {
                       },
                     ),
                   ),
+                  const SizedBox(width: 8),
                 ],
-              ),
+                Expanded(
+                  flex: _ingredient.isToTaste ? 1 : 3,
+                  child: DropdownButtonFormField<String>(
+                    initialValue:
+                        ingredientCategoryKeys.contains(_ingredient.category)
+                            ? _ingredient.category
+                            : ingredientCategoryKeys.first,
+                    decoration: InputDecoration(
+                      labelText: l10n.categoryLabel,
+                      isDense: true,
+                    ),
+                    items: categoryDropdownItems,
+                    onChanged: (value) {
+                      if (value != null) _ingredient.category = value;
+                    },
+                  ),
+                ),
+              ],
+            ),
             if (_ingredient.useCustomUnit && !_ingredient.isToTaste) ...[
               const SizedBox(height: 8),
               TextFormField(
@@ -193,67 +213,65 @@ class _IngredientRowState extends State<IngredientRow> {
                 onChanged: (value) => _ingredient.customUnit = value,
               ),
             ],
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: ingredientCategoryKeys.contains(_ingredient.category)
-                  ? _ingredient.category
-                  : ingredientCategoryKeys.first,
-              decoration: InputDecoration(
-                labelText: l10n.categoryLabel,
-                isDense: true,
-              ),
-              items: categoryDropdownItems,
-              onChanged: (value) {
-                if (value != null) _ingredient.category = value;
-              },
-            ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              controlAffinity: ListTileControlAffinity.leading,
-              title: Text(l10n.toTaste),
-              subtitle: Text(
-                l10n.toTasteShoppingHint,
-                style: const TextStyle(fontSize: 12),
-              ),
-              value: _ingredient.isToTaste,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _ingredient.isToTaste = value;
-                  if (value) {
-                    _ingredient.quantity = null;
-                    _ingredient.unit = null;
-                    _ingredient.useCustomUnit = false;
-                    _ingredient.customUnit = '';
-                    _quantityController.clear();
-                    _customUnitController.clear();
-                  } else {
-                    // When re-enabling unit, set to default if null
-                    if (_ingredient.unit == null && !_ingredient.useCustomUnit) {
-                      _ingredient.unit = predefinedUnits.first;
-                    }
-                  }
-                });
-              },
-            ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              controlAffinity: ListTileControlAffinity.leading,
-              title: Text(l10n.optional),
-              subtitle: Text(
-                l10n.optionalIngredientHint,
-                style: const TextStyle(fontSize: 12),
-              ),
-              value: _ingredient.isOptional,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _ingredient.isOptional = value;
-                  if (!value) _ingredient.isIncluded = true;
-                });
-              },
+            const SizedBox(height: 4),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(l10n.toTaste),
+                    subtitle: _ingredient.isToTaste
+                        ? Text(
+                            l10n.toTasteShoppingHint,
+                            style: const TextStyle(fontSize: 12),
+                          )
+                        : null,
+                    value: _ingredient.isToTaste,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() {
+                        _ingredient.isToTaste = value;
+                        if (value) {
+                          _ingredient.quantity = null;
+                          _ingredient.unit = null;
+                          _ingredient.useCustomUnit = false;
+                          _ingredient.customUnit = '';
+                          _quantityController.clear();
+                          _customUnitController.clear();
+                        } else if (_ingredient.unit == null &&
+                            !_ingredient.useCustomUnit) {
+                          _ingredient.unit = predefinedUnits.first;
+                        }
+                      });
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(l10n.optional),
+                    subtitle: _ingredient.isOptional
+                        ? Text(
+                            l10n.optionalIngredientHint,
+                            style: const TextStyle(fontSize: 12),
+                          )
+                        : null,
+                    value: _ingredient.isOptional,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() {
+                        _ingredient.isOptional = value;
+                        if (!value) _ingredient.isIncluded = true;
+                      });
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
