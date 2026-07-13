@@ -390,5 +390,26 @@
   "tagBatchCooking": "batch cooking",
   "tagFreezerFriendly": "para congelar",
   "tagSpicy": "picante",
-  "tagKidFriendly": "para crianças"
+  "tagKidFriendly": "para crianças",
+
+  "onboardingSkip": "Ignorar",
+  "onboardingNext": "Seguinte",
+  "onboardingPrevious": "Anterior",
+  "onboardingFinish": "Concluir",
+  "onboardingStep0Title": "Bem-vindo/a ao Recetea!",
+  "onboardingStep0Body": "Mostramos como a app funciona em cerca de um minuto. Pode ignorar este tutorial quando quiser.",
+  "onboardingStep1Title": "Planificador semanal",
+  "onboardingStep1Body": "Vê todos os dias com as suas refeições. As setas ‹ › mudam a semana. O dia de hoje aparece destacado a verde.",
+  "onboardingStep2Title": "Adicione refeições ao plano",
+  "onboardingStep2Body": "Toque num espaço vazio para atribuir uma receita. Também pode premir o ícone de livro (canto inferior direito) para abrir o painel lateral de receitas e arrastar receitas diretamente para o dia.",
+  "onboardingStep3Title": "O seu livro de receitas",
+  "onboardingStep3Body": "Todas as suas receitas num relance. A lupa pesquisa por nome e as etiquetas filtram por categoria. O ícone de livro abre o glossário culinário.",
+  "onboardingStep4Title": "Crie uma receita",
+  "onboardingStep4Body": "O botão + (canto inferior direito) abre o formulário: foto, ingredientes com quantidades, passos, nutrição e etiquetas. Pode publicá-la para que outros a descubram.",
+  "onboardingStep5Title": "Lista de compras",
+  "onboardingStep5Body": "Quando planifica refeições, os ingredientes aparecem aqui automaticamente agrupados por categoria. Marque os itens ao comprar. O ícone de partilhar (canto superior direito) gera texto pronto para o WhatsApp.",
+  "onboardingStep6Title": "Descubra a comunidade",
+  "onboardingStep6Body": "Pesquise receitas de outros utilizadores por nome ou etiquetas. Avalie-as, guarde-as no seu livro e siga os seus cozinheiros favoritos a partir do perfil.",
+  "onboardingStep7Title": "O seu perfil e lar",
+  "onboardingStep7Body": "Edite o seu nome e foto. Na secção A minha casa pode planear com a família em tempo real. A partir daqui também muda o idioma e o modo escuro."
 }

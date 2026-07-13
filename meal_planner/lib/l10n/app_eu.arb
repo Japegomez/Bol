@@ -390,5 +390,26 @@
   "tagBatchCooking": "batch cooking",
   "tagFreezerFriendly": "izozteko",
   "tagSpicy": "min",
-  "tagKidFriendly": "haurrentzat"
+  "tagKidFriendly": "haurrentzat",
+
+  "onboardingSkip": "Saltatu",
+  "onboardingNext": "Hurrengoa",
+  "onboardingPrevious": "Aurrekoa",
+  "onboardingFinish": "Amaitu",
+  "onboardingStep0Title": "Ongi etorri Receteara!",
+  "onboardingStep0Body": "Aplikazioak nola funtzionatzen duen erakutsiko dizugu minutu batean. Tutorial hau edozein unetan saltatu dezakezu.",
+  "onboardingStep1Title": "Asteko planifikatzailea",
+  "onboardingStep1Body": "Egun guztiak ikusten dituzu beren otorduekin. ‹ › geziak astea aldatzen dute. Gaurko eguna berdez nabarmenduta agertzen da.",
+  "onboardingStep2Title": "Gehitu otorduak planera",
+  "onboardingStep2Body": "Sakatu hutsik dagoen tarte bat errezeta bat esleitzeko. Liburuaren ikonoa ere sakatu dezakezu (behean eskuinean) alboko errezeta-panela irekitzeko eta errezetak egunera zuzenean arrastatzeko.",
+  "onboardingStep3Title": "Zure errezeta-liburua",
+  "onboardingStep3Body": "Zure errezeta guztiak begi-bistan. Bilaketa izenaren arabera bilatzen du eta etiketa-iragazkiak kategoriaren arabera iragazten dute. Liburuaren ikonoak sukaldaritza-glosarioa irekitzen du.",
+  "onboardingStep4Title": "Sortu errezeta bat",
+  "onboardingStep4Body": "+ botoiak (behean eskuinean) formularioa irekitzen du: argazkia, osagaiak kantitateekin, prestaketa-pausoak, nutrizioa eta etiketak. Argitaratu dezakezu besteek aurkitzeko.",
+  "onboardingStep5Title": "Erosketa-zerrenda",
+  "onboardingStep5Body": "Otorduak planifikatzen dituzunean, osagaiak hemen agertzen dira automatikoki kategoriaren arabera taldekatuta. Markatu elementuak erosten dituzunean. Partekatzeko ikonoak (goian eskuinean) WhatsApperako testua sortzen du.",
+  "onboardingStep6Title": "Aurkitu komunitatea",
+  "onboardingStep6Body": "Bilatu beste erabiltzaileen errezetak izenaren edo etiketen arabera. Baloratu, gorde zure liburuan eta jarraitu zure sukaldari gogokoenak haien profiletik.",
+  "onboardingStep7Title": "Zure profila eta etxea",
+  "onboardingStep7Body": "Editatu zure izena eta argazkia. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu."
 }

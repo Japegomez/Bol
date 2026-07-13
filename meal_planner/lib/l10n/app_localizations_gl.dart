@@ -1218,4 +1218,72 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get tagKidFriendly => 'para nenos';
+
+  @override
+  String get onboardingSkip => 'Omitir';
+
+  @override
+  String get onboardingNext => 'Seguinte';
+
+  @override
+  String get onboardingPrevious => 'Anterior';
+
+  @override
+  String get onboardingFinish => 'Finalizar';
+
+  @override
+  String get onboardingStep0Title => 'Benvido/a a Recetea!';
+
+  @override
+  String get onboardingStep0Body =>
+      'Amosámosche como funciona a app nun minuto. Podes omitir este tutorial cando queiras.';
+
+  @override
+  String get onboardingStep1Title => 'Planificador semanal';
+
+  @override
+  String get onboardingStep1Body =>
+      'Ves todos os días coas súas comidas. As frechas ‹ › cambian de semana. O día de hoxe aparece resaltado en verde.';
+
+  @override
+  String get onboardingStep2Title => 'Engade comidas ao plan';
+
+  @override
+  String get onboardingStep2Body =>
+      'Toca un espazo baleiro para asignar unha receita. Tamén podes premer a icona de libro (abaixo á dereita) para abrir o receitar lateral e arrastrar receitas directamente ao día.';
+
+  @override
+  String get onboardingStep3Title => 'O teu receitar';
+
+  @override
+  String get onboardingStep3Body =>
+      'Todas as túas receitas dunha ollada. A lupa busca por nome e as etiquetas filtran por categoría. A icona de libro abre o glosario culinario.';
+
+  @override
+  String get onboardingStep4Title => 'Crea unha receita';
+
+  @override
+  String get onboardingStep4Body =>
+      'O botón + (abaixo á dereita) abre o formulario: foto, ingredientes con cantidades, pasos de elaboración, nutrición e etiquetas. Podes publicala para que outros a descubran.';
+
+  @override
+  String get onboardingStep5Title => 'Lista da compra';
+
+  @override
+  String get onboardingStep5Body =>
+      'Cando planificas comidas, os ingredientes aparecen aquí automaticamente agrupados por categoría. Marca os ítems ao compralos. A icona de compartir (arriba á dereita) xera un texto listo para WhatsApp.';
+
+  @override
+  String get onboardingStep6Title => 'Descobre a comunidade';
+
+  @override
+  String get onboardingStep6Body =>
+      'Busca receitas doutros usuarios por nome ou etiquetas. Valóraas, gárdalas no teu recetario e segue aos teus cociñeiros favoritos desde o seu perfil.';
+
+  @override
+  String get onboardingStep7Title => 'O teu perfil e fogar';
+
+  @override
+  String get onboardingStep7Body =>
+      'Edita o teu nome e foto. Na sección O meu fogar podes planificar coa túa familia en tempo real. Desde aquí tamén cambias o idioma e o modo escuro.';
 }
