@@ -71,7 +71,7 @@ class SocialRepository {
     try {
       return await _fetchPublicRecipeDetailRemote(id);
     } catch (error) {
-      if (shouldFallbackToCache(error)) {
+      if (isTransientNetworkError(error)) {
         throw OfflinePublicRecipeBlockedException();
       }
       rethrow;

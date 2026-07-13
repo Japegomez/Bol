@@ -187,6 +187,7 @@ class FeedState {
 
 class FeedNotifier extends Notifier<FeedState> {
   SocialRepository get _repo => ref.read(socialRepositoryProvider);
+  int _requestGeneration = 0;
 
   @override
   FeedState build() {
@@ -196,27 +197,36 @@ class FeedNotifier extends Notifier<FeedState> {
   }
 
   Future<void> reload() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    final generation = ++_requestGeneration;
+    state = state.copyWith(
+      isLoading: true,
+      isLoadingMore: false,
+      clearError: true,
+    );
     try {
       final tags = ref.read(feedTagsFilterProvider);
       final recipes = await _repo.fetchFeed(page: 0, tags: tags);
+      if (generation != _requestGeneration) return;
       state = FeedState(
         recipes: recipes,
         hasMore: recipes.length >= SocialRepository.pageSize,
         page: 0,
       );
     } catch (e) {
+      if (generation != _requestGeneration) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<void> loadMore() async {
     if (state.isLoadingMore || !state.hasMore) return;
+    final generation = _requestGeneration;
     state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final nextPage = state.page + 1;
       final tags = ref.read(feedTagsFilterProvider);
       final recipes = await _repo.fetchFeed(page: nextPage, tags: tags);
+      if (generation != _requestGeneration) return;
       state = state.copyWith(
         recipes: [...state.recipes, ...recipes],
         page: nextPage,
@@ -224,6 +234,7 @@ class FeedNotifier extends Notifier<FeedState> {
         isLoadingMore: false,
       );
     } catch (e) {
+      if (generation != _requestGeneration) return;
       state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
