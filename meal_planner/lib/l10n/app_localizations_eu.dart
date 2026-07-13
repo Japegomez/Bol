@@ -1217,4 +1217,72 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get tagKidFriendly => 'haurrentzat';
+
+  @override
+  String get onboardingSkip => 'Saltatu';
+
+  @override
+  String get onboardingNext => 'Hurrengoa';
+
+  @override
+  String get onboardingPrevious => 'Aurrekoa';
+
+  @override
+  String get onboardingFinish => 'Amaitu';
+
+  @override
+  String get onboardingStep0Title => 'Ongi etorri Receteara!';
+
+  @override
+  String get onboardingStep0Body =>
+      'Appa nola funtzionatzen duen erakutsiko dizugu minutu batean. Tutorial hau edozein unetan saltatu dezakezu.';
+
+  @override
+  String get onboardingStep1Title => 'Asteko planifikatzailea';
+
+  @override
+  String get onboardingStep1Body =>
+      'Egun guztiak ikusten dituzu beren otorduekin. ‹ › geziak astea aldatzen dute. Gaurko eguna berdez nabarmenduta agertzen da.';
+
+  @override
+  String get onboardingStep2Title => 'Gehitu otorduak planera';
+
+  @override
+  String get onboardingStep2Body =>
+      'Sakatu hutsik dagoen slot bat errezeta bat esleitzeko. Liburuaren ikonoa ere sakatu dezakezu (behean eskuinean) alboko errezeta-panela irekitzeko eta errezetak egunera zuzenean arrastatzeko.';
+
+  @override
+  String get onboardingStep3Title => 'Zure errezeta-liburua';
+
+  @override
+  String get onboardingStep3Body =>
+      'Zure errezeta guztiak begi-bistak. Bilaketa izenaren arabera bilatzen du eta etiketa-chipak kategoriaren arabera iragazten dute. Liburuaren ikonoak sukaldaritza-glosarioa irekitzen du.';
+
+  @override
+  String get onboardingStep4Title => 'Sortu errezeta bat';
+
+  @override
+  String get onboardingStep4Body =>
+      '+ botoiak (behean eskuinean) formularioa irekitzen du: argazkia, osagaiak kantitateekin, prestaketa-pausoak, nutrizioa eta etiketak. Argitaratu dezakezu besteek aurkitzeko.';
+
+  @override
+  String get onboardingStep5Title => 'Erosketa-zerrenda';
+
+  @override
+  String get onboardingStep5Body =>
+      'Otorduak planifikatzen dituzunean, osagaiak hemen agertzen dira automatikoki kategoriaren arabera taldekatuta. Markatu elementuak erosten dituzunean. Partekatzeko ikonoak (goian eskuinean) WhatsApperako testua sortzen du.';
+
+  @override
+  String get onboardingStep6Title => 'Aurkitu komunitatea';
+
+  @override
+  String get onboardingStep6Body =>
+      'Bilatu beste erabiltzaileen errezetak izenaren edo etiketen arabera. Baloratu, gorde zure liburuan eta jarraitu zure sukaldari gogokoenak haien profiletik.';
+
+  @override
+  String get onboardingStep7Title => 'Zure profila eta etxea';
+
+  @override
+  String get onboardingStep7Body =>
+      'Editatu zure izena eta argazkia. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu.';
 }

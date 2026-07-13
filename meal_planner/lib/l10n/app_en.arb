@@ -496,5 +496,26 @@
   "tagBatchCooking": "batch cooking",
   "tagFreezerFriendly": "freezer-friendly",
   "tagSpicy": "spicy",
-  "tagKidFriendly": "kid-friendly"
+  "tagKidFriendly": "kid-friendly",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingPrevious": "Back",
+  "onboardingFinish": "Finish",
+  "onboardingStep0Title": "Welcome to Recetea!",
+  "onboardingStep0Body": "We'll show you how the app works in about a minute. You can skip this tutorial at any time.",
+  "onboardingStep1Title": "Weekly planner",
+  "onboardingStep1Body": "See all days with their meals. The ‹ › arrows change the week. Today is highlighted in green.",
+  "onboardingStep2Title": "Add meals to your plan",
+  "onboardingStep2Body": "Tap an empty slot to assign a recipe. You can also tap the book icon (bottom right) to open the side recipe panel and drag recipes onto a day.",
+  "onboardingStep3Title": "Your recipe book",
+  "onboardingStep3Body": "All your recipes at a glance. The search icon finds recipes by name and tag chips filter by category. The book icon opens the cooking glossary.",
+  "onboardingStep4Title": "Create a recipe",
+  "onboardingStep4Body": "The + button (bottom right) opens the form: photo, ingredients with quantities, steps, nutrition and tags. You can publish it so others can discover it.",
+  "onboardingStep5Title": "Shopping list",
+  "onboardingStep5Body": "When you plan meals, ingredients appear here automatically grouped by category. Check items off as you shop. The share icon (top right) creates text ready for WhatsApp.",
+  "onboardingStep6Title": "Discover the community",
+  "onboardingStep6Body": "Search other users' recipes by name or tags. Rate them, save them to your book and follow your favourite cooks from their profile.",
+  "onboardingStep7Title": "Your profile and household",
+  "onboardingStep7Body": "Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here."
 }

@@ -1219,4 +1219,72 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tagKidFriendly => 'para niños';
+
+  @override
+  String get onboardingSkip => 'Omitir';
+
+  @override
+  String get onboardingNext => 'Siguiente';
+
+  @override
+  String get onboardingPrevious => 'Anterior';
+
+  @override
+  String get onboardingFinish => 'Finalizar';
+
+  @override
+  String get onboardingStep0Title => '¡Bienvenido/a a Recetea!';
+
+  @override
+  String get onboardingStep0Body =>
+      'Te mostramos cómo funciona la app en un minuto. Puedes omitir este tutorial cuando quieras.';
+
+  @override
+  String get onboardingStep1Title => 'Planificador semanal';
+
+  @override
+  String get onboardingStep1Body =>
+      'Ves todos los días con sus comidas. Las flechas ‹ › cambian de semana. El día de hoy aparece resaltado en verde.';
+
+  @override
+  String get onboardingStep2Title => 'Añade comidas al plan';
+
+  @override
+  String get onboardingStep2Body =>
+      'Toca un slot vacío para asignar una receta. También puedes pulsar el icono de libro (abajo a la derecha) para abrir el recetario lateral y arrastrar recetas directamente al día.';
+
+  @override
+  String get onboardingStep3Title => 'Tu recetario';
+
+  @override
+  String get onboardingStep3Body =>
+      'Todas tus recetas en un vistazo. La lupa busca por nombre y los chips de etiquetas filtran por categoría. El icono de libro abre el glosario culinario.';
+
+  @override
+  String get onboardingStep4Title => 'Crea una receta';
+
+  @override
+  String get onboardingStep4Body =>
+      'El botón + (abajo a la derecha) abre el formulario: foto, ingredientes con cantidades, pasos de elaboración, nutrición y etiquetas. Puedes publicarla para que otros la descubran.';
+
+  @override
+  String get onboardingStep5Title => 'Lista de la compra';
+
+  @override
+  String get onboardingStep5Body =>
+      'Cuando planificas comidas, los ingredientes aparecen aquí automáticamente agrupados por categoría. Marca los ítems al comprarlos. El icono de compartir (arriba a la derecha) genera un texto listo para WhatsApp.';
+
+  @override
+  String get onboardingStep6Title => 'Descubre la comunidad';
+
+  @override
+  String get onboardingStep6Body =>
+      'Busca recetas de otros usuarios por nombre o etiquetas. Valóralas, guárdalas en tu recetario y sigue a tus cocineros favoritos desde su perfil.';
+
+  @override
+  String get onboardingStep7Title => 'Tu perfil y hogar';
+
+  @override
+  String get onboardingStep7Body =>
+      'Edita tu nombre y foto. En la sección Mi hogar puedes planificar con tu familia en tiempo real. Desde aquí también cambias el idioma y el modo oscuro.';
 }
