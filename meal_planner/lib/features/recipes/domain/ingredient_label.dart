@@ -65,7 +65,7 @@ String formatIngredientDisplay(
     return '${_formatQuantity(quantity, round: roundQuantity)} $displayName';
   }
 
-  return name;
+  return displayName;
 }
 
 String formatIngredientLabel(

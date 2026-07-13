@@ -69,8 +69,11 @@ class _OfflineEntryListenerState extends ConsumerState<OfflineEntryListener>
   Widget build(BuildContext context) {
     ref.listen(isOfflineProvider, (previous, next) {
       if (previous == true && next == false) {
-        // Came back online — reset so the dialog can show again next time.
+        final wasShown = ref.read(offlineDialogShownProvider);
         ref.read(offlineDialogShownProvider.notifier).state = false;
+        if (wasShown && mounted) {
+          Navigator.of(context, rootNavigator: true).maybePop();
+        }
         return;
       }
       // Became offline (including the first emission that is true on startup).
