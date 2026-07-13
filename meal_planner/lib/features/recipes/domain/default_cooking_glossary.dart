@@ -1,6 +1,22 @@
 import 'package:meal_planner/features/recipes/domain/cooking_glossary_entry.dart';
 
-const defaultCookingGlossaryEntries = <CookingGlossaryEntry>[
+/// Default glossary entries keyed by locale language code.
+/// Spanish is the canonical set; other locales provide translated defaults.
+const defaultCookingGlossaryByLocale =
+    <String, List<CookingGlossaryEntry>>{
+  'es': _defaultEs,
+  'en': _defaultEn,
+};
+
+List<CookingGlossaryEntry> defaultGlossaryForLocale(String languageCode) {
+  return defaultCookingGlossaryByLocale[languageCode] ??
+      defaultCookingGlossaryByLocale['es']!;
+}
+
+/// Backward-compatible export (Spanish defaults).
+const defaultCookingGlossaryEntries = _defaultEs;
+
+const _defaultEs = <CookingGlossaryEntry>[
   CookingGlossaryEntry(
     term: 'Ahumar',
     definition:
@@ -60,153 +76,237 @@ const defaultCookingGlossaryEntries = <CookingGlossaryEntry>[
         'directo con el líquido.',
   ),
   CookingGlossaryEntry(
-    term: 'Colar',
-    definition:
-        'Separar sólidos de un líquido pasándolo por un colador o malla.',
-  ),
-  CookingGlossaryEntry(
     term: 'Confitar',
     definition:
-        'Cocinar alimentos en grasa o en un almíbar a baja temperatura '
-        'durante un tiempo prolongado.',
+        'Cocinar un alimento a baja temperatura en grasa o aceite durante '
+        'mucho tiempo para conservarlo.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Deglasar',
+    definition:
+        'Disolver los restos caramelizados del fondo de una sartén con líquido '
+        'caliente (vino, caldo, etc.).',
   ),
   CookingGlossaryEntry(
     term: 'Desglasar',
-    definition:
-        'Recuperar los jugos adheridos al fondo de un recipiente con un '
-        'líquido para hacer una salsa.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Desmenuzar',
-    definition:
-        'Separar un alimento cocido en pequeños trozos usando las manos o un '
-        'utensilio.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Dorar',
-    definition:
-        'Cocinar alimentos hasta que adquieran un color dorado en la '
-        'superficie.',
+    definition: 'Sinónimo de deglasar.',
   ),
   CookingGlossaryEntry(
     term: 'Emulsionar',
     definition:
-        'Mezclar dos líquidos que normalmente no se combinan, como aceite y '
-        'vinagre, batiéndolos hasta formar una mezcla homogénea.',
+        'Mezclar dos líquidos que normalmente no se combinan (como aceite y '
+        'vinagre) hasta formar una mezcla homogénea.',
   ),
   CookingGlossaryEntry(
-    term: 'Enharinar',
+    term: 'Escalfar',
     definition:
-        'Cubrir ligeramente un alimento con harina antes de freír o cocinar.',
+        'Cocinar alimentos en líquido a temperatura justo por debajo del '
+        'punto de ebullición.',
   ),
   CookingGlossaryEntry(
-    term: 'Escaldar',
+    term: 'Estofar',
     definition:
-        'Sumergir alimentos brevemente en agua hirviendo y luego enfriarlos '
-        'rápidamente para facilitar tareas como pelar.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Escurrir',
-    definition: 'Eliminar el exceso de líquido de un alimento.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Fermentar',
-    definition:
-        'Transformar alimentos mediante la acción de levaduras o bacterias '
-        'beneficiosas.',
+        'Cocinar alimentos a fuego lento en poco líquido, generalmente en '
+        'cazuela tapada.',
   ),
   CookingGlossaryEntry(
     term: 'Flambear',
     definition:
-        'Rociar un alimento con alcohol y prenderle fuego para intensificar su '
-        'sabor y ofrecer un toque visual.',
+        'Rociar un alimento con alcohol y encenderlo brevemente para aportar '
+        'sabor sin añadir mucho líquido.',
   ),
   CookingGlossaryEntry(
     term: 'Glasear',
     definition:
-        'Cocinar alimentos con mantequilla, azúcar o un líquido para darles un '
-        'acabado brillante.',
+        'Cubrir un alimento con una capa brillante, dulce o salada, mediante '
+        'cocción o baño.',
   ),
   CookingGlossaryEntry(
     term: 'Gratinar',
     definition:
-        'Cocinar en el horno con una capa de queso, pan rallado o similar '
-        'hasta que quede dorado y crujiente.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Infusionar',
-    definition:
-        'Extraer sabores o aromas de un ingrediente dejándolo en contacto con '
-        'un líquido caliente.',
+        'Cocinar en el horno con calor superior intenso hasta formar una capa '
+        'dorada y crujiente.',
   ),
   CookingGlossaryEntry(
     term: 'Juliana',
     definition:
-        'Cortar verduras u otros alimentos en tiras finas y alargadas.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Macerar',
-    definition:
-        'Sumergir alimentos, generalmente frutas, en un líquido aromático '
-        '(como licor) para potenciar su sabor.',
+        'Corte en tiras finas y alargadas, como palitos.',
   ),
   CookingGlossaryEntry(
     term: 'Marinar',
     definition:
-        'Dejar alimentos en un líquido aromatizado para que absorban sabores '
-        'y se ablanden.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Montar',
-    definition:
-        'Incorporar aire en una mezcla (nata, claras de huevo) para aumentar su '
-        'volumen.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Papillote',
-    definition:
-        'Cocinar alimentos envueltos en papel (de horno o aluminio) para que se '
-        'cuezan en su propio vapor.',
-  ),
-  CookingGlossaryEntry(
-    term: 'Picar finamente',
-    definition:
-        'Cortar alimentos en trozos muy pequeños con un cuchillo.',
+        'Dejar alimentos en un adobo (aceite, ácido, especias) para '
+        'ablandarlos y darles sabor.',
   ),
   CookingGlossaryEntry(
     term: 'Pochar',
     definition:
-        'Cocinar alimentos lentamente en grasa a baja temperatura hasta que '
-        'estén blandos y sin dorarse.',
+        'Cocinar en líquido a fuego muy suave, sin que hierva con fuerza.',
   ),
   CookingGlossaryEntry(
     term: 'Reducir',
     definition:
-        'Cocinar un líquido a fuego lento o medio para evaporar el agua y '
-        'concentrar su sabor.',
+        'Hervir un líquido para evaporar agua y concentrar sabores.',
   ),
   CookingGlossaryEntry(
     term: 'Rehogar',
     definition:
-        'Cocinar un alimento con un poco de grasa a fuego medio, sin que tome '
-        'mucho color.',
+        'Cocinar a fuego medio con un poco de grasa, removiendo, hasta que '
+        'el alimento esté dorado o tierno.',
   ),
   CookingGlossaryEntry(
-    term: 'Sellar',
+    term: 'Saltear',
     definition:
-        'Dorar rápidamente un alimento a fuego alto para crear una costra y '
-        'preservar sus jugos.',
+        'Cocinar a fuego alto con poco aceite, moviendo constantemente.',
   ),
   CookingGlossaryEntry(
     term: 'Sofreír',
     definition:
-        'Cocinar alimentos en grasa caliente a fuego medio para ablandarlos y '
-        'realzar su sabor.',
+        'Cocinar a fuego medio-bajo con aceite hasta que los ingredientes '
+        'estén tiernos y aromáticos.',
   ),
   CookingGlossaryEntry(
-    term: 'Tamizar',
+    term: 'Termorregular',
     definition:
-        'Pasar ingredientes secos, como harina, por un tamiz para eliminar '
-        'grumos y airearlos.',
+        'Mantener alimentos a una temperatura constante y precisa, a menudo '
+        'con baño maría o circulador.',
+  ),
+];
+
+const _defaultEn = <CookingGlossaryEntry>[
+  CookingGlossaryEntry(
+    term: 'Smoke',
+    definition:
+        'Expose food to smoke, usually from wood, to preserve it and add '
+        'characteristic flavor.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Bain-marie',
+    definition:
+        'Cook food in a container placed inside another with hot or boiling '
+        'water to control temperature.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Al dente',
+    definition:
+        'Doneness where pasta or rice is cooked but still firm to the bite.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Whip to stiff peaks',
+    definition:
+        'Beat egg whites until they form firm peaks that hold their shape.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Blanch',
+    definition:
+        'Briefly boil food and quickly cool it in ice water to preserve '
+        'color and texture.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Braise',
+    definition:
+        'Cook slowly with a little liquid in a covered pot until tender.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Brunoise',
+    definition: 'Very small, uniform dice cut, typical for vegetables.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Caramelize',
+    definition:
+        'Heat sugar or food until it turns amber and develops deeper flavor.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Clarify',
+    definition:
+        'Make a liquid (such as stock or butter) clear by removing impurities.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Steam',
+    definition:
+        'Cook food suspended over boiling water without direct contact with '
+        'the liquid.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Confit',
+    definition:
+        'Cook food at low temperature in fat or oil for a long time to preserve it.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Deglaze',
+    definition:
+        'Dissolve caramelized bits from the bottom of a pan with hot liquid '
+        '(wine, stock, etc.).',
+  ),
+  CookingGlossaryEntry(
+    term: 'Emulsify',
+    definition:
+        'Combine two liquids that normally do not mix (like oil and vinegar) '
+        'into a homogeneous mixture.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Poach',
+    definition:
+        'Cook food in liquid just below boiling point.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Stew',
+    definition:
+        'Cook slowly in a little liquid, usually in a covered pot.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Flambé',
+    definition:
+        'Pour alcohol over food and briefly ignite it to add flavor without '
+        'much extra liquid.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Glaze',
+    definition:
+        'Cover food with a shiny sweet or savory coating by cooking or basting.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Gratin',
+    definition:
+        'Bake with intense top heat until a golden, crisp layer forms.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Julienne',
+    definition: 'Cut into thin, matchstick-like strips.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Marinate',
+    definition:
+        'Soak food in a seasoned mixture to tenderize and flavor it.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Simmer',
+    definition: 'Cook in liquid over very gentle heat without a rolling boil.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Reduce',
+    definition: 'Boil a liquid to evaporate water and concentrate flavors.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sweat',
+    definition:
+        'Cook over medium heat with a little fat, stirring, until softened '
+        'and aromatic.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sauté',
+    definition: 'Cook over high heat with little oil, stirring constantly.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sweat (sofrito)',
+    definition:
+        'Cook over medium-low heat with oil until ingredients are tender and '
+        'aromatic.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sous-vide',
+    definition:
+        'Hold food at a precise constant temperature, often with a water bath '
+        'or circulator.',
   ),
 ];

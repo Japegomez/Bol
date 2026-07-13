@@ -501,6 +501,13 @@ class PlannerRepository {
 
     if (ingredients.isEmpty) return;
 
+    // Persist ingredients to local cache so they're available offline later.
+    try {
+      await _cache.cacheIngredientsForRecipe(recipeId, ingredients);
+    } catch (_) {
+      // Best-effort; cache failure must not block the online path.
+    }
+
     for (final ingredient in ingredients) {
       if (!ingredient.isIncluded) continue;
       if (ingredient.isToTaste) continue;

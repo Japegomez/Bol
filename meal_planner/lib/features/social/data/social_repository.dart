@@ -1,3 +1,6 @@
+import 'package:meal_planner/core/offline/network_status.dart';
+import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/profile.dart';
@@ -8,10 +11,10 @@ import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_summary.dart';
 
 class SocialRepository {
+  static const pageSize = 10;
   static const _photoBucket = 'recipe-photos';
   static const _avatarBucket = 'avatars';
   static const _signedUrlExpiry = 3600;
-  static const _pageSize = 20;
 
   String get _userId {
     final id = supabase.auth.currentUser?.id;
@@ -32,8 +35,8 @@ class SocialRepository {
         'p_search': search?.trim().isEmpty ?? true ? null : search!.trim(),
         'p_tags': tagList,
         'p_sort': sort,
-        'p_limit': _pageSize,
-        'p_offset': page * _pageSize,
+        'p_limit': pageSize,
+        'p_offset': page * pageSize,
       },
     );
 
@@ -61,6 +64,21 @@ class SocialRepository {
   }
 
   Future<PublicRecipeDetail> fetchPublicRecipeDetail(String id) async {
+    if (!await NetworkStatus.isOnline) {
+      throw OfflinePublicRecipeBlockedException();
+    }
+
+    try {
+      return await _fetchPublicRecipeDetailRemote(id);
+    } catch (error) {
+      if (isTransientNetworkError(error)) {
+        throw OfflinePublicRecipeBlockedException();
+      }
+      rethrow;
+    }
+  }
+
+  Future<PublicRecipeDetail> _fetchPublicRecipeDetailRemote(String id) async {
     final recipeData = await supabase
         .from(Recipe.table_name)
         .select()
@@ -75,6 +93,7 @@ class SocialRepository {
     final recipe = Recipe.converterSingle(
       Map<String, dynamic>.from(recipeData),
     );
+    final sourceLang = recipeData['source_lang']?.toString() ?? 'es';
 
     final profileData = await supabase
         .from(Profile.table_name)
@@ -142,6 +161,7 @@ class SocialRepository {
       avgScore: avgScore,
       ratingCount: ratings.length,
       myRating: myRating,
+      sourceLang: sourceLang,
     );
   }
 
@@ -268,7 +288,10 @@ class SocialRepository {
         .eq('following_id', userId);
   }
 
-  Future<List<PublicRecipeSummary>> fetchFeed({int page = 0}) async {
+  Future<List<PublicRecipeSummary>> fetchFeed({
+    int page = 0,
+    Set<String> tags = const {},
+  }) async {
     final followsData = await supabase
         .from('follows')
         .select('following_id')
@@ -280,13 +303,19 @@ class SocialRepository {
 
     if (followingIds.isEmpty) return [];
 
-    final recipesData = await supabase
+    var query = supabase
         .from(Recipe.table_name)
         .select()
         .eq(Recipe.c_isPublic, true)
-        .inFilter(Recipe.c_userId, followingIds)
+        .inFilter(Recipe.c_userId, followingIds);
+
+    if (tags.isNotEmpty) {
+      query = query.contains(Recipe.c_tags, tags.toList());
+    }
+
+    final recipesData = await query
         .order(Recipe.c_createdAt, ascending: false)
-        .range(page * _pageSize, (page + 1) * _pageSize - 1);
+        .range(page * pageSize, (page + 1) * pageSize - 1);
 
     final recipes = Recipe.converter(List<Map<String, dynamic>>.from(recipesData));
     if (recipes.isEmpty) return [];

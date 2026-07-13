@@ -1,22 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
-
-// Computed once at module load; reused across every IngredientRow rebuild.
-// Avoids creating 20–30 DropdownMenuItem instances per dropdown per rebuild.
-final _unitDropdownItems = <DropdownMenuItem<String>>[
-  ...predefinedUnits
-      .map((u) => DropdownMenuItem<String>(value: u, child: Text(u))),
-  const DropdownMenuItem<String>(
-    value: customUnitOption,
-    child: Text(customUnitOption),
-  ),
-];
-
-final _categoryDropdownItems = ingredientCategories
-    .map((c) => DropdownMenuItem<String>(value: c, child: Text(c)))
-    .toList(growable: false);
+import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 /// Row for a single ingredient in the recipe form.
 ///
@@ -51,6 +38,7 @@ class _IngredientRowState extends State<IngredientRow> {
   @override
   void initState() {
     super.initState();
+    _ingredient.category = normalizeCategoryKey(_ingredient.category);
     _nameController = TextEditingController(text: _ingredient.name);
     _quantityController = TextEditingController(
       text: _ingredient.quantity?.toString() ?? '',
@@ -68,6 +56,28 @@ class _IngredientRowState extends State<IngredientRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final unitDropdownItems = <DropdownMenuItem<String>>[
+      ...predefinedUnits.map(
+        (unit) => DropdownMenuItem<String>(
+          value: unit,
+          child: Text(localizedUnitLabel(l10n, unit)),
+        ),
+      ),
+      DropdownMenuItem<String>(
+        value: customUnitOption,
+        child: Text(l10n.unitCustomOption),
+      ),
+    ];
+    final categoryDropdownItems = ingredientCategoryKeys
+        .map(
+          (key) => DropdownMenuItem<String>(
+            value: key,
+            child: Text(localizedCategoryLabel(l10n, key)),
+          ),
+        )
+        .toList(growable: false);
+
     return RepaintBoundary(
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -89,8 +99,8 @@ class _IngredientRowState extends State<IngredientRow> {
                 Expanded(
                   child: TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Ingrediente',
+                    decoration: InputDecoration(
+                      labelText: l10n.ingredientLabel,
                       isDense: true,
                     ),
                     onChanged: (value) => _ingredient.name = value,
@@ -100,7 +110,7 @@ class _IngredientRowState extends State<IngredientRow> {
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
                     onPressed: widget.onRemove,
-                    tooltip: 'Eliminar ingrediente',
+                    tooltip: l10n.removeIngredientTooltip,
                   ),
               ],
             ),
@@ -111,8 +121,8 @@ class _IngredientRowState extends State<IngredientRow> {
                   Expanded(
                     child: TextFormField(
                       controller: _quantityController,
-                      decoration: const InputDecoration(
-                        labelText: 'Cantidad',
+                      decoration: InputDecoration(
+                        labelText: l10n.quantityLabel,
                         isDense: true,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
@@ -127,7 +137,7 @@ class _IngredientRowState extends State<IngredientRow> {
                         if (value == null || value.trim().isEmpty) return null;
                         final parsed =
                             num.tryParse(value.trim().replaceAll(',', '.'));
-                        if (parsed == null) return 'Introduce un número válido';
+                        if (parsed == null) return l10n.enterValidNumber;
                         return null;
                       },
                       onChanged: (value) {
@@ -148,11 +158,11 @@ class _IngredientRowState extends State<IngredientRow> {
                       initialValue: _ingredient.useCustomUnit
                           ? customUnitOption
                           : _ingredient.unit,
-                      decoration: const InputDecoration(
-                        labelText: 'Unidad',
+                      decoration: InputDecoration(
+                        labelText: l10n.unitLabel,
                         isDense: true,
                       ),
-                      items: _unitDropdownItems,
+                      items: unitDropdownItems,
                       onChanged: (value) {
                         if (value == customUnitOption) {
                           setState(() {
@@ -176,8 +186,8 @@ class _IngredientRowState extends State<IngredientRow> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _customUnitController,
-                decoration: const InputDecoration(
-                  labelText: 'Unidad personalizada',
+                decoration: InputDecoration(
+                  labelText: l10n.customUnitLabel,
                   isDense: true,
                 ),
                 onChanged: (value) => _ingredient.customUnit = value,
@@ -185,14 +195,14 @@ class _IngredientRowState extends State<IngredientRow> {
             ],
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: ingredientCategories.contains(_ingredient.category)
+              initialValue: ingredientCategoryKeys.contains(_ingredient.category)
                   ? _ingredient.category
-                  : ingredientCategories.first,
-              decoration: const InputDecoration(
-                labelText: 'Categoría',
+                  : ingredientCategoryKeys.first,
+              decoration: InputDecoration(
+                labelText: l10n.categoryLabel,
                 isDense: true,
               ),
-              items: _categoryDropdownItems,
+              items: categoryDropdownItems,
               onChanged: (value) {
                 if (value != null) _ingredient.category = value;
               },
@@ -201,10 +211,10 @@ class _IngredientRowState extends State<IngredientRow> {
               contentPadding: EdgeInsets.zero,
               dense: true,
               controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('Al gusto'),
-              subtitle: const Text(
-                'No se añade a la lista de la compra (p. ej. sal, pimienta)',
-                style: TextStyle(fontSize: 12),
+              title: Text(l10n.toTaste),
+              subtitle: Text(
+                l10n.toTasteShoppingHint,
+                style: const TextStyle(fontSize: 12),
               ),
               value: _ingredient.isToTaste,
               onChanged: (value) {
@@ -231,10 +241,10 @@ class _IngredientRowState extends State<IngredientRow> {
               contentPadding: EdgeInsets.zero,
               dense: true,
               controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('Opcional'),
-              subtitle: const Text(
-                'Puedes incluirlo o excluirlo en la ficha de la receta',
-                style: TextStyle(fontSize: 12),
+              title: Text(l10n.optional),
+              subtitle: Text(
+                l10n.optionalIngredientHint,
+                style: const TextStyle(fontSize: 12),
               ),
               value: _ingredient.isOptional,
               onChanged: (value) {

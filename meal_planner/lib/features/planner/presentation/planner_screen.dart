@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/utils/date_utils.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
@@ -83,17 +84,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final weekStart = ref.watch(currentWeekProvider);
     final planAsync = ref.watch(weeklyPlanProvider);
     final slotsAsync = ref.watch(planSlotsProvider);
+    final l10n = context.l10n;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final paletteWidth = (screenWidth * 0.55).clamp(190.0, 280.0);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Planificador'),
+        title: Text(l10n.plannerTitle),
       ),
       body: planAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
         data: (_) => Stack(
           children: [
             Column(
@@ -109,7 +111,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     child: slotsAsync.when(
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
-                      error: (error, _) => Center(child: Text('Error: $error')),
+                      error: (error, _) =>
+                          Center(child: Text(l10n.errorWithMessage('$error'))),
                       data: (slots) => _VerticalPlanner(
                         listKey: _listKey,
                         scrollController: _scrollController,
@@ -141,7 +144,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           ? null
           : FloatingActionButton(
               onPressed: _togglePalette,
-              tooltip: 'Mostrar recetario',
+              tooltip: l10n.showRecipeBookTooltip,
               child: const Icon(Icons.menu_book),
             ),
     );
@@ -156,6 +159,8 @@ class _WeekNavigationHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCurrentWeek = weekStart == startOfIsoWeek(DateTime.now());
+    final localeName = Localizations.localeOf(context).languageCode;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -172,13 +177,13 @@ class _WeekNavigationHeader extends ConsumerWidget {
             child: Column(
               children: [
                 Text(
-                  formatWeekRange(weekStart),
+                  formatWeekRange(weekStart, localeName),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 if (isCurrentWeek)
                   Text(
-                    'Esta semana',
+                    l10n.thisWeek,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -264,6 +269,8 @@ class _DayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isToday = _isToday(date);
     final colorScheme = Theme.of(context).colorScheme;
+    final localeName = Localizations.localeOf(context).languageCode;
+    final l10n = context.l10n;
     final todayBackground = isToday
         ? Color.lerp(
             colorScheme.surface,
@@ -290,7 +297,7 @@ class _DayCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  formatDayHeader(date),
+                  formatDayHeader(date, localeName),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: isToday ? colorScheme.primary : null,
@@ -306,7 +313,7 @@ class _DayCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      'Hoy',
+                      l10n.today,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color: colorScheme.onPrimary,
                             fontWeight: FontWeight.w600,

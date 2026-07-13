@@ -49,7 +49,9 @@ bool isTransientNetworkError(Object error) {
       message.contains('network') ||
       message.contains('timeout') ||
       message.contains('failed host lookup') ||
-      message.contains('connection reset');
+      message.contains('connection reset') ||
+      message.contains('disconnected') ||
+      message.contains('internet');
 }
 
 bool shouldFallbackToCache(Object error) {

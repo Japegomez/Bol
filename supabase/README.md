@@ -77,18 +77,27 @@ dart pub get && dart run supadart
 
 La función `moderate-image` analiza fotos de recetas y avatares con Google Cloud Vision SafeSearch antes de aceptarlas en la app.
 
-**Requisitos:** API key de Google Cloud con [Cloud Vision API](https://console.cloud.google.com/apis/library/vision.googleapis.com) habilitada y **facturación activada** en el proyecto (el tier gratuito cubre ~1000 imágenes/mes).
+**Requisitos:** API key de Google Cloud con [Cloud Vision API](https://console.cloud.google.com/apis/library/vision.googleapis.com) y, para traducción de recetas, [Cloud Translation API](https://console.cloud.google.com/apis/library/translate.googleapis.com) habilitadas en el mismo proyecto, con **facturación activada** (tier gratuito generoso en ambas).
 
 **Configuración de la API key (importante):**
-- Restricción de aplicación: **Ninguna** (la función corre en servidores de Supabase, no en el navegador).
-- Restricción de API: solo **Cloud Vision API**.
+- Restricción de aplicación: **Ninguna** (las Edge Functions de Supabase no tienen egress IP estático; la restricción por IP no aplica).
+- Restricción de API: **Cloud Vision API** y **Cloud Translation API** (según funciones que uses).
+- Usa un proyecto y API key **dedicados por entorno** (dev/staging/prod) si es posible.
+- Configura **cuotas y alertas** en Google Cloud para detectar uso anómalo.
+- Restringir solo las APIs permitidas **no protege** ante una filtración de la clave: trata `GOOGLE_API_KEY` como secreto y rota si se expone.
+
+Secreto compartido en Supabase: `GOOGLE_API_KEY`.
 
 ```bash
 supabase link --project-ref hxtynisikjpwlvpdgdbt
-# Crea un .env.local (gitignored) con GOOGLE_VISION_API_KEY=tu_api_key
+# Crea un .env.local (gitignored) con GOOGLE_API_KEY=tu_api_key
 supabase secrets set --env-file .env.local
 supabase functions deploy moderate-image --no-verify-jwt=false
+supabase functions deploy translate-recipe
+supabase functions deploy translate-titles
 ```
+
+`translate-recipe` traduce la receta completa (título, tips, nombres de ingredientes y pasos) y la cachea en `recipe_translations`. `translate-titles` traduce en lote solo los títulos visibles en listas (Descubrir, Feed, recetario) y los cachea en `recipe_title_translations`. Unidades, categorías y tags son claves estables y se localizan en el cliente (no se traducen con Google).
 
 La función exige JWT de usuario autenticado (comportamiento por defecto). La app invoca la función al seleccionar una imagen en el formulario de receta o en editar perfil.
 

@@ -2,13 +2,21 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
+import 'package:meal_planner/core/offline/offline_exceptions.dart';
+import 'package:meal_planner/core/offline/supabase_error_utils.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
+import 'package:meal_planner/core/utils/date_utils.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
+import 'package:meal_planner/features/social/presentation/public_recipe_translation_provider.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/features/social/presentation/widgets/fork_optional_ingredients_dialog.dart';
 import 'package:meal_planner/features/social/presentation/widgets/public_recipe_card.dart';
@@ -25,9 +33,10 @@ class PublicProfileScreen extends ConsumerWidget {
     final followingAsync = ref.watch(isFollowingProvider(userId));
     final currentUserId = supabase.auth.currentUser?.id;
     final isSelf = currentUserId == userId;
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil público')),
+      appBar: AppBar(title: Text(l10n.publicProfileTitle)),
       body: profileAsync.when(
         data: (profile) => CustomScrollView(
           slivers: [
@@ -59,7 +68,7 @@ class PublicProfileScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('${profile.recipeCount} recetas públicas'),
+                        Text(l10n.publicRecipesCount(profile.recipeCount)),
                         if (profile.avgRating > 0) ...[
                           const SizedBox(width: 16),
                           StarRatingDisplay(rating: profile.avgRating),
@@ -80,7 +89,7 @@ class PublicProfileScreen extends ConsumerWidget {
                             ref.invalidate(isFollowingProvider(userId));
                             ref.invalidate(feedProvider);
                           },
-                          child: Text(isFollowing ? 'Dejar de seguir' : 'Seguir'),
+                          child: Text(isFollowing ? l10n.unfollow : l10n.follow),
                         ),
                         loading: () => const SizedBox(
                           width: 24,
@@ -95,8 +104,8 @@ class PublicProfileScreen extends ConsumerWidget {
               ),
             ),
             if (profile.recipes.isEmpty)
-              const SliverFillRemaining(
-                child: Center(child: Text('Sin recetas públicas')),
+              SliverFillRemaining(
+                child: Center(child: Text(l10n.noPublicRecipes)),
               )
             else
               SliverPadding(
@@ -112,7 +121,7 @@ class PublicProfileScreen extends ConsumerWidget {
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
       ),
     );
   }
@@ -132,6 +141,24 @@ class _PublicRecipeDetailScreenState
     extends ConsumerState<PublicRecipeDetailScreen> {
   bool _isForking = false;
   bool _isRating = false;
+  bool _showOriginal = false;
+  ProviderSubscription<String>? _languageSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Reset "view original" toggle whenever the app language changes so the
+    // screen automatically shows the new translation instead of the old one.
+    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (_, _) {
+      if (mounted) setState(() => _showOriginal = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _languageSubscription?.close();
+    super.dispose();
+  }
 
   Future<void> _forkRecipe(PublicRecipeDetail detail) async {
     final optionalIngredients =
@@ -160,13 +187,13 @@ class _PublicRecipeDetailScreenState
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Receta guardada en tu recetario')),
+        SnackBar(content: Text(context.l10n.recipeSavedToBook)),
       );
       context.go('/home/recipes/$newId');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
       );
     } finally {
       if (mounted) setState(() => _isForking = false);
@@ -182,7 +209,7 @@ class _PublicRecipeDetailScreenState
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
       );
     } finally {
       if (mounted) setState(() => _isRating = false);
@@ -191,12 +218,26 @@ class _PublicRecipeDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final detailAsync = ref.watch(publicRecipeDetailProvider(widget.recipeId));
+    final displayAsync =
+        ref.watch(publicRecipeDisplayProvider(widget.recipeId));
     final currentUserId = supabase.auth.currentUser?.id;
+    final l10n = context.l10n;
+    final appLocale = ref.watch(currentLanguageCodeProvider);
 
     return Scaffold(
-      body: detailAsync.when(
-        data: (detail) {
+      body: displayAsync.when(
+        data: (displayState) {
+          final detail = _showOriginal && displayState.originalDetail != null
+              ? displayState.originalDetail!
+              : displayState.detail;
+          final sourceLang =
+              displayState.originalDetail?.sourceLang ?? detail.sourceLang;
+          final contentLocale = recipeContentLocaleName(
+            sourceLang: sourceLang,
+            appLocale: appLocale,
+            isTranslated: displayState.isTranslated,
+            showingOriginal: _showOriginal,
+          );
           final isOwn = detail.recipe.userId == currentUserId;
           return CustomScrollView(
             slivers: [
@@ -211,7 +252,7 @@ class _PublicRecipeDetailScreenState
                   if (!isOwn && !_isForking)
                     IconButton(
                       icon: const Icon(Icons.bookmark_add_outlined),
-                      tooltip: 'Guardar en mi recetario',
+                      tooltip: l10n.saveToMyRecipeBookTooltip,
                       onPressed: () => _forkRecipe(detail),
                     )
                   else if (!isOwn && _isForking)
@@ -241,10 +282,21 @@ class _PublicRecipeDetailScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      TranslationStatusBanner(
+                        l10n: l10n,
+                        isTranslated: displayState.isTranslated,
+                        translationFailed: displayState.translationFailed,
+                        showingOriginal: _showOriginal,
+                        onToggleOriginal: () => setState(
+                          () => _showOriginal = !_showOriginal,
+                        ),
+                      ),
+                      if (displayState.isTranslated || displayState.translationFailed)
+                        const SizedBox(height: 12),
                       Row(
                         children: [
                           Text(
-                            'Receta creada por ',
+                            '${l10n.recipeCreatedBy} ',
                             style:
                                 Theme.of(context).textTheme.titleSmall?.copyWith(
                                       color:
@@ -253,7 +305,7 @@ class _PublicRecipeDetailScreenState
                           ),
                           if (isOwn)
                             Text(
-                              'ti',
+                              l10n.you,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleSmall
@@ -268,35 +320,72 @@ class _PublicRecipeDetailScreenState
                               onTap: () => context.push(
                                 '/home/explore/user/${detail.recipe.userId}',
                               ),
-                              child: Text(
-                                detail.authorName,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
-                                    ),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                  vertical: 1,
+                                ),
+                                child: Text(
+                                  detail.authorName,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
                               ),
                             ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           StarRatingDisplay(
                             rating: detail.avgScore,
                             count: detail.ratingCount,
                           ),
-                          const SizedBox(width: 16),
-                          Text('${detail.recipe.servings} raciones'),
+                          Text(l10n.servingsCount(detail.recipe.servings)),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                size: 16,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                formatRecipeCreatedAt(
+                                  detail.recipe.createdAt,
+                                  appLocale,
+                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       if (!isOwn) ...[
                         const SizedBox(height: 16),
                         Text(
-                          'Tu valoración',
+                          l10n.yourRating,
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         const SizedBox(height: 4),
@@ -315,12 +404,12 @@ class _PublicRecipeDetailScreenState
                           if (detail.recipe.prepTime != null)
                             _InfoChip(
                               icon: Icons.timer_outlined,
-                              label: 'Prep: ${detail.recipe.prepTime} min',
+                              label: l10n.prepTimeMin(detail.recipe.prepTime!),
                             ),
                           if (detail.recipe.cookTime != null)
                             _InfoChip(
                               icon: Icons.local_fire_department_outlined,
-                              label: 'Cocción: ${detail.recipe.cookTime} min',
+                              label: l10n.cookTimeMin(detail.recipe.cookTime!),
                             ),
                         ],
                       ),
@@ -330,18 +419,22 @@ class _PublicRecipeDetailScreenState
                           spacing: 8,
                           runSpacing: 8,
                           children: detail.recipe.tags
-                              .map((tag) => Chip(label: Text(tag)))
+                              .map(
+                                (tag) => Chip(
+                                  label: Text(localizedTagLabel(l10n, tag)),
+                                ),
+                              )
                               .toList(),
                         ),
                       ],
                       const SizedBox(height: 24),
                       Text(
-                        'Ingredientes',
+                        l10n.ingredientsSection,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
                       if (detail.ingredients.isEmpty)
-                        const Text('Sin ingredientes')
+                        Text(l10n.noIngredients)
                       else
                         ...detail.ingredients.map(
                               (ingredient) => Padding(
@@ -353,7 +446,7 @@ class _PublicRecipeDetailScreenState
                                     const IngredientBullet(),
                                     Expanded(
                                       child: Text(
-                                        '${formatIngredientLabel(ingredient)}${ingredient.isOptional ? ' (opcional)' : ''}',
+                                        '${formatIngredientLabel(l10n, ingredient, contentLocaleName: contentLocale)}${ingredient.isOptional ? ' ${l10n.optionalIngredientSuffix}' : ''}',
                                       ),
                                     ),
                                   ],
@@ -362,12 +455,12 @@ class _PublicRecipeDetailScreenState
                             ),
                       const SizedBox(height: 24),
                       Text(
-                        'Elaboración',
+                        l10n.preparationSection,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
                       if (detail.steps.isEmpty)
-                        const Text('Sin pasos')
+                        Text(l10n.noSteps)
                       else
                         ...detail.steps.asMap().entries.map(
                               (entry) => Padding(
@@ -392,7 +485,7 @@ class _PublicRecipeDetailScreenState
                           detail.recipe.tips!.trim().isNotEmpty) ...[
                         const SizedBox(height: 24),
                         Text(
-                          'Consejos',
+                          l10n.tipsSection,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
@@ -401,7 +494,7 @@ class _PublicRecipeDetailScreenState
                       if (detail.nutrition != null) ...[
                         const SizedBox(height: 24),
                         Text(
-                          'Nutrición (por ración)',
+                          l10n.nutritionPerServing,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
@@ -415,7 +508,7 @@ class _PublicRecipeDetailScreenState
                             onPressed:
                                 _isForking ? null : () => _forkRecipe(detail),
                             icon: const Icon(Icons.bookmark_add_outlined),
-                            label: const Text('Guardar en mi recetario'),
+                            label: Text(l10n.saveToMyRecipeBook),
                           ),
                         ),
                     ],
@@ -426,7 +519,42 @@ class _PublicRecipeDetailScreenState
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (error, _) {
+          final isOffline = error is OfflinePublicRecipeBlockedException ||
+              isTransientNetworkError(error);
+          if (isOffline) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.wifi_off,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.exploreUnavailableOffline,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: () => ref.invalidate(
+                        publicRecipeDisplayProvider(widget.recipeId),
+                      ),
+                      icon: const Icon(Icons.refresh),
+                      label: Text(l10n.retry),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return Center(child: Text(l10n.errorWithMessage('$error')));
+        },
       ),
     );
   }
@@ -458,19 +586,24 @@ class _NutritionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final items = <MapEntry<String, String?>>[
-      MapEntry('Calorías', _fmt(nutrition.calories, 'kcal')),
-      MapEntry('Proteínas', _fmt(nutrition.protein, 'g')),
-      MapEntry('Carbohidratos', _fmt(nutrition.carbohydrates, 'g')),
-      MapEntry('Grasas', _fmt(nutrition.fat, 'g')),
-      MapEntry('Fibra', _fmt(nutrition.fiber, 'g')),
+      MapEntry(l10n.calories, _fmt(nutrition.calories, 'kcal')),
+      MapEntry(l10n.protein, _fmt(nutrition.protein, 'g')),
+      MapEntry(l10n.carbohydrates, _fmt(nutrition.carbohydrates, 'g')),
+      MapEntry(l10n.fat, _fmt(nutrition.fat, 'g')),
+      MapEntry(l10n.fiber, _fmt(nutrition.fiber, 'g')),
     ].where((e) => e.value != null).toList();
 
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: items
-          .map((item) => Chip(label: Text('${item.key}: ${item.value}')))
+          .map(
+            (item) => Chip(
+              label: Text(l10n.nutritionChip(item.key, item.value!)),
+            ),
+          )
           .toList(),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
@@ -63,21 +64,22 @@ class MealSlot extends ConsumerWidget {
     WidgetRef ref,
     SlotItem item,
   ) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Quitar comida'),
+        title: Text(l10n.removeMealTitle),
         content: Text(
-          '¿Quitar "${item.displayTitle}" del planificador?',
+          l10n.removeMealConfirm(item.displayTitle),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Quitar'),
+            child: Text(l10n.remove),
           ),
         ],
       ),
@@ -92,6 +94,7 @@ class MealSlot extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final canEdit = ref.watch(canEditOfflineProvider);
+    final l10n = context.l10n;
 
     return DragTarget<Recipe>(
       onAcceptWithDetails: canEdit
@@ -122,7 +125,7 @@ class MealSlot extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    MealType.label(mealType),
+                    MealType.label(l10n, mealType),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -173,6 +176,7 @@ class _EmptySlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return InkWell(
       onTap: onTap,
@@ -188,7 +192,7 @@ class _EmptySlot extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              isHovering ? 'Soltar aquí' : 'Arrastra o pulsa',
+              isHovering ? l10n.dropHere : l10n.dragOrTap,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colorScheme.outline,
                   ),
@@ -219,7 +223,7 @@ class _AddMoreButton extends StatelessWidget {
             Icon(Icons.add, size: 16, color: colorScheme.primary),
             const SizedBox(width: 2),
             Text(
-              'Añadir',
+              context.l10n.add,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: colorScheme.primary,
                   ),
@@ -247,6 +251,7 @@ class _RecipeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     final isText = item.isTextSlot;
     final isLeftover = !isText && item.slot.isLeftover;
     final isRecipe = onOpenRecipe != null;
@@ -303,7 +308,7 @@ class _RecipeChip extends StatelessWidget {
                       if (item.slot.servings > 0) ...[
                         const SizedBox(width: 8),
                         Text(
-                          '${item.slot.servings} raciones',
+                          l10n.servingsCount(item.slot.servings),
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                 color: onChipColor.withValues(alpha: 0.85),
                               ),
@@ -329,7 +334,7 @@ class _RecipeChip extends StatelessWidget {
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 onPressed: onRemove,
                 icon: Icon(Icons.close, size: 18, color: onChipColor),
-                tooltip: 'Quitar',
+                tooltip: l10n.remove,
               ),
           ],
         ),

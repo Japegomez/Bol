@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/env.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 
@@ -52,11 +53,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recuperar contraseña'),
+        title: Text(l10n.recoverPasswordTitle),
       ),
       body: SafeArea(
         child: Center(
@@ -72,14 +74,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            '¿Olvidaste tu contraseña?',
+                            l10n.forgotPasswordLink,
                             style: theme.textTheme.headlineSmall,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Introduce tu email y te enviaremos un enlace para '
-                            'restablecer tu contraseña.',
+                            l10n.forgotPasswordInstructions,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -87,13 +88,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           ),
                           const SizedBox(height: 24),
                           if (!Env.hasSupabase)
-                            const Card(
+                            Card(
                               child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  'Supabase no configurado. Copia dart_defines.example.json '
-                                  'a dart_defines.json y añade SUPABASE_URL / SUPABASE_ANON_KEY.',
-                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l10n.supabaseNotConfigured),
                               ),
                             ),
                           if (_errorMessage != null) ...[
@@ -105,19 +103,19 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           ],
                           TextFormField(
                             controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.emailLabel,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             autofillHints: const [AutofillHints.email],
                             enabled: !_isLoading && Env.hasSupabase,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Introduce tu email';
+                                return l10n.enterEmail;
                               }
                               if (!value.contains('@')) {
-                                return 'Email no válido';
+                                return l10n.invalidEmail;
                               }
                               return null;
                             },
@@ -135,14 +133,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Enviar enlace'),
+                                : Text(l10n.sendResetLink),
                           ),
                           const SizedBox(height: 16),
                           TextButton(
                             onPressed: _isLoading
                                 ? null
                                 : () => context.go('/auth/login'),
-                            child: const Text('Volver al inicio de sesión'),
+                            child: Text(l10n.backToSignIn),
                           ),
                         ],
                       ),
@@ -162,6 +160,7 @@ class _SuccessView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Column(
@@ -174,14 +173,13 @@ class _SuccessView extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Email enviado',
+          l10n.emailSent,
           style: theme.textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
-          'Si existe una cuenta con $email, recibirás un enlace para '
-          'restablecer tu contraseña.',
+          l10n.resetEmailSentIfExists(email),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -190,7 +188,7 @@ class _SuccessView extends StatelessWidget {
         const SizedBox(height: 24),
         FilledButton(
           onPressed: () => context.go('/auth/login'),
-          child: const Text('Volver al inicio de sesión'),
+          child: Text(l10n.backToSignIn),
         ),
       ],
     );

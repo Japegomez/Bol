@@ -3,46 +3,89 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
+import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
+import 'package:meal_planner/features/recipes/presentation/recipe_display_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 
-class RecipeDetailScreen extends ConsumerWidget {
+class RecipeDetailScreen extends ConsumerStatefulWidget {
   const RecipeDetailScreen({required this.recipeId, super.key});
 
   final String recipeId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(recipeDetailProvider(recipeId));
+  ConsumerState<RecipeDetailScreen> createState() =>
+      _RecipeDetailScreenState();
+}
+
+class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
+  bool _showOriginal = false;
+  ProviderSubscription<String>? _languageSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (_, _) {
+      if (mounted) setState(() => _showOriginal = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _languageSubscription?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final displayAsync = ref.watch(recipeDisplayProvider(widget.recipeId));
 
     return Scaffold(
-      body: detailAsync.when(
-        data: (detail) => _RecipeDetailBody(
-          recipeId: recipeId,
-          photoUrl: detail.photoDisplayUrl,
-          title: detail.recipe.title,
-          servings: detail.recipe.servings,
-          prepTime: detail.recipe.prepTime,
-          cookTime: detail.recipe.cookTime,
-          tags: detail.recipe.tags,
-          isPublic: detail.recipe.isPublic,
-          isForked: detail.isForked,
-          ingredients: detail.ingredients,
-          steps: detail.steps,
-          nutrition: detail.nutrition,
-          tips: detail.recipe.tips,
-        ),
+      body: displayAsync.when(
+        data: (state) {
+          final effective =
+              _showOriginal ? state.withShowOriginal(true) : state;
+          final detail = effective.detail;
+          return _RecipeDetailBody(
+            recipeId: widget.recipeId,
+            photoUrl: detail.photoDisplayUrl,
+            title: detail.recipe.title,
+            servings: detail.recipe.servings,
+            prepTime: detail.recipe.prepTime,
+            cookTime: detail.recipe.cookTime,
+            tags: detail.recipe.tags,
+            isPublic: detail.recipe.isPublic,
+            isForked: detail.isForked,
+            ingredients: detail.ingredients,
+            steps: detail.steps,
+            nutrition: detail.nutrition,
+            tips: detail.recipe.tips,
+            sourceLang: state.originalDetail?.sourceLang ?? detail.sourceLang,
+            isTranslated: state.isTranslated,
+            translationFailed: state.translationFailed,
+            showingOriginal: _showOriginal,
+            onToggleOriginal: state.isTranslated
+                ? () => setState(() => _showOriginal = !_showOriginal)
+                : null,
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Error: $error')),
+        error: (error, _) =>
+            Center(child: Text(l10n.errorWithMessage('$error'))),
       ),
     );
   }
@@ -63,6 +106,11 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
     required this.steps,
     required this.nutrition,
     this.tips,
+    this.sourceLang = 'es',
+    this.isTranslated = false,
+    this.translationFailed = false,
+    this.showingOriginal = false,
+    this.onToggleOriginal,
   });
 
   final String recipeId;
@@ -78,6 +126,11 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
   final List<RecipeStep> steps;
   final NutritionInfo? nutrition;
   final String? tips;
+  final String sourceLang;
+  final bool isTranslated;
+  final bool translationFailed;
+  final bool showingOriginal;
+  final VoidCallback? onToggleOriginal;
 
   @override
   ConsumerState<_RecipeDetailBody> createState() => _RecipeDetailBodyState();
@@ -105,20 +158,23 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
   Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Eliminar receta'),
-        content: Text('¿Seguro que quieres eliminar "${widget.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+      builder: (dialogContext) {
+        final dialogL10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(dialogL10n.deleteRecipeTitle),
+          content: Text(dialogL10n.deleteRecipeConfirm(widget.title)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(dialogL10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(dialogL10n.delete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true || !context.mounted) return;
@@ -139,45 +195,47 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     if (value) {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Publicar receta'),
-          content: const Text(
-            'Esta receta será visible para todos los usuarios de '
-            '${AppBranding.displayName}. Podrás despublicarla en cualquier momento.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+        builder: (dialogContext) {
+          final dialogL10n = dialogContext.l10n;
+          return AlertDialog(
+            title: Text(dialogL10n.publishRecipeTitle),
+            content: Text(
+              dialogL10n.publishRecipeMessage(AppBranding.displayName),
             ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Publicar'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(dialogL10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(dialogL10n.publish),
+              ),
+            ],
+          );
+        },
       );
       if (confirmed != true || !mounted) return;
     } else {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Hacer receta privada'),
-          content: const Text(
-            'La receta dejará de ser visible en Explorar. '
-            'Las valoraciones existentes se conservan.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Hacer privada'),
-            ),
-          ],
-        ),
+        builder: (dialogContext) {
+          final dialogL10n = dialogContext.l10n;
+          return AlertDialog(
+            title: Text(dialogL10n.makeRecipePrivateTitle),
+            content: Text(dialogL10n.makeRecipePrivateMessageDetail),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(dialogL10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(dialogL10n.makePrivate),
+              ),
+            ],
+          );
+        },
       );
       if (confirmed != true || !mounted) return;
     }
@@ -200,7 +258,11 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cambiar visibilidad: $e')),
+        SnackBar(
+          content: Text(
+            context.l10n.visibilityChangeError('$e'),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isUpdatingVisibility = false);
@@ -226,7 +288,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
       );
     } finally {
       if (mounted) {
@@ -237,6 +299,14 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final appLocale = ref.watch(currentLanguageCodeProvider);
+    final contentLocale = recipeContentLocaleName(
+      sourceLang: widget.sourceLang,
+      appLocale: appLocale,
+      isTranslated: widget.isTranslated,
+      showingOriginal: widget.showingOriginal,
+    );
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -274,13 +344,22 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                TranslationStatusBanner(
+                  l10n: l10n,
+                  isTranslated: widget.isTranslated,
+                  translationFailed: widget.translationFailed,
+                  showingOriginal: widget.showingOriginal,
+                  onToggleOriginal: widget.onToggleOriginal,
+                ),
+                if (widget.isTranslated || widget.translationFailed)
+                  const SizedBox(height: 12),
                 Wrap(
                   spacing: 16,
                   runSpacing: 8,
                   children: [
                     _InfoChip(
                       icon: Icons.people_outline,
-                      label: '${widget.servings} raciones',
+                      label: l10n.servingsCount(widget.servings),
                     ),
                     if (_isPublic)
                       Chip(
@@ -289,39 +368,37 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                           size: 16,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        label: const Text('Pública'),
+                        label: Text(l10n.publicBadge),
                       ),
                     if (widget.prepTime != null)
                       _InfoChip(
                         icon: Icons.timer_outlined,
-                        label: 'Prep: ${widget.prepTime} min',
+                        label: l10n.prepTimeMin(widget.prepTime!),
                       ),
                     if (widget.cookTime != null)
                       _InfoChip(
                         icon: Icons.local_fire_department_outlined,
-                        label: 'Cocción: ${widget.cookTime} min',
+                        label: l10n.cookTimeMin(widget.cookTime!),
                       ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 if (widget.isForked)
-                  const Card(
+                  Card(
                     child: ListTile(
-                      leading: Icon(Icons.bookmark_added_outlined),
-                      title: Text('Receta guardada de otro usuario'),
-                      subtitle: Text(
-                        'Las recetas forkeadas no se pueden publicar en Explorar.',
-                      ),
+                      leading: const Icon(Icons.bookmark_added_outlined),
+                      title: Text(l10n.forkedRecipeTitle),
+                      subtitle: Text(l10n.forkedRecipeCannotPublish),
                     ),
                   )
                 else
                   Card(
                     child: SwitchListTile(
-                      title: const Text('Receta pública'),
+                      title: Text(l10n.publicRecipeSwitch),
                       subtitle: Text(
                         _isPublic
-                            ? 'Visible en Explorar para todos los usuarios'
-                            : 'Solo visible en tu recetario',
+                            ? l10n.visibleInExplore
+                            : l10n.onlyInRecipeBook,
                       ),
                       secondary: _isUpdatingVisibility
                           ? const SizedBox(
@@ -343,22 +420,28 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                     spacing: 8,
                     runSpacing: 8,
                     children: widget.tags
-                        .map((tag) => Chip(label: Text(tag)))
+                        .map(
+                          (tag) => Chip(label: Text(localizedTagLabel(l10n, tag))),
+                        )
                         .toList(),
                   ),
                 ],
                 const SizedBox(height: 24),
                 Text(
-                  'Ingredientes',
+                  l10n.ingredientsSection,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 if (widget.ingredients.isEmpty)
-                  const Text('Sin ingredientes')
+                  Text(l10n.noIngredients)
                 else
                   ...widget.ingredients.map(
                         (ingredient) => _IngredientListTile(
+                          key: ValueKey(
+                            '${ingredient.id}-$contentLocale-${widget.showingOriginal}',
+                          ),
                           ingredient: ingredient,
+                          contentLocaleName: contentLocale,
                           isUpdating:
                               _updatingIngredientIds.contains(ingredient.id),
                           onIncludedChanged: ingredient.isOptional &&
@@ -372,12 +455,12 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                       ),
                 const SizedBox(height: 24),
                 Text(
-                  'Elaboración',
+                  l10n.preparationSection,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 if (widget.steps.isEmpty)
-                  const Text('Sin pasos')
+                  Text(l10n.noSteps)
                 else
                   ...widget.steps.asMap().entries.map(
                         (entry) => Padding(
@@ -400,7 +483,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                 if (widget.tips != null && widget.tips!.trim().isNotEmpty) ...[
                   const SizedBox(height: 24),
                   Text(
-                    'Consejos',
+                    l10n.tipsSection,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
@@ -409,11 +492,11 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                 if (widget.nutrition != null) ...[
                   const SizedBox(height: 24),
                   Text(
-                    'Nutrición (por ración)',
+                    l10n.nutritionPerServing,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  _NutritionGrid(nutrition: widget.nutrition!),
+                  _NutritionGrid(nutrition: widget.nutrition!, l10n: l10n),
                 ],
               ],
             ),
@@ -426,7 +509,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
 class _IngredientListTile extends StatelessWidget {
   const _IngredientListTile({
+    super.key,
     required this.ingredient,
+    required this.contentLocaleName,
     required this.isUpdating,
     required this.onIncludedChanged,
   });
@@ -435,11 +520,13 @@ class _IngredientListTile extends StatelessWidget {
   static const _textTopPadding = 4.0;
 
   final Ingredient ingredient;
+  final String contentLocaleName;
   final bool isUpdating;
   final ValueChanged<bool>? onIncludedChanged;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final excluded = ingredient.isOptional && !ingredient.isIncluded;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -461,7 +548,11 @@ class _IngredientListTile extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: _textTopPadding),
               child: Text(
-                formatIngredientLabel(ingredient),
+                formatIngredientLabel(
+                  l10n,
+                  ingredient,
+                  contentLocaleName: contentLocaleName,
+                ),
                 style: excluded
                     ? TextStyle(
                         decoration: TextDecoration.lineThrough,
@@ -522,18 +613,19 @@ class _InfoChip extends StatelessWidget {
 }
 
 class _NutritionGrid extends StatelessWidget {
-  const _NutritionGrid({required this.nutrition});
+  const _NutritionGrid({required this.nutrition, required this.l10n});
 
   final NutritionInfo nutrition;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
     final items = <MapEntry<String, String?>>[
-      MapEntry('Calorías', _fmt(nutrition.calories, 'kcal')),
-      MapEntry('Proteínas', _fmt(nutrition.protein, 'g')),
-      MapEntry('Carbohidratos', _fmt(nutrition.carbohydrates, 'g')),
-      MapEntry('Grasas', _fmt(nutrition.fat, 'g')),
-      MapEntry('Fibra', _fmt(nutrition.fiber, 'g')),
+      MapEntry(l10n.calories, _fmt(nutrition.calories, 'kcal')),
+      MapEntry(l10n.protein, _fmt(nutrition.protein, 'g')),
+      MapEntry(l10n.carbohydrates, _fmt(nutrition.carbohydrates, 'g')),
+      MapEntry(l10n.fat, _fmt(nutrition.fat, 'g')),
+      MapEntry(l10n.fiber, _fmt(nutrition.fiber, 'g')),
     ].where((e) => e.value != null).toList();
 
     return Wrap(
@@ -542,7 +634,7 @@ class _NutritionGrid extends StatelessWidget {
       children: items
           .map(
             (item) => Chip(
-              label: Text('${item.key}: ${item.value}'),
+              label: Text(l10n.nutritionChip(item.key, item.value!)),
             ),
           )
           .toList(),

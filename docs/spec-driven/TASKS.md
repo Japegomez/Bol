@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 12/07/2026 — consolidación visual lista de la compra, chips de receta más grandes en planificador, navegación a ficha desde slot
+> Actualizado: 12/07/2026 — UX red social: paginación 10, filtros en feed, fecha en ficha pública, autor más visible
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -519,8 +519,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] Pantalla de exploración de recetas públicas (buscador + filtros por etiqueta)
   - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | **Planificador** | Compra | Perfil)
-- [x] Paginación / scroll infinito
-- [x] Tarjeta de receta pública: foto, nombre, autor, valoración media, etiquetas (scroll horizontal si hay varias)
+- [x] Paginación / scroll infinito (10 recetas por página)
+- [x] Orden por defecto: fecha de creación (más reciente primero); indicador «Ordenado por: …» con icono debajo de etiquetas
+- [x] Tarjeta de receta pública: foto, nombre, autor destacado (enlace al perfil), valoración media, etiquetas (scroll horizontal si hay varias)
+- [x] Detalle de receta pública: fecha de creación visible junto a valoración y raciones
 
 ### F15 - Interacción social
 
@@ -530,8 +532,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - **No** se puede forkear la propia receta (UI + `social_repository.forkRecipe`)
 - [x] Detalle de receta pública: «Receta creada por » + nombre (enlace) o «ti» si es propia
 - [x] Valorar receta pública (1–5 estrellas; una valoración por usuario por receta)
-- [x] Seguir a otro usuario
+- [x] Seguir a otro usuario (botón en perfil público; acceso desde nombre del autor en tarjeta o detalle)
 - [x] Feed: recetas recientes de usuarios a los que sigo (`/home/explore/feed`)
+  - Filtro por etiquetas (mismo componente que Explorar); orden fijo por fecha de creación; indicador «Ordenado por: Más reciente»
 - [x] Perfil público: foto, nombre, recetas publicadas y valoración media (`/home/explore/user/:userId`)
   - Pendiente: campo bio en perfil (no existe en esquema `profiles`)
 

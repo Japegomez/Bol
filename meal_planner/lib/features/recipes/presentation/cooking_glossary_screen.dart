@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/recipes/domain/cooking_glossary_entry.dart';
 import 'package:meal_planner/features/recipes/presentation/cooking_glossary_provider.dart';
 
@@ -22,68 +23,72 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
   }
 
   Future<void> _showAddEntryDialog() async {
+    final l10n = context.l10n;
     final termController = TextEditingController();
     final definitionController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
     final saved = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Nueva entrada'),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: termController,
-                  decoration: const InputDecoration(
-                    labelText: 'Término',
+      builder: (dialogContext) {
+        final dialogL10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(dialogL10n.newGlossaryEntry),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: termController,
+                    decoration: InputDecoration(
+                      labelText: dialogL10n.termLabel,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return dialogL10n.enterTerm;
+                      }
+                      return null;
+                    },
                   ),
-                  textCapitalization: TextCapitalization.sentences,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Introduce un término';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: definitionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Definición',
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: definitionController,
+                    decoration: InputDecoration(
+                      labelText: dialogL10n.definitionLabel,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                    minLines: 3,
+                    maxLines: 5,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return dialogL10n.enterDefinition;
+                      }
+                      return null;
+                    },
                   ),
-                  textCapitalization: TextCapitalization.sentences,
-                  minLines: 3,
-                  maxLines: 5,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Introduce una definición';
-                    }
-                    return null;
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                Navigator.of(dialogContext).pop(true);
-              }
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(dialogL10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState?.validate() ?? false) {
+                  Navigator.of(dialogContext).pop(true);
+                }
+              },
+              child: Text(dialogL10n.save),
+            ),
+          ],
+        );
+      },
     );
 
     if (saved != true || !mounted) return;
@@ -96,7 +101,7 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
     } on StateError catch (error) {
       if (!mounted || error.message != 'duplicate_term') rethrow;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ese término ya existe en el glosario')),
+        SnackBar(content: Text(l10n.duplicateGlossaryTerm)),
       );
     }
   }
@@ -116,13 +121,14 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final glossaryAsync = ref.watch(cookingGlossaryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Glosario culinario')),
+      appBar: AppBar(title: Text(l10n.cookingGlossaryTitle)),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEntryDialog,
-        tooltip: 'Añadir término',
+        tooltip: l10n.addTermTooltip,
         child: const Icon(Icons.add),
       ),
       body: Column(
@@ -131,7 +137,7 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
               controller: _searchController,
-              hintText: 'Buscar término o definición',
+              hintText: l10n.searchTermOrDefinition,
               leading: const Icon(Icons.search),
               onChanged: (value) => setState(() => _query = value),
               trailing: _searchController.text.isNotEmpty
@@ -155,8 +161,8 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
                   return Center(
                     child: Text(
                       _query.isEmpty
-                          ? 'No hay entradas en el glosario'
-                          : 'No se encontraron términos',
+                          ? l10n.noGlossaryEntries
+                          : l10n.noGlossaryTermsFound,
                     ),
                   );
                 }
@@ -177,31 +183,38 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
                         isThreeLine: true,
                         trailing: entry.isCustom
                             ? IconButton(
-                                tooltip: 'Eliminar entrada',
+                                tooltip: l10n.deleteEntryTooltip,
                                 icon: const Icon(Icons.delete_outline),
                                 onPressed: () async {
                                   final confirmed = await showDialog<bool>(
                                     context: context,
-                                    builder: (dialogContext) => AlertDialog(
-                                      title: const Text('Eliminar entrada'),
-                                      content: Text(
-                                        '¿Quieres eliminar "${entry.term}" del glosario?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(
-                                            dialogContext,
-                                          ).pop(false),
-                                          child: const Text('Cancelar'),
+                                    builder: (dialogContext) {
+                                      final dialogL10n = dialogContext.l10n;
+                                      return AlertDialog(
+                                        title: Text(
+                                          dialogL10n.deleteGlossaryEntryTitle,
                                         ),
-                                        FilledButton(
-                                          onPressed: () => Navigator.of(
-                                            dialogContext,
-                                          ).pop(true),
-                                          child: const Text('Eliminar'),
+                                        content: Text(
+                                          dialogL10n.deleteGlossaryEntryConfirm(
+                                            entry.term,
+                                          ),
                                         ),
-                                      ],
-                                    ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(
+                                              dialogContext,
+                                            ).pop(false),
+                                            child: Text(dialogL10n.cancel),
+                                          ),
+                                          FilledButton(
+                                            onPressed: () => Navigator.of(
+                                              dialogContext,
+                                            ).pop(true),
+                                            child: Text(dialogL10n.delete),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                   if (confirmed == true && entry.id != null) {
                                     await ref
@@ -217,7 +230,8 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Error: $error')),
+              error: (error, _) =>
+                  Center(child: Text(l10n.errorWithMessage('$error'))),
             ),
           ),
         ],

@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 
 /// Horizontally scrollable chip row for recipe tags inside list cards.
 class HorizontalTagList extends StatefulWidget {
-  const HorizontalTagList({required this.tags, super.key});
+  const HorizontalTagList({
+    required this.tags,
+    this.labelFor,
+    super.key,
+  });
 
   final List<String> tags;
+
+  /// When null, [tags] are treated as tag keys and localized via [localizedTagLabel].
+  final String Function(String tag)? labelFor;
 
   @override
   State<HorizontalTagList> createState() => _HorizontalTagListState();
@@ -50,6 +59,10 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final resolveLabel =
+        widget.labelFor ?? (tag) => localizedTagLabel(l10n, tag);
+
     return SizedBox(
       height: 32,
       child: GestureDetector(
@@ -65,7 +78,7 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
               for (var index = 0; index < widget.tags.length; index++) ...[
                 if (index > 0) const SizedBox(width: 4),
                 Chip(
-                  label: Text(widget.tags[index]),
+                  label: Text(resolveLabel(widget.tags[index])),
                   visualDensity: VisualDensity.compact,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

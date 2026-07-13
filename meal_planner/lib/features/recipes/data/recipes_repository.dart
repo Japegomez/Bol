@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
 import 'package:meal_planner/core/offline/supabase_error_utils.dart';
@@ -136,6 +137,7 @@ class RecipesRepository {
       Map<String, dynamic>.from(recipeData),
     );
     final forkedFromId = recipeData['forked_from_id']?.toString();
+    final sourceLang = recipeData['source_lang']?.toString() ?? 'es';
 
     final results = await Future.wait<dynamic>(<Future<dynamic>>[
       supabase
@@ -176,6 +178,7 @@ class RecipesRepository {
           : null,
       photoDisplayUrl: photoDisplayUrl,
       forkedFromId: forkedFromId,
+      sourceLang: sourceLang,
     );
   }
 
@@ -192,6 +195,7 @@ class RecipesRepository {
   Future<String> createRecipe(
     RecipeFormData form, {
     String? householdId,
+    String sourceLang = 'es',
   }) async {
     final isOnline = await NetworkStatus.isOnline;
     await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
@@ -199,7 +203,7 @@ class RecipesRepository {
 
     if (isOnline) {
       try {
-        final id = await createRecipeRemote(form);
+        final id = await createRecipeRemote(form, sourceLang: sourceLang);
         await _cacheRecipeDetailBestEffort(id);
         return id;
       } catch (error) {
@@ -234,25 +238,30 @@ class RecipesRepository {
     }
   }
 
-  Future<String> createRecipeRemote(RecipeFormData form, {String? id}) async {
+  Future<String> createRecipeRemote(
+    RecipeFormData form, {
+    String? id,
+    String sourceLang = 'es',
+  }) async {
     final validationError = form.validate();
     if (validationError != null) throw Exception(validationError);
 
     final recipeData = await supabase
         .from(Recipe.table_name)
-        .insert(
-          Recipe.insert(
+        .insert({
+          ...Recipe.insert(
             id: id,
             userId: _userId,
             title: form.title.trim(),
             servings: form.servings,
             prepTime: form.prepTime,
             cookTime: form.cookTime,
-            tags: form.tags,
+            tags: form.tags.map(normalizeTagKey).toList(),
             isPublic: form.isPublic,
             tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
           ),
-        )
+          'source_lang': sourceLang,
+        })
         .select()
         .single();
 
@@ -464,6 +473,7 @@ class RecipesRepository {
     String id,
     RecipeFormData form, {
     String? householdId,
+    String? sourceLang,
   }) async {
     final isOnline = await NetworkStatus.isOnline;
     await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
@@ -471,7 +481,7 @@ class RecipesRepository {
 
     if (isOnline) {
       try {
-        await updateRecipeRemote(id, form);
+        await updateRecipeRemote(id, form, sourceLang: sourceLang);
         await _cacheRecipeDetailBestEffort(id);
         return;
       } catch (error) {
@@ -492,23 +502,30 @@ class RecipesRepository {
     await _updateRecipeOffline(id, form);
   }
 
-  Future<void> updateRecipeRemote(String id, RecipeFormData form) async {
+  Future<void> updateRecipeRemote(
+    String id,
+    RecipeFormData form, {
+    String? sourceLang,
+  }) async {
     final validationError = form.validate();
     if (validationError != null) throw Exception(validationError);
 
+    final updatePayload = Recipe.update(
+      title: form.title.trim(),
+      servings: form.servings,
+      prepTime: form.prepTime,
+      cookTime: form.cookTime,
+      tags: form.tags.map(normalizeTagKey).toList(),
+      isPublic: form.canPublish ? form.isPublic : false,
+      tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
+    );
+    if (sourceLang != null) {
+      updatePayload['source_lang'] = sourceLang;
+    }
+
     await supabase
         .from(Recipe.table_name)
-        .update(
-          Recipe.update(
-            title: form.title.trim(),
-            servings: form.servings,
-            prepTime: form.prepTime,
-            cookTime: form.cookTime,
-            tags: form.tags,
-            isPublic: form.canPublish ? form.isPublic : false,
-            tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
-          ),
-        )
+        .update(updatePayload)
         .eq(Recipe.c_id, id)
         .eq(Recipe.c_userId, _userId);
 
@@ -631,7 +648,7 @@ class RecipesRepository {
             unit: entry.value.isToTaste
                 ? null
                 : normalizeUnit(entry.value.effectiveUnit),
-            category: entry.value.category,
+            category: normalizeCategoryKey(entry.value.category),
             position: entry.key,
             isOptional: entry.value.isOptional,
             isIncluded:
@@ -705,7 +722,7 @@ class RecipesRepository {
                     unit: entry.value.isToTaste
                         ? null
                         : normalizeUnit(entry.value.effectiveUnit),
-                    category: entry.value.category,
+                    category: normalizeCategoryKey(entry.value.category),
                     position: entry.key,
                     isOptional: entry.value.isOptional,
                     isIncluded: entry.value.isOptional
@@ -855,7 +872,7 @@ class RecipesRepository {
                     quantity:
                         ingredient.isToTaste ? null : ingredient.quantity,
                     unit: isPredefined ? normalizedUnit : null,
-                    category: ingredient.category ?? 'Carnes y pescados',
+                    category: normalizeCategoryKey(ingredient.category),
                     customUnit: isPredefined ? '' : (normalizedUnit ?? ''),
                     useCustomUnit: normalizedUnit != null && !isPredefined,
                     isOptional: ingredient.isOptional,

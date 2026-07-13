@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
 
 class ServingsResult {
   const ServingsResult({required this.servings, this.isLeftover = false});
@@ -23,7 +24,7 @@ Future<ServingsResult?> showServingsDialog(
   );
 }
 
-/// Shown when the user taps "Añadir texto" in the recipe picker.
+/// Shown when the user taps "Add text" in the recipe picker.
 /// Returns notes text + servings, or null if cancelled.
 Future<({String notes, int servings})?> showAddTextDialog(
   BuildContext context, {
@@ -69,14 +70,15 @@ class _ServingsDialogState extends State<_ServingsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return AlertDialog(
-      title: const Text('Raciones'),
+      title: Text(l10n.servingsTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
-            child: Text('Número de raciones'),
+            child: Text(l10n.servingsCountLabel),
           ),
           const SizedBox(height: 8),
           _ServingsStepper(
@@ -93,11 +95,11 @@ class _ServingsDialogState extends State<_ServingsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: widget.canConfirm ? _confirm : null,
-          child: const Text('Confirmar'),
+          child: Text(l10n.confirm),
         ),
       ],
     );
@@ -131,7 +133,7 @@ class _AddTextDialogState extends State<_AddTextDialog> {
     final notes = _notesController.text.trim();
     if (notes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Escribe un nombre para la comida')),
+        SnackBar(content: Text(context.l10n.enterMealName)),
       );
       return;
     }
@@ -143,24 +145,25 @@ class _AddTextDialogState extends State<_AddTextDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return AlertDialog(
-      title: const Text('Añadir texto'),
+      title: Text(l10n.addTextTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _notesController,
-            decoration: const InputDecoration(
-              labelText: 'Nombre (ej. Pedido a domicilio)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.mealNameLabel,
+              border: const OutlineInputBorder(),
             ),
             textCapitalization: TextCapitalization.sentences,
             onSubmitted: widget.canConfirm ? (_) => _confirm() : null,
           ),
           const SizedBox(height: 12),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
-            child: Text('Raciones'),
+            child: Text(l10n.servingsTitle),
           ),
           const SizedBox(height: 8),
           _ServingsStepper(
@@ -172,11 +175,11 @@ class _AddTextDialogState extends State<_AddTextDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: widget.canConfirm ? _confirm : null,
-          child: const Text('Añadir'),
+          child: Text(l10n.add),
         ),
       ],
     );
@@ -197,13 +200,14 @@ class _ServingsStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton.filledTonal(
           onPressed: value > _min ? () => onChanged(value - 1) : null,
           icon: const Icon(Icons.remove),
-          tooltip: 'Menos raciones',
+          tooltip: l10n.fewerServingsTooltip,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -215,7 +219,7 @@ class _ServingsStepper extends StatelessWidget {
         IconButton.filledTonal(
           onPressed: () => onChanged(value + 1),
           icon: const Icon(Icons.add),
-          tooltip: 'Más raciones',
+          tooltip: l10n.moreServingsTooltip,
         ),
       ],
     );
@@ -232,6 +236,7 @@ class _LeftoverCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return InkWell(
       onTap: () => onChanged(!value),
       borderRadius: BorderRadius.circular(8),
@@ -250,11 +255,11 @@ class _LeftoverCheckbox extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Son sobras',
+                    l10n.leftovers,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   Text(
-                    'No se añadirán ingredientes a la lista de la compra',
+                    l10n.leftoversShoppingHint,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),

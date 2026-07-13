@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
@@ -8,6 +9,7 @@ import 'package:meal_planner/features/household/presentation/household_provider.
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/shopping/data/shopping_repository.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final activeShoppingListProvider =
@@ -90,13 +92,17 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
     );
   }
 
-  /// Refreshes items from the server. Used when planner changes affect the list.
+  /// Refreshes items. Works both online (from server) and offline (from cache).
   Future<void> reload() async {
-    if (_listId == null) {
+    final listId = _listId;
+    if (listId == null) {
       ref.invalidateSelf();
       return;
     }
-    await _reloadFromServer();
+
+    state = await AsyncValue.guard(
+      () => _repository.getItemsForList(listId),
+    );
   }
 
   Future<void> toggleItem(String id, bool isChecked) async {
@@ -250,7 +256,7 @@ Map<String, List<ShoppingItem>> groupShoppingItemsByCategory(
   final grouped = <String, List<ShoppingItem>>{};
 
   for (final item in consolidateShoppingItems(items)) {
-    final category = item.category ?? 'Otros';
+    final category = normalizeCategoryKey(item.category);
     grouped.putIfAbsent(category, () => []).add(item);
   }
 
@@ -312,13 +318,17 @@ List<ShoppingItem> consolidateShoppingItems(List<ShoppingItem> items) {
   return [...ungrouped, ...consolidated.values];
 }
 
-String formatShoppingListForShare(Map<String, List<ShoppingItem>> grouped) {
-  final buffer = StringBuffer('Lista de la compra\n\n');
+String formatShoppingListForShare(
+  AppLocalizations l10n,
+  Map<String, List<ShoppingItem>> grouped,
+) {
+  final buffer = StringBuffer('${l10n.shoppingListTitle}\n\n');
 
   for (final entry in grouped.entries) {
-    buffer.writeln('${entry.key}:');
+    buffer.writeln('${localizedCategoryLabel(l10n, entry.key)}:');
     for (final item in entry.value) {
       buffer.writeln('• ${formatShoppingItemLabel(
+        l10n,
         name: item.name,
         quantity: item.quantity,
         unit: item.unit,

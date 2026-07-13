@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/shopping/presentation/shopping_provider.dart';
@@ -11,21 +13,20 @@ class ShoppingListScreen extends ConsumerWidget {
   const ShoppingListScreen({super.key});
 
   Future<void> _confirmClearList(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Limpiar lista'),
-        content: const Text(
-          '¿Eliminar todos los ítems de la lista de la compra?',
-        ),
+        title: Text(l10n.clearListTitle),
+        content: Text(l10n.clearListConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Limpiar'),
+            child: Text(l10n.clear),
           ),
         ],
       ),
@@ -43,7 +44,7 @@ class ShoppingListScreen extends ConsumerWidget {
     if (items.isEmpty) return;
 
     final grouped = groupShoppingItemsByCategory(items);
-    final text = formatShoppingListForShare(grouped);
+    final text = formatShoppingListForShare(context.l10n, grouped);
 
     // iOS (especially iPad) requires an anchor rect for the share sheet.
     final box = context.findRenderObject() as RenderBox?;
@@ -72,6 +73,7 @@ class ShoppingListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final itemsAsync = ref.watch(shoppingItemsProvider);
     final canEdit = ref.watch(canEditOfflineProvider);
     final items = itemsAsync.valueOrNull ?? const <ShoppingItem>[];
@@ -80,19 +82,19 @@ class ShoppingListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lista de la compra'),
+        title: Text(l10n.shoppingListTitle),
         actions: [
           IconButton(
             onPressed: isEmpty ? null : () => _shareList(context, items),
             icon: const Icon(Icons.share_outlined),
-            tooltip: 'Compartir lista',
+            tooltip: l10n.shareListTooltip,
           ),
           IconButton(
             onPressed: isEmpty || !canEdit
                 ? null
                 : () => _confirmClearList(context, ref),
             icon: const Icon(Icons.delete_sweep_outlined),
-            tooltip: 'Limpiar lista',
+            tooltip: l10n.clearListTooltip,
           ),
         ],
       ),
@@ -101,7 +103,7 @@ class ShoppingListScreen extends ConsumerWidget {
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text('No se pudo cargar la lista: $error'),
+            child: Text(l10n.shoppingListLoadError(error.toString())),
           ),
         ),
         data: (_) {
@@ -119,12 +121,12 @@ class ShoppingListScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Tu lista está vacía',
+                      l10n.shoppingListEmpty,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Añade recetas al planificador o ítems manualmente con el botón +.',
+                      l10n.shoppingListEmptyHint,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.outline,
@@ -143,7 +145,7 @@ class ShoppingListScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Text(
-                    entry.key,
+                    localizedCategoryLabel(l10n, entry.key),
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,
@@ -178,7 +180,7 @@ class ShoppingListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: canEdit ? () => _openAddSheet(context, ref, canEdit: canEdit) : null,
-        tooltip: 'Añadir ítem',
+        tooltip: l10n.addItemTooltip,
         child: const Icon(Icons.add),
       ),
     );
