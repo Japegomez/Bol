@@ -41,7 +41,9 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
           .join(_codeController.text.trim().toUpperCase());
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _errorMessage = _mapJoinError(context.l10n, e.toString()));
+      if (mounted) {
+        setState(() => _errorMessage = _mapJoinError(context.l10n, e.toString()));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

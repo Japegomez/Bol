@@ -6,10 +6,6 @@ const defaultCookingGlossaryByLocale =
     <String, List<CookingGlossaryEntry>>{
   'es': _defaultEs,
   'en': _defaultEn,
-  'ca': _defaultEs,
-  'eu': _defaultEs,
-  'gl': _defaultEs,
-  'pt': _defaultEs,
 };
 
 List<CookingGlossaryEntry> defaultGlossaryForLocale(String languageCode) {

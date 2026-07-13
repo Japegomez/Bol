@@ -92,32 +92,34 @@ RecipeDetail _applyTranslation(
   RecipeDetail detail,
   RecipeTranslationPayload translation,
 ) {
-  final ingredientById = {
-    for (final ingredient in detail.ingredients) ingredient.id: ingredient,
+  final translatedIngredientById = {
+    for (final ingredient in translation.ingredients) ingredient.id: ingredient,
   };
-  final stepById = {for (final step in detail.steps) step.id: step};
+  final translatedStepById = {
+    for (final step in translation.steps) step.id: step,
+  };
 
   // Only free-text fields are translated. Units, categories and tags are stable
   // keys localized on the client, so the originals are kept.
-  final translatedIngredients = translation.ingredients.map((translated) {
-    final original = ingredientById[translated.id];
-    if (original == null) return null;
+  // Iterate over originals to preserve order and retain untranslated items.
+  final translatedIngredients = detail.ingredients.map((original) {
+    final translated = translatedIngredientById[original.id];
+    if (translated == null) return original;
     return original.copyWith(name: translated.name);
-  }).whereType<Ingredient>().toList();
+  }).toList();
 
-  final translatedSteps = translation.steps.map((translated) {
-    final original = stepById[translated.id];
-    if (original == null) return null;
+  final translatedSteps = detail.steps.map((original) {
+    final translated = translatedStepById[original.id];
+    if (translated == null) return original;
     return original.copyWith(description: translated.description);
-  }).whereType<RecipeStep>().toList();
+  }).toList();
 
   return detail.copyWith(
     recipe: detail.recipe.copyWith(
       title: translation.title,
       tips: translation.tips,
     ),
-    ingredients:
-        translatedIngredients.isEmpty ? detail.ingredients : translatedIngredients,
-    steps: translatedSteps.isEmpty ? detail.steps : translatedSteps,
+    ingredients: translatedIngredients,
+    steps: translatedSteps,
   );
 }

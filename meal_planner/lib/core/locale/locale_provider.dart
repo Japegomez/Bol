@@ -21,6 +21,8 @@ class LocaleNotifier extends Notifier<Locale?> {
     if (_hasLocalChange) return;
 
     final prefs = await SharedPreferences.getInstance();
+    if (_hasLocalChange) return;
+
     final stored = prefs.getString(_storageKey);
     if (stored == null || stored.isEmpty) return;
 

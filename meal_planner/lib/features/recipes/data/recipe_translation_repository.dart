@@ -31,7 +31,7 @@ class RecipeTranslationRepository {
           'recipe_id': recipeId,
           'target_lang': targetLang,
         },
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.status != 200) {
         throw Exception(

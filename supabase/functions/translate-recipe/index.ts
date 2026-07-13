@@ -111,6 +111,19 @@ Deno.serve(async (req) => {
     });
     const adminClient = createClient(supabaseUrl, serviceKey);
 
+    const { data: recipe, error: recipeError } = await userClient
+      .from("recipes")
+      .select("id, title, tips, tags, source_lang, is_public, user_id")
+      .eq("id", recipeId)
+      .maybeSingle();
+
+    if (recipeError || !recipe) {
+      return new Response(JSON.stringify({ error: "Recipe not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: cached, error: cacheError } = await adminClient
       .from("recipe_translations")
       .select("payload, status")
@@ -126,19 +139,6 @@ Deno.serve(async (req) => {
         JSON.stringify({ payload: cached.payload, cached: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
-    }
-
-    const { data: recipe, error: recipeError } = await userClient
-      .from("recipes")
-      .select("id, title, tips, tags, source_lang, is_public, user_id")
-      .eq("id", recipeId)
-      .maybeSingle();
-
-    if (recipeError || !recipe) {
-      return new Response(JSON.stringify({ error: "Recipe not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     const sourceLang = (recipe.source_lang as string) || "es";

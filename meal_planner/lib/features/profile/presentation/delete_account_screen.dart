@@ -52,8 +52,8 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       final localCache = ref.read(localCacheStoreProvider);
       final authRepository = ref.read(authRepositoryProvider);
 
-      await localCache.clearUserSyncState(userId);
       await authRepository.deleteAccount();
+      await localCache.clearUserSyncState(userId);
 
       if (!mounted) return;
       context.go('/auth/login');

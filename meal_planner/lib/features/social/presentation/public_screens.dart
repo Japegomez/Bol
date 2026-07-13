@@ -14,6 +14,7 @@ import 'package:meal_planner/features/recipes/data/recipe_translation_repository
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
 import 'package:meal_planner/features/social/presentation/public_recipe_translation_provider.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
@@ -141,15 +142,22 @@ class _PublicRecipeDetailScreenState
   bool _isForking = false;
   bool _isRating = false;
   bool _showOriginal = false;
+  ProviderSubscription<String>? _languageSubscription;
 
   @override
   void initState() {
     super.initState();
     // Reset "view original" toggle whenever the app language changes so the
     // screen automatically shows the new translation instead of the old one.
-    ref.listenManual(currentLanguageCodeProvider, (_, _) {
+    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (_, _) {
       if (mounted) setState(() => _showOriginal = false);
     });
+  }
+
+  @override
+  void dispose() {
+    _languageSubscription?.close();
+    super.dispose();
   }
 
   Future<void> _forkRecipe(PublicRecipeDetail detail) async {
@@ -274,61 +282,17 @@ class _PublicRecipeDetailScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (displayState.isTranslated) ...[
-                        Card(
-                          color: Theme.of(context).colorScheme.secondaryContainer,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.translate,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSecondaryContainer,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    l10n.autoTranslatedBadge,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSecondaryContainer,
-                                        ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () => setState(
-                                    () => _showOriginal = !_showOriginal,
-                                  ),
-                                  child: Text(
-                                    _showOriginal
-                                        ? l10n.viewTranslation
-                                        : l10n.viewOriginal,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      TranslationStatusBanner(
+                        l10n: l10n,
+                        isTranslated: displayState.isTranslated,
+                        translationFailed: displayState.translationFailed,
+                        showingOriginal: _showOriginal,
+                        onToggleOriginal: () => setState(
+                          () => _showOriginal = !_showOriginal,
                         ),
+                      ),
+                      if (displayState.isTranslated || displayState.translationFailed)
                         const SizedBox(height: 12),
-                      ] else if (displayState.translationFailed) ...[
-                        Text(
-                          l10n.translationFailed,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
                       Row(
                         children: [
                           Text(

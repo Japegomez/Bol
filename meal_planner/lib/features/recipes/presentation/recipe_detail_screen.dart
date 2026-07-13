@@ -17,6 +17,7 @@ import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_display_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
 
@@ -32,13 +33,20 @@ class RecipeDetailScreen extends ConsumerStatefulWidget {
 
 class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   bool _showOriginal = false;
+  ProviderSubscription<String>? _languageSubscription;
 
   @override
   void initState() {
     super.initState();
-    ref.listenManual(currentLanguageCodeProvider, (_, _) {
+    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (_, _) {
       if (mounted) setState(() => _showOriginal = false);
     });
+  }
+
+  @override
+  void dispose() {
+    _languageSubscription?.close();
+    super.dispose();
   }
 
   @override
@@ -336,59 +344,15 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.isTranslated) ...[
-                  Card(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.translate,
-                            size: 18,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSecondaryContainer,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              l10n.autoTranslatedBadge,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSecondaryContainer,
-                                  ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: widget.onToggleOriginal,
-                            child: Text(
-                              widget.showingOriginal
-                                  ? l10n.viewTranslation
-                                  : l10n.viewOriginal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                TranslationStatusBanner(
+                  l10n: l10n,
+                  isTranslated: widget.isTranslated,
+                  translationFailed: widget.translationFailed,
+                  showingOriginal: widget.showingOriginal,
+                  onToggleOriginal: widget.onToggleOriginal,
+                ),
+                if (widget.isTranslated || widget.translationFailed)
                   const SizedBox(height: 12),
-                ] else if (widget.translationFailed) ...[
-                  Text(
-                    l10n.translationFailed,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
                 Wrap(
                   spacing: 16,
                   runSpacing: 8,

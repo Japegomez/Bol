@@ -43,7 +43,11 @@ class ProfileScreen extends ConsumerWidget {
     final localCache = ref.read(localCacheStoreProvider);
     final authRepository = ref.read(authRepositoryProvider);
 
-    await localCache.clearUserSyncState(userId);
+    try {
+      await localCache.clearUserSyncState(userId);
+    } catch (_) {
+      // Continue with sign-out even if local cleanup fails
+    }
     await authRepository.signOut(manual: true);
   }
 
