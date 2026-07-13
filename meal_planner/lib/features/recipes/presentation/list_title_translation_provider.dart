@@ -31,7 +31,7 @@ class TitleTranslationRequest {
 /// Only recipes whose source language differs from [targetLang] are returned;
 /// callers fall back to the original title for any id not present in the map.
 /// Translations are cached server-side, so repeated calls are cheap.
-final listTitleTranslationsProvider = FutureProvider.family<
+final listTitleTranslationsProvider = FutureProvider.autoDispose.family<
     Map<String, String>, TitleTranslationRequest>((ref, request) async {
   if (request.ids.isEmpty) return const {};
 

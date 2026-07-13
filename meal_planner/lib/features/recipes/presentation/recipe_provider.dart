@@ -8,6 +8,7 @@ import 'package:meal_planner/features/planner/presentation/planner_provider.dart
 import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
+import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 
 /// Error message keys resolved to localized strings in the form UI.
@@ -204,7 +205,6 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
           current.recipeId!,
           current.data,
           householdId: householdId,
-          sourceLang: sourceLang,
         );
         ref.invalidate(recipeListProvider);
         ref.invalidate(recipeDetailProvider(current.recipeId!));
@@ -212,6 +212,7 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
         ref.invalidate(recipesProvider);
         ref.invalidate(exploreRecipesProvider);
         ref.invalidate(publicTagsProvider);
+        ref.invalidate(listTitleTranslationsProvider);
         state = AsyncData(current.copyWith(isSaving: false));
         return current.recipeId;
       }
