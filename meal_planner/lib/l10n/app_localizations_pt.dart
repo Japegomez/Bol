@@ -1221,4 +1221,72 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get tagKidFriendly => 'para crianças';
+
+  @override
+  String get onboardingSkip => 'Ignorar';
+
+  @override
+  String get onboardingNext => 'Seguinte';
+
+  @override
+  String get onboardingPrevious => 'Anterior';
+
+  @override
+  String get onboardingFinish => 'Concluir';
+
+  @override
+  String get onboardingStep0Title => 'Bem-vindo/a ao Recetea!';
+
+  @override
+  String get onboardingStep0Body =>
+      'Mostramos como a app funciona em cerca de um minuto. Pode ignorar este tutorial quando quiser.';
+
+  @override
+  String get onboardingStep1Title => 'Planificador semanal';
+
+  @override
+  String get onboardingStep1Body =>
+      'Vê todos os dias com as suas refeições. As setas ‹ › mudam a semana. O dia de hoje aparece destacado a verde.';
+
+  @override
+  String get onboardingStep2Title => 'Adicione refeições ao plano';
+
+  @override
+  String get onboardingStep2Body =>
+      'Toque num slot vazio para atribuir uma receita. Também pode premir o ícone de livro (canto inferior direito) para abrir o painel lateral de receitas e arrastar receitas diretamente para o dia.';
+
+  @override
+  String get onboardingStep3Title => 'O seu livro de receitas';
+
+  @override
+  String get onboardingStep3Body =>
+      'Todas as suas receitas num relance. A lupa pesquisa por nome e os chips de etiquetas filtram por categoria. O ícone de livro abre o glossário culinário.';
+
+  @override
+  String get onboardingStep4Title => 'Crie uma receita';
+
+  @override
+  String get onboardingStep4Body =>
+      'O botão + (canto inferior direito) abre o formulário: foto, ingredientes com quantidades, passos, nutrição e etiquetas. Pode publicá-la para que outros a descubram.';
+
+  @override
+  String get onboardingStep5Title => 'Lista de compras';
+
+  @override
+  String get onboardingStep5Body =>
+      'Quando planifica refeições, os ingredientes aparecem aqui automaticamente agrupados por categoria. Marque os itens ao comprar. O ícone de partilhar (canto superior direito) gera texto pronto para o WhatsApp.';
+
+  @override
+  String get onboardingStep6Title => 'Descubra a comunidade';
+
+  @override
+  String get onboardingStep6Body =>
+      'Pesquise receitas de outros utilizadores por nome ou etiquetas. Avalie-as, guarde-as no seu livro e siga os seus cozinheiros favoritos a partir do perfil.';
+
+  @override
+  String get onboardingStep7Title => 'O seu perfil e lar';
+
+  @override
+  String get onboardingStep7Body =>
+      'Edite o seu nome e foto. Na secção A minha casa pode planear com a família em tempo real. A partir daqui também muda o idioma e o modo escuro.';
 }

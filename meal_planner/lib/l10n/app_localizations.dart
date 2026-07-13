@@ -2349,6 +2349,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'kid-friendly'**
   String get tagKidFriendly;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get onboardingPrevious;
+
+  /// No description provided for @onboardingFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get onboardingFinish;
+
+  /// No description provided for @onboardingStep0Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Recetea!'**
+  String get onboardingStep0Title;
+
+  /// No description provided for @onboardingStep0Body.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll show you how the app works in about a minute. You can skip this tutorial at any time.'**
+  String get onboardingStep0Body;
+
+  /// No description provided for @onboardingStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly planner'**
+  String get onboardingStep1Title;
+
+  /// No description provided for @onboardingStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'See all days with their meals. The ‹ › arrows change the week. Today is highlighted in green.'**
+  String get onboardingStep1Body;
+
+  /// No description provided for @onboardingStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meals to your plan'**
+  String get onboardingStep2Title;
+
+  /// No description provided for @onboardingStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an empty slot to assign a recipe. You can also tap the book icon (bottom right) to open the side recipe panel and drag recipes onto a day.'**
+  String get onboardingStep2Body;
+
+  /// No description provided for @onboardingStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your recipe book'**
+  String get onboardingStep3Title;
+
+  /// No description provided for @onboardingStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'All your recipes at a glance. The search icon finds recipes by name and tag chips filter by category. The book icon opens the cooking glossary.'**
+  String get onboardingStep3Body;
+
+  /// No description provided for @onboardingStep4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a recipe'**
+  String get onboardingStep4Title;
+
+  /// No description provided for @onboardingStep4Body.
+  ///
+  /// In en, this message translates to:
+  /// **'The + button (bottom right) opens the form: photo, ingredients with quantities, steps, nutrition and tags. You can publish it so others can discover it.'**
+  String get onboardingStep4Body;
+
+  /// No description provided for @onboardingStep5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping list'**
+  String get onboardingStep5Title;
+
+  /// No description provided for @onboardingStep5Body.
+  ///
+  /// In en, this message translates to:
+  /// **'When you plan meals, ingredients appear here automatically grouped by category. Check items off as you shop. The share icon (top right) creates text ready for WhatsApp.'**
+  String get onboardingStep5Body;
+
+  /// No description provided for @onboardingStep6Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover the community'**
+  String get onboardingStep6Title;
+
+  /// No description provided for @onboardingStep6Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Search other users\' recipes by name or tags. Rate them, save them to your book and follow your favourite cooks from their profile.'**
+  String get onboardingStep6Body;
+
+  /// No description provided for @onboardingStep7Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile and household'**
+  String get onboardingStep7Title;
+
+  /// No description provided for @onboardingStep7Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.'**
+  String get onboardingStep7Body;
 }
 
 class _AppLocalizationsDelegate

@@ -1215,4 +1215,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagKidFriendly => 'kid-friendly';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingPrevious => 'Back';
+
+  @override
+  String get onboardingFinish => 'Finish';
+
+  @override
+  String get onboardingStep0Title => 'Welcome to Recetea!';
+
+  @override
+  String get onboardingStep0Body =>
+      'We\'ll show you how the app works in about a minute. You can skip this tutorial at any time.';
+
+  @override
+  String get onboardingStep1Title => 'Weekly planner';
+
+  @override
+  String get onboardingStep1Body =>
+      'See all days with their meals. The ‹ › arrows change the week. Today is highlighted in green.';
+
+  @override
+  String get onboardingStep2Title => 'Add meals to your plan';
+
+  @override
+  String get onboardingStep2Body =>
+      'Tap an empty slot to assign a recipe. You can also tap the book icon (bottom right) to open the side recipe panel and drag recipes onto a day.';
+
+  @override
+  String get onboardingStep3Title => 'Your recipe book';
+
+  @override
+  String get onboardingStep3Body =>
+      'All your recipes at a glance. The search icon finds recipes by name and tag chips filter by category. The book icon opens the cooking glossary.';
+
+  @override
+  String get onboardingStep4Title => 'Create a recipe';
+
+  @override
+  String get onboardingStep4Body =>
+      'The + button (bottom right) opens the form: photo, ingredients with quantities, steps, nutrition and tags. You can publish it so others can discover it.';
+
+  @override
+  String get onboardingStep5Title => 'Shopping list';
+
+  @override
+  String get onboardingStep5Body =>
+      'When you plan meals, ingredients appear here automatically grouped by category. Check items off as you shop. The share icon (top right) creates text ready for WhatsApp.';
+
+  @override
+  String get onboardingStep6Title => 'Discover the community';
+
+  @override
+  String get onboardingStep6Body =>
+      'Search other users\' recipes by name or tags. Rate them, save them to your book and follow your favourite cooks from their profile.';
+
+  @override
+  String get onboardingStep7Title => 'Your profile and household';
+
+  @override
+  String get onboardingStep7Body =>
+      'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.';
 }
