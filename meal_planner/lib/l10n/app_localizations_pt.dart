@@ -1305,7 +1305,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Siga os seus cozinheiros favoritos a partir do perfil e consulte as suas últimas receitas premindo o botão do feed.';
 
   @override
-  String get onboardingStep10Title => 'O seu perfil e lar';
+  String get onboardingStep10Title => 'O seu perfil e casa';
 
   @override
   String get onboardingStep10Body =>

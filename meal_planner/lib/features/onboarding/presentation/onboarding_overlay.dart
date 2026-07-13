@@ -246,6 +246,7 @@ _CardLayout _resolveCardLayout({
 
   final safeTop = padding.top + 12;
   final safeBottom = screenSize.height - padding.bottom - 12;
+  final maxTop = math.max(safeTop, safeBottom - estimatedCardHeight);
   final centeredLeft = (screenSize.width - cardWidth) / 2;
   final centeredTop =
       (screenSize.height - estimatedCardHeight) / 2 - pointerSize;
@@ -253,7 +254,7 @@ _CardLayout _resolveCardLayout({
   if (targetRect == null) {
     return _CardLayout(
       left: centeredLeft.clamp(horizontalMargin, screenSize.width - cardWidth - horizontalMargin),
-      top: centeredTop.clamp(safeTop, safeBottom - estimatedCardHeight),
+      top: centeredTop.clamp(safeTop, maxTop),
       pointerOnTop: false,
       pointerOffset: cardWidth / 2,
     );
@@ -279,7 +280,7 @@ _CardLayout _resolveCardLayout({
 
   return _CardLayout(
     left: left,
-    top: top.clamp(safeTop, safeBottom - estimatedCardHeight),
+    top: top.clamp(safeTop, maxTop),
     pointerOnTop: !placeAbove,
     pointerOffset: pointerOffset,
   );

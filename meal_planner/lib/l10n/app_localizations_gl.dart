@@ -1292,7 +1292,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get onboardingStep8Body =>
-      'Busca receitas doutros usuarios por nome ou etiquetas. Valóraas e gárdalas no teu recetario.';
+      'Busca receitas doutros usuarios por nome ou etiquetas. Valóraas e gárdalas no teu receitar.';
 
   @override
   String get onboardingStep9Title => 'O teu feed de cociñeiros';
