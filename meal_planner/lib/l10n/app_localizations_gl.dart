@@ -1250,14 +1250,14 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toca un slot baleiro para asignar unha receita. Tamén podes premer a icona de libro (abaixo á dereita) para abrir o recetario lateral e arrastrar receitas directamente ao día.';
+      'Toca un espazo baleiro para asignar unha receita. Tamén podes premer a icona de libro (abaixo á dereita) para abrir o recetario lateral e arrastrar receitas directamente ao día.';
 
   @override
   String get onboardingStep3Title => 'O teu recetario';
 
   @override
   String get onboardingStep3Body =>
-      'Todas as túas receitas dunha ollada. A lupa busca por nome e os chips de etiquetas filtran por categoría. A icona de libro abre o glosario culinario.';
+      'Todas as túas receitas dunha ollada. A lupa busca por nome e as etiquetas filtran por categoría. A icona de libro abre o glosario culinario.';
 
   @override
   String get onboardingStep4Title => 'Crea unha receita';

@@ -1235,7 +1235,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get onboardingStep0Body =>
-      'Appa nola funtzionatzen duen erakutsiko dizugu minutu batean. Tutorial hau edozein unetan saltatu dezakezu.';
+      'Aplikazioak nola funtzionatzen duen erakutsiko dizugu minutu batean. Tutorial hau edozein unetan saltatu dezakezu.';
 
   @override
   String get onboardingStep1Title => 'Asteko planifikatzailea';
@@ -1249,14 +1249,14 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Sakatu hutsik dagoen slot bat errezeta bat esleitzeko. Liburuaren ikonoa ere sakatu dezakezu (behean eskuinean) alboko errezeta-panela irekitzeko eta errezetak egunera zuzenean arrastatzeko.';
+      'Sakatu hutsik dagoen tarte bat errezeta bat esleitzeko. Liburuaren ikonoa ere sakatu dezakezu (behean eskuinean) alboko errezeta-panela irekitzeko eta errezetak egunera zuzenean arrastatzeko.';
 
   @override
   String get onboardingStep3Title => 'Zure errezeta-liburua';
 
   @override
   String get onboardingStep3Body =>
-      'Zure errezeta guztiak begi-bistak. Bilaketa izenaren arabera bilatzen du eta etiketa-chipak kategoriaren arabera iragazten dute. Liburuaren ikonoak sukaldaritza-glosarioa irekitzen du.';
+      'Zure errezeta guztiak begi-bistan. Bilaketa izenaren arabera bilatzen du eta etiketa-iragazkiak kategoriaren arabera iragazten dute. Liburuaren ikonoak sukaldaritza-glosarioa irekitzen du.';
 
   @override
   String get onboardingStep4Title => 'Sortu errezeta bat';

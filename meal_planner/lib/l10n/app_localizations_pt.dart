@@ -1253,14 +1253,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get onboardingStep2Body =>
-      'Toque num slot vazio para atribuir uma receita. Também pode premir o ícone de livro (canto inferior direito) para abrir o painel lateral de receitas e arrastar receitas diretamente para o dia.';
+      'Toque num espaço vazio para atribuir uma receita. Também pode premir o ícone de livro (canto inferior direito) para abrir o painel lateral de receitas e arrastar receitas diretamente para o dia.';
 
   @override
   String get onboardingStep3Title => 'O seu livro de receitas';
 
   @override
   String get onboardingStep3Body =>
-      'Todas as suas receitas num relance. A lupa pesquisa por nome e os chips de etiquetas filtram por categoria. O ícone de livro abre o glossário culinário.';
+      'Todas as suas receitas num relance. A lupa pesquisa por nome e as etiquetas filtram por categoria. O ícone de livro abre o glossário culinário.';
 
   @override
   String get onboardingStep4Title => 'Crie uma receita';
