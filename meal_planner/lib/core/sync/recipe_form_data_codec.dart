@@ -125,7 +125,7 @@ abstract final class RecipeFormDataCodec {
                 unit: isToTaste || useCustomUnit
                     ? i['unit'] as String?
                     : (i['unit'] as String?) ?? defaultIngredientUnit,
-                category: i['category'] as String? ?? defaultIngredientCategoryKey,
+                category: normalizeCategoryKey(i['category'] as String?),
                 customUnit: i['customUnit'] as String? ?? '',
                 useCustomUnit: useCustomUnit,
                 isOptional: i['isOptional'] as bool? ?? false,
