@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `develop`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra, chips amplios en planificador con navegación a ficha de receta, mejoras UX red social (paginación 10, feed con etiquetas, fecha en ficha pública).
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: onboarding spotlight (11 pasos), defaults ingrediente (unidad/Verduras), ficha Explorar compacta, acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra.
 
 ---
 
@@ -76,6 +76,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
 **RF-AUTH-11** El usuario puede activar/desactivar el **modo oscuro** con un toggle en Perfil. Por defecto la app sigue el modo del sistema; al cambiar el toggle, la preferencia manual se persiste en el dispositivo (`shared_preferences`) y prevalece sobre el ajuste del sistema.  
+**RF-UX-01** Tras el primer acceso autenticado, la app muestra un **tour de onboarding** (11 pasos) con overlay tipo spotlight: resalta controles concretos (FABs, buscadores, acciones de compra/comunidad, secciones de perfil), tarjeta explicativa contextual, navegación con flechas y opción Omitir. Persistencia por usuario; la barra inferior queda bloqueada hasta finalizar u omitir.  
 
 > **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar, `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen.
 
@@ -130,7 +131,8 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 | Nombre | Nombre del ingrediente | "Pechuga de pollo", "Pimiento rojo" |
 | Cantidad | Número (solo dígitos; opcional) | 500, 1, 0.5 |
 | Unidad | Unidad en **singular** (lista predefinida o libre) | `g`, `kg`, `ml`, `l`, `unidad`, `hoja`, `diente`, `chorrito`, `pizca`, `cucharada`, etc. |
-| Categoría | Agrupación para la lista de la compra (no visible en ficha) | `Carnes y pescados`, `Verduras`, `Lácteos`, `Legumbres`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Repostería`, `Congelados`, `Salsas y condimentos`, `Otros` |
+| Categoría | Agrupación para la lista de la compra (no visible en ficha); clave estable p. ej. `vegetables` | Verduras, Lácteos, Carnes y pescados, etc. (15 categorías localizadas) |
+| Valores por defecto (nuevo ingrediente) | Unidad: `unidad`; categoría: `vegetables` (Verduras) | Preseleccionados en formulario y al deserializar cola offline |
 | Opcional | El ingrediente puede omitirse al cocinar / en la compra | `is_optional` (autor); `is_included` (usuario en su ficha) |
 | Al gusto | Sin cantidad/unidad; no se añade a la lista de la compra | `is_to_taste` (p. ej. sal, pimienta) |
 
@@ -161,7 +163,8 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
 **RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (FAB con icono de libro, encima de «Nueva receta») con términos y definiciones predefinidos (p. ej. ahumar, al dente, caramelizar, tamizar), buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
 **RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).  
-**RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.
+**RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.  
+**RF-REC-23** Al añadir un ingrediente en el formulario de receta, la unidad por defecto es **`unidad`** y la categoría por defecto es **Verduras** (`vegetables`). La deserialización offline (`RecipeFormDataCodec`) aplica los mismos defaults si el payload no incluye esos campos (salvo «al gusto» o unidad personalizada).
 
 ---
 
@@ -540,7 +543,7 @@ supabase
 Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/social/`.
 
 - **RF-SOC-01** El usuario puede marcar una receta como pública y visible para todos (formulario y detalle). Recetas forkeadas (`forked_from_id`) no se pueden publicar.
-- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtro **multi-etiqueta** (AND, `list_public_recipes` con `p_tags text[]` y `@>`), chips de orden recientes/top, scroll infinito (**10** recetas por página) e indicador «Ordenado por: …» (icono de orden) debajo de las etiquetas. Orden por defecto: fecha de creación descendente. Las etiquetas en cada tarjeta usan scroll horizontal si no caben en una fila. Nombre del autor enlazado al perfil público, con tipografía destacada.
+- **RF-SOC-02** Pantalla de exploración (`/home/explore`) con buscador, filtro **multi-etiqueta** (AND, `list_public_recipes` con `p_tags text[]` y `@>`), chips de orden recientes/top, scroll infinito (**10** recetas por página) e indicador «Ordenado por: …» (icono de orden) debajo de las etiquetas. Orden por defecto: fecha de creación descendente. Cada tarjeta muestra foto cuadrada **84×84**, datos compactos (título, autor con área táctil ampliada, valoración, raciones) y **etiquetas en fila a ancho completo** bajo la foto (scroll horizontal). Nombre del autor enlazado al perfil público, con tipografía destacada.
 - **RF-SOC-03** El usuario puede guardar una receta pública de **otro** usuario en su recetario (fork); no puede forkear la propia. Queda privada y no republicable. Si tiene ingredientes opcionales, se muestra un aviso y el usuario puede editar la inclusión en su ficha.
 - **RF-SOC-04** Valoración 1–5 estrellas (una por usuario y receta; no en recetas propias).
 - **RF-SOC-05** Seguir usuarios (desde perfil público; acceso al perfil desde el nombre del autor en tarjeta o detalle) y feed en `/home/explore/feed` con filtro multi-etiqueta, orden por fecha de creación e indicador «Ordenado por: Más reciente».

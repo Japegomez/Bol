@@ -1,4 +1,6 @@
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
+import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 /// Serialize/deserialize [RecipeFormData] for the pending-operations queue.
 abstract final class RecipeFormDataCodec {
@@ -115,16 +117,20 @@ abstract final class RecipeFormDataCodec {
               if (name == null || name is! String || name.trim().isEmpty) {
                 throw const FormatException('Ingredient name is required');
               }
+              final isToTaste = i['isToTaste'] as bool? ?? false;
+              final useCustomUnit = i['useCustomUnit'] as bool? ?? false;
               return IngredientFormItem(
                 name: name,
                 quantity: i['quantity'] as num?,
-                unit: i['unit'] as String?,
-                category: i['category'] as String? ?? 'Carnes y pescados',
+                unit: isToTaste || useCustomUnit
+                    ? i['unit'] as String?
+                    : (i['unit'] as String?) ?? defaultIngredientUnit,
+                category: normalizeCategoryKey(i['category'] as String?),
                 customUnit: i['customUnit'] as String? ?? '',
-                useCustomUnit: i['useCustomUnit'] as bool? ?? false,
+                useCustomUnit: useCustomUnit,
                 isOptional: i['isOptional'] as bool? ?? false,
                 isIncluded: i['isIncluded'] as bool? ?? true,
-                isToTaste: i['isToTaste'] as bool? ?? false,
+                isToTaste: isToTaste,
               );
             },
           )

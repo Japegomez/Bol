@@ -21,98 +21,139 @@ class PublicRecipeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final photoUrlAsync = ref.watch(socialPhotoUrlProvider(recipe.photoUrl));
     final l10n = context.l10n;
+    final theme = Theme.of(context);
 
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => context.push('/home/explore/${recipe.id}'),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 96,
-              height: 96,
-              child: photoUrlAsync.when(
-                data: (url) {
-                  if (url == null) {
-                    return const ColoredBox(
-                      color: Color(0xFFE0E0E0),
-                      child: Icon(Icons.restaurant, size: 40),
-                    );
-                  }
-                  return CachedNetworkImage(
-                    imageUrl: url,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    errorWidget: (_, _, _) => const Icon(Icons.broken_image),
-                  );
-                },
-                loading: () => const ColoredBox(
-                  color: Color(0xFFE0E0E0),
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-                error: (_, _) => const ColoredBox(
-                  color: Color(0xFFE0E0E0),
-                  child: Icon(Icons.restaurant, size: 40),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titleOverride ?? recipe.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 6),
-                    InkWell(
-                      onTap: () =>
-                          context.push('/home/explore/user/${recipe.userId}'),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Text(
-                          recipe.authorName,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 84,
+                    height: 84,
+                    child: photoUrlAsync.when(
+                      data: (url) {
+                        if (url == null) {
+                          return _PhotoPlaceholder(
+                            child: Icon(
+                              Icons.restaurant,
+                              size: 40,
+                              color: theme.colorScheme.outline,
+                            ),
+                          );
+                        }
+                        return CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => const _PhotoPlaceholder(
+                            child: Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (_, _, _) => _PhotoPlaceholder(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        );
+                      },
+                      loading: () => const _PhotoPlaceholder(
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      error: (_, _) => _PhotoPlaceholder(
+                        child: Icon(
+                          Icons.restaurant,
+                          size: 40,
+                          color: theme.colorScheme.outline,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        StarRatingDisplay(
-                          rating: recipe.avgScore,
-                          count: recipe.ratingCount,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          l10n.servingsCount(recipe.servings),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            titleOverride ?? recipe.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          InkWell(
+                            onTap: () => context
+                                .push('/home/explore/user/${recipe.userId}'),
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Text(
+                                recipe.authorName,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              StarRatingDisplay(
+                                rating: recipe.avgScore,
+                                count: recipe.ratingCount,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                l10n.servingsCount(recipe.servings),
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    if (recipe.tags.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      HorizontalTagList(tags: recipe.tags),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+            if (recipe.tags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                child: HorizontalTagList(tags: recipe.tags),
+              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: child,
     );
   }
 }

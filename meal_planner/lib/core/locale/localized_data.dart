@@ -20,6 +20,8 @@ const ingredientCategoryKeys = [
   'other',
 ];
 
+const defaultIngredientCategoryKey = 'vegetables';
+
 /// Legacy Spanish labels still present in older rows.
 const _legacyCategoryLabels = {
   'Carnes y pescados': 'meat_fish',
@@ -41,7 +43,7 @@ const _legacyCategoryLabels = {
 };
 
 String normalizeCategoryKey(String? value) {
-  if (value == null || value.isEmpty) return 'meat_fish';
+  if (value == null || value.isEmpty) return defaultIngredientCategoryKey;
   if (ingredientCategoryKeys.contains(value)) return value;
   return _legacyCategoryLabels[value] ?? 'other';
 }

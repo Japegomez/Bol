@@ -41,6 +41,13 @@ class _IngredientRowState extends State<IngredientRow> {
   void initState() {
     super.initState();
     _ingredient.category = normalizeCategoryKey(_ingredient.category);
+    if (!_ingredient.useCustomUnit && !_ingredient.isToTaste) {
+      final normalized = normalizeUnit(_ingredient.unit);
+      _ingredient.unit = normalized != null &&
+              predefinedUnits.contains(normalized)
+          ? normalized
+          : defaultIngredientUnit;
+    }
     _nameController = TextEditingController(text: _ingredient.name);
     _quantityController = TextEditingController(
       text: _ingredient.quantity?.toString() ?? '',
@@ -63,6 +70,7 @@ class _IngredientRowState extends State<IngredientRow> {
       decoration: InputDecoration(
         labelText: l10n.quantityLabel,
         isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
@@ -90,8 +98,11 @@ class _IngredientRowState extends State<IngredientRow> {
         'unit-${widget.ingredient.key}-${_ingredient.useCustomUnit}',
       ),
       isExpanded: true,
-      initialValue:
-          _ingredient.useCustomUnit ? customUnitOption : _ingredient.unit,
+      initialValue: _ingredient.useCustomUnit
+          ? customUnitOption
+          : (predefinedUnits.contains(_ingredient.unit)
+              ? _ingredient.unit
+              : defaultIngredientUnit),
       decoration: InputDecoration(
         labelText: context.l10n.unitLabel,
         isDense: true,
@@ -122,7 +133,7 @@ class _IngredientRowState extends State<IngredientRow> {
       isExpanded: true,
       initialValue: ingredientCategoryKeys.contains(_ingredient.category)
           ? _ingredient.category
-          : ingredientCategoryKeys.first,
+          : defaultIngredientCategoryKey,
       decoration: InputDecoration(
         labelText: context.l10n.categoryLabel,
         isDense: true,
@@ -157,9 +168,9 @@ class _IngredientRowState extends State<IngredientRow> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(flex: 2, child: quantityField),
+              SizedBox(width: 96, child: quantityField),
               const SizedBox(width: 8),
-              Expanded(flex: 2, child: unitField),
+              Expanded(child: unitField),
             ],
           ),
           const SizedBox(height: 8),
@@ -171,7 +182,7 @@ class _IngredientRowState extends State<IngredientRow> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(flex: 2, child: quantityField),
+        SizedBox(width: 96, child: quantityField),
         const SizedBox(width: 8),
         Expanded(flex: 2, child: unitField),
         const SizedBox(width: 8),
@@ -287,7 +298,7 @@ class _IngredientRowState extends State<IngredientRow> {
                           _customUnitController.clear();
                         } else if (_ingredient.unit == null &&
                             !_ingredient.useCustomUnit) {
-                          _ingredient.unit = predefinedUnits.first;
+                          _ingredient.unit = defaultIngredientUnit;
                         }
                       });
                     },

@@ -40,5 +40,27 @@ void main() {
       expect(restored.tags, ['entrante']);
       expect(restored.tips, 'Servir caliente');
     });
+
+    test('defaults missing ingredient unit to unidad', () {
+      final json = RecipeFormDataCodec.toJson(
+        RecipeFormData(
+          title: 'Ensalada',
+          ingredients: [
+            IngredientFormItem(name: 'Lechuga', quantity: 1, unit: 'unidad'),
+          ],
+          steps: [StepFormItem(description: 'Mezclar')],
+        ),
+      );
+
+      final ingredients = json['ingredients'] as List<dynamic>;
+      final ingredient = Map<String, dynamic>.from(
+        ingredients.first as Map<dynamic, dynamic>,
+      );
+      ingredient.remove('unit');
+
+      final restored = RecipeFormDataCodec.fromJson(json);
+
+      expect(restored.ingredients.single.unit, 'unidad');
+    });
   });
 }
