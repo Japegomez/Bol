@@ -21,6 +21,7 @@ class PublicRecipeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final photoUrlAsync = ref.watch(socialPhotoUrlProvider(recipe.photoUrl));
     final l10n = context.l10n;
+    final theme = Theme.of(context);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -34,37 +35,46 @@ class PublicRecipeCard extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 84),
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: photoUrlAsync.when(
-                        data: (url) {
-                          if (url == null) {
-                            return const ColoredBox(
-                              color: Color(0xFFE0E0E0),
-                              child: Icon(Icons.restaurant, size: 40),
-                            );
-                          }
-                          return CachedNetworkImage(
-                            imageUrl: url,
-                            fit: BoxFit.cover,
-                            placeholder: (_, _) => const Center(
+                  SizedBox(
+                    width: 84,
+                    height: 84,
+                    child: photoUrlAsync.when(
+                      data: (url) {
+                        if (url == null) {
+                          return _PhotoPlaceholder(
+                            child: Icon(
+                              Icons.restaurant,
+                              size: 40,
+                              color: theme.colorScheme.outline,
+                            ),
+                          );
+                        }
+                        return CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => const _PhotoPlaceholder(
+                            child: Center(
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                            errorWidget: (_, _, _) =>
-                                const Icon(Icons.broken_image),
-                          );
-                        },
-                        loading: () => const ColoredBox(
-                          color: Color(0xFFE0E0E0),
-                          child: Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
+                          errorWidget: (_, _, _) => _PhotoPlaceholder(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        );
+                      },
+                      loading: () => const _PhotoPlaceholder(
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        error: (_, _) => const ColoredBox(
-                          color: Color(0xFFE0E0E0),
-                          child: Icon(Icons.restaurant, size: 40),
+                      ),
+                      error: (_, _) => _PhotoPlaceholder(
+                        child: Icon(
+                          Icons.restaurant,
+                          size: 40,
+                          color: theme.colorScheme.outline,
                         ),
                       ),
                     ),
@@ -83,23 +93,22 @@ class PublicRecipeCard extends ConsumerWidget {
                             titleOverride ?? recipe.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: theme.textTheme.titleMedium,
                           ),
                           const SizedBox(height: 4),
                           InkWell(
                             onTap: () => context
                                 .push('/home/explore/user/${recipe.userId}'),
                             borderRadius: BorderRadius.circular(4),
-                            child: Text(
-                              recipe.authorName,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Text(
+                                recipe.authorName,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -112,7 +121,7 @@ class PublicRecipeCard extends ConsumerWidget {
                               const SizedBox(width: 12),
                               Text(
                                 l10n.servingsCount(recipe.servings),
-                                style: Theme.of(context).textTheme.bodySmall,
+                                style: theme.textTheme.bodySmall,
                               ),
                             ],
                           ),
@@ -131,6 +140,20 @@ class PublicRecipeCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: child,
     );
   }
 }

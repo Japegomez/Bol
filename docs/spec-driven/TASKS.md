@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 13/07/2026 — Onboarding guiado: tour 8 pasos en pantallas reales, persistencia por usuario, bloqueo de tabs durante el tutorial (PR #43)
+> Actualizado: 14/07/2026 — Onboarding spotlight (11 pasos), defaults ingrediente (unidad/Verduras), ficha Explorar compacta, fixes review PR #46
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -274,8 +274,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Peso/volumen: `g`, `kg`, `ml`, `l` (pegados a la cantidad en ficha/compra: `200g de pasta`)
   - Conteo/relativas: `unidad`, `pizca`, `cucharadita`, `cucharada`, `vaso`, `taza`, `puñado`, `hoja`, `diente`, `chorrito`, `ramita`, `rebanada`, `lámina`, `rama`, `trozo`, `filete`, `rodaja`, `lata`, `bote`, `paquete`, `sobre`
   - Plural automático si cantidad > 1 según `unitPluralMap` (editable)
-- [x] Selector de categoría de ingrediente:
-  - `Carnes y pescados`, `Verduras`, `Frutas`, `Lácteos`, `Cereales`, `Legumbres`, `Especias`, `Aceites y vinagres`, `Conservas`, `Frutos secos`, `Bebidas`, `Repostería`, `Congelados`, `Salsas y condimentos`, `Otros`
+- [x] Selector de categoría de ingrediente (claves estables + etiquetas localizadas):
+  - `meat_fish`, `vegetables`, `fruits`, `dairy`, `grains`, `legumes`, `spices`, `oils_vinegars`, `canned`, `nuts`, `beverages`, `baking`, `frozen`, `sauces`, `other`
+- [x] Defaults al crear ingrediente: unidad **`unidad`**, categoría **`Verduras`** (`defaultIngredientUnit`, `defaultIngredientCategoryKey`)
+- [x] Campo cantidad más estrecho (96 px) en `IngredientRow` para dejar más espacio a unidad/categoría
 - [x] Añadir/eliminar ingrediente desde el formulario de receta
   - Botones «Añadir ingrediente» / «Añadir paso» al final de cada lista (mejor UX en recetas largas)
 - [x] Ampliar etiquetas sugeridas (dietas, alérgenos, estilos de cocina: sin lactosa, vegano, etc.)
@@ -464,7 +466,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Modo **hogar** offline: solo lectura (sin edición; evita conflictos Realtime)
 - [x] Fotos de receta bloqueadas offline (fail-closed, alineado con moderación)
 - [x] Gating de edición en formularios, planificador, lista de compra (`canEditOfflineProvider`)
-- [x] Tests: codec de formulario + helper de conectividad (`test/offline_support_test.dart`)
+- [x] Tests: codec de formulario + helper de conectividad (`test/offline_support_test.dart`); default `unidad` si falta `unit` al deserializar
 
 ### Pendiente
 
@@ -485,12 +487,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Flujo de eliminación de cuenta (derecho de supresión RGPD)
   - RPC `delete_user_account` (migración `010`); pantalla Perfil → Eliminar cuenta
   - Pendiente: aplicar migración `010` en Supabase remoto
-- [x] Onboarding para nuevos usuarios (tour guiado por pantallas reales)
-  - `OnboardingOverlay` en `home_shell.dart`: 8 pasos (Planificador → Recetario → Compra → Explorar → Perfil)
-  - Tarjeta flotante con Omitir / Anterior / Siguiente / Finalizar; navegación automática entre tabs
-  - Completado persistido por `userId` en `SharedPreferences` (`app.onboarding_completed.<id>`)
-  - Bottom nav deshabilitado durante el tour (`IgnorePointer`); la pantalla actual sigue siendo interactiva
-  - Textos en 6 idiomas (es, en, ca, eu, gl, pt); PR #43
+- [x] Onboarding para nuevos usuarios (tour guiado tipo **spotlight**)
+  - `OnboardingOverlay` fullscreen: scrim oscuro, halo pulsante, tarjeta contextual junto al elemento resaltado
+  - **11 pasos** con highlights simples o múltiples (recetario: lupa + glosario; compra: intro + FAB + compartir; comunidad: intro + feed; perfil: Editar perfil + Mi hogar)
+  - Navegación con flechas circulares; indicadores de progreso animados; `OnboardingTargets` con `GlobalKey` por widget
+  - Completado persistido por `userId` en `SharedPreferences`; bottom nav bloqueado durante el tour
+  - Textos en 6 idiomas; PR #43 (v1 tarjeta inferior), rediseño en develop / PR #46
 - [x] Icono de app y splash screen
   - `flutter_launcher_icons`; assets en `docs/store-assets/` (PR #15)
 - [ ] README de desarrollo con instrucciones de setup local
@@ -526,7 +528,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | **Planificador** | Compra | Perfil)
 - [x] Paginación / scroll infinito (10 recetas por página)
 - [x] Orden por defecto: fecha de creación (más reciente primero); indicador «Ordenado por: …» con icono debajo de etiquetas
-- [x] Tarjeta de receta pública: foto, nombre, autor destacado (enlace al perfil), valoración media, etiquetas (scroll horizontal si hay varias)
+- [x] Tarjeta de receta pública: foto cuadrada **84×84** fija; título/autor/valoración compactos; etiquetas en fila a **ancho completo** debajo de la foto (`PublicRecipeCard`; `_PhotoPlaceholder` con color de tema)
 - [x] Detalle de receta pública: fecha de creación visible junto a valoración y raciones
 
 ### F15 - Interacción social
@@ -549,6 +551,6 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 1. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
 2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-3. **Release TestFlight / Play** con onboarding + offline + multi-etiqueta + modo oscuro.
+3. **Release TestFlight / Play** con onboarding spotlight + offline + multi-etiqueta + modo oscuro + UX recetario/Explorar.
 4. **Tests unitarios** de escalado de ingredientes al planificar.
 5. **README de desarrollo** con instrucciones de setup local.
