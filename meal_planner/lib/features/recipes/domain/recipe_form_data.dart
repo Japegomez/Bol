@@ -1,4 +1,6 @@
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
+import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 int _formItemKeyCounter = 0;
 String _newFormItemKey(String prefix) => '$prefix-${_formItemKeyCounter++}';
@@ -8,8 +10,8 @@ class IngredientFormItem {
     String? key,
     this.name = '',
     this.quantity,
-    this.unit,
-    this.category = 'Carnes y pescados',
+    this.unit = defaultIngredientUnit,
+    this.category = defaultIngredientCategoryKey,
     this.customUnit = '',
     this.useCustomUnit = false,
     this.isOptional = false,

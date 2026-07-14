@@ -2,6 +2,7 @@
 const weightUnits = ['g', 'kg'];
 const volumeUnits = ['ml', 'l'];
 const countUnits = ['unidad'];
+const defaultIngredientUnit = 'unidad';
 const relativeUnits = [
   'pizca',
   'cucharadita',

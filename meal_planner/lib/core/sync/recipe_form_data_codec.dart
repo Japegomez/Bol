@@ -1,3 +1,4 @@
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 
 /// Serialize/deserialize [RecipeFormData] for the pending-operations queue.
@@ -119,7 +120,7 @@ abstract final class RecipeFormDataCodec {
                 name: name,
                 quantity: i['quantity'] as num?,
                 unit: i['unit'] as String?,
-                category: i['category'] as String? ?? 'Carnes y pescados',
+                category: i['category'] as String? ?? defaultIngredientCategoryKey,
                 customUnit: i['customUnit'] as String? ?? '',
                 useCustomUnit: i['useCustomUnit'] as bool? ?? false,
                 isOptional: i['isOptional'] as bool? ?? false,
