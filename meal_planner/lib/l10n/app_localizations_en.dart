@@ -1304,4 +1304,71 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingStep10Body =>
       'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.';
+
+  @override
+  String get createRecipeOptionsTitle => 'Create recipe';
+
+  @override
+  String get createRecipeManual => 'Create manually';
+
+  @override
+  String get createRecipeManualSubtitle => 'Fill in all recipe fields yourself';
+
+  @override
+  String get createRecipeWithAssistant => 'Create with AI assistant';
+
+  @override
+  String get createRecipeWithAssistantSubtitle =>
+      'Describe the dish and AI will build the recipe card';
+
+  @override
+  String get recipeAssistantTitle => 'Recipe assistant';
+
+  @override
+  String get recipeAssistantDescription =>
+      'Describe the dish you want to create: just the name or a detailed recipe with ingredients and steps.';
+
+  @override
+  String get recipeAssistantPromptHint =>
+      'E.g.: Spanish potato omelette for 4 with onion...';
+
+  @override
+  String get recipeAssistantGenerate => 'Generate recipe';
+
+  @override
+  String get recipeAssistantGenerating => 'Generating...';
+
+  @override
+  String get recipeAssistantBlockingRecipe =>
+      'The assistant is creating your recipe…';
+
+  @override
+  String get recipeAssistantBlockingNutrition =>
+      'Calculating nutritional information…';
+
+  @override
+  String get recipeAssistantNotRecipeRequest =>
+      'I can only help you create recipes. Describe a dish or a recipe.';
+
+  @override
+  String get recipeAssistantRateLimited =>
+      'Usage limit reached. Please try again later.';
+
+  @override
+  String get recipeAssistantFailed =>
+      'Could not generate a response. Please try again.';
+
+  @override
+  String get recipeAssistantOffline =>
+      'An internet connection is required to use the assistant.';
+
+  @override
+  String get recipeAssistantNotConfigured =>
+      'The AI assistant is not configured yet.';
+
+  @override
+  String get completeNutritionWithAssistant => 'Complete with AI';
+
+  @override
+  String get recipeAssistantNutritionSaved => 'Nutrition information completed';
 }

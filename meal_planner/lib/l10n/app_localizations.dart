@@ -2505,6 +2505,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.'**
   String get onboardingStep10Body;
+
+  /// No description provided for @createRecipeOptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create recipe'**
+  String get createRecipeOptionsTitle;
+
+  /// No description provided for @createRecipeManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Create manually'**
+  String get createRecipeManual;
+
+  /// No description provided for @createRecipeManualSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in all recipe fields yourself'**
+  String get createRecipeManualSubtitle;
+
+  /// No description provided for @createRecipeWithAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Create with AI assistant'**
+  String get createRecipeWithAssistant;
+
+  /// No description provided for @createRecipeWithAssistantSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the dish and AI will build the recipe card'**
+  String get createRecipeWithAssistantSubtitle;
+
+  /// No description provided for @recipeAssistantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe assistant'**
+  String get recipeAssistantTitle;
+
+  /// No description provided for @recipeAssistantDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the dish you want to create: just the name or a detailed recipe with ingredients and steps.'**
+  String get recipeAssistantDescription;
+
+  /// No description provided for @recipeAssistantPromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g.: Spanish potato omelette for 4 with onion...'**
+  String get recipeAssistantPromptHint;
+
+  /// No description provided for @recipeAssistantGenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate recipe'**
+  String get recipeAssistantGenerate;
+
+  /// No description provided for @recipeAssistantGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating...'**
+  String get recipeAssistantGenerating;
+
+  /// No description provided for @recipeAssistantBlockingRecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant is creating your recipe…'**
+  String get recipeAssistantBlockingRecipe;
+
+  /// No description provided for @recipeAssistantBlockingNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating nutritional information…'**
+  String get recipeAssistantBlockingNutrition;
+
+  /// No description provided for @recipeAssistantNotRecipeRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'I can only help you create recipes. Describe a dish or a recipe.'**
+  String get recipeAssistantNotRecipeRequest;
+
+  /// No description provided for @recipeAssistantRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage limit reached. Please try again later.'**
+  String get recipeAssistantRateLimited;
+
+  /// No description provided for @recipeAssistantFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not generate a response. Please try again.'**
+  String get recipeAssistantFailed;
+
+  /// No description provided for @recipeAssistantOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'An internet connection is required to use the assistant.'**
+  String get recipeAssistantOffline;
+
+  /// No description provided for @recipeAssistantNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI assistant is not configured yet.'**
+  String get recipeAssistantNotConfigured;
+
+  /// No description provided for @completeNutritionWithAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete with AI'**
+  String get completeNutritionWithAssistant;
+
+  /// No description provided for @recipeAssistantNutritionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition information completed'**
+  String get recipeAssistantNutritionSaved;
 }
 
 class _AppLocalizationsDelegate

@@ -417,5 +417,25 @@
   "onboardingStep9Title": "El teu feed de cuiners",
   "onboardingStep9Body": "Segueix els teus cuiners preferits des del seu perfil i consulta les seves últimes receptes prement el botó del feed.",
   "onboardingStep10Title": "El teu perfil i llar",
-  "onboardingStep10Body": "Edita el teu nom i foto. A la secció La meva llar pots planificar amb la teva família en temps real. Des d'aquí també canvies l'idioma i el mode fosc."
+  "onboardingStep10Body": "Edita el teu nom i foto. A la secció La meva llar pots planificar amb la teva família en temps real. Des d'aquí també canvies l'idioma i el mode fosc.",
+
+  "createRecipeOptionsTitle": "Crear recepta",
+  "createRecipeManual": "Crear manualment",
+  "createRecipeManualSubtitle": "Omple tu mateix tots els camps de la recepta",
+  "createRecipeWithAssistant": "Crear amb assistent d'IA",
+  "createRecipeWithAssistantSubtitle": "Descriu el plat i la IA elaborarà la fitxa",
+  "recipeAssistantTitle": "Assistent de receptes",
+  "recipeAssistantDescription": "Descriu el plat que vols crear: només el nom o una recepta detallada amb ingredients i passos.",
+  "recipeAssistantPromptHint": "Ex.: truita de patates per a 4 persones amb ceba...",
+  "recipeAssistantGenerate": "Generar recepta",
+  "recipeAssistantGenerating": "Generant...",
+  "recipeAssistantBlockingRecipe": "L'assistent està elaborant la teva recepta…",
+  "recipeAssistantBlockingNutrition": "Calculant la informació nutricional…",
+  "recipeAssistantNotRecipeRequest": "Només puc ajudar-te a elaborar receptes. Descriu un plat o una recepta.",
+  "recipeAssistantRateLimited": "Límit d'ús assolit. Torna-ho a provar més tard.",
+  "recipeAssistantFailed": "No s'ha pogut generar la resposta. Torna-ho a provar.",
+  "recipeAssistantOffline": "Es requereix connexió a internet per usar l'assistent.",
+  "recipeAssistantNotConfigured": "L'assistent d'IA encara no està configurat.",
+  "completeNutritionWithAssistant": "Completar amb IA",
+  "recipeAssistantNutritionSaved": "Fitxa nutricional completada"
 }

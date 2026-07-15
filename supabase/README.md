@@ -99,7 +99,69 @@ supabase functions deploy translate-titles
 
 `translate-recipe` traduce la receta completa (título, tips, nombres de ingredientes y pasos) y la cachea en `recipe_translations`. `translate-titles` traduce en lote solo los títulos visibles en listas (Descubrir, Feed, recetario) y los cachea en `recipe_title_translations`. Unidades, categorías y tags son claves estables y se localizan en el cliente (no se traducen con Google).
 
-La función exige JWT de usuario autenticado (comportamiento por defecto). La app invoca la función al seleccionar una imagen en el formulario de receta o en editar perfil.
+## Edge Function: asistente IA de recetas
+
+La función `recipe-assistant` genera fichas de receta completas o estima la información nutricional por ración usando un proveedor LLM compatible con la API de OpenAI.
+
+**Proveedor recomendado:** [Cerebras](https://cloud.cerebras.ai) con `gpt-oss-120b` (JSON Schema nativo, 1M tokens/día gratis, ~30 RPM).
+
+**Secrets (Supabase):**
+
+| Secret | Valor por defecto (código) | Descripción |
+|---|---|---|
+| `LLM_API_KEY` | — | API key del proveedor |
+| `LLM_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai/` | Endpoint OpenAI-compatible |
+| `LLM_MODEL` | `gemini-2.5-flash` | Modelo a invocar |
+| `LLM_MAX_TOKENS` | `8192` (receta) / `1024` (nutrición) | Opcional; límite de salida |
+
+Para cambiar de proveedor, solo actualiza estos secrets; el código de la función y la app no cambian.
+
+### Cerebras (recomendado)
+
+1. Crea una API key en [cloud.cerebras.ai](https://cloud.cerebras.ai) (prefijo `csk_`).
+2. Configura los secrets (no hace falta redesplegar la función):
+
+```bash
+npx supabase secrets set \
+  LLM_API_KEY=csk_tu_clave \
+  LLM_BASE_URL=https://api.cerebras.ai/v1 \
+  LLM_MODEL=gpt-oss-120b \
+  --project-ref hxtynisikjpwlvpdgdbt
+```
+
+Límites free orientativos: **1M tokens/día**, ~30 RPM, ~60K TPM. Soporta `json_schema` estándar (la función usa `strict: false`).
+
+### Google Gemini (alternativa)
+
+```bash
+npx supabase secrets set \
+  LLM_API_KEY=tu_clave_google \
+  LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/ \
+  LLM_MODEL=gemini-2.5-flash \
+  --project-ref hxtynisikjpwlvpdgdbt
+```
+
+### Probar con Groq
+
+1. Crea una API key en [console.groq.com/keys](https://console.groq.com/keys) (empieza por `gsk_`).
+2. Configura los secrets (no hace falta redesplegar la función):
+
+```bash
+supabase secrets set \
+  LLM_API_KEY=gsk_tu_clave \
+  LLM_BASE_URL=https://api.groq.com/openai/v1 \
+  LLM_MODEL=openai/gpt-oss-20b
+```
+
+| Modelo Groq | Cuándo usarlo |
+|---|---|
+| `openai/gpt-oss-20b` | **Recomendado** para el asistente: soporta JSON Schema (salida estructurada de recetas). |
+| `llama-3.3-70b-versatile` | Más capacidad de razonamiento; prueba si `gpt-oss-20b` no te convence. |
+| `llama-3.1-8b-instant` | Más rápido y barato en cuota; mejor para nutrición simple. |
+
+Límites gratis orientativos: ~30 RPM, ~1.000 peticiones/día (varía por modelo). Para volver a Gemini, repite `supabase secrets set` con los valores de Google.
+
+La función exige JWT de usuario autenticado. La app la invoca al crear una receta con el asistente o al completar la ficha nutricional de una receta existente.
 
 ## Pendiente (Fase 1 — plan §3d en adelante)
 
