@@ -73,72 +73,12 @@ List<IngredientFormItem> _mapIngredients(dynamic raw) {
 String _formatIngredientName(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) return trimmed;
-  final singular = _toSingularIngredientName(trimmed);
-  return singular[0].toUpperCase() + singular.substring(1);
-}
-
-String _toSingularIngredientName(String name) {
-  return name
-      .split(RegExp(r'\s+'))
-      .map(_singularizeWord)
-      .join(' ');
-}
-
-String _singularizeWord(String word) {
-  if (word.length <= 2) return word;
-
-  final lower = word.toLowerCase();
-  const irregular = {
-    'nueces': 'nuez',
-    'peces': 'pez',
-  };
-  final irregularSingular = irregular[lower];
-  if (irregularSingular != null) {
-    return _preserveWordCase(word, irregularSingular);
-  }
-
-  if (lower.endsWith('ies') && word.length > 4) {
-    return _preserveWordCase(word, '${word.substring(0, word.length - 3)}y');
-  }
-  if (lower.endsWith('oes') && word.length > 4) {
-    return word.substring(0, word.length - 2);
-  }
-  if (lower.endsWith('as') && word.length > 3) {
-    return word.substring(0, word.length - 1);
-  }
-  if (lower.endsWith('os') && word.length > 3) {
-    return word.substring(0, word.length - 1);
-  }
-  if (lower.endsWith('es') &&
-      word.length > 3 &&
-      !lower.endsWith('ces') &&
-      !lower.endsWith('ses')) {
-    return word.substring(0, word.length - 1);
-  }
-  if (lower.endsWith('s') &&
-      !lower.endsWith('ss') &&
-      !lower.endsWith('us') &&
-      word.length > 3) {
-    return word.substring(0, word.length - 1);
-  }
-
-  return word;
-}
-
-String _preserveWordCase(String original, String replacement) {
-  if (original.isEmpty || replacement.isEmpty) return replacement;
-  if (original[0] == original[0].toUpperCase()) {
-    return replacement[0].toUpperCase() + replacement.substring(1);
-  }
-  return replacement;
+  return trimmed[0].toUpperCase() + trimmed.substring(1);
 }
 
 bool _isCookingWaterIngredient(String name) {
   final normalized = name.trim().toLowerCase();
   if (normalized.isEmpty) return false;
-
-  const plainWater = {'agua', 'water', 'aigua', 'auga', 'ura', 'água'};
-  if (plainWater.contains(normalized)) return true;
 
   final cookingWaterPatterns = <RegExp>[
     RegExp(r'^agua\s+(para|de)\s+(cocer|hervir|ebullir|coccion|cocción|bano|baño|vapor)'),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
@@ -173,7 +175,7 @@ Future<void> generateNutritionWithAssistant({
   required String title,
   required int servings,
   required List<IngredientFormItem> ingredients,
-  required void Function(NutritionFormData nutrition) onSuccess,
+  required FutureOr<void> Function(NutritionFormData nutrition) onSuccess,
 }) async {
   final l10n = context.l10n;
   final messenger = ScaffoldMessenger.of(context);
@@ -188,7 +190,7 @@ Future<void> generateNutritionWithAssistant({
             ingredients: ingredients,
           ),
     );
-    onSuccess(nutrition);
+    await onSuccess(nutrition);
   } catch (error) {
     messenger.showSnackBar(
       SnackBar(

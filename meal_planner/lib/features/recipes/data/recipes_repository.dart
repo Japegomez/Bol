@@ -612,12 +612,7 @@ class RecipesRepository {
       throw Exception('Se requiere conexión para completar la nutrición con IA');
     }
 
-    await supabase
-        .from(NutritionInfo.table_name)
-        .delete()
-        .eq(NutritionInfo.c_recipeId, recipeId);
-
-    await supabase.from(NutritionInfo.table_name).insert(
+    await supabase.from(NutritionInfo.table_name).upsert(
           NutritionInfo.insert(
             recipeId: recipeId,
             calories: nutrition.calories,
@@ -626,6 +621,7 @@ class RecipesRepository {
             fat: nutrition.fat,
             fiber: nutrition.fiber,
           ),
+          onConflict: NutritionInfo.c_recipeId,
         );
 
     await _cacheRecipeDetailBestEffort(recipeId);

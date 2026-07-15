@@ -92,11 +92,11 @@ const nutritionSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
-    calories: { type: ["number", "null"] },
-    protein: { type: ["number", "null"] },
-    carbohydrates: { type: ["number", "null"] },
-    fat: { type: ["number", "null"] },
-    fiber: { type: ["number", "null"] },
+    calories: { type: ["number", "null"], minimum: 0 },
+    protein: { type: ["number", "null"], minimum: 0 },
+    carbohydrates: { type: ["number", "null"], minimum: 0 },
+    fat: { type: ["number", "null"], minimum: 0 },
+    fiber: { type: ["number", "null"], minimum: 0 },
   },
   required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
 };
@@ -235,6 +235,61 @@ function isCerebrasProvider(baseUrl: string): boolean {
   return baseUrl.includes("cerebras.ai");
 }
 
+function validateAgainstSchema(
+  parsed: Record<string, unknown>,
+  schemaName: string,
+  schema: Record<string, unknown>,
+): boolean {
+  if (schemaName === "recipe_nutrition" || schema === nutritionSchema) {
+    const calories = parsed.calories;
+    const protein = parsed.protein;
+    const carbohydrates = parsed.carbohydrates;
+    const fat = parsed.fat;
+    const fiber = parsed.fiber;
+
+    if (
+      (calories !== null && (typeof calories !== "number" || calories < 0)) ||
+      (protein !== null && (typeof protein !== "number" || protein < 0)) ||
+      (carbohydrates !== null && (typeof carbohydrates !== "number" || carbohydrates < 0)) ||
+      (fat !== null && (typeof fat !== "number" || fat < 0)) ||
+      (fiber !== null && (typeof fiber !== "number" || fiber < 0))
+    ) {
+      return false;
+    }
+
+    if (
+      calories === null && protein === null &&
+      carbohydrates === null && fat === null && fiber === null
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  if (schemaName === "generated_recipe" || schema === recipeSchema) {
+    if (parsed.error === "not_a_recipe_request") {
+      return true;
+    }
+
+    if (typeof parsed.title !== "string" || !parsed.title.trim()) {
+      return false;
+    }
+
+    if (!Array.isArray(parsed.ingredients) || parsed.ingredients.length === 0) {
+      return false;
+    }
+
+    if (!Array.isArray(parsed.steps) || parsed.steps.length === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return true;
+}
+
 async function callLlm(
   systemPrompt: string,
   userPrompt: string,
@@ -258,9 +313,18 @@ async function callLlm(
     : modeMax;
 
   const maxAttempts = 3;
+  const totalBudgetMs = 240000;
+  const maxDelayMs = 30000;
+  const fetchTimeoutMs = 180000;
+  const startTime = Date.now();
   let useJsonObject = options.preferJsonObject ?? false;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const elapsedMs = Date.now() - startTime;
+    if (elapsedMs >= totalBudgetMs) {
+      throw new Error("rate_limited");
+    }
+
     const body: Record<string, unknown> = {
       model,
       temperature: 0.4,
@@ -296,14 +360,29 @@ async function callLlm(
       };
     }
 
-    const res = await fetch(`${baseUrl}chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), fetchTimeoutMs);
+
+    let res: Response;
+    try {
+      res = await fetch(`${baseUrl}chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: abortController.signal,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("rate_limited");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (res.status === 429) {
       if (attempt < maxAttempts) {
@@ -311,9 +390,16 @@ async function callLlm(
         const retryAfterSeconds = retryAfterHeader
           ? Number.parseInt(retryAfterHeader, 10)
           : NaN;
-        const delayMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+        let delayMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
           ? retryAfterSeconds * 1000
           : attempt * 2000;
+        delayMs = Math.min(delayMs, maxDelayMs);
+
+        const remainingBudget = totalBudgetMs - (Date.now() - startTime);
+        if (delayMs >= remainingBudget) {
+          throw new Error("rate_limited");
+        }
+
         console.warn(
           `LLM rate limited (attempt ${attempt}/${maxAttempts}), retrying in ${delayMs}ms`,
         );
@@ -348,7 +434,7 @@ async function callLlm(
     const content = getMessageContent(data);
     const parsed = extractJsonPayload(content);
 
-    if (parsed) {
+    if (parsed && validateAgainstSchema(parsed, schemaName, schema)) {
       return parsed;
     }
 
@@ -459,6 +545,10 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "missing_prompt" }, 400);
       }
 
+      if (prompt.length > 10000) {
+        return jsonResponse({ error: "prompt_too_long" }, 400);
+      }
+
       const result = await callLlm(
         RECIPE_SYSTEM_PROMPT,
         prompt,
@@ -483,11 +573,34 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "missing_recipe_context" }, 400);
     }
 
+    if (title.length > 200) {
+      return jsonResponse({ error: "title_too_long" }, 400);
+    }
+
+    if (ingredients.length > 100) {
+      return jsonResponse({ error: "too_many_ingredients" }, 400);
+    }
+
     const validIngredients = ingredients.filter((item) =>
       typeof item?.name === "string" && item.name.trim().length > 0
     );
     if (validIngredients.length === 0) {
       return jsonResponse({ error: "missing_recipe_context" }, 400);
+    }
+
+    let totalInputSize = title.length;
+    for (const ingredient of validIngredients) {
+      if (ingredient.name.length > 200) {
+        return jsonResponse({ error: "ingredient_name_too_long" }, 400);
+      }
+      totalInputSize += ingredient.name.length;
+      if (ingredient.unit && typeof ingredient.unit === "string") {
+        totalInputSize += ingredient.unit.length;
+      }
+    }
+
+    if (totalInputSize > 20000) {
+      return jsonResponse({ error: "input_too_large" }, 400);
     }
 
     const userPrompt = [

@@ -62,7 +62,7 @@ void main() {
       expect(detectedLangFromAssistantJson({'detectedLang': 'es'}), 'es');
     });
 
-    test('capitalizes ingredient names and drops cooking water', () {
+    test('preserves consumed water ingredients', () {
       final form = recipeFromAssistantJson({
         'title': 'Pasta',
         'servings': 2,
@@ -103,12 +103,50 @@ void main() {
         'nutrition': <String, dynamic>{},
       });
 
-      expect(form.ingredients, hasLength(2));
-      expect(form.ingredients.first.name, 'Espagueti');
-      expect(form.ingredients.last.name, 'Agua de coco');
+      expect(form.ingredients, hasLength(3));
+      expect(form.ingredients[0].name, 'Espaguetis');
+      expect(form.ingredients[1].name, 'Agua');
+      expect(form.ingredients[2].name, 'Agua de coco');
     });
 
-    test('singularizes plural ingredient names', () {
+    test('drops water for boiling entries', () {
+      final form = recipeFromAssistantJson({
+        'title': 'Pasta',
+        'servings': 2,
+        'detectedLang': 'es',
+        'tags': <String>[],
+        'ingredients': [
+          {
+            'name': 'espaguetis',
+            'quantity': 200,
+            'unit': 'g',
+            'category': 'grains',
+            'isOptional': false,
+            'isToTaste': false,
+          },
+          {
+            'name': 'agua para hervir',
+            'quantity': 2,
+            'unit': 'l',
+            'category': 'beverages',
+            'isOptional': false,
+            'isToTaste': false,
+          },
+        ],
+        'steps': [
+          {
+            'description': 'Hervir la pasta en agua con sal',
+            'isOptional': false,
+          },
+        ],
+        'nutrition': <String, dynamic>{},
+      });
+
+      expect(form.ingredients, hasLength(1));
+      expect(form.ingredients.first.name, 'Espaguetis');
+    });
+
+    test('capitalizes ingredient names without singularization', () {
       final form = recipeFromAssistantJson({
         'title': 'Tortilla',
         'servings': 2,
@@ -150,9 +188,9 @@ void main() {
       });
 
       expect(form.ingredients.map((item) => item.name).toList(), [
-        'Patata',
-        'Ajo',
-        'Plátano',
+        'Patatas',
+        'Ajos',
+        'Plátanos',
       ]);
     });
 

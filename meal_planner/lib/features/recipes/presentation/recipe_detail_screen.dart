@@ -175,6 +175,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
               unit: ingredient.unit,
               category: normalizeCategoryKey(ingredient.category),
               isOptional: ingredient.isOptional,
+              isIncluded: ingredient.isIncluded,
               isToTaste: ingredient.isToTaste,
             ),
           )
