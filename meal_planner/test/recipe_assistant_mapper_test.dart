@@ -67,7 +67,7 @@ void main() {
         'title': 'Pasta',
         'servings': 2,
         'detectedLang': 'es',
-        'tags': [],
+        'tags': <String>[],
         'ingredients': [
           {
             'name': 'espaguetis',
@@ -100,7 +100,7 @@ void main() {
             'isOptional': false,
           },
         ],
-        'nutrition': {},
+        'nutrition': <String, dynamic>{},
       });
 
       expect(form.ingredients, hasLength(2));
@@ -113,7 +113,7 @@ void main() {
         'title': 'Tortilla',
         'servings': 2,
         'detectedLang': 'es',
-        'tags': [],
+        'tags': <String>[],
         'ingredients': [
           {
             'name': 'patatas',
@@ -146,7 +146,7 @@ void main() {
             'isOptional': false,
           },
         ],
-        'nutrition': {},
+        'nutrition': <String, dynamic>{},
       });
 
       expect(form.ingredients.map((item) => item.name).toList(), [
@@ -164,7 +164,7 @@ void main() {
         'cookTime': null,
         'detectedLang': 'en-US',
         'tips': null,
-        'tags': [],
+        'tags': <String>[],
         'ingredients': [
           {
             'name': 'Mystery spice',
@@ -205,7 +205,7 @@ void main() {
         'tags': 'invalid',
         'ingredients': 'invalid',
         'steps': null,
-        'nutrition': {},
+        'nutrition': <String, dynamic>{},
       });
 
       expect(form.servings, 4);
