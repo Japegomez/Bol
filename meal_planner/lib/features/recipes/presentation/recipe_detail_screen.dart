@@ -14,8 +14,10 @@ import 'package:meal_planner/features/planner/presentation/planner_provider.dart
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
+import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_display_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
@@ -139,6 +141,7 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
 class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
   late bool _isPublic;
   bool _isUpdatingVisibility = false;
+  bool _isGeneratingNutrition = false;
   final Set<String> _updatingIngredientIds = {};
 
   @override
@@ -152,6 +155,46 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isPublic != widget.isPublic) {
       _isPublic = widget.isPublic;
+    }
+  }
+
+  Future<void> _completeNutritionWithAssistant() async {
+    if (_isGeneratingNutrition) return;
+
+    setState(() => _isGeneratingNutrition = true);
+    await generateNutritionWithAssistant(
+      ref: ref,
+      context: context,
+      title: widget.title,
+      servings: widget.servings,
+      ingredients: widget.ingredients
+          .map(
+            (ingredient) => IngredientFormItem(
+              name: ingredient.name,
+              quantity: ingredient.isToTaste ? null : ingredient.quantity,
+              unit: ingredient.unit,
+              category: normalizeCategoryKey(ingredient.category),
+              isOptional: ingredient.isOptional,
+              isIncluded: ingredient.isIncluded,
+              isToTaste: ingredient.isToTaste,
+            ),
+          )
+          .toList(),
+      onSuccess: (nutrition) async {
+        await ref.read(recipesRepositoryProvider).saveNutrition(
+              widget.recipeId,
+              nutrition,
+            );
+        ref.invalidate(recipeDetailProvider(widget.recipeId));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.recipeAssistantNutritionSaved)),
+          );
+        }
+      },
+    );
+    if (mounted) {
+      setState(() => _isGeneratingNutrition = false);
     }
   }
 
@@ -497,6 +540,26 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                   ),
                   const SizedBox(height: 8),
                   _NutritionGrid(nutrition: widget.nutrition!, l10n: l10n),
+                ] else ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.nutritionPerServing,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _isGeneratingNutrition
+                        ? null
+                        : _completeNutritionWithAssistant,
+                    icon: _isGeneratingNutrition
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_awesome_outlined),
+                    label: Text(l10n.completeNutritionWithAssistant),
+                  ),
                 ],
               ],
             ),

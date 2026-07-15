@@ -14,6 +14,7 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/ingredient_row.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
 
 String _resolveFormError(String error, AppLocalizations l10n) {
@@ -72,6 +73,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   Uint8List? _localPhotoPreview;
   bool _isModeratingPhoto = false;
   String? _photoModerationError;
+  bool _isGeneratingNutrition = false;
 
   @override
   void dispose() {
@@ -215,6 +217,32 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     }
 
     setState(() => data.isPublic = value);
+  }
+
+  Future<void> _generateNutritionWithAssistant() async {
+    if (_data == null || _isGeneratingNutrition) return;
+
+    setState(() => _isGeneratingNutrition = true);
+    await generateNutritionWithAssistant(
+      ref: ref,
+      context: context,
+      title: _data!.title,
+      servings: _data!.servings,
+      ingredients: _data!.ingredients,
+      onSuccess: (nutrition) {
+        setState(() {
+          _data!.nutrition
+            ..calories = nutrition.calories
+            ..protein = nutrition.protein
+            ..carbohydrates = nutrition.carbohydrates
+            ..fat = nutrition.fat
+            ..fiber = nutrition.fiber;
+        });
+      },
+    );
+    if (mounted) {
+      setState(() => _isGeneratingNutrition = false);
+    }
   }
 
   @override
@@ -496,7 +524,31 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                _NutritionFields(data: data.nutrition),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _isGeneratingNutrition
+                        ? null
+                        : _generateNutritionWithAssistant,
+                    icon: _isGeneratingNutrition
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_awesome_outlined),
+                    label: Text(l10n.completeNutritionWithAssistant),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _NutritionFields(
+                  key: ValueKey(
+                    '${data.nutrition.calories}-${data.nutrition.protein}-'
+                    '${data.nutrition.carbohydrates}-${data.nutrition.fat}-'
+                    '${data.nutrition.fiber}',
+                  ),
+                  data: data.nutrition,
+                ),
                 const SizedBox(height: 24),
                 if (!data.canPublish)
                   Card(
@@ -840,7 +892,7 @@ class _PhotoSection extends ConsumerWidget {
 // ──────────────────────────────────────────────────────────────────────────────
 
 class _NutritionFields extends StatefulWidget {
-  const _NutritionFields({required this.data});
+  const _NutritionFields({super.key, required this.data});
 
   final NutritionFormData data;
 

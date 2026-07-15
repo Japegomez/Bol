@@ -1308,4 +1308,72 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get onboardingStep10Body =>
       'Edita tu nombre y foto. En la sección Mi hogar puedes planificar con tu familia en tiempo real. Desde aquí también cambias el idioma y el modo oscuro.';
+
+  @override
+  String get createRecipeOptionsTitle => 'Crear receta';
+
+  @override
+  String get createRecipeManual => 'Crear manualmente';
+
+  @override
+  String get createRecipeManualSubtitle =>
+      'Rellena tú mismo todos los campos de la receta';
+
+  @override
+  String get createRecipeWithAssistant => 'Crear con asistente de IA';
+
+  @override
+  String get createRecipeWithAssistantSubtitle =>
+      'Describe el plato y la IA elaborará la ficha';
+
+  @override
+  String get recipeAssistantTitle => 'Asistente de recetas';
+
+  @override
+  String get recipeAssistantDescription =>
+      'Describe el plato que quieres crear: solo el nombre o una receta detallada con ingredientes y pasos.';
+
+  @override
+  String get recipeAssistantPromptHint =>
+      'Ej.: tortilla de patatas para 4 personas con cebolla...';
+
+  @override
+  String get recipeAssistantGenerate => 'Generar receta';
+
+  @override
+  String get recipeAssistantGenerating => 'Generando...';
+
+  @override
+  String get recipeAssistantBlockingRecipe =>
+      'El asistente está elaborando tu receta…';
+
+  @override
+  String get recipeAssistantBlockingNutrition =>
+      'Calculando información nutricional…';
+
+  @override
+  String get recipeAssistantNotRecipeRequest =>
+      'Solo puedo ayudarte a elaborar recetas. Describe un plato o una receta.';
+
+  @override
+  String get recipeAssistantRateLimited =>
+      'Límite de uso alcanzado. Inténtalo de nuevo más tarde.';
+
+  @override
+  String get recipeAssistantFailed =>
+      'No se pudo generar la respuesta. Inténtalo de nuevo.';
+
+  @override
+  String get recipeAssistantOffline =>
+      'Se requiere conexión a internet para usar el asistente.';
+
+  @override
+  String get recipeAssistantNotConfigured =>
+      'El asistente de IA no está configurado todavía.';
+
+  @override
+  String get completeNutritionWithAssistant => 'Completar con IA';
+
+  @override
+  String get recipeAssistantNutritionSaved => 'Ficha nutricional completada';
 }

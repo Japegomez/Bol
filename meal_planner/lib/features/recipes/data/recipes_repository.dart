@@ -601,6 +601,32 @@ class RecipesRepository {
     );
   }
 
+  Future<void> saveNutrition(
+    String recipeId,
+    NutritionFormData nutrition,
+  ) async {
+    if (!nutrition.hasAnyValue) return;
+
+    final isOnline = await NetworkStatus.isOnline;
+    if (!isOnline) {
+      throw Exception('Se requiere conexión para completar la nutrición con IA');
+    }
+
+    await supabase.from(NutritionInfo.table_name).upsert(
+          NutritionInfo.insert(
+            recipeId: recipeId,
+            calories: nutrition.calories,
+            protein: nutrition.protein,
+            carbohydrates: nutrition.carbohydrates,
+            fat: nutrition.fat,
+            fiber: nutrition.fiber,
+          ),
+          onConflict: NutritionInfo.c_recipeId,
+        );
+
+    await _cacheRecipeDetailBestEffort(recipeId);
+  }
+
   Future<void> deleteRecipeRemote(String id) async {
     final detail = await _fetchRecipeDetailRemote(id);
     if (detail.recipe.photoUrl != null) {

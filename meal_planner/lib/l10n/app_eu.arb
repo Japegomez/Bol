@@ -417,5 +417,25 @@
   "onboardingStep9Title": "Zure sukaldarien feed-a",
   "onboardingStep9Body": "Jarraitu zure sukaldari gogokoenak haien profiletik eta kontsultatu beraien azken errezetak feed botoia sakatuz.",
   "onboardingStep10Title": "Zure profila eta etxea",
-  "onboardingStep10Body": "Editatu zure izena eta argazkia. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu."
+  "onboardingStep10Body": "Editatu zure izena eta argazkia. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu.",
+
+  "createRecipeOptionsTitle": "Errezeta sortu",
+  "createRecipeManual": "Eskuz sortu",
+  "createRecipeManualSubtitle": "Errezetaren eremu guztiak zuk bete",
+  "createRecipeWithAssistant": "IA laguntzailearekin sortu",
+  "createRecipeWithAssistantSubtitle": "Deskribatu platera eta IAk fitxa osatuko du",
+  "recipeAssistantTitle": "Errezeta laguntzailea",
+  "recipeAssistantDescription": "Deskribatu sortu nahi duzun platera: izena bakarrik edo osagai eta urratsekin errezeta zehatza.",
+  "recipeAssistantPromptHint": "Adib.: patata tortilla 4 pertsonentzat tipulaarekin...",
+  "recipeAssistantGenerate": "Errezeta sortu",
+  "recipeAssistantGenerating": "Sortzen...",
+  "recipeAssistantBlockingRecipe": "Laguntzailea zure errezeta prestatzen ari da…",
+  "recipeAssistantBlockingNutrition": "Nutrizio-informazioa kalkulatzen…",
+  "recipeAssistantNotRecipeRequest": "Errezetak sortzen lagun zaitzaket soilik. Deskribatu plater edo errezeta bat.",
+  "recipeAssistantRateLimited": "Erabilera muga gaindituta. Saiatu berriro geroago.",
+  "recipeAssistantFailed": "Ezin izan da erantzuna sortu. Saiatu berriro.",
+  "recipeAssistantOffline": "Laguntzailea erabiltzeko internet konexioa behar da.",
+  "recipeAssistantNotConfigured": "IA laguntzailea oraindik ez dago konfiguratuta.",
+  "completeNutritionWithAssistant": "IA-rekin osatu",
+  "recipeAssistantNutritionSaved": "Nutrizio fitxa osatuta"
 }

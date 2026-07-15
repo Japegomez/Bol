@@ -5,6 +5,7 @@ import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
+import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/data/recipes_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
@@ -100,12 +101,14 @@ class RecipeFormState {
     this.recipeId,
     this.isSaving = false,
     this.error,
+    this.sourceLang,
   });
 
   final RecipeFormData data;
   final String? recipeId;
   final bool isSaving;
   final String? error;
+  final String? sourceLang;
 
   bool get isEditing => recipeId != null;
 
@@ -114,13 +117,16 @@ class RecipeFormState {
     String? recipeId,
     bool? isSaving,
     String? error,
+    String? sourceLang,
     bool clearError = false,
+    bool clearSourceLang = false,
   }) {
     return RecipeFormState(
       data: data ?? this.data,
       recipeId: recipeId ?? this.recipeId,
       isSaving: isSaving ?? this.isSaving,
       error: clearError ? null : (error ?? this.error),
+      sourceLang: clearSourceLang ? null : (sourceLang ?? this.sourceLang),
     );
   }
 }
@@ -136,6 +142,16 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
     }
 
     if (recipeId == null) {
+      final draft = ref.read(recipeAssistantDraftProvider);
+      if (draft != null) {
+        Future.microtask(
+          () => ref.read(recipeAssistantDraftProvider.notifier).state = null,
+        );
+        return RecipeFormState(
+          data: draft.formData,
+          sourceLang: draft.sourceLang,
+        );
+      }
       return RecipeFormState(data: RecipeFormData());
     }
 
@@ -197,7 +213,8 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       return null;
     }
 
-    final sourceLang = ref.read(localeProvider.notifier).currentLanguageCode;
+    final sourceLang = current.sourceLang ??
+        ref.read(localeProvider.notifier).currentLanguageCode;
 
     try {
       if (current.isEditing) {
