@@ -55,8 +55,12 @@ class CookingLiveActivityService {
       final data = _buildData(session);
       await _plugin.createOrUpdateActivity(_kActivityId, data);
       log.d('LiveActivity synced');
-    } catch (e) {
+    } on Object catch (e) {
+      // Catches both Dart exceptions (PlatformException, MissingPluginException)
+      // and any Error subclasses (e.g. AssertionError from native bridge).
       log.w('LiveActivity update failed: $e');
+      // Disable further attempts if the extension isn't reachable.
+      _initialized = false;
     }
   }
 
@@ -65,7 +69,7 @@ class CookingLiveActivityService {
     try {
       await _plugin.endActivity(_kActivityId);
       log.d('LiveActivity ended');
-    } catch (e) {
+    } on Object catch (e) {
       log.w('LiveActivity end failed: $e');
     }
   }

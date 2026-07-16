@@ -88,11 +88,9 @@ class CookingNotificationService {
       await initialize();
       if (!_initialized) return;
     }
-    if (!_isAndroid && !_isIOS) return;
-
-    final copy = CookingPlatformCopy.resolve(session);
-
+    // iOS uses Live Activities instead of local notifications.
     if (_isAndroid) {
+      final copy = CookingPlatformCopy.resolve(session);
       await _showAndroid(session, copy);
     }
   }
