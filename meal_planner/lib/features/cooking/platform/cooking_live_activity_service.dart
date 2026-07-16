@@ -85,7 +85,9 @@ class CookingLiveActivityService {
       _kKeyIsPaused: session.isPaused,
       _kKeyStartedAtMs: session.startedAt.millisecondsSinceEpoch,
       _kKeyAccumulatedPauseMs: session.accumulatedPauseMs,
-      _kKeyPausedAtMs: session.pausedAt?.millisecondsSinceEpoch,
+      // NSUserDefaults (App Group) cannot store null — omit the key when not paused.
+      if (session.pausedAt != null)
+        _kKeyPausedAtMs: session.pausedAt!.millisecondsSinceEpoch,
       _kKeyPausedLabel: copy.pausedLabel,
       _kKeyStepLabel: copy.stepLabel,
       _kKeyPauseAction: copy.pauseAction,
