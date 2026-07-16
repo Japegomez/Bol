@@ -4,6 +4,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_utils.dart';
+import 'package:meal_planner/features/cooking/presentation/widgets/cooking_finish_hold_button.dart';
 
 /// Compact banner shown above the bottom [NavigationBar] while a cooking
 /// session is minimized.
@@ -20,6 +21,7 @@ class CookingBanner extends ConsumerWidget {
     final notifier = ref.read(cookingSessionProvider.notifier);
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final onContainer = theme.colorScheme.onPrimaryContainer;
 
     return GestureDetector(
       onTap: () => notifier.setExpanded(true),
@@ -33,70 +35,71 @@ class CookingBanner extends ConsumerWidget {
             child: SizedBox(
               height: 52,
               child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8, right: 88),
-                    child: Text(
-                      session.recipeTitle,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
-                        height: 1.1,
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 88),
+                      child: Text(
+                        session.recipeTitle,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: onContainer,
+                          fontWeight: FontWeight.w600,
+                          height: 1.1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                Text(
-                  session.isPaused
-                      ? l10n.cookingPausedLabel
-                      : formatCookingDuration(session.elapsed),
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onPrimaryContainer,
-                    height: 1.1,
+                  Text(
+                    session.isPaused
+                        ? l10n.cookingPausedLabel
+                        : formatCookingDuration(session.elapsed),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                      fontWeight: FontWeight.w600,
+                      color: onContainer,
+                      height: 1.1,
+                    ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _BannerIconButton(
-                        icon: session.isPaused
-                            ? Icons.play_arrow
-                            : Icons.pause,
-                        tooltip: session.isPaused
-                            ? l10n.cookingResumeTooltip
-                            : l10n.cookingPauseTooltip,
-                        color: theme.colorScheme.onPrimaryContainer,
-                        onPressed: session.isPaused
-                            ? () => notifier.resume()
-                            : () => notifier.pause(),
-                      ),
-                      _BannerIconButton(
-                        icon: Icons.stop,
-                        tooltip: l10n.finishCookingButton,
-                        color: theme.colorScheme.onPrimaryContainer,
-                        onPressed: () =>
-                            confirmFinishCooking(context, notifier),
-                      ),
-                      _BannerIconButton(
-                        icon: Icons.keyboard_arrow_up,
-                        tooltip: l10n.expandCookingSession,
-                        color: theme.colorScheme.onPrimaryContainer,
-                        onPressed: () => notifier.setExpanded(true),
-                      ),
-                    ],
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _BannerIconButton(
+                          icon: session.isPaused
+                              ? Icons.play_arrow
+                              : Icons.pause,
+                          tooltip: session.isPaused
+                              ? l10n.cookingResumeTooltip
+                              : l10n.cookingPauseTooltip,
+                          color: onContainer,
+                          onPressed: session.isPaused
+                              ? () => notifier.resume()
+                              : () => notifier.pause(),
+                        ),
+                        CookingFinishHoldButton(
+                          notifier: notifier,
+                          iconColor: onContainer,
+                          backgroundColor: Colors.transparent,
+                          size: 48,
+                          innerSize: 36,
+                          iconSize: 26,
+                        ),
+                        _BannerIconButton(
+                          icon: Icons.keyboard_arrow_up,
+                          tooltip: l10n.expandCookingSession,
+                          color: onContainer,
+                          onPressed: () => notifier.setExpanded(true),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             ),
           ),
         ),

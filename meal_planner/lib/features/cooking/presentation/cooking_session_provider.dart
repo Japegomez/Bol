@@ -60,7 +60,7 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
   }) async {
     // Wait for restoration to complete before starting a new session
     while (_isRestoring) {
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
 
     state = CookingSession(

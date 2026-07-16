@@ -562,7 +562,7 @@
   "cookingPauseTooltip": "Pause",
   "cookingResumeTooltip": "Resume",
   "finishCookingTitle": "Finish cooking?",
-  "finishCookingConfirm": "Do you want to stop cooking \"{title}\"?",
+  "finishCookingConfirm": "Do you want to finish cooking \"{title}\"?",
   "@finishCookingConfirm": {
     "placeholders": {
       "title": {"type": "String"}

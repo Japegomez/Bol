@@ -4,6 +4,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_utils.dart';
+import 'package:meal_planner/features/cooking/presentation/widgets/cooking_finish_hold_button.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 
 /// Full-screen overlay displayed when a cooking session is expanded.
@@ -298,50 +299,15 @@ class _StepContent extends ConsumerWidget {
 
 // ── Bottom bar ────────────────────────────────────────────────────────────────
 
-class _NavigationBar extends StatefulWidget {
+class _NavigationBar extends StatelessWidget {
   const _NavigationBar({required this.session, required this.notifier});
 
   final CookingSession session;
   final CookingSessionNotifier notifier;
 
   @override
-  State<_NavigationBar> createState() => _NavigationBarState();
-}
-
-class _NavigationBarState extends State<_NavigationBar>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _finishController;
-
-  static const _holdDuration = Duration(milliseconds: 1600);
-
-  @override
-  void initState() {
-    super.initState();
-    _finishController = AnimationController(
-      vsync: this,
-      duration: _holdDuration,
-    )..addStatusListener(_onFinishStatus);
-  }
-
-  @override
-  void dispose() {
-    _finishController.dispose();
-    super.dispose();
-  }
-
-  void _onFinishStatus(AnimationStatus status) {
-    if (status == AnimationStatus.completed && mounted) {
-      _finishController.reset();
-      confirmFinishCooking(context, widget.notifier);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colorScheme = Theme.of(context).colorScheme;
-    final session = widget.session;
-    final notifier = widget.notifier;
     final isFirst = session.currentStepIndex == 0;
     final isLast = session.isOnLastStep;
 
@@ -370,57 +336,7 @@ class _NavigationBarState extends State<_NavigationBar>
                     : notifier.pause,
               ),
               const SizedBox(width: 16),
-              Tooltip(
-                message: l10n.finishCookingButton,
-                child: GestureDetector(
-                  onLongPressStart: (_) => _finishController.forward(),
-                  onLongPressEnd: (_) {
-                    if (_finishController.status !=
-                        AnimationStatus.completed) {
-                      _finishController.reset();
-                    }
-                  },
-                  onLongPressCancel: _finishController.reset,
-                  child: AnimatedBuilder(
-                    animation: _finishController,
-                    builder: (context, _) {
-                      final progress = _finishController.value;
-                      return SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: colorScheme.primaryContainer,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.stop_rounded,
-                                color: colorScheme.primary,
-                                size: 22,
-                              ),
-                            ),
-                            if (progress > 0)
-                              SizedBox(
-                                width: 48,
-                                height: 48,
-                                child: CircularProgressIndicator(
-                                  value: progress,
-                                  strokeWidth: 3,
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              CookingFinishHoldButton(notifier: notifier),
             ],
           ),
           _CookingIconButton(

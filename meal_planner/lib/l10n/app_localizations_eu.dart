@@ -1399,10 +1399,10 @@ class AppLocalizationsEu extends AppLocalizations {
   String get finishCookingButton => 'Amaitu';
 
   @override
-  String get cookingPausedLabel => 'Geldituta';
+  String get cookingPausedLabel => 'Pausatuta';
 
   @override
-  String get cookingPauseTooltip => 'Gelditu';
+  String get cookingPauseTooltip => 'Pausatu';
 
   @override
   String get cookingResumeTooltip => 'Jarraitu';

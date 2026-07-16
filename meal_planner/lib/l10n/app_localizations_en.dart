@@ -1410,7 +1410,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String finishCookingConfirm(String title) {
-    return 'Do you want to stop cooking \"$title\"?';
+    return 'Do you want to finish cooking \"$title\"?';
   }
 
   @override
