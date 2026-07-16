@@ -190,7 +190,7 @@ class CookingNotificationService {
       presentList: true,
       presentBadge: false,
       presentSound: false,
-      interruptionLevel: InterruptionLevel.active,
+      interruptionLevel: InterruptionLevel.passive,
     );
 
     final body = session.isPaused

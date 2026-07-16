@@ -130,14 +130,8 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     if (state == null) return;
     final prev = state!.currentStepIndex - 1;
     if (prev >= 0) {
-      // Going back un-completes the step we return to (it was marked when we advanced).
-      final completed = {...state!.completedSteps}..remove(prev);
-      state = state!.copyWith(
-        currentStepIndex: prev,
-        completedSteps: completed,
-      );
-      _persist();
-      _syncPlatform();
+      // Going back un-completes the step we return to and any later ones.
+      goToStep(prev);
     }
   }
 

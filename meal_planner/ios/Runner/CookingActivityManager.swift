@@ -9,10 +9,12 @@ import Foundation
 /// created with **our** `CookingActivityAttributes` type, which is the exact type
 /// our `CookingActivityWidget` listens for in the extension.
 @available(iOS 16.1, *)
-final class CookingActivityManager {
+actor CookingActivityManager {
 
   static let shared = CookingActivityManager()
   private init() {}
+
+  private var activeActivity: Activity<CookingActivityAttributes>?
 
   // MARK: – Public API
 
@@ -21,23 +23,24 @@ final class CookingActivityManager {
   /// activity's content state is refreshed.
   func update(data: [String: Any]) async throws {
     let (attrs, state) = try unpack(data)
-    let existing = Activity<CookingActivityAttributes>.activities
 
-    if let activity = existing.first {
+    if let activity = activeActivity {
       await activity.update(ActivityContent(state: state, staleDate: nil))
     } else {
-      _ = try Activity<CookingActivityAttributes>.request(
+      let activity = try Activity<CookingActivityAttributes>.request(
         attributes: attrs,
         content: ActivityContent(state: state, staleDate: nil),
         pushType: nil
       )
+      activeActivity = activity
     }
   }
 
   /// End all cooking Live Activities immediately.
   func end() async {
-    for activity in Activity<CookingActivityAttributes>.activities {
+    if let activity = activeActivity {
       await activity.end(nil, dismissalPolicy: .immediate)
+      activeActivity = nil
     }
   }
 
