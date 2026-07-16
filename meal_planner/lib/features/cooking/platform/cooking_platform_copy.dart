@@ -1,4 +1,4 @@
-import 'dart:ui' show PlatformDispatcher;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
@@ -28,8 +28,13 @@ class CookingPlatformCopy {
   final String stepText;
 
   static CookingPlatformCopy resolve(CookingSession session) {
-    final locale = PlatformDispatcher.instance.locale;
-    final l10n = lookupAppLocalizations(locale);
+    // Fall back to English for locales not supported by the app (e.g. fr, de).
+    AppLocalizations l10n;
+    try {
+      l10n = lookupAppLocalizations(PlatformDispatcher.instance.locale);
+    } catch (_) {
+      l10n = lookupAppLocalizations(const Locale('en'));
+    }
     final stepIndex = session.currentStepIndex;
     final stepText = stepIndex == 0
         ? l10n.checkIngredientsStep

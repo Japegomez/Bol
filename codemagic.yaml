@@ -129,11 +129,14 @@ workflows:
         - google
       ios_signing:
         distribution_type: app_store
-        # Main app only — Codemagic also matches extension profiles
-        # (com.japegomez.mealPlanner.*), e.g. CookingActivity.
+        # Main app App Store profile (unchanged).
+        # CookingActivity is fetched explicitly in scripts below — Codemagic
+        # does not accept a comma-separated / multi-value bundle_identifier here.
         bundle_identifier: com.japegomez.mealPlanner
       vars:
         BUNDLE_ID: com.japegomez.mealPlanner
+        # Live Activity widget extension — separate App Store profile required.
+        COOKING_ACTIVITY_BUNDLE_ID: com.japegomez.mealPlanner.CookingActivity
         # Numeric Apple ID from App Store Connect → App Information → Apple ID
         APP_STORE_APPLE_ID: 6785110375
         BUILD_NUMBER_OFFSET: 0
@@ -165,6 +168,19 @@ workflows:
       - name: Flutter unit tests
         script: |
           flutter test
+      - name: Fetch CookingActivity App Store provisioning profile
+        script: |
+          # Explicit App Store profile for the Live Activity extension so
+          # xcode-project use-profiles can sign CookingActivity.appex.
+          # Requires App ID com.japegomez.mealPlanner.CookingActivity in
+          # Apple Developer Portal (App Groups enabled) and ASC API access.
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          app-store-connect fetch-signing-files \
+            "$COOKING_ACTIVITY_BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --strict-match-identifier \
+            --create \
+            --profiles-dir "$HOME/Library/MobileDevice/Provisioning Profiles"
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles --custom-export-options='{"testFlightInternalTestingOnly": true}'

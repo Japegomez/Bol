@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
+import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/platform/cooking_live_activity_service.dart';
 import 'package:meal_planner/features/cooking/platform/cooking_notification_service.dart';
@@ -192,13 +193,29 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
   Future<void> _syncPlatform() async {
     final s = state;
     if (s == null) return;
-    await CookingNotificationService.instance.show(s);
-    await CookingLiveActivityService.instance.update(s);
+    try {
+      await CookingNotificationService.instance.show(s);
+    } on Object catch (e) {
+      log.w('CookingNotificationService.show failed: $e');
+    }
+    try {
+      await CookingLiveActivityService.instance.update(s);
+    } on Object catch (e) {
+      log.w('CookingLiveActivityService.update failed: $e');
+    }
   }
 
   Future<void> _clearPlatform() async {
-    await CookingNotificationService.instance.cancel();
-    await CookingLiveActivityService.instance.end();
+    try {
+      await CookingNotificationService.instance.cancel();
+    } on Object catch (e) {
+      log.w('CookingNotificationService.cancel failed: $e');
+    }
+    try {
+      await CookingLiveActivityService.instance.end();
+    } on Object catch (e) {
+      log.w('CookingLiveActivityService.end failed: $e');
+    }
   }
 
   Future<void> _handlePendingBackgroundAction() async {
