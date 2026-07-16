@@ -1388,7 +1388,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get checkIngredientsStep => 'Osagaiak egiaztatu';
 
   @override
-  String stepXofY(int current, int total) => '$current. urratsa ${total}etik';
+  String stepXofY(int current, int total) {
+    return '$current. urratsa ${total}etik';
+  }
 
   @override
   String get completeStepButton => 'Urratsa osatu';
@@ -1409,15 +1411,17 @@ class AppLocalizationsEu extends AppLocalizations {
   String get finishCookingTitle => 'Sukaldaritza amaitu?';
 
   @override
-  String finishCookingConfirm(String title) =>
-      '"$title" egostea amaitu nahi duzu?';
+  String finishCookingConfirm(String title) {
+    return '\"$title\" egostea amaitu nahi duzu?';
+  }
 
   @override
   String get cookingInProgressTitle => 'Errezeta egiten';
 
   @override
-  String cookingInProgressMessage(String title) =>
-      '"$title" egiten ari zara. Errezeta berria hasi?';
+  String cookingInProgressMessage(String title) {
+    return '\"$title\" egiten ari zara. Errezeta berria hasi?';
+  }
 
   @override
   String get cookingReplaceButton => 'Errezeta berria';

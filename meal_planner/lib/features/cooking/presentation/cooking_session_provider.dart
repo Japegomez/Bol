@@ -102,6 +102,21 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     }
   }
 
+  /// Marks the current step as completed and advances to the next one.
+  /// Unlike [nextStep], this is only triggered by the "Complete step" button.
+  void completeStep() {
+    if (state == null) return;
+    final completed = {...state!.completedSteps, state!.currentStepIndex};
+    final next = state!.currentStepIndex + 1;
+    state = state!.copyWith(
+      completedSteps: completed,
+      currentStepIndex:
+          next < state!.totalSteps ? next : state!.currentStepIndex,
+    );
+    _persist();
+    _syncPlatform();
+  }
+
   void previousStep() {
     if (state == null) return;
     final prev = state!.currentStepIndex - 1;

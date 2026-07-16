@@ -1,5 +1,5 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:live_activities/live_activities.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
@@ -11,6 +11,9 @@ import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 ///  • CookingActivity.entitlements (same)
 ///  • Both targets' App Groups capability in Xcode
 const _kAppGroupId = 'group.com.japegomez.mealPlanner.cooking';
+
+/// Stable ID for the single active cooking Live Activity.
+const _kActivityId = 'cooking_active';
 
 /// Keys used in the shared activity data map.
 const _kKeyRecipeTitle = 'recipeTitle';
@@ -32,11 +35,13 @@ class CookingLiveActivityService {
       CookingLiveActivityService._();
 
   final LiveActivities _plugin = LiveActivities();
-  String? _activityId;
   bool _initialized = false;
 
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
   Future<void> initialize() async {
-    if (!Platform.isIOS) return;
+    if (!_isIOS) return;
     try {
       await _plugin.init(appGroupId: _kAppGroupId);
       _initialized = true;
@@ -47,29 +52,21 @@ class CookingLiveActivityService {
   }
 
   Future<void> update(CookingSession session) async {
-    if (!Platform.isIOS || !_initialized) return;
+    if (!_isIOS || !_initialized) return;
     try {
       final data = _buildData(session);
-      if (_activityId == null) {
-        _activityId = await _plugin.createActivity(data);
-        log.d('LiveActivity created: $_activityId');
-      } else {
-        await _plugin.updateActivity(_activityId!, data);
-        log.d('LiveActivity updated');
-      }
+      await _plugin.createOrUpdateActivity(_kActivityId, data);
+      log.d('LiveActivity synced');
     } catch (e) {
       log.w('LiveActivity update failed: $e');
     }
   }
 
   Future<void> end() async {
-    if (!Platform.isIOS || !_initialized) return;
+    if (!_isIOS || !_initialized) return;
     try {
-      if (_activityId != null) {
-        await _plugin.endActivity(_activityId!);
-        _activityId = null;
-        log.d('LiveActivity ended');
-      }
+      await _plugin.endActivity(_kActivityId);
+      log.d('LiveActivity ended');
     } catch (e) {
       log.w('LiveActivity end failed: $e');
     }

@@ -14,6 +14,7 @@ class CookingSession {
     this.pausedAt,
     required this.accumulatedPauseMs,
     this.isExpanded = true,
+    this.completedSteps = const {},
   });
 
   final String recipeId;
@@ -39,6 +40,10 @@ class CookingSession {
   /// Whether the full-screen cooking overlay is visible.
   final bool isExpanded;
 
+  /// Indices of steps explicitly marked as completed (via "Complete step").
+  /// Navigating with the arrows does NOT complete a step.
+  final Set<int> completedSteps;
+
   bool get isPaused => pausedAt != null;
 
   /// Total steps including the synthetic "check ingredients" step.
@@ -59,6 +64,7 @@ class CookingSession {
     bool clearPausedAt = false,
     int? accumulatedPauseMs,
     bool? isExpanded,
+    Set<int>? completedSteps,
   }) {
     return CookingSession(
       recipeId: recipeId,
@@ -70,6 +76,7 @@ class CookingSession {
       pausedAt: clearPausedAt ? null : (pausedAt ?? this.pausedAt),
       accumulatedPauseMs: accumulatedPauseMs ?? this.accumulatedPauseMs,
       isExpanded: isExpanded ?? this.isExpanded,
+      completedSteps: completedSteps ?? this.completedSteps,
     );
   }
 
@@ -86,6 +93,7 @@ class CookingSession {
       'pausedAtMs': pausedAt?.millisecondsSinceEpoch,
       'accumulatedPauseMs': accumulatedPauseMs,
       'isExpanded': isExpanded,
+      'completedSteps': completedSteps.toList(),
     };
   }
 
@@ -119,6 +127,9 @@ class CookingSession {
           : null,
       accumulatedPauseMs: json['accumulatedPauseMs'] as int,
       isExpanded: json['isExpanded'] as bool? ?? true,
+      completedSteps: (json['completedSteps'] as List<dynamic>? ?? const [])
+          .map((e) => e as int)
+          .toSet(),
     );
   }
 

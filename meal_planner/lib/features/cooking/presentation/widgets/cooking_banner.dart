@@ -30,66 +30,105 @@ class CookingBanner extends ConsumerWidget {
           bottom: false,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
+            child: SizedBox(
+              height: 52,
+              child: Stack(
+              alignment: Alignment.center,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8, right: 88),
+                    child: Text(
+                      session.recipeTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w600,
+                        height: 1.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                Text(
+                  session.isPaused
+                      ? l10n.cookingPausedLabel
+                      : formatCookingDuration(session.elapsed),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onPrimaryContainer,
+                    height: 1.1,
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        session.recipeTitle,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      _BannerIconButton(
+                        icon: session.isPaused
+                            ? Icons.play_arrow
+                            : Icons.pause,
+                        tooltip: session.isPaused
+                            ? l10n.cookingResumeTooltip
+                            : l10n.cookingPauseTooltip,
+                        color: theme.colorScheme.onPrimaryContainer,
+                        onPressed: session.isPaused
+                            ? () => notifier.resume()
+                            : () => notifier.pause(),
                       ),
-                      Text(
-                        session.isPaused
-                            ? l10n.cookingPausedLabel
-                            : formatCookingDuration(session.elapsed),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                          color: theme.colorScheme.onPrimaryContainer
-                              .withValues(alpha: 0.7),
-                        ),
+                      _BannerIconButton(
+                        icon: Icons.stop,
+                        tooltip: l10n.finishCookingButton,
+                        color: theme.colorScheme.onPrimaryContainer,
+                        onPressed: () =>
+                            confirmFinishCooking(context, notifier),
+                      ),
+                      _BannerIconButton(
+                        icon: Icons.keyboard_arrow_up,
+                        tooltip: l10n.expandCookingSession,
+                        color: theme.colorScheme.onPrimaryContainer,
+                        onPressed: () => notifier.setExpanded(true),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    session.isPaused ? Icons.play_arrow : Icons.pause,
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                  tooltip: session.isPaused
-                      ? l10n.cookingResumeTooltip
-                      : l10n.cookingPauseTooltip,
-                  onPressed: session.isPaused
-                      ? () => notifier.resume()
-                      : () => notifier.pause(),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.stop,
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                  tooltip: l10n.finishCookingButton,
-                  onPressed: () => confirmFinishCooking(context, notifier),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.keyboard_arrow_up,
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                  tooltip: l10n.expandCookingSession,
-                  onPressed: () => notifier.setExpanded(true),
-                ),
               ],
+            ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BannerIconButton extends StatelessWidget {
+  const _BannerIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.color,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final Color color;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: Icon(icon, color: color, size: 26),
+      style: IconButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const EdgeInsets.all(2),
+        minimumSize: const Size(48, 48),
       ),
     );
   }

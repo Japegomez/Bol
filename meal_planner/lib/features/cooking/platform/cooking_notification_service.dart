@@ -1,5 +1,5 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
@@ -39,8 +39,15 @@ class CookingNotificationService {
 
   bool _initialized = false;
 
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
   Future<void> initialize() async {
     if (_initialized) return;
+    if (!_isAndroid && !_isIOS) return;
     _initialized = true;
 
     const androidSettings =
@@ -61,7 +68,7 @@ class CookingNotificationService {
       onDidReceiveBackgroundNotificationResponse: onNotificationBackground,
     );
 
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       await _plugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
@@ -71,7 +78,7 @@ class CookingNotificationService {
 
   Future<void> show(CookingSession session) async {
     if (!_initialized) return;
-    if (!Platform.isAndroid && !Platform.isIOS) return;
+    if (!_isAndroid && !_isIOS) return;
 
     final stepIndex = session.currentStepIndex;
     final total = session.totalSteps;
@@ -79,7 +86,7 @@ class CookingNotificationService {
         ? 'Comprobar ingredientes'
         : session.steps[stepIndex - 1].description;
 
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       await _showAndroid(session, stepText, stepIndex, total);
     }
     // iOS: the Live Activity replaces the notification on iOS 16.1+.

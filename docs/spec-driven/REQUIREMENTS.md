@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; offline móvil y pulido UX en `develop`
+> **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina en `develop` / `feature/cooking-mode`
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En `develop`: onboarding spotlight (11 pasos), defaults ingrediente (unidad/Verduras), ficha Explorar compacta, acceso offline en iOS/Android (Drift), filtro multi-etiqueta, modo oscuro manual, consolidación visual de lista de la compra.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En curso: **modo cocina** paso a paso (sesión persistente, banner minimizado, notificación Android, Live Activity iOS); onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro manual, asistente IA de recetas.
 
 ---
 
@@ -17,6 +17,7 @@
    - 3.4 [Planificador semanal](#34-planificador-semanal)
    - 3.5 [Lista de la compra](#35-lista-de-la-compra)
    - 3.6 [Acceso offline (móvil)](#36-acceso-offline-móvil)
+   - 3.7 [Modo cocina](#37-modo-cocina)
 4. [Modelo de datos](#4-modelo-de-datos)
 5. [Arquitectura Flutter](#5-arquitectura-flutter)
 6. [Navegación](#6-navegación)
@@ -224,6 +225,27 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 **RF-OFF-07** Al recuperar la conexión, `SyncService` reproduce las operaciones pendientes en orden y resuelve IDs temporales locales.
 
 > **Nota de implementación — caché local:** `lib/core/local_db/` (`AppDatabase` Drift, `LocalCacheStore`, conexión nativa SQLite). Cola en tabla local `pending_operations`. Providers: `isOfflineProvider`, `canEditOfflineProvider`. UI: `OfflineEntryListener`, `ConnectivityBanner`, gating en formularios y `home_shell.dart`. **No** se usa Drift/WASM en web.
+
+---
+
+### 3.7 Modo cocina
+
+Desde la ficha de una receta, el usuario puede iniciar una **sesión de cocina** guiada paso a paso. La sesión persiste en el dispositivo y puede minimizarse sin perder el progreso.
+
+**RF-COOK-01** En la ficha de receta aparece el botón **Cocinar receta** (o **Continuar cocinando** si esa receta ya está en curso).  
+**RF-COOK-02** Solo puede haber **una sesión de cocina activa** a la vez. Si el usuario intenta cocinar otra receta, la app pide confirmación para terminar la sesión anterior.  
+**RF-COOK-03** La interfaz expandida muestra el **tiempo transcurrido** (excluyendo pausas), el paso actual y permite **navegar** entre pasos (adelante y atrás).  
+**RF-COOK-04** El **primer paso** es siempre **Comprobar ingredientes**, con la lista de ingredientes de la receta (snapshot al iniciar).  
+**RF-COOK-05** Un paso se marca como **completado** (tick verde en el grafo lateral) solo al **avanzar al siguiente** con la flecha derecha; navegar hacia atrás o saltar a un paso no completa pasos intermedios.  
+**RF-COOK-06** La interfaz puede **minimizarse** a un banner sobre la barra de navegación inferior: título a la izquierda, tiempo centrado, botones de pausa/terminar/expandir a la derecha.  
+**RF-COOK-07** El usuario puede **pausar y reanudar** la sesión; el cronómetro no cuenta el tiempo pausado.  
+**RF-COOK-08** Para **terminar** la sesión, el usuario debe **mantener pulsado** el botón de parar (~1,6 s) con indicador de progreso circular, seguido de un diálogo de confirmación.  
+**RF-COOK-09** La sesión se **persiste localmente** (`SharedPreferences`) y se **restaura** al reabrir la app (paso actual, pasos completados, tiempos y estado de pausa).  
+**RF-COOK-10** En **Android**, mientras la sesión está activa, se muestra una **notificación persistente** en pantalla de bloqueo con cronómetro, texto del paso y acciones pausar/continuar/terminar.  
+**RF-COOK-11** En **iOS 16.1+**, mientras la sesión está activa, se muestra una **Live Activity** (extensión WidgetKit `CookingActivity`) con tiempo, paso y acciones interactivas (iOS 17+) o deep links (fallback).  
+**RF-COOK-12** En **web** y escritorio, la UI de cocina funciona con normalidad; notificaciones y Live Activity son **no-op** (sin acceso a APIs nativas).
+
+> **Nota de implementación — modo cocina:** `lib/features/cooking/` (`CookingSession`, `cookingSessionProvider`, `CookingScreen`, `CookingBanner`). Integración en `home_shell.dart` (Stack) y `recipe_detail_screen.dart`. Plataforma: `CookingNotificationService` (Android), `CookingLiveActivityService` + extensión `ios/CookingActivity/` (iOS). App Group `group.com.japegomez.mealPlanner.cooking`. Target `CookingActivity` registrado en `project.pbxproj` para builds Codemagic. Perfil de aprovisionamiento App Store para `com.japegomez.mealPlanner.CookingActivity` pendiente de configuración manual.
 
 ---
 

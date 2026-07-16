@@ -1393,7 +1393,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get checkIngredientsStep => 'Verificar ingredientes';
 
   @override
-  String stepXofY(int current, int total) => 'Passo $current de $total';
+  String stepXofY(int current, int total) {
+    return 'Passo $current de $total';
+  }
 
   @override
   String get completeStepButton => 'Completar passo';
@@ -1414,15 +1416,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get finishCookingTitle => 'Terminar a receita?';
 
   @override
-  String finishCookingConfirm(String title) =>
-      'Quer parar de cozinhar "$title"?';
+  String finishCookingConfirm(String title) {
+    return 'Quer parar de cozinhar \"$title\"?';
+  }
 
   @override
   String get cookingInProgressTitle => 'Receita em curso';
 
   @override
-  String cookingInProgressMessage(String title) =>
-      'Já está a cozinhar "$title". Iniciar uma nova receita?';
+  String cookingInProgressMessage(String title) {
+    return 'Já está a cozinhar \"$title\". Iniciar uma nova receita?';
+  }
 
   @override
   String get cookingReplaceButton => 'Nova receita';

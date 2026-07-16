@@ -2627,57 +2627,111 @@ abstract class AppLocalizations {
   String get recipeAssistantNutritionSaved;
 
   /// No description provided for @cookRecipeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook Recipe'**
   String get cookRecipeButton;
 
   /// No description provided for @continueCookingButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Cooking'**
   String get continueCookingButton;
 
   /// No description provided for @checkIngredientsStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Ingredients'**
   String get checkIngredientsStep;
 
-  /// Step X of Y — placeholders: current (int), total (int).
+  /// No description provided for @stepXofY.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
   String stepXofY(int current, int total);
 
   /// No description provided for @completeStepButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Step'**
   String get completeStepButton;
 
   /// No description provided for @finishCookingButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
   String get finishCookingButton;
 
   /// No description provided for @cookingPausedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
   String get cookingPausedLabel;
 
   /// No description provided for @cookingPauseTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
   String get cookingPauseTooltip;
 
   /// No description provided for @cookingResumeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
   String get cookingResumeTooltip;
 
   /// No description provided for @finishCookingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish cooking?'**
   String get finishCookingTitle;
 
-  /// Confirm finish cooking — placeholder: title (String).
+  /// No description provided for @finishCookingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to stop cooking \"{title}\"?'**
   String finishCookingConfirm(String title);
 
   /// No description provided for @cookingInProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe in progress'**
   String get cookingInProgressTitle;
 
-  /// Cooking in progress message — placeholder: title (String).
+  /// No description provided for @cookingInProgressMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already cooking \"{title}\". Start a new recipe?'**
   String cookingInProgressMessage(String title);
 
   /// No description provided for @cookingReplaceButton.
+  ///
+  /// In en, this message translates to:
+  /// **'New recipe'**
   String get cookingReplaceButton;
 
   /// No description provided for @previousStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous step'**
   String get previousStep;
 
   /// No description provided for @nextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
   String get nextStep;
 
   /// No description provided for @minimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize'**
   String get minimize;
 
   /// No description provided for @expandCookingSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
   String get expandCookingSession;
 }
 

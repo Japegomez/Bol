@@ -31,7 +31,16 @@ class CookingScreen extends ConsumerWidget {
               _TopBar(session: session, notifier: notifier),
               const Divider(height: 1),
               Expanded(
-                child: _StepContent(session: session),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _StepRail(session: session, notifier: notifier),
+                    const VerticalDivider(width: 1),
+                    Expanded(
+                      child: _StepContent(session: session),
+                    ),
+                  ],
+                ),
               ),
               const Divider(height: 1),
               _NavigationBar(session: session, notifier: notifier),
@@ -53,7 +62,6 @@ class _TopBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch tick to refresh elapsed time display.
     ref.watch(cookingTickProvider);
 
     final l10n = context.l10n;
@@ -61,24 +69,18 @@ class _TopBar extends ConsumerWidget {
     final elapsed = session.elapsed;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.only(left: 16, right: 4, top: 4, bottom: 4),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.keyboard_arrow_down),
-            tooltip: l10n.minimize,
-            onPressed: () => notifier.setExpanded(false),
-          ),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   session.recipeTitle,
                   style: theme.textTheme.titleMedium,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -95,18 +97,134 @@ class _TopBar extends ConsumerWidget {
               ],
             ),
           ),
-          IconButton(
-            icon: Icon(session.isPaused ? Icons.play_arrow : Icons.pause),
-            tooltip: session.isPaused ? l10n.cookingResumeTooltip : l10n.cookingPauseTooltip,
-            onPressed:
-                session.isPaused ? () => notifier.resume() : () => notifier.pause(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.stop),
-            tooltip: l10n.finishCookingButton,
-            onPressed: () => confirmFinishCooking(context, notifier),
+          IconButton.filledTonal(
+            icon: const Icon(Icons.keyboard_arrow_down),
+            tooltip: l10n.minimize,
+            onPressed: () => notifier.setExpanded(false),
+            style: IconButton.styleFrom(
+              foregroundColor: theme.colorScheme.primary,
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Step rail ─────────────────────────────────────────────────────────────────
+
+/// Minimal vertical graph of steps: numbered nodes joined by downward arrows.
+/// Completed steps become green nodes with a check; the current one is
+/// highlighted. Tapping a node jumps to that step.
+class _StepRail extends StatelessWidget {
+  const _StepRail({required this.session, required this.notifier});
+
+  final CookingSession session;
+  final CookingSessionNotifier notifier;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 56,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            for (var i = 0; i < session.totalSteps; i++) ...[
+              if (i > 0) _RailConnector(color: colorScheme.outlineVariant),
+              _RailNode(
+                index: i,
+                isCompleted: session.completedSteps.contains(i),
+                isCurrent: i == session.currentStepIndex,
+                onTap: () => notifier.goToStep(i),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RailConnector extends StatelessWidget {
+  const _RailConnector({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(width: 2, height: 10, color: color),
+        Icon(Icons.keyboard_arrow_down, size: 14, color: color),
+      ],
+    );
+  }
+}
+
+class _RailNode extends StatelessWidget {
+  const _RailNode({
+    required this.index,
+    required this.isCompleted,
+    required this.isCurrent,
+    required this.onTap,
+  });
+
+  final int index;
+  final bool isCompleted;
+  final bool isCurrent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final Color background;
+    final Color foreground;
+    final Border? border;
+
+    if (isCompleted) {
+      background = colorScheme.primary;
+      foreground = colorScheme.onPrimary;
+      // Ring to keep the current step visible when it is already completed.
+      border = isCurrent
+          ? Border.all(color: colorScheme.onPrimary, width: 2)
+          : null;
+    } else if (isCurrent) {
+      background = colorScheme.primary;
+      foreground = colorScheme.onPrimary;
+      border = null;
+    } else {
+      background = Colors.transparent;
+      foreground = colorScheme.onSurfaceVariant;
+      border = Border.all(color: colorScheme.outlineVariant, width: 1.5);
+    }
+
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: background,
+          shape: BoxShape.circle,
+          border: border,
+        ),
+        alignment: Alignment.center,
+        child: isCompleted
+            ? Icon(Icons.check, size: 18, color: colorScheme.onPrimary)
+            : Text(
+                '${index + 1}',
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
       ),
     );
   }
@@ -178,47 +296,170 @@ class _StepContent extends ConsumerWidget {
   }
 }
 
-// ── Navigation bar ────────────────────────────────────────────────────────────
+// ── Bottom bar ────────────────────────────────────────────────────────────────
 
-class _NavigationBar extends StatelessWidget {
+class _NavigationBar extends StatefulWidget {
   const _NavigationBar({required this.session, required this.notifier});
 
   final CookingSession session;
   final CookingSessionNotifier notifier;
 
   @override
+  State<_NavigationBar> createState() => _NavigationBarState();
+}
+
+class _NavigationBarState extends State<_NavigationBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _finishController;
+
+  static const _holdDuration = Duration(milliseconds: 1600);
+
+  @override
+  void initState() {
+    super.initState();
+    _finishController = AnimationController(
+      vsync: this,
+      duration: _holdDuration,
+    )..addStatusListener(_onFinishStatus);
+  }
+
+  @override
+  void dispose() {
+    _finishController.dispose();
+    super.dispose();
+  }
+
+  void _onFinishStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed && mounted) {
+      _finishController.reset();
+      confirmFinishCooking(context, widget.notifier);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
+    final session = widget.session;
+    final notifier = widget.notifier;
     final isFirst = session.currentStepIndex == 0;
     final isLast = session.isOnLastStep;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton.outlined(
+          _CookingIconButton(
             icon: const Icon(Icons.arrow_back_ios_new),
             tooltip: l10n.previousStep,
             onPressed: isFirst ? null : notifier.previousStep,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: FilledButton(
-              onPressed: isLast
-                  ? () => confirmFinishCooking(context, notifier)
-                  : notifier.nextStep,
-              child: Text(
-                isLast ? l10n.finishCookingButton : l10n.completeStepButton,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _CookingIconButton(
+                icon: Icon(
+                  session.isPaused ? Icons.play_arrow : Icons.pause,
+                ),
+                tooltip: session.isPaused
+                    ? l10n.cookingResumeTooltip
+                    : l10n.cookingPauseTooltip,
+                onPressed: session.isPaused
+                    ? notifier.resume
+                    : notifier.pause,
               ),
-            ),
+              const SizedBox(width: 16),
+              Tooltip(
+                message: l10n.finishCookingButton,
+                child: GestureDetector(
+                  onLongPressStart: (_) => _finishController.forward(),
+                  onLongPressEnd: (_) {
+                    if (_finishController.status !=
+                        AnimationStatus.completed) {
+                      _finishController.reset();
+                    }
+                  },
+                  onLongPressCancel: _finishController.reset,
+                  child: AnimatedBuilder(
+                    animation: _finishController,
+                    builder: (context, _) {
+                      final progress = _finishController.value;
+                      return SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.stop_rounded,
+                                color: colorScheme.primary,
+                                size: 22,
+                              ),
+                            ),
+                            if (progress > 0)
+                              SizedBox(
+                                width: 48,
+                                height: 48,
+                                child: CircularProgressIndicator(
+                                  value: progress,
+                                  strokeWidth: 3,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          IconButton.outlined(
+          _CookingIconButton(
             icon: const Icon(Icons.arrow_forward_ios),
             tooltip: l10n.nextStep,
-            onPressed: isLast ? null : notifier.nextStep,
+            onPressed: isLast ? null : notifier.completeStep,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CookingIconButton extends StatelessWidget {
+  const _CookingIconButton({
+    required this.icon,
+    required this.tooltip,
+    this.onPressed,
+  });
+
+  final Widget icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return IconButton.filledTonal(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: icon,
+      style: IconButton.styleFrom(
+        foregroundColor: colorScheme.primary,
+        disabledForegroundColor:
+            colorScheme.onSurface.withValues(alpha: 0.38),
+        backgroundColor: colorScheme.primaryContainer,
+        disabledBackgroundColor:
+            colorScheme.primaryContainer.withValues(alpha: 0.4),
       ),
     );
   }
