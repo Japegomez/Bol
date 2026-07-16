@@ -129,7 +129,9 @@ workflows:
         - google
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.japegomez.mealPlanner,com.japegomez.mealPlanner.CookingActivity
+        # Main app only — Codemagic also matches extension profiles
+        # (com.japegomez.mealPlanner.*), e.g. CookingActivity.
+        bundle_identifier: com.japegomez.mealPlanner
       vars:
         BUNDLE_ID: com.japegomez.mealPlanner
         # Numeric Apple ID from App Store Connect → App Information → Apple ID
