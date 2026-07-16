@@ -14,6 +14,7 @@ import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/ingredient_row.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
 
 String _resolveFormError(String error, AppLocalizations l10n) {
@@ -72,6 +73,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   Uint8List? _localPhotoPreview;
   bool _isModeratingPhoto = false;
   String? _photoModerationError;
+  bool _isGeneratingNutrition = false;
 
   @override
   void dispose() {
@@ -215,6 +217,36 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     }
 
     setState(() => data.isPublic = value);
+  }
+
+  Future<void> _generateNutritionWithAssistant() async {
+    if (_data == null || _isGeneratingNutrition) return;
+
+    setState(() => _isGeneratingNutrition = true);
+    try {
+      await generateNutritionWithAssistant(
+        ref: ref,
+        context: context,
+        title: _data!.title,
+        servings: _data!.servings,
+        ingredients: _data!.ingredients,
+        onSuccess: (nutrition) {
+          if (!mounted) return;
+          setState(() {
+            _data!.nutrition
+              ..calories = nutrition.calories
+              ..protein = nutrition.protein
+              ..carbohydrates = nutrition.carbohydrates
+              ..fat = nutrition.fat
+              ..fiber = nutrition.fiber;
+          });
+        },
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingNutrition = false);
+      }
+    }
   }
 
   @override
@@ -496,7 +528,26 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                _NutritionFields(data: data.nutrition),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _isGeneratingNutrition
+                        ? null
+                        : _generateNutritionWithAssistant,
+                    icon: _isGeneratingNutrition
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_awesome_outlined),
+                    label: Text(l10n.completeNutritionWithAssistant),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _NutritionFields(
+                  data: data.nutrition,
+                ),
                 const SizedBox(height: 24),
                 if (!data.canPublish)
                   Card(
@@ -876,6 +927,31 @@ class _NutritionFieldsState extends State<_NutritionFields> {
     _fat.dispose();
     _fiber.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _NutritionFields oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncControllerFromData(_calories, widget.data.calories);
+    _syncControllerFromData(_protein, widget.data.protein);
+    _syncControllerFromData(_carbohydrates, widget.data.carbohydrates);
+    _syncControllerFromData(_fat, widget.data.fat);
+    _syncControllerFromData(_fiber, widget.data.fiber);
+  }
+
+  void _syncControllerFromData(TextEditingController controller, num? value) {
+    final newText = value?.toString() ?? '';
+    if (controller.text == newText) return;
+
+    final currentParsed = num.tryParse(controller.text.replaceAll(',', '.'));
+    if (currentParsed != null && value != null && currentParsed == value) {
+      return;
+    }
+
+    controller.value = controller.value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
   }
 
   @override

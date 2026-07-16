@@ -8,9 +8,12 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
+import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_creation_options_sheet.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {
@@ -39,6 +42,48 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
     });
   }
 
+  Future<void> _openCreateRecipeOptions() async {
+    final choice = await showRecipeCreationOptionsSheet(context);
+    if (!mounted || choice == null) return;
+
+    if (choice == 'manual') {
+      context.push('/home/recipes/new');
+      return;
+    }
+
+    final prompt = await showRecipeAssistantPromptSheet(context);
+    if (!mounted || prompt == null) return;
+
+    try {
+      final result = await runWithRecipeAssistantBlockingOverlay(
+        context: context,
+        message: context.l10n.recipeAssistantBlockingRecipe,
+        task: () => ref
+            .read(recipeAssistantRepositoryProvider)
+            .generateRecipe(prompt),
+      );
+      ref.read(recipeAssistantDraftProvider.notifier).state =
+          RecipeAssistantDraft(
+        formData: result.formData,
+        sourceLang: result.sourceLang,
+      );
+      if (!mounted) return;
+      context.push('/home/recipes/new');
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            resolveRecipeAssistantError(
+              error.toString().replaceFirst('Exception: ', ''),
+              context.l10n,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -64,7 +109,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
           FloatingActionButton(
             key: OnboardingTargets.keyFor(OnboardingTarget.recipesFab),
             heroTag: 'new-recipe',
-            onPressed: () => context.push('/home/recipes/new'),
+            onPressed: _openCreateRecipeOptions,
             tooltip: l10n.newRecipeTooltip,
             child: const Icon(Icons.add),
           ),
@@ -142,7 +187,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                         Text(l10n.noRecipesYet),
                         const SizedBox(height: 8),
                         FilledButton.icon(
-                          onPressed: () => context.push('/home/recipes/new'),
+                          onPressed: _openCreateRecipeOptions,
                           icon: const Icon(Icons.add),
                           label: Text(l10n.createFirstRecipe),
                         ),

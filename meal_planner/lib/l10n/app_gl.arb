@@ -417,5 +417,26 @@
   "onboardingStep9Title": "O teu feed de cociñeiros",
   "onboardingStep9Body": "Segue aos teus cociñeiros favoritos desde o seu perfil e consulta as súas últimas receitas premendo o botón do feed.",
   "onboardingStep10Title": "O teu perfil e fogar",
-  "onboardingStep10Body": "Edita o teu nome e foto. Na sección O meu fogar podes planificar coa túa familia en tempo real. Desde aquí tamén cambias o idioma e o modo escuro."
+  "onboardingStep10Body": "Edita o teu nome e foto. Na sección O meu fogar podes planificar coa túa familia en tempo real. Desde aquí tamén cambias o idioma e o modo escuro.",
+
+  "createRecipeOptionsTitle": "Crear receita",
+  "createRecipeManual": "Crear manualmente",
+  "createRecipeManualSubtitle": "Enche ti mesmo todos os campos da receita",
+  "createRecipeWithAssistant": "Crear co asistente de IA",
+  "createRecipeWithAssistantSubtitle": "Describe o prato e a IA elaborará a ficha",
+  "recipeAssistantTitle": "Asistente de receitas",
+  "recipeAssistantDescription": "Describe o prato que queres crear: só o nome ou unha receita detallada con ingredientes e pasos.",
+  "recipeAssistantPromptHint": "Ex.: tortilla de patacas para 4 persoas con cebola...",
+  "recipeAssistantGenerate": "Xerar receita",
+  "recipeAssistantGenerating": "Xerando...",
+  "recipeAssistantBlockingRecipe": "O asistente está elaborando a túa receita…",
+  "recipeAssistantBlockingNutrition": "Calculando a información nutricional…",
+  "recipeAssistantNotRecipeRequest": "Só podo axudarte a elaborar receitas. Describe un prato ou unha receita.",
+  "recipeAssistantRateLimited": "Límite de uso acadado. Téntao de novo máis tarde.",
+  "recipeAssistantFailed": "Non se puido xerar a resposta. Téntao de novo.",
+  "recipeAssistantOffline": "Requírese conexión a internet para usar o asistente.",
+  "recipeAssistantNotConfigured": "O asistente de IA aínda non está configurado.",
+  "recipeAssistantTimeout": "A solicitude tardou demasiado. Téntao de novo.",
+  "completeNutritionWithAssistant": "Completar con IA",
+  "recipeAssistantNutritionSaved": "Ficha nutricional completada"
 }

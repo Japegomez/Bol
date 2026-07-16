@@ -417,5 +417,26 @@
   "onboardingStep9Title": "Tu feed de cocineros",
   "onboardingStep9Body": "Sigue a tus cocineros favoritos desde su perfil y consulta sus últimas recetas pulsando el botón del feed.",
   "onboardingStep10Title": "Tu perfil y hogar",
-  "onboardingStep10Body": "Edita tu nombre y foto. En la sección Mi hogar puedes planificar con tu familia en tiempo real. Desde aquí también cambias el idioma y el modo oscuro."
+  "onboardingStep10Body": "Edita tu nombre y foto. En la sección Mi hogar puedes planificar con tu familia en tiempo real. Desde aquí también cambias el idioma y el modo oscuro.",
+
+  "createRecipeOptionsTitle": "Crear receta",
+  "createRecipeManual": "Crear manualmente",
+  "createRecipeManualSubtitle": "Rellena tú mismo todos los campos de la receta",
+  "createRecipeWithAssistant": "Crear con asistente de IA",
+  "createRecipeWithAssistantSubtitle": "Describe el plato y la IA elaborará la ficha",
+  "recipeAssistantTitle": "Asistente de recetas",
+  "recipeAssistantDescription": "Describe el plato que quieres crear: solo el nombre o una receta detallada con ingredientes y pasos.",
+  "recipeAssistantPromptHint": "Ej.: tortilla de patatas para 4 personas con cebolla...",
+  "recipeAssistantGenerate": "Generar receta",
+  "recipeAssistantGenerating": "Generando...",
+  "recipeAssistantBlockingRecipe": "El asistente está elaborando tu receta…",
+  "recipeAssistantBlockingNutrition": "Calculando información nutricional…",
+  "recipeAssistantNotRecipeRequest": "Solo puedo ayudarte a elaborar recetas. Describe un plato o una receta.",
+  "recipeAssistantRateLimited": "Límite de uso alcanzado. Inténtalo de nuevo más tarde.",
+  "recipeAssistantFailed": "No se pudo generar la respuesta. Inténtalo de nuevo.",
+  "recipeAssistantOffline": "Se requiere conexión a internet para usar el asistente.",
+  "recipeAssistantNotConfigured": "El asistente de IA no está configurado todavía.",
+  "recipeAssistantTimeout": "La solicitud tardó demasiado. Inténtalo de nuevo.",
+  "completeNutritionWithAssistant": "Completar con IA",
+  "recipeAssistantNutritionSaved": "Ficha nutricional completada"
 }

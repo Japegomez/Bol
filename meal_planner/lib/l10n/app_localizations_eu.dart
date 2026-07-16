@@ -1306,4 +1306,75 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get onboardingStep10Body =>
       'Editatu zure izena eta argazkia. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu.';
+
+  @override
+  String get createRecipeOptionsTitle => 'Errezeta sortu';
+
+  @override
+  String get createRecipeManual => 'Eskuz sortu';
+
+  @override
+  String get createRecipeManualSubtitle => 'Errezetaren eremu guztiak zuk bete';
+
+  @override
+  String get createRecipeWithAssistant => 'IA laguntzailearekin sortu';
+
+  @override
+  String get createRecipeWithAssistantSubtitle =>
+      'Deskribatu platera eta IAk fitxa osatuko du';
+
+  @override
+  String get recipeAssistantTitle => 'Errezeta laguntzailea';
+
+  @override
+  String get recipeAssistantDescription =>
+      'Deskribatu sortu nahi duzun platera: izena bakarrik edo osagai eta urratsekin errezeta zehatza.';
+
+  @override
+  String get recipeAssistantPromptHint =>
+      'Adib.: patata tortilla 4 pertsonentzat tipulaarekin...';
+
+  @override
+  String get recipeAssistantGenerate => 'Errezeta sortu';
+
+  @override
+  String get recipeAssistantGenerating => 'Sortzen...';
+
+  @override
+  String get recipeAssistantBlockingRecipe =>
+      'Laguntzailea zure errezeta prestatzen ari da…';
+
+  @override
+  String get recipeAssistantBlockingNutrition =>
+      'Nutrizio-informazioa kalkulatzen…';
+
+  @override
+  String get recipeAssistantNotRecipeRequest =>
+      'Errezetak sortzen lagun zaitzaket soilik. Deskribatu plater edo errezeta bat.';
+
+  @override
+  String get recipeAssistantRateLimited =>
+      'Erabilera muga gaindituta. Saiatu berriro geroago.';
+
+  @override
+  String get recipeAssistantFailed =>
+      'Ezin izan da erantzuna sortu. Saiatu berriro.';
+
+  @override
+  String get recipeAssistantOffline =>
+      'Laguntzailea erabiltzeko internet konexioa behar da.';
+
+  @override
+  String get recipeAssistantNotConfigured =>
+      'IA laguntzailea oraindik ez dago konfiguratuta.';
+
+  @override
+  String get recipeAssistantTimeout =>
+      'Eskaerak denbora gehiegi hartu du. Saiatu berriro.';
+
+  @override
+  String get completeNutritionWithAssistant => 'IA-rekin osatu';
+
+  @override
+  String get recipeAssistantNutritionSaved => 'Nutrizio fitxa osatuta';
 }

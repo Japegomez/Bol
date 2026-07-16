@@ -1310,4 +1310,76 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get onboardingStep10Body =>
       'Edite o seu nome e foto. Na secção A minha casa pode planear com a família em tempo real. A partir daqui também muda o idioma e o modo escuro.';
+
+  @override
+  String get createRecipeOptionsTitle => 'Criar receita';
+
+  @override
+  String get createRecipeManual => 'Criar manualmente';
+
+  @override
+  String get createRecipeManualSubtitle =>
+      'Preencha todos os campos da receita';
+
+  @override
+  String get createRecipeWithAssistant => 'Criar com assistente de IA';
+
+  @override
+  String get createRecipeWithAssistantSubtitle =>
+      'Descreva o prato e a IA elaborará a ficha';
+
+  @override
+  String get recipeAssistantTitle => 'Assistente de receitas';
+
+  @override
+  String get recipeAssistantDescription =>
+      'Descreva o prato que quer criar: só o nome ou uma receita detalhada com ingredientes e passos.';
+
+  @override
+  String get recipeAssistantPromptHint =>
+      'Ex.: omelete de batata para 4 pessoas com cebola...';
+
+  @override
+  String get recipeAssistantGenerate => 'Gerar receita';
+
+  @override
+  String get recipeAssistantGenerating => 'A gerar...';
+
+  @override
+  String get recipeAssistantBlockingRecipe =>
+      'O assistente está a elaborar a sua receita…';
+
+  @override
+  String get recipeAssistantBlockingNutrition =>
+      'A calcular a informação nutricional…';
+
+  @override
+  String get recipeAssistantNotRecipeRequest =>
+      'Só posso ajudar a elaborar receitas. Descreva um prato ou uma receita.';
+
+  @override
+  String get recipeAssistantRateLimited =>
+      'Limite de uso atingido. Tente novamente mais tarde.';
+
+  @override
+  String get recipeAssistantFailed =>
+      'Não foi possível gerar a resposta. Tente novamente.';
+
+  @override
+  String get recipeAssistantOffline =>
+      'É necessária ligação à internet para usar o assistente.';
+
+  @override
+  String get recipeAssistantNotConfigured =>
+      'O assistente de IA ainda não está configurado.';
+
+  @override
+  String get recipeAssistantTimeout =>
+      'O pedido demorou demasiado. Tente novamente.';
+
+  @override
+  String get completeNutritionWithAssistant => 'Completar com IA';
+
+  @override
+  String get recipeAssistantNutritionSaved => 'Ficha nutricional completada';
 }

@@ -13,6 +13,7 @@ import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
+import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
@@ -599,6 +600,34 @@ class RecipesRepository {
       opType: PendingOp.delete,
       payload: {'recipeId': id},
     );
+  }
+
+  Future<void> saveNutrition(
+    String recipeId,
+    NutritionFormData nutrition,
+  ) async {
+    if (!nutrition.hasAnyValue) {
+      throw Exception(recipeAssistantFailedKey);
+    }
+
+    final isOnline = await NetworkStatus.isOnline;
+    if (!isOnline) {
+      throw Exception(recipeAssistantOfflineKey);
+    }
+
+    await supabase.from(NutritionInfo.table_name).upsert(
+          NutritionInfo.insert(
+            recipeId: recipeId,
+            calories: nutrition.calories,
+            protein: nutrition.protein,
+            carbohydrates: nutrition.carbohydrates,
+            fat: nutrition.fat,
+            fiber: nutrition.fiber,
+          ),
+          onConflict: NutritionInfo.c_recipeId,
+        );
+
+    await _cacheRecipeDetailBestEffort(recipeId);
   }
 
   Future<void> deleteRecipeRemote(String id) async {

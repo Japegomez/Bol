@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 14/07/2026 — Onboarding spotlight (11 pasos), defaults ingrediente (unidad/Verduras), ficha Explorar compacta, fixes review PR #46
+> Actualizado: 15/07/2026 — Asistente IA de recetas (crear/adaptar + nutrición); Edge Function `recipe-assistant`; PR #47
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -11,7 +11,7 @@
 | ----------------------- | ---------- | ----------------------------------------------------------------------------- |
 | Fase 1 — Setup          | Completada | Flutter, Supabase, OAuth, CI/CD Codemagic, builds Android + iOS verificados  |
 | Fase 2 — Auth y perfiles| Completada | F1 auth, F2 perfil y F3 hogar en UI; modo individual en planificador y lista |
-| Fase 3 — Recetario      | Completada | CRUD recetas, ingredientes, pasos, fotos, nutrición (F4–F5)                  |
+| Fase 3 — Recetario      | Completada | CRUD + asistente IA (crear/adaptar receta, completar nutrición); F4–F5          |
 | Fase 4 — Planificador   | Completada | Vista semanal vertical, slots, drag-and-drop, sobras, texto libre, Realtime |
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
@@ -99,6 +99,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Edge Function `moderate-image`: moderación de fotos con Google Cloud Vision SafeSearch
   - Invocada al elegir imagen en formulario de receta y edición de perfil
   - Secret `GOOGLE_VISION_API_KEY` en Supabase; despliegue documentado en `supabase/README.md` (PR #37)
+- [x] Edge Function `recipe-assistant`: generación/adaptación de recetas y estimación nutricional (PR #47)
+  - Modos: `generate_recipe`, `generate_nutrition`; JWT de usuario requerido
+  - Cliente OpenAI-compatible vía secrets `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` (recomendado Cerebras `gpt-oss-120b`; alternativa Gemini)
+  - Documentado en `supabase/README.md` y `meal_planner/.env.example`
 
 ### Servicios externos (observabilidad y UX)
 
@@ -308,6 +312,16 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `RecipeListFilter`/`ExploreFilter` migrados de `tag` (String?) a `tags` (Set\<String\>)
   - RPC `list_public_recipes` migrado a `p_tags text[]` con `@>` para AND (`019_list_public_recipes_multi_tag.sql`)
 - [x] Botón de recetario eliminado de la AppBar del planificador (acceso solo vía FAB del panel lateral)
+
+### F4b — Asistente IA de recetas (PR #47)
+
+- [x] FAB «+» del recetario → bottom sheet: crear manualmente / crear con asistente IA
+- [x] Sheet de prompt + overlay bloqueante mientras genera; navega a `/home/recipes/new` con formulario pre-rellenado (no guarda directo)
+- [x] Adaptar recetas pegadas: conservar todos los ingredientes; dividir el método en pasos accionables
+- [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
+- [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
+- [x] L10n (es, en, ca, eu, gl, pt) y errores localizados (offline, rate limit, no configurado, no es receta)
+- [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 
 ---
 
@@ -549,8 +563,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
-2. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-3. **Release TestFlight / Play** con onboarding spotlight + offline + multi-etiqueta + modo oscuro + UX recetario/Explorar.
-4. **Tests unitarios** de escalado de ingredientes al planificar.
-5. **README de desarrollo** con instrucciones de setup local.
+1. **Validar y publicar PR #48** (`develop` → `main`) tras review y CI.
+2. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
+3. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
+4. **Release TestFlight / Play** con onboarding spotlight + offline + multi-etiqueta + modo oscuro + UX recetario/Explorar + asistente IA.
+5. **Tests unitarios** de escalado de ingredientes al planificar.
+6. **README de desarrollo** con instrucciones de setup local.

@@ -523,5 +523,26 @@
   "onboardingStep9Title": "Your cooks feed",
   "onboardingStep9Body": "Follow your favourite cooks from their profile and see their latest recipes by tapping the feed button.",
   "onboardingStep10Title": "Your profile and household",
-  "onboardingStep10Body": "Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here."
+  "onboardingStep10Body": "Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.",
+
+  "createRecipeOptionsTitle": "Create recipe",
+  "createRecipeManual": "Create manually",
+  "createRecipeManualSubtitle": "Fill in all recipe fields yourself",
+  "createRecipeWithAssistant": "Create with AI assistant",
+  "createRecipeWithAssistantSubtitle": "Describe the dish and AI will build the recipe card",
+  "recipeAssistantTitle": "Recipe assistant",
+  "recipeAssistantDescription": "Describe the dish you want to create: just the name or a detailed recipe with ingredients and steps.",
+  "recipeAssistantPromptHint": "E.g.: Spanish potato omelette for 4 with onion...",
+  "recipeAssistantGenerate": "Generate recipe",
+  "recipeAssistantGenerating": "Generating...",
+  "recipeAssistantBlockingRecipe": "The assistant is creating your recipe…",
+  "recipeAssistantBlockingNutrition": "Calculating nutritional information…",
+  "recipeAssistantNotRecipeRequest": "I can only help you create recipes. Describe a dish or a recipe.",
+  "recipeAssistantRateLimited": "Usage limit reached. Please try again later.",
+  "recipeAssistantFailed": "Could not generate a response. Please try again.",
+  "recipeAssistantOffline": "An internet connection is required to use the assistant.",
+  "recipeAssistantNotConfigured": "The AI assistant is not configured yet.",
+  "recipeAssistantTimeout": "The request took too long. Please try again.",
+  "completeNutritionWithAssistant": "Complete with AI",
+  "recipeAssistantNutritionSaved": "Nutrition information completed"
 }
