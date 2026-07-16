@@ -41,7 +41,6 @@ dependencies:
   path: ^1.9.1
   uuid: ^4.5.1
   flutter_local_notifications: ^18.0.0
-  live_activities: ^2.0.0
 
 dev_dependencies:
   flutter_test:

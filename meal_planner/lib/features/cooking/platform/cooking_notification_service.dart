@@ -179,13 +179,15 @@ class CookingNotificationService {
     CookingSession session,
     CookingPlatformCopy copy,
   ) async {
-    // InterruptionLevel.active (default): the notification appears on the
-    // lock screen as a banner and in the notification centre — no sound.
-    // presentAlert: false suppresses the foreground pop-up banner while the
-    // user is inside the app, but the notification is still delivered to the
-    // lock screen and notification centre when the app is minimized.
+    // presentBanner: false  — no intrusive banner while the user is inside the app.
+    // presentList: true     — DO add to the notification centre so the user sees
+    //                         it when they pull down the notification shade or check
+    //                         the lock screen after minimising the app.
+    // presentAlert: false   — legacy iOS 13 equivalent of presentBanner: false.
     const iosDetails = DarwinNotificationDetails(
       presentAlert: false,
+      presentBanner: false,
+      presentList: true,
       presentBadge: false,
       presentSound: false,
       interruptionLevel: InterruptionLevel.active,
