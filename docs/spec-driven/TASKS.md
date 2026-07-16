@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 15/07/2026 — Asistente IA de recetas (crear/adaptar + nutrición); Edge Function `recipe-assistant`; PR #47
+> Actualizado: 16/07/2026 — Modo cocina paso a paso (UI, persistencia, Android/iOS lock screen); rama `feature/cooking-mode`
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -16,6 +16,7 @@
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
 | Fase 7 — Acceso offline | Completada | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
+| Fase 8 — Modo cocina   | Implementada (validación pendiente) | Código listo; pendiente perfil extensión iOS en builds y validación manual en dispositivo |
 
 ---
 
@@ -323,6 +324,21 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] L10n (es, en, ca, eu, gl, pt) y errores localizados (offline, rate limit, no configurado, no es receta)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 
+### F4c — Modo cocina (rama `feature/cooking-mode`)
+
+- [x] Botón **Cocinar receta** / **Continuar cocinando** en ficha de receta (`recipe_detail_screen.dart`); solo una sesión activa a la vez (diálogo para reemplazar)
+- [x] Modelo `CookingSession` + `CookingSessionNotifier` (Riverpod `keepAlive`); persistencia en `SharedPreferences`; restauración al arrancar
+- [x] Pantalla expandida paso a paso (`CookingScreen`): timer, grafo vertical de pasos (completados con tick verde), navegación adelante/atrás
+- [x] Paso 0 sintético **Comprobar ingredientes** con lista de ingredientes de la receta
+- [x] Completar paso al avanzar con flecha →; botones pausa y terminar (long-press ~1,6 s + loader + confirmación) en barra inferior
+- [x] Minimizar a banner sobre bottom nav (`CookingBanner` en `home_shell.dart`); título izquierda, tiempo centrado, acciones a la derecha
+- [x] **Android:** notificación persistente interactiva (`flutter_local_notifications`; cronómetro, BigText del paso, acciones pausar/continuar/terminar)
+- [x] **iOS:** Live Activity (`live_activities` + extensión WidgetKit `CookingActivity`; App Group; target en `project.pbxproj` para Codemagic)
+- [x] Compatibilidad **web:** servicios de plataforma no-op (`kIsWeb` + `defaultTargetPlatform`; sin `dart:io` Platform)
+- [x] L10n (es, en, ca, eu, gl, pt) para textos de cocina
+- [ ] Perfil de aprovisionamiento App Store para `com.japegomez.mealPlanner.CookingActivity` en Codemagic (manual en Apple Developer Portal)
+- [ ] Validación manual en dispositivo: notificación Android + Live Activity iOS + restauración tras matar la app
+
 ---
 
 ## Fase 4 — Planificador semanal
@@ -563,9 +579,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar y publicar PR #48** (`develop` → `main`) tras review y CI.
-2. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
-3. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-4. **Release TestFlight / Play** con onboarding spotlight + offline + multi-etiqueta + modo oscuro + UX recetario/Explorar + asistente IA.
-5. **Tests unitarios** de escalado de ingredientes al planificar.
-6. **README de desarrollo** con instrucciones de setup local.
+1. **Mergear `feature/cooking-mode` → `develop`** tras review, CI y perfil de extensión iOS en Codemagic.
+2. **Validar modo cocina en dispositivo** (Android: notificación lock screen; iOS: Live Activity; restauración de sesión).
+3. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
+4. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
+5. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA.
+6. **Tests unitarios** de escalado de ingredientes al planificar.
+7. **README de desarrollo** con instrucciones de setup local.

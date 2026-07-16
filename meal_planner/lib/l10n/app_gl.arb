@@ -438,5 +438,42 @@
   "recipeAssistantNotConfigured": "O asistente de IA aínda non está configurado.",
   "recipeAssistantTimeout": "A solicitude tardou demasiado. Téntao de novo.",
   "completeNutritionWithAssistant": "Completar con IA",
-  "recipeAssistantNutritionSaved": "Ficha nutricional completada"
+  "recipeAssistantNutritionSaved": "Ficha nutricional completada",
+
+  "cookRecipeButton": "Cociñar receita",
+  "continueCookingButton": "Continuar cociñando",
+  "checkIngredientsStep": "Comprobar ingredientes",
+  "stepXofY": "Paso {current} de {total}",
+  "@stepXofY": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "completeStepButton": "Completar paso",
+  "finishCookingButton": "Rematar",
+  "cookingPausedLabel": "Pausada",
+  "cookingPauseTooltip": "Pausar",
+  "cookingResumeTooltip": "Continuar",
+  "finishCookingTitle": "Rematar a receita?",
+  "finishCookingConfirm": "Queres deixar de cociñar \"{title}\"?",
+  "@finishCookingConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingInProgressTitle": "Receita en curso",
+  "cookingInProgressMessage": "Xa estás a cociñar \"{title}\". Comezar unha receita nova?",
+  "@cookingInProgressMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingReplaceButton": "Nova receita",
+  "previousStep": "Paso anterior",
+  "nextStep": "Paso seguinte",
+  "minimize": "Minimizar",
+  "expandCookingSession": "Expandir",
+  "cookingNotificationChannelName": "Sesión de cociña",
+  "cookingNotificationChannelDescription": "Sesión de cociña en curso"
 }

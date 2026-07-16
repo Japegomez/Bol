@@ -1380,4 +1380,71 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get recipeAssistantNutritionSaved => 'Ficha nutricional completada';
+
+  @override
+  String get cookRecipeButton => 'Cocinar receta';
+
+  @override
+  String get continueCookingButton => 'Continuar cocinando';
+
+  @override
+  String get checkIngredientsStep => 'Comprobar ingredientes';
+
+  @override
+  String stepXofY(int current, int total) {
+    return 'Paso $current de $total';
+  }
+
+  @override
+  String get completeStepButton => 'Completar paso';
+
+  @override
+  String get finishCookingButton => 'Terminar';
+
+  @override
+  String get cookingPausedLabel => 'Pausada';
+
+  @override
+  String get cookingPauseTooltip => 'Pausar';
+
+  @override
+  String get cookingResumeTooltip => 'Continuar';
+
+  @override
+  String get finishCookingTitle => '¿Terminar la receta?';
+
+  @override
+  String finishCookingConfirm(String title) {
+    return '¿Quieres terminar de cocinar \"$title\"?';
+  }
+
+  @override
+  String get cookingInProgressTitle => 'Receta en curso';
+
+  @override
+  String cookingInProgressMessage(String title) {
+    return 'Ya estás cocinando \"$title\". ¿Empezar una receta nueva?';
+  }
+
+  @override
+  String get cookingReplaceButton => 'Nueva receta';
+
+  @override
+  String get previousStep => 'Paso anterior';
+
+  @override
+  String get nextStep => 'Paso siguiente';
+
+  @override
+  String get minimize => 'Minimizar';
+
+  @override
+  String get expandCookingSession => 'Expandir';
+
+  @override
+  String get cookingNotificationChannelName => 'Sesión de cocina';
+
+  @override
+  String get cookingNotificationChannelDescription =>
+      'Sesión de cocina en curso';
 }

@@ -438,5 +438,42 @@
   "recipeAssistantNotConfigured": "IA laguntzailea oraindik ez dago konfiguratuta.",
   "recipeAssistantTimeout": "Eskaerak denbora gehiegi hartu du. Saiatu berriro.",
   "completeNutritionWithAssistant": "IA-rekin osatu",
-  "recipeAssistantNutritionSaved": "Nutrizio fitxa osatuta"
+  "recipeAssistantNutritionSaved": "Nutrizio fitxa osatuta",
+
+  "cookRecipeButton": "Errezeta egosi",
+  "continueCookingButton": "Sukaldaritza jarraitu",
+  "checkIngredientsStep": "Osagaiak egiaztatu",
+  "stepXofY": "{current}. urratsa {total}etik",
+  "@stepXofY": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "completeStepButton": "Urratsa osatu",
+  "finishCookingButton": "Amaitu",
+  "cookingPausedLabel": "Pausatuta",
+  "cookingPauseTooltip": "Pausatu",
+  "cookingResumeTooltip": "Jarraitu",
+  "finishCookingTitle": "Sukaldaritza amaitu?",
+  "finishCookingConfirm": "\"{title}\" egostea amaitu nahi duzu?",
+  "@finishCookingConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingInProgressTitle": "Errezeta egiten",
+  "cookingInProgressMessage": "\"{title}\" egiten ari zara. Errezeta berria hasi?",
+  "@cookingInProgressMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingReplaceButton": "Errezeta berria",
+  "previousStep": "Aurreko urratsa",
+  "nextStep": "Hurrengo urratsa",
+  "minimize": "Txikitu",
+  "expandCookingSession": "Zabaldu",
+  "cookingNotificationChannelName": "Sukaldaritza saioa",
+  "cookingNotificationChannelDescription": "Sukaldaritza saioa martxan"
 }
