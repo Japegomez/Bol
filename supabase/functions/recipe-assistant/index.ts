@@ -235,6 +235,109 @@ function isCerebrasProvider(baseUrl: string): boolean {
   return baseUrl.includes("cerebras.ai");
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isNumberOrNull(value: unknown): value is number | null {
+  return value === null || (typeof value === "number" && Number.isFinite(value));
+}
+
+function isIntegerOrNull(value: unknown, minimum = 0): value is number | null {
+  return value === null ||
+    (typeof value === "number" && Number.isInteger(value) && value >= minimum);
+}
+
+function isValidUnit(value: unknown): boolean {
+  return value === null ||
+    (typeof value === "string" && (PREDEFINED_UNITS as readonly string[]).includes(value));
+}
+
+function isValidIngredient(item: unknown): boolean {
+  if (!item || typeof item !== "object") return false;
+  const ingredient = item as Record<string, unknown>;
+
+  if (!isNonEmptyString(ingredient.name)) return false;
+  if (!isNumberOrNull(ingredient.quantity)) return false;
+  if (!isValidUnit(ingredient.unit)) return false;
+  if (
+    typeof ingredient.category !== "string" ||
+    !(INGREDIENT_CATEGORY_KEYS as readonly string[]).includes(ingredient.category)
+  ) {
+    return false;
+  }
+  if (typeof ingredient.isOptional !== "boolean") return false;
+  if (typeof ingredient.isToTaste !== "boolean") return false;
+
+  return true;
+}
+
+function isValidStep(item: unknown): boolean {
+  if (!item || typeof item !== "object") return false;
+  const step = item as Record<string, unknown>;
+
+  return isNonEmptyString(step.description) &&
+    typeof step.isOptional === "boolean";
+}
+
+function validateGeneratedRecipe(parsed: Record<string, unknown>): boolean {
+  if (parsed.error === "not_a_recipe_request") {
+    return true;
+  }
+
+  if (!isNonEmptyString(parsed.title)) return false;
+  if (typeof parsed.servings !== "number" || !Number.isInteger(parsed.servings) ||
+    parsed.servings < 1) {
+    return false;
+  }
+  if (!isIntegerOrNull(parsed.prepTime)) return false;
+  if (!isIntegerOrNull(parsed.cookTime)) return false;
+  if (typeof parsed.detectedLang !== "string" || !parsed.detectedLang.trim()) {
+    return false;
+  }
+  if (parsed.tips !== null && typeof parsed.tips !== "string") return false;
+
+  if (!Array.isArray(parsed.tags)) return false;
+  for (const tag of parsed.tags) {
+    if (
+      typeof tag !== "string" ||
+      !(SUGGESTED_RECIPE_TAG_KEYS as readonly string[]).includes(tag)
+    ) {
+      return false;
+    }
+  }
+
+  if (!Array.isArray(parsed.ingredients) || parsed.ingredients.length === 0) {
+    return false;
+  }
+  let hasRequiredIngredient = false;
+  for (const ingredient of parsed.ingredients) {
+    if (!isValidIngredient(ingredient)) return false;
+    const item = ingredient as Record<string, unknown>;
+    if (item.isOptional !== true && item.isToTaste !== true) {
+      hasRequiredIngredient = true;
+    }
+  }
+  if (!hasRequiredIngredient) return false;
+
+  if (!Array.isArray(parsed.steps) || parsed.steps.length === 0) return false;
+  let hasRequiredStep = false;
+  for (const step of parsed.steps) {
+    if (!isValidStep(step)) return false;
+    if ((step as Record<string, unknown>).isOptional !== true) {
+      hasRequiredStep = true;
+    }
+  }
+  if (!hasRequiredStep) return false;
+
+  if (!parsed.nutrition || typeof parsed.nutrition !== "object") return false;
+  return validateAgainstSchema(
+    parsed.nutrition as Record<string, unknown>,
+    "recipe_nutrition",
+    nutritionSchema,
+  );
+}
+
 function validateAgainstSchema(
   parsed: Record<string, unknown>,
   schemaName: string,
@@ -268,23 +371,7 @@ function validateAgainstSchema(
   }
 
   if (schemaName === "generated_recipe" || schema === recipeSchema) {
-    if (parsed.error === "not_a_recipe_request") {
-      return true;
-    }
-
-    if (typeof parsed.title !== "string" || !parsed.title.trim()) {
-      return false;
-    }
-
-    if (!Array.isArray(parsed.ingredients) || parsed.ingredients.length === 0) {
-      return false;
-    }
-
-    if (!Array.isArray(parsed.steps) || parsed.steps.length === 0) {
-      return false;
-    }
-
-    return true;
+    return validateGeneratedRecipe(parsed);
   }
 
   return true;
@@ -438,14 +525,13 @@ async function callLlm(
       return parsed;
     }
 
-    const preview = content.trim().slice(0, 300);
     console.error(
       "LLM invalid response content",
       JSON.stringify({
         schemaName,
         useJsonObject,
         attempt,
-        preview,
+        contentLength: content.trim().length,
         finishReason: (data as {
           choices?: Array<{ finish_reason?: string }>;
         })?.choices?.[0]?.finish_reason ?? null,

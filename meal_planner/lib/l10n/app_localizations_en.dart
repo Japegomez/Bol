@@ -1367,6 +1367,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The AI assistant is not configured yet.';
 
   @override
+  String get recipeAssistantTimeout =>
+      'The request took too long. Please try again.';
+
+  @override
   String get completeNutritionWithAssistant => 'Complete with AI';
 
   @override

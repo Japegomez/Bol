@@ -1369,6 +1369,10 @@ class AppLocalizationsEu extends AppLocalizations {
       'IA laguntzailea oraindik ez dago konfiguratuta.';
 
   @override
+  String get recipeAssistantTimeout =>
+      'Eskaerak denbora gehiegi hartu du. Saiatu berriro.';
+
+  @override
   String get completeNutritionWithAssistant => 'IA-rekin osatu';
 
   @override

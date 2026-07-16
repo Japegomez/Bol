@@ -1371,6 +1371,10 @@ class AppLocalizationsGl extends AppLocalizations {
       'O asistente de IA aínda non está configurado.';
 
   @override
+  String get recipeAssistantTimeout =>
+      'A solicitude tardou demasiado. Téntao de novo.';
+
+  @override
   String get completeNutritionWithAssistant => 'Completar con IA';
 
   @override

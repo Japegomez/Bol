@@ -2608,6 +2608,12 @@ abstract class AppLocalizations {
   /// **'The AI assistant is not configured yet.'**
   String get recipeAssistantNotConfigured;
 
+  /// No description provided for @recipeAssistantTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The request took too long. Please try again.'**
+  String get recipeAssistantTimeout;
+
   /// No description provided for @completeNutritionWithAssistant.
   ///
   /// In en, this message translates to:

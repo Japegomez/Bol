@@ -542,6 +542,7 @@
   "recipeAssistantFailed": "Could not generate a response. Please try again.",
   "recipeAssistantOffline": "An internet connection is required to use the assistant.",
   "recipeAssistantNotConfigured": "The AI assistant is not configured yet.",
+  "recipeAssistantTimeout": "The request took too long. Please try again.",
   "completeNutritionWithAssistant": "Complete with AI",
   "recipeAssistantNutritionSaved": "Nutrition information completed"
 }

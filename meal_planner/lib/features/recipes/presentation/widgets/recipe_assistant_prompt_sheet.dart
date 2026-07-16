@@ -14,6 +14,7 @@ String resolveRecipeAssistantError(String error, AppLocalizations l10n) {
     recipeAssistantRateLimitedKey => l10n.recipeAssistantRateLimited,
     recipeAssistantOfflineKey => l10n.recipeAssistantOffline,
     recipeAssistantNotConfiguredKey => l10n.recipeAssistantNotConfigured,
+    recipeAssistantTimeoutKey => l10n.recipeAssistantTimeout,
     _ => l10n.recipeAssistantFailed,
   };
 }
@@ -180,8 +181,9 @@ Future<void> generateNutritionWithAssistant({
   final l10n = context.l10n;
   final messenger = ScaffoldMessenger.of(context);
 
+  NutritionFormData nutrition;
   try {
-    final nutrition = await runWithRecipeAssistantBlockingOverlay(
+    nutrition = await runWithRecipeAssistantBlockingOverlay(
       context: context,
       message: l10n.recipeAssistantBlockingNutrition,
       task: () => ref.read(recipeAssistantRepositoryProvider).generateNutrition(
@@ -190,7 +192,6 @@ Future<void> generateNutritionWithAssistant({
             ingredients: ingredients,
           ),
     );
-    await onSuccess(nutrition);
   } catch (error) {
     messenger.showSnackBar(
       SnackBar(
@@ -201,6 +202,15 @@ Future<void> generateNutritionWithAssistant({
           ),
         ),
       ),
+    );
+    return;
+  }
+
+  try {
+    await onSuccess(nutrition);
+  } catch (error) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.errorWithMessage('$error'))),
     );
   }
 }

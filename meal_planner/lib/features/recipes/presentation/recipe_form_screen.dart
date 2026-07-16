@@ -230,6 +230,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       servings: _data!.servings,
       ingredients: _data!.ingredients,
       onSuccess: (nutrition) {
+        if (!mounted) return;
         setState(() {
           _data!.nutrition
             ..calories = nutrition.calories
@@ -542,11 +543,6 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 ),
                 const SizedBox(height: 8),
                 _NutritionFields(
-                  key: ValueKey(
-                    '${data.nutrition.calories}-${data.nutrition.protein}-'
-                    '${data.nutrition.carbohydrates}-${data.nutrition.fat}-'
-                    '${data.nutrition.fiber}',
-                  ),
                   data: data.nutrition,
                 ),
                 const SizedBox(height: 24),
@@ -892,7 +888,7 @@ class _PhotoSection extends ConsumerWidget {
 // ──────────────────────────────────────────────────────────────────────────────
 
 class _NutritionFields extends StatefulWidget {
-  const _NutritionFields({super.key, required this.data});
+  const _NutritionFields({required this.data});
 
   final NutritionFormData data;
 
@@ -928,6 +924,25 @@ class _NutritionFieldsState extends State<_NutritionFields> {
     _fat.dispose();
     _fiber.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _NutritionFields oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncControllerFromData(_calories, widget.data.calories);
+    _syncControllerFromData(_protein, widget.data.protein);
+    _syncControllerFromData(_carbohydrates, widget.data.carbohydrates);
+    _syncControllerFromData(_fat, widget.data.fat);
+    _syncControllerFromData(_fiber, widget.data.fiber);
+  }
+
+  void _syncControllerFromData(TextEditingController controller, num? value) {
+    final newText = value?.toString() ?? '';
+    if (controller.text == newText) return;
+    controller.value = controller.value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
   }
 
   @override

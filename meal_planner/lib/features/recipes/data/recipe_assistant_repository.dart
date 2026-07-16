@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
@@ -10,6 +12,11 @@ const recipeAssistantRateLimitedKey = 'recipeAssistantRateLimited';
 const recipeAssistantFailedKey = 'recipeAssistantFailed';
 const recipeAssistantOfflineKey = 'recipeAssistantOffline';
 const recipeAssistantNotConfiguredKey = 'recipeAssistantNotConfigured';
+const recipeAssistantTimeoutKey = 'recipeAssistantTimeout';
+
+/// Client timeouts aligned with the Edge Function budget (~240s total).
+const _recipeGenerationTimeout = Duration(seconds: 210);
+const _nutritionGenerationTimeout = Duration(seconds: 200);
 
 class GeneratedRecipeResult {
   const GeneratedRecipeResult({
@@ -30,7 +37,7 @@ class RecipeAssistantRepository {
         'mode': 'generate_recipe',
         'prompt': prompt.trim(),
       },
-      timeout: const Duration(seconds: 60),
+      timeout: _recipeGenerationTimeout,
     );
 
     final recipeMap = data['recipe'];
@@ -77,7 +84,7 @@ class RecipeAssistantRepository {
             )
             .toList(),
       },
-      timeout: const Duration(seconds: 45),
+      timeout: _nutritionGenerationTimeout,
     );
 
     final nutritionMap = data['nutrition'];
@@ -110,6 +117,8 @@ class RecipeAssistantRepository {
         throw Exception(recipeAssistantFailedKey);
       }
       return Map<String, dynamic>.from(data);
+    } on TimeoutException {
+      throw Exception(recipeAssistantTimeoutKey);
     } on FunctionException catch (e) {
       throw Exception(_mapFunctionError(e.status, e.details));
     }

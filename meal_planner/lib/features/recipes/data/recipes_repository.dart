@@ -13,6 +13,7 @@ import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/sync/pending_operation_types.dart';
 import 'package:meal_planner/core/sync/recipe_form_data_codec.dart';
+import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
@@ -605,7 +606,9 @@ class RecipesRepository {
     String recipeId,
     NutritionFormData nutrition,
   ) async {
-    if (!nutrition.hasAnyValue) return;
+    if (!nutrition.hasAnyValue) {
+      throw Exception(recipeAssistantFailedKey);
+    }
 
     final isOnline = await NetworkStatus.isOnline;
     if (!isOnline) {

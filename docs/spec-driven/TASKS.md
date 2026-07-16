@@ -563,7 +563,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Merge PR #47** (`feature/recipe-assistant` → `develop`) tras review.
+1. **Validar y publicar PR #48** (`develop` → `main`) tras review y CI.
 2. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
 3. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
 4. **Release TestFlight / Play** con onboarding spotlight + offline + multi-etiqueta + modo oscuro + UX recetario/Explorar + asistente IA.

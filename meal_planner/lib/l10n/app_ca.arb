@@ -436,6 +436,7 @@
   "recipeAssistantFailed": "No s'ha pogut generar la resposta. Torna-ho a provar.",
   "recipeAssistantOffline": "Es requereix connexió a internet per usar l'assistent.",
   "recipeAssistantNotConfigured": "L'assistent d'IA encara no està configurat.",
+  "recipeAssistantTimeout": "La sol·licitud ha trigat massa. Torna-ho a provar.",
   "completeNutritionWithAssistant": "Completar amb IA",
   "recipeAssistantNutritionSaved": "Fitxa nutricional completada"
 }

@@ -436,6 +436,7 @@
   "recipeAssistantFailed": "Non se puido xerar a resposta. Téntao de novo.",
   "recipeAssistantOffline": "Requírese conexión a internet para usar o asistente.",
   "recipeAssistantNotConfigured": "O asistente de IA aínda non está configurado.",
+  "recipeAssistantTimeout": "A solicitude tardou demasiado. Téntao de novo.",
   "completeNutritionWithAssistant": "Completar con IA",
   "recipeAssistantNutritionSaved": "Ficha nutricional completada"
 }
