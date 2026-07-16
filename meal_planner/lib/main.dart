@@ -7,6 +7,8 @@ import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/locale/supported_locales.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/utils/logger.dart';
+import 'package:meal_planner/features/cooking/platform/cooking_live_activity_service.dart';
+import 'package:meal_planner/features/cooking/platform/cooking_notification_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
@@ -29,6 +31,9 @@ Future<void> main() async {
 
     await AnalyticsService.initialize();
     await AnalyticsService.trackAppOpened();
+
+    await CookingNotificationService.instance.initialize();
+    await CookingLiveActivityService.instance.initialize();
   }
 
   if (Env.hasSentry) {

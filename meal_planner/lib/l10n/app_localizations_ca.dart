@@ -1378,4 +1378,64 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get recipeAssistantNutritionSaved => 'Fitxa nutricional completada';
+
+  @override
+  String get cookRecipeButton => 'Cuinar recepta';
+
+  @override
+  String get continueCookingButton => 'Continuar cuinant';
+
+  @override
+  String get checkIngredientsStep => 'Comprovar ingredients';
+
+  @override
+  String stepXofY(int current, int total) {
+    return 'Pas $current de $total';
+  }
+
+  @override
+  String get completeStepButton => 'Completar pas';
+
+  @override
+  String get finishCookingButton => 'Acabar';
+
+  @override
+  String get cookingPausedLabel => 'Pausada';
+
+  @override
+  String get cookingPauseTooltip => 'Pausar';
+
+  @override
+  String get cookingResumeTooltip => 'Continuar';
+
+  @override
+  String get finishCookingTitle => 'Acabar la recepta?';
+
+  @override
+  String finishCookingConfirm(String title) {
+    return 'Vols acabar de cuinar \"$title\"?';
+  }
+
+  @override
+  String get cookingInProgressTitle => 'Recepta en curs';
+
+  @override
+  String cookingInProgressMessage(String title) {
+    return 'Ja estàs cuinant \"$title\". Vols començar una nova recepta?';
+  }
+
+  @override
+  String get cookingReplaceButton => 'Nova recepta';
+
+  @override
+  String get previousStep => 'Pas anterior';
+
+  @override
+  String get nextStep => 'Pas següent';
+
+  @override
+  String get minimize => 'Minimitzar';
+
+  @override
+  String get expandCookingSession => 'Expandir';
 }

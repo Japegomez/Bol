@@ -9,6 +9,7 @@ import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
@@ -340,10 +341,55 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     }
   }
 
+  Future<void> _startCooking(BuildContext context) async {
+    final l10n = context.l10n;
+    final notifier = ref.read(cookingSessionProvider.notifier);
+    final current = ref.read(cookingSessionProvider);
+
+    if (current != null) {
+      if (current.recipeId == widget.recipeId) {
+        // Same recipe already in progress — expand it.
+        notifier.setExpanded(true);
+        return;
+      }
+      // Different recipe in progress — ask to replace.
+      if (!context.mounted) return;
+      final replace = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.cookingInProgressTitle),
+          content: Text(l10n.cookingInProgressMessage(current.recipeTitle)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.cookingReplaceButton),
+            ),
+          ],
+        ),
+      );
+      if (replace != true) return;
+      await notifier.finish();
+    }
+
+    await notifier.start(
+      recipeId: widget.recipeId,
+      recipeTitle: widget.title,
+      ingredients: widget.ingredients,
+      steps: widget.steps,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final appLocale = ref.watch(currentLanguageCodeProvider);
+    final cookingSession = ref.watch(cookingSessionProvider);
+    final isThisRecipeCooking =
+        cookingSession?.recipeId == widget.recipeId;
     final contentLocale = recipeContentLocaleName(
       sourceLang: widget.sourceLang,
       appLocale: appLocale,
@@ -387,6 +433,21 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => _startCooking(context),
+                    icon: Icon(
+                      isThisRecipeCooking ? Icons.restaurant : Icons.play_arrow,
+                    ),
+                    label: Text(
+                      isThisRecipeCooking
+                          ? l10n.continueCookingButton
+                          : l10n.cookRecipeButton,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TranslationStatusBanner(
                   l10n: l10n,
                   isTranslated: widget.isTranslated,

@@ -1377,4 +1377,64 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get recipeAssistantNutritionSaved => 'Nutrizio fitxa osatuta';
+
+  @override
+  String get cookRecipeButton => 'Errezeta egosi';
+
+  @override
+  String get continueCookingButton => 'Sukaldaritza jarraitu';
+
+  @override
+  String get checkIngredientsStep => 'Osagaiak egiaztatu';
+
+  @override
+  String stepXofY(int current, int total) {
+    return '$current. urratsa ${total}etik';
+  }
+
+  @override
+  String get completeStepButton => 'Urratsa osatu';
+
+  @override
+  String get finishCookingButton => 'Amaitu';
+
+  @override
+  String get cookingPausedLabel => 'Pausatuta';
+
+  @override
+  String get cookingPauseTooltip => 'Pausatu';
+
+  @override
+  String get cookingResumeTooltip => 'Jarraitu';
+
+  @override
+  String get finishCookingTitle => 'Sukaldaritza amaitu?';
+
+  @override
+  String finishCookingConfirm(String title) {
+    return '\"$title\" egostea amaitu nahi duzu?';
+  }
+
+  @override
+  String get cookingInProgressTitle => 'Errezeta egiten';
+
+  @override
+  String cookingInProgressMessage(String title) {
+    return '\"$title\" egiten ari zara. Errezeta berria hasi?';
+  }
+
+  @override
+  String get cookingReplaceButton => 'Errezeta berria';
+
+  @override
+  String get previousStep => 'Aurreko urratsa';
+
+  @override
+  String get nextStep => 'Hurrengo urratsa';
+
+  @override
+  String get minimize => 'Txikitu';
+
+  @override
+  String get expandCookingSession => 'Zabaldu';
 }

@@ -17,6 +17,10 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		F1A2B3C41E90000100000001 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C41E90000100000002 /* GoogleService-Info.plist */; };
+		C0A00101C0A00101C0A00101 /* CookingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00201C0A00201C0A00201 /* CookingActivityAttributes.swift */; };
+		C0A00102C0A00102C0A00102 /* CookingActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00202C0A00202C0A00202 /* CookingActivityWidget.swift */; };
+		C0A00103C0A00103C0A00103 /* CookingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00203C0A00203C0A00203 /* CookingIntents.swift */; };
+		C0A00104C0A00104C0A00104 /* CookingActivity.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C0A00206C0A00206C0A00206 /* CookingActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,6 +30,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
+		};
+		C0A00901C0A00901C0A00901 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C0A00501C0A00501C0A00501;
+			remoteInfo = CookingActivity;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -38,6 +49,17 @@
 			files = (
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0A00400C0A00400C0A00400 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C0A00104C0A00104C0A00104 /* CookingActivity.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -62,6 +84,12 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F1A2B3C41E90000100000002 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F1A2B3C41E90000100000003 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		C0A00201C0A00201C0A00201 /* CookingActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingActivityAttributes.swift; sourceTree = "<group>"; };
+		C0A00202C0A00202C0A00202 /* CookingActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingActivityWidget.swift; sourceTree = "<group>"; };
+		C0A00203C0A00203C0A00203 /* CookingIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingIntents.swift; sourceTree = "<group>"; };
+		C0A00204C0A00204C0A00204 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C0A00205C0A00205C0A00205 /* CookingActivity.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CookingActivity.entitlements; sourceTree = "<group>"; };
+		C0A00206C0A00206C0A00206 /* CookingActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CookingActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +98,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0A00302C0A00302C0A00302 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,6 +138,7 @@
 				97C146F01CF9000F007C117D /* Runner */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
+				C0A00801C0A00801C0A00801 /* CookingActivity */,
 			);
 			sourceTree = "<group>";
 		};
@@ -111,8 +147,21 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				C0A00206C0A00206C0A00206 /* CookingActivity.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C0A00801C0A00801C0A00801 /* CookingActivity */ = {
+			isa = PBXGroup;
+			children = (
+				C0A00201C0A00201C0A00201 /* CookingActivityAttributes.swift */,
+				C0A00202C0A00202C0A00202 /* CookingActivityWidget.swift */,
+				C0A00203C0A00203C0A00203 /* CookingIntents.swift */,
+				C0A00204C0A00204C0A00204 /* Info.plist */,
+				C0A00205C0A00205C0A00205 /* CookingActivity.entitlements */,
+			);
+			path = CookingActivity;
 			sourceTree = "<group>";
 		};
 		97C146F01CF9000F007C117D /* Runner */ = {
@@ -163,10 +212,12 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+				C0A00400C0A00400C0A00400 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C0A00902C0A00902C0A00902 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -175,6 +226,23 @@
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C0A00501C0A00501C0A00501 /* CookingActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0A00701C0A00701C0A00701 /* Build configuration list for PBXNativeTarget "CookingActivity" */;
+			buildPhases = (
+				C0A00301C0A00301C0A00301 /* Sources */,
+				C0A00302C0A00302C0A00302 /* Frameworks */,
+				C0A00303C0A00303C0A00303 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CookingActivity;
+			productName = CookingActivity;
+			productReference = C0A00206C0A00206C0A00206 /* CookingActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -193,6 +261,9 @@
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
+					};
+					C0A00501C0A00501C0A00501 = {
+						CreatedOnToolsVersion = 15.1;
 					};
 				};
 			};
@@ -214,6 +285,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				C0A00501C0A00501C0A00501 /* CookingActivity */,
 			);
 		};
 /* End PBXProject section */
@@ -235,6 +307,13 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				F1A2B3C41E90000100000001 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0A00303C0A00303C0A00303 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,6 +372,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0A00301C0A00301C0A00301 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0A00101C0A00101C0A00101 /* CookingActivityAttributes.swift in Sources */,
+				C0A00102C0A00102C0A00102 /* CookingActivityWidget.swift in Sources */,
+				C0A00103C0A00103C0A00103 /* CookingIntents.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -300,6 +389,11 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		C0A00902C0A00902C0A00902 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C0A00501C0A00501C0A00501 /* CookingActivity */;
+			targetProxy = C0A00901C0A00901C0A00901 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -600,6 +694,72 @@
 			};
 			name = Release;
 		};
+		C0A00601C0A00601C0A00601 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CookingActivity/CookingActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				INFOPLIST_FILE = CookingActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.japegomez.mealPlanner.CookingActivity;
+				PRODUCT_NAME = CookingActivity;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C0A00602C0A00602C0A00602 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CookingActivity/CookingActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				INFOPLIST_FILE = CookingActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.japegomez.mealPlanner.CookingActivity;
+				PRODUCT_NAME = CookingActivity;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		C0A00603C0A00603C0A00603 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CookingActivity/CookingActivity.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				INFOPLIST_FILE = CookingActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.japegomez.mealPlanner.CookingActivity;
+				PRODUCT_NAME = CookingActivity;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -629,6 +789,16 @@
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
 				249021D4217E4FDB00AE95B9 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0A00701C0A00701C0A00701 /* Build configuration list for PBXNativeTarget "CookingActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0A00601C0A00601C0A00601 /* Debug */,
+				C0A00602C0A00602C0A00602 /* Release */,
+				C0A00603C0A00603C0A00603 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

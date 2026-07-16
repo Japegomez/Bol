@@ -544,5 +544,40 @@
   "recipeAssistantNotConfigured": "The AI assistant is not configured yet.",
   "recipeAssistantTimeout": "The request took too long. Please try again.",
   "completeNutritionWithAssistant": "Complete with AI",
-  "recipeAssistantNutritionSaved": "Nutrition information completed"
+  "recipeAssistantNutritionSaved": "Nutrition information completed",
+
+  "cookRecipeButton": "Cook Recipe",
+  "continueCookingButton": "Continue Cooking",
+  "checkIngredientsStep": "Check Ingredients",
+  "stepXofY": "Step {current} of {total}",
+  "@stepXofY": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "completeStepButton": "Complete Step",
+  "finishCookingButton": "Finish",
+  "cookingPausedLabel": "Paused",
+  "cookingPauseTooltip": "Pause",
+  "cookingResumeTooltip": "Resume",
+  "finishCookingTitle": "Finish cooking?",
+  "finishCookingConfirm": "Do you want to finish cooking \"{title}\"?",
+  "@finishCookingConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingInProgressTitle": "Recipe in progress",
+  "cookingInProgressMessage": "You are already cooking \"{title}\". Start a new recipe?",
+  "@cookingInProgressMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingReplaceButton": "New recipe",
+  "previousStep": "Previous step",
+  "nextStep": "Next step",
+  "minimize": "Minimize",
+  "expandCookingSession": "Expand"
 }

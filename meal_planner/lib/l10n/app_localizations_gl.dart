@@ -1379,4 +1379,64 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get recipeAssistantNutritionSaved => 'Ficha nutricional completada';
+
+  @override
+  String get cookRecipeButton => 'Cociñar receita';
+
+  @override
+  String get continueCookingButton => 'Continuar cociñando';
+
+  @override
+  String get checkIngredientsStep => 'Comprobar ingredientes';
+
+  @override
+  String stepXofY(int current, int total) {
+    return 'Paso $current de $total';
+  }
+
+  @override
+  String get completeStepButton => 'Completar paso';
+
+  @override
+  String get finishCookingButton => 'Rematar';
+
+  @override
+  String get cookingPausedLabel => 'Pausada';
+
+  @override
+  String get cookingPauseTooltip => 'Pausar';
+
+  @override
+  String get cookingResumeTooltip => 'Continuar';
+
+  @override
+  String get finishCookingTitle => 'Rematar a receita?';
+
+  @override
+  String finishCookingConfirm(String title) {
+    return 'Queres deixar de cociñar \"$title\"?';
+  }
+
+  @override
+  String get cookingInProgressTitle => 'Receita en curso';
+
+  @override
+  String cookingInProgressMessage(String title) {
+    return 'Xa estás a cociñar \"$title\". Comezar unha receita nova?';
+  }
+
+  @override
+  String get cookingReplaceButton => 'Nova receita';
+
+  @override
+  String get previousStep => 'Paso anterior';
+
+  @override
+  String get nextStep => 'Paso seguinte';
+
+  @override
+  String get minimize => 'Minimizar';
+
+  @override
+  String get expandCookingSession => 'Expandir';
 }
