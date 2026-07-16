@@ -179,14 +179,16 @@ class CookingNotificationService {
     CookingSession session,
     CookingPlatformCopy copy,
   ) async {
-    // Passive interruption level: no sound, no banner alert while the device
-    // is unlocked — the notification just appears in the notification centre.
-    // The lock screen is handled by the Live Activity.
+    // InterruptionLevel.active (default): the notification appears on the
+    // lock screen as a banner and in the notification centre — no sound.
+    // presentAlert: false suppresses the foreground pop-up banner while the
+    // user is inside the app, but the notification is still delivered to the
+    // lock screen and notification centre when the app is minimized.
     const iosDetails = DarwinNotificationDetails(
-      presentAlert: false, // suppress foreground banner; notification still lands in centre
+      presentAlert: false,
       presentBadge: false,
       presentSound: false,
-      interruptionLevel: InterruptionLevel.passive,
+      interruptionLevel: InterruptionLevel.active,
     );
 
     final body = session.isPaused

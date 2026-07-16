@@ -50,17 +50,22 @@ class CookingLiveActivityService {
   }
 
   Future<void> update(CookingSession session) async {
-    if (!_isIOS || !_initialized) return;
+    if (!_isIOS) return;
+    // Re-attempt initialization if a previous attempt failed (e.g. App Group
+    // not yet configured, or the extension wasn't available at startup).
+    if (!_initialized) {
+      await initialize();
+      if (!_initialized) return;
+    }
     try {
       final data = _buildData(session);
       await _plugin.createOrUpdateActivity(_kActivityId, data);
       log.d('LiveActivity synced');
     } on Object catch (e) {
-      // Catches both Dart exceptions (PlatformException, MissingPluginException)
-      // and any Error subclasses (e.g. AssertionError from native bridge).
+      // Log the error but do NOT set _initialized = false here: a single
+      // transient failure (network, race condition) should not permanently
+      // disable Live Activities for the rest of the session.
       log.w('LiveActivity update failed: $e');
-      // Disable further attempts if the extension isn't reachable.
-      _initialized = false;
     }
   }
 
