@@ -2689,8 +2689,20 @@ abstract class AppLocalizations {
   /// No description provided for @finishCookingConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Do you want to stop cooking \"{title}\"?'**
+  /// **'Do you want to finish cooking \"{title}\"?'**
   String finishCookingConfirm(String title);
+
+  /// No description provided for @cookingFinishedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe finished!'**
+  String get cookingFinishedTitle;
+
+  /// No description provided for @cookingFinishedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoy your meal!'**
+  String get cookingFinishedMessage;
 
   /// No description provided for @cookingInProgressTitle.
   ///

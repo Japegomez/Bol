@@ -1421,6 +1421,12 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get cookingFinishedTitle => 'Receita terminada!';
+
+  @override
+  String get cookingFinishedMessage => 'Bom apetite!';
+
+  @override
   String get cookingInProgressTitle => 'Receita em curso';
 
   @override

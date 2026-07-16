@@ -4,7 +4,6 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_utils.dart';
-import 'package:meal_planner/features/cooking/presentation/widgets/cooking_finish_hold_button.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 
 /// Full-screen overlay displayed when a cooking session is expanded.
@@ -336,14 +335,25 @@ class _NavigationBar extends StatelessWidget {
                     : notifier.pause,
               ),
               const SizedBox(width: 16),
-              CookingFinishHoldButton(notifier: notifier),
+              _CookingIconButton(
+                icon: const Icon(Icons.stop_rounded),
+                tooltip: l10n.finishCookingButton,
+                onPressed: () => confirmFinishCooking(context, notifier),
+              ),
             ],
           ),
-          _CookingIconButton(
-            icon: const Icon(Icons.arrow_forward_ios),
-            tooltip: l10n.nextStep,
-            onPressed: isLast ? null : notifier.completeStep,
-          ),
+          isLast
+              ? _CookingIconButton(
+                  icon: const Icon(Icons.flag_rounded),
+                  tooltip: l10n.finishCookingButton,
+                  onPressed: () =>
+                      celebrateAndFinishCooking(context, notifier),
+                )
+              : _CookingIconButton(
+                  icon: const Icon(Icons.arrow_forward_ios),
+                  tooltip: l10n.nextStep,
+                  onPressed: notifier.completeStep,
+                ),
         ],
       ),
     );

@@ -1418,6 +1418,12 @@ class AppLocalizationsGl extends AppLocalizations {
   }
 
   @override
+  String get cookingFinishedTitle => 'Receita rematada!';
+
+  @override
+  String get cookingFinishedMessage => 'Que che aproveite!';
+
+  @override
   String get cookingInProgressTitle => 'Receita en curso';
 
   @override
