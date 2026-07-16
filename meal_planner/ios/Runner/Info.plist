@@ -34,6 +34,14 @@
 				<string>com.googleusercontent.apps.864663285485-fo1tb729sp0h976bqm4ftot7mashkks6</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>recetea</string>
+			</array>
+		</dict>
 	</array>
 	<key>GIDClientID</key>
 	<string>864663285485-fo1tb729sp0h976bqm4ftot7mashkks6.apps.googleusercontent.com</string>
@@ -62,6 +70,10 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

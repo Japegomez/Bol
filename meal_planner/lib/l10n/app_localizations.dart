@@ -2625,6 +2625,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nutrition information completed'**
   String get recipeAssistantNutritionSaved;
+
+  /// No description provided for @cookRecipeButton.
+  String get cookRecipeButton;
+
+  /// No description provided for @continueCookingButton.
+  String get continueCookingButton;
+
+  /// No description provided for @checkIngredientsStep.
+  String get checkIngredientsStep;
+
+  /// Step X of Y — placeholders: current (int), total (int).
+  String stepXofY(int current, int total);
+
+  /// No description provided for @completeStepButton.
+  String get completeStepButton;
+
+  /// No description provided for @finishCookingButton.
+  String get finishCookingButton;
+
+  /// No description provided for @cookingPausedLabel.
+  String get cookingPausedLabel;
+
+  /// No description provided for @cookingPauseTooltip.
+  String get cookingPauseTooltip;
+
+  /// No description provided for @cookingResumeTooltip.
+  String get cookingResumeTooltip;
+
+  /// No description provided for @finishCookingTitle.
+  String get finishCookingTitle;
+
+  /// Confirm finish cooking — placeholder: title (String).
+  String finishCookingConfirm(String title);
+
+  /// No description provided for @cookingInProgressTitle.
+  String get cookingInProgressTitle;
+
+  /// Cooking in progress message — placeholder: title (String).
+  String cookingInProgressMessage(String title);
+
+  /// No description provided for @cookingReplaceButton.
+  String get cookingReplaceButton;
+
+  /// No description provided for @previousStep.
+  String get previousStep;
+
+  /// No description provided for @nextStep.
+  String get nextStep;
+
+  /// No description provided for @minimize.
+  String get minimize;
+
+  /// No description provided for @expandCookingSession.
+  String get expandCookingSession;
 }
 
 class _AppLocalizationsDelegate
