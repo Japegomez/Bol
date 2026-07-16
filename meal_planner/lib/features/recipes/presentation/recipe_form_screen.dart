@@ -223,26 +223,29 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     if (_data == null || _isGeneratingNutrition) return;
 
     setState(() => _isGeneratingNutrition = true);
-    await generateNutritionWithAssistant(
-      ref: ref,
-      context: context,
-      title: _data!.title,
-      servings: _data!.servings,
-      ingredients: _data!.ingredients,
-      onSuccess: (nutrition) {
-        if (!mounted) return;
-        setState(() {
-          _data!.nutrition
-            ..calories = nutrition.calories
-            ..protein = nutrition.protein
-            ..carbohydrates = nutrition.carbohydrates
-            ..fat = nutrition.fat
-            ..fiber = nutrition.fiber;
-        });
-      },
-    );
-    if (mounted) {
-      setState(() => _isGeneratingNutrition = false);
+    try {
+      await generateNutritionWithAssistant(
+        ref: ref,
+        context: context,
+        title: _data!.title,
+        servings: _data!.servings,
+        ingredients: _data!.ingredients,
+        onSuccess: (nutrition) {
+          if (!mounted) return;
+          setState(() {
+            _data!.nutrition
+              ..calories = nutrition.calories
+              ..protein = nutrition.protein
+              ..carbohydrates = nutrition.carbohydrates
+              ..fat = nutrition.fat
+              ..fiber = nutrition.fiber;
+          });
+        },
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingNutrition = false);
+      }
     }
   }
 
@@ -939,6 +942,12 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   void _syncControllerFromData(TextEditingController controller, num? value) {
     final newText = value?.toString() ?? '';
     if (controller.text == newText) return;
+
+    final currentParsed = num.tryParse(controller.text.replaceAll(',', '.'));
+    if (currentParsed != null && value != null && currentParsed == value) {
+      return;
+    }
+
     controller.value = controller.value.copyWith(
       text: newText,
       selection: TextSelection.collapsed(offset: newText.length),

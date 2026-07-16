@@ -210,7 +210,14 @@ Future<void> generateNutritionWithAssistant({
     await onSuccess(nutrition);
   } catch (error) {
     messenger.showSnackBar(
-      SnackBar(content: Text(l10n.errorWithMessage('$error'))),
+      SnackBar(
+        content: Text(
+          resolveRecipeAssistantError(
+            error.toString().replaceFirst('Exception: ', ''),
+            l10n,
+          ),
+        ),
+      ),
     );
   }
 }

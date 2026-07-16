@@ -612,7 +612,7 @@ class RecipesRepository {
 
     final isOnline = await NetworkStatus.isOnline;
     if (!isOnline) {
-      throw Exception('Se requiere conexión para completar la nutrición con IA');
+      throw Exception(recipeAssistantOfflineKey);
     }
 
     await supabase.from(NutritionInfo.table_name).upsert(
