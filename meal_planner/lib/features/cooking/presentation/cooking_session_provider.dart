@@ -5,10 +5,10 @@ import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/platform/cooking_live_activity_service.dart';
 import 'package:meal_planner/features/cooking/platform/cooking_notification_service.dart';
+import 'package:meal_planner/features/cooking/platform/cooking_pending_action_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _kSessionKey = 'cooking_session_v1';
-const _kPendingActionKey = 'cooking_pending_action_v1';
 
 // ── Public providers ─────────────────────────────────────────────────────────
 
@@ -33,15 +33,18 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     WidgetsBinding.instance.addObserver(this);
     ref.onDispose(() => WidgetsBinding.instance.removeObserver(this));
 
+    CookingNotificationService.setDirectActionCallback(_applyAction);
+
     _isRestoring = true;
     Future.microtask(() async {
-      await _restore();
-      _isRestoring = false;
+      try {
+        await _restore();
+      } finally {
+        _isRestoring = false;
+      }
     });
     return null;
   }
-
-  // ── WidgetsBindingObserver ────────────────────────────────────────────────
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -50,15 +53,12 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     }
   }
 
-  // ── Public actions ────────────────────────────────────────────────────────
-
   Future<void> start({
     required String recipeId,
     required String recipeTitle,
     required List<Ingredient> ingredients,
     required List<RecipeStep> steps,
   }) async {
-    // Wait for restoration to complete before starting a new session
     while (_isRestoring) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
@@ -86,9 +86,8 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
 
   Future<void> resume() async {
     if (state == null || !state!.isPaused) return;
-    final extra = DateTime.now()
-        .difference(state!.pausedAt!)
-        .inMilliseconds;
+    final extra =
+        DateTime.now().difference(state!.pausedAt!).inMilliseconds;
     state = state!.copyWith(
       clearPausedAt: true,
       accumulatedPauseMs: state!.accumulatedPauseMs + extra,
@@ -113,8 +112,6 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     }
   }
 
-  /// Marks the current step as completed and advances to the next one.
-  /// Unlike [nextStep], this is only triggered by the "Complete step" button.
   void completeStep() {
     if (state == null) return;
     final completed = {...state!.completedSteps, state!.currentStepIndex};
@@ -153,7 +150,16 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     _persist();
   }
 
-  // ── Internal helpers ──────────────────────────────────────────────────────
+  Future<void> _applyAction(String action) async {
+    switch (action) {
+      case 'pause':
+        await pause();
+      case 'resume':
+        await resume();
+      case 'finish':
+        await finish();
+    }
+  }
 
   Future<void> _restore() async {
     final prefs = await SharedPreferences.getInstance();
@@ -161,7 +167,6 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     if (json != null) {
       try {
         final restored = CookingSession.fromJsonString(json);
-        // Only apply restored state if no new session was started during restore
         if (state == null) {
           state = restored;
         }
@@ -169,10 +174,7 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
         await prefs.remove(_kSessionKey);
       }
     }
-    // Process any action queued by a background notification tap.
     await _handlePendingBackgroundAction();
-
-    // Sync platform state after restoration to update native surfaces
     if (state != null) {
       await _syncPlatform();
     }
@@ -199,26 +201,56 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     await CookingLiveActivityService.instance.end();
   }
 
-  /// Applies an action queued by a background notification button tap.
   Future<void> _handlePendingBackgroundAction() async {
-    final prefs = await SharedPreferences.getInstance();
-    final action = prefs.getString(_kPendingActionKey);
+    final action = await CookingPendingActionStore.read();
     if (action == null) return;
-    await prefs.remove(_kPendingActionKey);
-
-    switch (action) {
-      case 'pause':
-        await pause();
-      case 'resume':
-        await resume();
-      case 'finish':
-        await finish();
-    }
+    await CookingPendingActionStore.clear();
+    await _applyAction(action);
   }
 }
 
-/// Called from the background notification isolate to queue an action.
-Future<void> cookingQueueBackgroundAction(String action) async {
+/// Applies a notification action from a background isolate: mutates the
+/// persisted session, updates the ongoing notification, and does not wait for
+/// the UI isolate to resume.
+@pragma('vm:entry-point')
+Future<void> cookingApplyBackgroundAction(String action) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(_kPendingActionKey, action);
+  final json = prefs.getString(_kSessionKey);
+
+  if (action == 'finish') {
+    await prefs.remove(_kSessionKey);
+    await CookingPendingActionStore.clear();
+    await CookingNotificationService.instance.initialize();
+    await CookingNotificationService.instance.cancel();
+    return;
+  }
+
+  if (json == null) return;
+
+  try {
+    var session = CookingSession.fromJsonString(json);
+    if (action == 'pause' && !session.isPaused) {
+      session = session.copyWith(pausedAt: DateTime.now());
+    } else if (action == 'resume' && session.isPaused) {
+      final extra =
+          DateTime.now().difference(session.pausedAt!).inMilliseconds;
+      session = session.copyWith(
+        clearPausedAt: true,
+        accumulatedPauseMs: session.accumulatedPauseMs + extra,
+      );
+    } else {
+      return;
+    }
+    await prefs.setString(_kSessionKey, session.toJsonString());
+    await CookingPendingActionStore.clear();
+    await CookingNotificationService.instance.initialize();
+    await CookingNotificationService.instance.show(session);
+  } catch (_) {
+    // Ignore corrupt session payloads in the background isolate.
+  }
+}
+
+/// Queues a pending action for the main isolate (iOS Live Activity intents).
+Future<void> cookingQueueBackgroundAction(String action) async {
+  await CookingPendingActionStore.write(action);
 }

@@ -579,5 +579,7 @@
   "previousStep": "Previous step",
   "nextStep": "Next step",
   "minimize": "Minimize",
-  "expandCookingSession": "Expand"
+  "expandCookingSession": "Expand",
+  "cookingNotificationChannelName": "Cooking session",
+  "cookingNotificationChannelDescription": "In-progress cooking session"
 }

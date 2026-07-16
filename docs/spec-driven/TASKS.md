@@ -16,7 +16,7 @@
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
 | Fase 7 — Acceso offline | Completada | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
-| Fase 8 — Modo cocina   | Completada | Sesión paso a paso desde ficha de receta; minimizar/expandir; grafo de pasos; notificación Android + Live Activity iOS; persistencia local |
+| Fase 8 — Modo cocina   | Implementada (validación pendiente) | Código listo; pendiente perfil extensión iOS en builds y validación manual en dispositivo |
 
 ---
 
@@ -323,10 +323,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
 - [x] L10n (es, en, ca, eu, gl, pt) y errores localizados (offline, rate limit, no configurado, no es receta)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
-- [x] Botón **Cocinar receta** / **Continuar cocinando** en ficha de receta (`recipe_detail_screen.dart`); solo una sesión activa a la vez (diálogo para reemplazar)
 
 ### F4c — Modo cocina (rama `feature/cooking-mode`)
 
+- [x] Botón **Cocinar receta** / **Continuar cocinando** en ficha de receta (`recipe_detail_screen.dart`); solo una sesión activa a la vez (diálogo para reemplazar)
 - [x] Modelo `CookingSession` + `CookingSessionNotifier` (Riverpod `keepAlive`); persistencia en `SharedPreferences`; restauración al arrancar
 - [x] Pantalla expandida paso a paso (`CookingScreen`): timer, grafo vertical de pasos (completados con tick verde), navegación adelante/atrás
 - [x] Paso 0 sintético **Comprobar ingredientes** con lista de ingredientes de la receta

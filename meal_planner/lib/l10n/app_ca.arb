@@ -473,5 +473,7 @@
   "previousStep": "Pas anterior",
   "nextStep": "Pas següent",
   "minimize": "Minimitzar",
-  "expandCookingSession": "Expandir"
+  "expandCookingSession": "Expandir",
+  "cookingNotificationChannelName": "Sessió de cuina",
+  "cookingNotificationChannelDescription": "Sessió de cuina en curs"
 }

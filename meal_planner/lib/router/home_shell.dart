@@ -113,10 +113,12 @@ class HomeShell extends ConsumerWidget {
                 : navigationBar,
           ),
         ),
+        if (cookingSession != null &&
+            cookingSession.isExpanded &&
+            !onboardingPending)
+          CookingScreen(session: cookingSession),
         if (onboardingPending)
           OnboardingOverlay(navigationShell: navigationShell),
-        if (cookingSession != null && cookingSession.isExpanded)
-          CookingScreen(session: cookingSession),
       ],
     );
   }

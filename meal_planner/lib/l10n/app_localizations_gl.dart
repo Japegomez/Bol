@@ -1439,4 +1439,11 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get expandCookingSession => 'Expandir';
+
+  @override
+  String get cookingNotificationChannelName => 'Sesión de cociña';
+
+  @override
+  String get cookingNotificationChannelDescription =>
+      'Sesión de cociña en curso';
 }

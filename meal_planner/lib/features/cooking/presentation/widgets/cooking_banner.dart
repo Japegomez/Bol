@@ -15,7 +15,6 @@ class CookingBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch tick to refresh elapsed time display.
     ref.watch(cookingTickProvider);
 
     final notifier = ref.read(cookingSessionProvider.notifier);
@@ -23,83 +22,85 @@ class CookingBanner extends ConsumerWidget {
     final theme = Theme.of(context);
     final onContainer = theme.colorScheme.onPrimaryContainer;
 
-    return GestureDetector(
-      onTap: () => notifier.setExpanded(true),
-      child: ColoredBox(
-        color: theme.colorScheme.primaryContainer,
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: SizedBox(
-              height: 52,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8, right: 88),
-                      child: Text(
-                        session.recipeTitle,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: onContainer,
-                          fontWeight: FontWeight.w600,
-                          height: 1.1,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    session.isPaused
-                        ? l10n.cookingPausedLabel
-                        : formatCookingDuration(session.elapsed),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                      fontWeight: FontWeight.w600,
-                      color: onContainer,
-                      height: 1.1,
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
+    return ColoredBox(
+      color: theme.colorScheme.primaryContainer,
+      child: SafeArea(
+        top: false,
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: SizedBox(
+            height: 52,
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => notifier.setExpanded(true),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        _BannerIconButton(
-                          icon: session.isPaused
-                              ? Icons.play_arrow
-                              : Icons.pause,
-                          tooltip: session.isPaused
-                              ? l10n.cookingResumeTooltip
-                              : l10n.cookingPauseTooltip,
-                          color: onContainer,
-                          onPressed: session.isPaused
-                              ? () => notifier.resume()
-                              : () => notifier.pause(),
+                        Flexible(
+                          flex: 3,
+                          child: Text(
+                            session.recipeTitle,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: onContainer,
+                              fontWeight: FontWeight.w600,
+                              height: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        CookingFinishHoldButton(
-                          notifier: notifier,
-                          iconColor: onContainer,
-                          backgroundColor: Colors.transparent,
-                          size: 48,
-                          innerSize: 36,
-                          iconSize: 26,
-                        ),
-                        _BannerIconButton(
-                          icon: Icons.keyboard_arrow_up,
-                          tooltip: l10n.expandCookingSession,
-                          color: onContainer,
-                          onPressed: () => notifier.setExpanded(true),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          flex: 2,
+                          child: Text(
+                            session.isPaused
+                                ? l10n.cookingPausedLabel
+                                : formatCookingDuration(session.elapsed),
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                              fontWeight: FontWeight.w600,
+                              color: onContainer,
+                              height: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                _BannerIconButton(
+                  icon: session.isPaused ? Icons.play_arrow : Icons.pause,
+                  tooltip: session.isPaused
+                      ? l10n.cookingResumeTooltip
+                      : l10n.cookingPauseTooltip,
+                  color: onContainer,
+                  onPressed: session.isPaused
+                      ? () => notifier.resume()
+                      : () => notifier.pause(),
+                ),
+                CookingFinishHoldButton(
+                  notifier: notifier,
+                  iconColor: onContainer,
+                  backgroundColor: Colors.transparent,
+                  size: 48,
+                  innerSize: 36,
+                  iconSize: 26,
+                ),
+                _BannerIconButton(
+                  icon: Icons.keyboard_arrow_up,
+                  tooltip: l10n.expandCookingSession,
+                  color: onContainer,
+                  onPressed: () => notifier.setExpanded(true),
+                ),
+              ],
             ),
           ),
         ),

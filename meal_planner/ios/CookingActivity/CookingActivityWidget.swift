@@ -2,21 +2,6 @@ import ActivityKit
 import SwiftUI
 import WidgetKit
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CookingActivityWidget
-//
-// Live Activity / Dynamic Island widget for an in-progress cooking session.
-//
-// Setup required (one-time in Xcode):
-//  1. File > New > Target > Widget Extension (name: "CookingActivity")
-//     – Uncheck "Include Configuration App Intent"
-//  2. Add this file and CookingActivityAttributes.swift to the new target
-//  3. Enable App Groups capability in BOTH Runner and CookingActivity targets:
-//       group.com.japegomez.mealPlanner.cooking
-//  4. Add NSSupportsLiveActivities = YES to Runner/Info.plist
-//  5. The live_activities Flutter package initialises via AppGroupId in Dart
-// ─────────────────────────────────────────────────────────────────────────────
-
 @main
 struct CookingActivityBundle: WidgetBundle {
     var body: some Widget {
@@ -27,12 +12,10 @@ struct CookingActivityBundle: WidgetBundle {
 struct CookingActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CookingActivityAttributes.self) { context in
-            // ── Lock Screen / Banner view ─────────────────────────────────
             CookingLockScreenView(context: context)
                 .activityBackgroundTint(Color(.systemBackground))
         } dynamicIsland: { context in
             DynamicIsland {
-                // ── Expanded Dynamic Island ───────────────────────────────
                 DynamicIslandExpandedRegion(.leading) {
                     Label(context.state.stepText, systemImage: "fork.knife")
                         .font(.caption)
@@ -40,7 +23,7 @@ struct CookingActivityWidget: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if context.state.isPaused {
-                        Text("Pausada")
+                        Text(context.state.pausedLabel)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
@@ -58,7 +41,7 @@ struct CookingActivityWidget: Widget {
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                         Spacer()
-                        Text("Paso \(context.state.stepIndex + 1) / \(context.state.totalSteps)")
+                        Text(context.state.stepLabel)
                             .font(.caption2)
                     }
                 }
@@ -85,10 +68,6 @@ struct CookingActivityWidget: Widget {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Lock Screen view
-// ─────────────────────────────────────────────────────────────────────────────
-
 struct CookingLockScreenView: View {
     let context: ActivityViewContext<CookingActivityAttributes>
 
@@ -102,7 +81,7 @@ struct CookingLockScreenView: View {
                     .lineLimit(1)
                 Spacer()
                 if context.state.isPaused {
-                    Text("Pausada")
+                    Text(context.state.pausedLabel)
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(.secondary)
                 } else {
@@ -117,9 +96,8 @@ struct CookingLockScreenView: View {
 
             Divider()
 
-            // Current step
             VStack(alignment: .leading, spacing: 4) {
-                Text("Paso \(context.state.stepIndex + 1) de \(context.state.totalSteps)")
+                Text(context.state.stepLabel)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(context.state.stepText)
@@ -127,13 +105,14 @@ struct CookingLockScreenView: View {
                     .lineLimit(3)
             }
 
-            // Action buttons (iOS 17+ App Intents; fallback: deep link)
             HStack(spacing: 12) {
                 Spacer()
                 if #available(iOS 17.0, *) {
                     Button(intent: CookingPauseResumeIntent(isPaused: context.state.isPaused)) {
                         Label(
-                            context.state.isPaused ? "Continuar" : "Pausar",
+                            context.state.isPaused
+                                ? context.state.resumeAction
+                                : context.state.pauseAction,
                             systemImage: context.state.isPaused ? "play.fill" : "pause.fill"
                         )
                     }
@@ -141,20 +120,21 @@ struct CookingLockScreenView: View {
                     .tint(context.state.isPaused ? .green : .orange)
 
                     Button(intent: CookingFinishIntent()) {
-                        Label("Terminar", systemImage: "stop.fill")
+                        Label(context.state.finishAction, systemImage: "stop.fill")
                     }
                     .buttonStyle(.bordered)
                     .tint(.red)
                 } else {
-                    // Fallback: open app via URL scheme
                     Link(destination: URL(string: context.state.isPaused ? "recetea://cooking/resume" : "recetea://cooking/pause")!) {
                         Label(
-                            context.state.isPaused ? "Continuar" : "Pausar",
+                            context.state.isPaused
+                                ? context.state.resumeAction
+                                : context.state.pauseAction,
                             systemImage: context.state.isPaused ? "play.fill" : "pause.fill"
                         )
                     }
                     Link(destination: URL(string: "recetea://cooking/finish")!) {
-                        Label("Terminar", systemImage: "stop.fill")
+                        Label(context.state.finishAction, systemImage: "stop.fill")
                     }
                 }
             }
