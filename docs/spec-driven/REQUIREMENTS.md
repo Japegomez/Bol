@@ -1,8 +1,8 @@
 # MealPlanner — Requisitos Funcionales y Arquitectura
 
-> **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina en `develop` / `feature/cooking-mode`
+> **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. En curso: **modo cocina** paso a paso (sesión persistente, banner minimizado, notificación Android, Live Activity iOS); onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro manual, asistente IA de recetas.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA.
 
 ---
 

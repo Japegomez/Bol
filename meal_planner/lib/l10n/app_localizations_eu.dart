@@ -1437,4 +1437,11 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get expandCookingSession => 'Zabaldu';
+
+  @override
+  String get cookingNotificationChannelName => 'Sukaldaritza saioa';
+
+  @override
+  String get cookingNotificationChannelDescription =>
+      'Sukaldaritza saioa martxan';
 }

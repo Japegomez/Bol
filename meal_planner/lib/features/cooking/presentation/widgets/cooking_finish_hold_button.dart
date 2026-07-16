@@ -68,51 +68,57 @@ class _CookingFinishHoldButtonState extends State<CookingFinishHoldButton>
     final iconColor = widget.iconColor ?? colorScheme.primary;
     final backgroundColor =
         widget.backgroundColor ?? colorScheme.primaryContainer;
+    final label = l10n.finishCookingButton;
 
-    return Tooltip(
-      message: l10n.finishCookingButton,
-      child: Listener(
-        behavior: HitTestBehavior.opaque,
-        onPointerDown: (_) => _controller.forward(from: 0),
-        onPointerUp: (_) => _cancelIfIncomplete(),
-        onPointerCancel: (_) => _controller.reset(),
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final progress = _controller.value;
-            return SizedBox(
-              width: widget.size,
-              height: widget.size,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: widget.innerSize,
-                    height: widget.innerSize,
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.stop_rounded,
-                      color: iconColor,
-                      size: widget.iconSize,
-                    ),
-                  ),
-                  if (progress > 0)
-                    SizedBox(
-                      width: widget.size,
-                      height: widget.size,
-                      child: CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 3,
+    return Semantics(
+      button: true,
+      label: label,
+      onTap: () => confirmFinishCooking(context, widget.notifier),
+      child: Tooltip(
+        message: label,
+        child: Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (_) => _controller.forward(from: 0),
+          onPointerUp: (_) => _cancelIfIncomplete(),
+          onPointerCancel: (_) => _controller.reset(),
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              final progress = _controller.value;
+              return SizedBox(
+                width: widget.size,
+                height: widget.size,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: widget.innerSize,
+                      height: widget.innerSize,
+                      decoration: BoxDecoration(
+                        color: backgroundColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.stop_rounded,
                         color: iconColor,
+                        size: widget.iconSize,
                       ),
                     ),
-                ],
-              ),
-            );
-          },
+                    if (progress > 0)
+                      SizedBox(
+                        width: widget.size,
+                        height: widget.size,
+                        child: CircularProgressIndicator(
+                          value: progress,
+                          strokeWidth: 3,
+                          color: iconColor,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

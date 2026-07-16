@@ -473,5 +473,7 @@
   "previousStep": "Aurreko urratsa",
   "nextStep": "Hurrengo urratsa",
   "minimize": "Txikitu",
-  "expandCookingSession": "Zabaldu"
+  "expandCookingSession": "Zabaldu",
+  "cookingNotificationChannelName": "Sukaldaritza saioa",
+  "cookingNotificationChannelDescription": "Sukaldaritza saioa martxan"
 }

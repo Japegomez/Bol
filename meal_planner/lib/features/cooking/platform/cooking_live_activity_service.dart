@@ -3,19 +3,14 @@ import 'package:flutter/foundation.dart'
 import 'package:live_activities/live_activities.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
+import 'package:meal_planner/features/cooking/platform/cooking_platform_copy.dart';
 
 /// App Group used to share data between the Runner and the Widget Extension.
-///
-/// This must also be configured in:
-///  • Runner.entitlements (com.apple.security.application-groups)
-///  • CookingActivity.entitlements (same)
-///  • Both targets' App Groups capability in Xcode
 const _kAppGroupId = 'group.com.japegomez.mealPlanner.cooking';
 
 /// Stable ID for the single active cooking Live Activity.
 const _kActivityId = 'cooking_active';
 
-/// Keys used in the shared activity data map.
 const _kKeyRecipeTitle = 'recipeTitle';
 const _kKeyStepIndex = 'stepIndex';
 const _kKeyTotalSteps = 'totalSteps';
@@ -24,10 +19,13 @@ const _kKeyIsPaused = 'isPaused';
 const _kKeyStartedAtMs = 'startedAtMs';
 const _kKeyAccumulatedPauseMs = 'accumulatedPauseMs';
 const _kKeyPausedAtMs = 'pausedAtMs';
+const _kKeyPausedLabel = 'pausedLabel';
+const _kKeyStepLabel = 'stepLabel';
+const _kKeyPauseAction = 'pauseAction';
+const _kKeyResumeAction = 'resumeAction';
+const _kKeyFinishAction = 'finishAction';
 
 /// Singleton that wraps the [LiveActivities] plugin for iOS.
-///
-/// On Android (or iOS < 16.1) all calls are no-ops and fail silently.
 class CookingLiveActivityService {
   CookingLiveActivityService._();
 
@@ -72,23 +70,23 @@ class CookingLiveActivityService {
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
   static Map<String, dynamic> _buildData(CookingSession session) {
-    final stepIndex = session.currentStepIndex;
-    final stepText = stepIndex == 0
-        ? 'Comprobar ingredientes'
-        : session.steps[stepIndex - 1].description;
+    final copy = CookingPlatformCopy.resolve(session);
 
     return {
       _kKeyRecipeTitle: session.recipeTitle,
-      _kKeyStepIndex: stepIndex,
+      _kKeyStepIndex: session.currentStepIndex,
       _kKeyTotalSteps: session.totalSteps,
-      _kKeyStepText: stepText,
+      _kKeyStepText: copy.stepText,
       _kKeyIsPaused: session.isPaused,
       _kKeyStartedAtMs: session.startedAt.millisecondsSinceEpoch,
       _kKeyAccumulatedPauseMs: session.accumulatedPauseMs,
       _kKeyPausedAtMs: session.pausedAt?.millisecondsSinceEpoch,
+      _kKeyPausedLabel: copy.pausedLabel,
+      _kKeyStepLabel: copy.stepLabel,
+      _kKeyPauseAction: copy.pauseAction,
+      _kKeyResumeAction: copy.resumeAction,
+      _kKeyFinishAction: copy.finishAction,
     };
   }
 }

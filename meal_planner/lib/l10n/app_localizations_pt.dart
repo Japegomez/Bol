@@ -1442,4 +1442,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get expandCookingSession => 'Expandir';
+
+  @override
+  String get cookingNotificationChannelName => 'Sessão de cozinha';
+
+  @override
+  String get cookingNotificationChannelDescription =>
+      'Sessão de cozinha em andamento';
 }

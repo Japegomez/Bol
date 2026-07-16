@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
+import 'package:meal_planner/features/cooking/platform/cooking_platform_copy.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 
 const _kChannelId = 'cooking_session';
-const _kChannelName = 'Cooking session';
 const _kNotificationId = 0;
 
 const _kActionPause = 'pause';
@@ -22,7 +23,7 @@ Future<void> onNotificationBackground(NotificationResponse response) async {
   if (actionId == _kActionPause ||
       actionId == _kActionResume ||
       actionId == _kActionFinish) {
-    await cookingQueueBackgroundAction(actionId);
+    await cookingApplyBackgroundAction(actionId);
   }
 }
 
@@ -49,49 +50,51 @@ class CookingNotificationService {
     if (_initialized) return;
     if (!_isAndroid && !_isIOS) return;
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
-    const settings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+    try {
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
+      const settings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    await _plugin.initialize(
-      settings,
-      onDidReceiveNotificationResponse: _onForegroundResponse,
-      onDidReceiveBackgroundNotificationResponse: onNotificationBackground,
-    );
+      await _plugin.initialize(
+        settings,
+        onDidReceiveNotificationResponse: _onForegroundResponse,
+        onDidReceiveBackgroundNotificationResponse: onNotificationBackground,
+      );
 
-    if (_isAndroid) {
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      if (_isAndroid) {
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.requestNotificationsPermission();
+      }
+
+      _initialized = true;
+    } catch (e) {
+      log.w('CookingNotificationService init failed: $e');
+      _initialized = false;
     }
-
-    _initialized = true;
   }
 
   Future<void> show(CookingSession session) async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      await initialize();
+      if (!_initialized) return;
+    }
     if (!_isAndroid && !_isIOS) return;
 
-    final stepIndex = session.currentStepIndex;
-    final total = session.totalSteps;
-    final stepText = stepIndex == 0
-        ? 'Comprobar ingredientes'
-        : session.steps[stepIndex - 1].description;
+    final copy = CookingPlatformCopy.resolve(session);
 
     if (_isAndroid) {
-      await _showAndroid(session, stepText, stepIndex, total);
+      await _showAndroid(session, copy);
     }
-    // iOS: the Live Activity replaces the notification on iOS 16.1+.
-    // A basic alert-style notification is not shown during active cooking.
   }
 
   Future<void> cancel() async {
@@ -99,37 +102,31 @@ class CookingNotificationService {
     await _plugin.cancel(_kNotificationId);
   }
 
-  // ── Android ──────────────────────────────────────────────────────────────
-
   Future<void> _showAndroid(
     CookingSession session,
-    String stepText,
-    int stepIndex,
-    int totalSteps,
+    CookingPlatformCopy copy,
   ) async {
     final isPaused = session.isPaused;
-
-    // Chronometer base = now − elapsed = startedAt + accumulatedPauseMs
     final chronometerBase = session.startedAt.millisecondsSinceEpoch +
         session.accumulatedPauseMs;
 
     final actions = [
       AndroidNotificationAction(
         isPaused ? _kActionResume : _kActionPause,
-        isPaused ? 'Continuar' : 'Pausar',
+        isPaused ? copy.resumeAction : copy.pauseAction,
         showsUserInterface: false,
       ),
-      const AndroidNotificationAction(
+      AndroidNotificationAction(
         _kActionFinish,
-        'Terminar',
+        copy.finishAction,
         showsUserInterface: true,
       ),
     ];
 
     final androidDetails = AndroidNotificationDetails(
       _kChannelId,
-      _kChannelName,
-      channelDescription: 'Session de cocina en curso',
+      copy.channelName,
+      channelDescription: copy.channelDescription,
       importance: Importance.low,
       priority: Priority.low,
       ongoing: true,
@@ -141,7 +138,7 @@ class CookingNotificationService {
       visibility: NotificationVisibility.public,
       actions: actions,
       styleInformation: BigTextStyleInformation(
-        '(${stepIndex + 1}/$totalSteps) $stepText',
+        '${copy.stepLabel}\n${copy.stepText}',
         contentTitle: session.recipeTitle,
       ),
       channelShowBadge: false,
@@ -151,30 +148,19 @@ class CookingNotificationService {
       _kNotificationId,
       session.recipeTitle,
       isPaused
-          ? 'Pausada — ${_elapsedLabel(session.elapsed)}'
-          : '(${stepIndex + 1}/$totalSteps) $stepText',
+          ? '${copy.pausedLabel} — ${_elapsedLabel(session.elapsed)}'
+          : '${copy.stepLabel}: ${copy.stepText}',
       NotificationDetails(android: androidDetails),
     );
   }
 
-  // ── Foreground tap handler ────────────────────────────────────────────────
-
-  // This runs in the main isolate; we dispatch to the provider via the
-  // queued-action mechanism to keep the logic in one place.
   Future<void> _onForegroundResponse(NotificationResponse response) async {
     final actionId = response.actionId;
     if (actionId != null) {
-      await cookingQueueBackgroundAction(actionId);
-      // The provider will pick this up on next lifecycle resume or poll.
-      // For an immediate effect when the app is already running, apply now:
       await _applyActionImmediately(actionId);
     }
   }
 
-  // Directly applies the action when the app is already in foreground.
-  // The provider singleton is not accessible here (no WidgetRef), so we
-  // read from SharedPreferences via the queued-action bridge — but that
-  // would wait for a lifecycle event. Instead we expose a static callback.
   static Future<void> Function(String)? _directActionCallback;
 
   static void setDirectActionCallback(

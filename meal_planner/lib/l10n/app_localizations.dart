@@ -2733,6 +2733,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Expand'**
   String get expandCookingSession;
+
+  /// No description provided for @cookingNotificationChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking session'**
+  String get cookingNotificationChannelName;
+
+  /// No description provided for @cookingNotificationChannelDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'In-progress cooking session'**
+  String get cookingNotificationChannelDescription;
 }
 
 class _AppLocalizationsDelegate
