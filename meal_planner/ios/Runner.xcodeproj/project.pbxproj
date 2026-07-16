@@ -21,6 +21,8 @@
 		C0A00102C0A00102C0A00102 /* CookingActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00202C0A00202C0A00202 /* CookingActivityWidget.swift */; };
 		C0A00103C0A00103C0A00103 /* CookingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00203C0A00203C0A00203 /* CookingIntents.swift */; };
 		C0A00104C0A00104C0A00104 /* CookingActivity.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C0A00206C0A00206C0A00206 /* CookingActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C0A00105C0A00105C0A00105 /* CookingActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00201C0A00201C0A00201 /* CookingActivityAttributes.swift */; };
+		C0A00106C0A00106C0A00106 /* CookingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A00203C0A00203C0A00203 /* CookingIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -369,6 +371,8 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
+				C0A00105C0A00105C0A00105 /* CookingActivityAttributes.swift in Sources */,
+				C0A00106C0A00106C0A00106 /* CookingIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,6 +478,7 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AS_ENABLE_APP_SHORTCUTS_FLEXIBLE_MATCHING = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -654,6 +659,7 @@
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AS_ENABLE_APP_SHORTCUTS_FLEXIBLE_MATCHING = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -677,6 +683,7 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AS_ENABLE_APP_SHORTCUTS_FLEXIBLE_MATCHING = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -697,6 +704,7 @@
 		C0A00601C0A00601C0A00601 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AS_ENABLE_APP_SHORTCUTS_FLEXIBLE_MATCHING = NO;
 				CODE_SIGN_ENTITLEMENTS = CookingActivity/CookingActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -719,6 +727,7 @@
 		C0A00602C0A00602C0A00602 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AS_ENABLE_APP_SHORTCUTS_FLEXIBLE_MATCHING = NO;
 				CODE_SIGN_ENTITLEMENTS = CookingActivity/CookingActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -741,6 +750,7 @@
 		C0A00603C0A00603C0A00603 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AS_ENABLE_APP_SHORTCUTS_FLEXIBLE_MATCHING = NO;
 				CODE_SIGN_ENTITLEMENTS = CookingActivity/CookingActivity.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";

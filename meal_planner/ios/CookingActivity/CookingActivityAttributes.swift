@@ -1,6 +1,7 @@
 import ActivityKit
 import Foundation
 
+@available(iOS 16.1, *)
 public struct CookingActivityAttributes: ActivityAttributes {
     public typealias ContentState = CookingContentState
 
