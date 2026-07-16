@@ -26,12 +26,18 @@ final cookingTickProvider = StreamProvider<int>((ref) {
 
 class CookingSessionNotifier extends Notifier<CookingSession?>
     with WidgetsBindingObserver {
+  bool _isRestoring = false;
+
   @override
   CookingSession? build() {
     WidgetsBinding.instance.addObserver(this);
     ref.onDispose(() => WidgetsBinding.instance.removeObserver(this));
 
-    Future.microtask(_restore);
+    _isRestoring = true;
+    Future.microtask(() async {
+      await _restore();
+      _isRestoring = false;
+    });
     return null;
   }
 
@@ -52,6 +58,11 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     required List<Ingredient> ingredients,
     required List<RecipeStep> steps,
   }) async {
+    // Wait for restoration to complete before starting a new session
+    while (_isRestoring) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
     state = CookingSession(
       recipeId: recipeId,
       recipeTitle: recipeTitle,
@@ -149,13 +160,22 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     final json = prefs.getString(_kSessionKey);
     if (json != null) {
       try {
-        state = CookingSession.fromJsonString(json);
+        final restored = CookingSession.fromJsonString(json);
+        // Only apply restored state if no new session was started during restore
+        if (state == null) {
+          state = restored;
+        }
       } catch (_) {
         await prefs.remove(_kSessionKey);
       }
     }
     // Process any action queued by a background notification tap.
     await _handlePendingBackgroundAction();
+
+    // Sync platform state after restoration to update native surfaces
+    if (state != null) {
+      await _syncPlatform();
+    }
   }
 
   Future<void> _persist() async {

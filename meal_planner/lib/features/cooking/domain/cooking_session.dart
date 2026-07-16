@@ -113,12 +113,21 @@ class CookingSession {
         )
         .toList();
 
+    final currentStepIndex = json['currentStepIndex'] as int;
+    // Validate currentStepIndex: must be 0..steps.length (inclusive)
+    // steps.length is valid (past the last step), but negative or > steps.length is not
+    if (currentStepIndex < 0 || currentStepIndex > steps.length) {
+      throw FormatException(
+        'Invalid currentStepIndex: $currentStepIndex (must be 0..${steps.length})',
+      );
+    }
+
     return CookingSession(
       recipeId: json['recipeId'] as String,
       recipeTitle: json['recipeTitle'] as String,
       ingredients: ingredients,
       steps: steps,
-      currentStepIndex: json['currentStepIndex'] as int,
+      currentStepIndex: currentStepIndex,
       startedAt: DateTime.fromMillisecondsSinceEpoch(
         json['startedAtMs'] as int,
       ),

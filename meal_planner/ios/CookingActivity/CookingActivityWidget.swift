@@ -147,7 +147,7 @@ struct CookingLockScreenView: View {
                     .tint(.red)
                 } else {
                     // Fallback: open app via URL scheme
-                    Link(destination: URL(string: "recetea://cooking/resume")!) {
+                    Link(destination: URL(string: context.state.isPaused ? "recetea://cooking/resume" : "recetea://cooking/pause")!) {
                         Label(
                             context.state.isPaused ? "Continuar" : "Pausar",
                             systemImage: context.state.isPaused ? "play.fill" : "pause.fill"

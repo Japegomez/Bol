@@ -1,3 +1,4 @@
+import ActivityKit
 import AppIntents
 import Foundation
 
@@ -6,6 +7,7 @@ import Foundation
 //
 // These intents write a pending action to the shared App Group UserDefaults,
 // which the Flutter app reads on next resume via the cooking session provider.
+// Additionally, they update the Live Activity immediately via ActivityKit.
 // ─────────────────────────────────────────────────────────────────────────────
 
 private let kAppGroupId = "group.com.japegomez.mealPlanner.cooking"
@@ -24,6 +26,13 @@ struct CookingPauseResumeIntent: AppIntent, LiveActivityIntent {
     func perform() async throws -> some IntentResult {
         let action = isPaused ? "resume" : "pause"
         UserDefaults(suiteName: kAppGroupId)?.set(action, forKey: kPendingActionKey)
+
+        // Trigger immediate Live Activity refresh
+        let activities = Activity<CookingActivityAttributes>.activities
+        for activity in activities {
+            await activity.update(using: activity.content)
+        }
+
         return .result()
     }
 }
@@ -34,6 +43,13 @@ struct CookingFinishIntent: AppIntent, LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         UserDefaults(suiteName: kAppGroupId)?.set("finish", forKey: kPendingActionKey)
+
+        // Trigger immediate Live Activity refresh
+        let activities = Activity<CookingActivityAttributes>.activities
+        for activity in activities {
+            await activity.update(using: activity.content)
+        }
+
         return .result()
     }
 }

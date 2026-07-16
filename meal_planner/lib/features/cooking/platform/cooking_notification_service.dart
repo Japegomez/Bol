@@ -48,7 +48,6 @@ class CookingNotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
     if (!_isAndroid && !_isIOS) return;
-    _initialized = true;
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -74,6 +73,8 @@ class CookingNotificationService {
               AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
     }
+
+    _initialized = true;
   }
 
   Future<void> show(CookingSession session) async {
