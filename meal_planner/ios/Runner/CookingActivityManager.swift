@@ -8,7 +8,7 @@ import Foundation
 /// (instead of the `live_activities` Flutter plugin) ensures the activity is
 /// created with **our** `CookingActivityAttributes` type, which is the exact type
 /// our `CookingActivityWidget` listens for in the extension.
-@available(iOS 16.1, *)
+@available(iOS 16.2, *)
 actor CookingActivityManager {
 
   static let shared = CookingActivityManager()

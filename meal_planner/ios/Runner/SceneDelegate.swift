@@ -47,9 +47,9 @@ class SceneDelegate: FlutterSceneDelegate {
     }
 
     // ── Live Activity channel ─────────────────────────────────────────────────
-    // Requires iOS 16.1+. On older versions the channel is registered but every
-    // call returns nil so Flutter's try-catch handles it gracefully.
-    if #available(iOS 16.1, *) {
+    // Requires iOS 16.2+ (ActivityContent / update APIs). On older versions the
+    // channel is not registered; Flutter's try-catch handles the missing channel.
+    if #available(iOS 16.2, *) {
       let laChannel = FlutterMethodChannel(
         name: "com.japegomez.mealPlanner/live_activity",
         binaryMessenger: controller.binaryMessenger
