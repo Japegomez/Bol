@@ -27,8 +27,11 @@ Future<void> onNotificationBackground(NotificationResponse response) async {
   }
 }
 
-/// Singleton service that manages the persistent "cooking session" notification
-/// on Android (and a basic one on iOS).
+/// Manages the persistent cooking-session notification.
+///
+/// • Android: ongoing notification with chronometer, action buttons, BigText.
+/// • iOS: passive local notification in the notification centre (no sound/badge).
+///   The lock screen is covered by the Live Activity (CookingLiveActivityService).
 class CookingNotificationService {
   CookingNotificationService._();
 
@@ -54,6 +57,8 @@ class CookingNotificationService {
       const androidSettings =
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosSettings = DarwinInitializationSettings(
+        // Do not request permissions here — we request them below so we can
+        // use the platform-specific API and ask only for alerts (no sound/badge).
         requestAlertPermission: false,
         requestBadgePermission: false,
         requestSoundPermission: false,
@@ -76,6 +81,15 @@ class CookingNotificationService {
             ?.requestNotificationsPermission();
       }
 
+      if (_isIOS) {
+        // Request only alert permission — no sound, no badge — so the
+        // notification appears passively in the notification centre.
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(alert: true, badge: false, sound: false);
+      }
+
       _initialized = true;
     } catch (e) {
       log.w('CookingNotificationService init failed: $e');
@@ -88,10 +102,15 @@ class CookingNotificationService {
       await initialize();
       if (!_initialized) return;
     }
-    // iOS uses Live Activities instead of local notifications.
+
+    final copy = CookingPlatformCopy.resolve(session);
+
     if (_isAndroid) {
-      final copy = CookingPlatformCopy.resolve(session);
       await _showAndroid(session, copy);
+    } else if (_isIOS) {
+      // Show a passive notification in the notification centre.
+      // The lock screen is handled by the Live Activity.
+      await _showIOS(session, copy);
     }
   }
 
@@ -99,6 +118,8 @@ class CookingNotificationService {
     if (!_initialized) return;
     await _plugin.cancel(_kNotificationId);
   }
+
+  // ── Android ────────────────────────────────────────────────────────────────
 
   Future<void> _showAndroid(
     CookingSession session,
@@ -151,6 +172,40 @@ class CookingNotificationService {
       NotificationDetails(android: androidDetails),
     );
   }
+
+  // ── iOS ────────────────────────────────────────────────────────────────────
+
+  Future<void> _showIOS(
+    CookingSession session,
+    CookingPlatformCopy copy,
+  ) async {
+    // presentBanner: false  — no intrusive banner while the user is inside the app.
+    // presentList: true     — DO add to the notification centre so the user sees
+    //                         it when they pull down the notification shade or check
+    //                         the lock screen after minimising the app.
+    // presentAlert: false   — legacy iOS 13 equivalent of presentBanner: false.
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: false,
+      presentBanner: false,
+      presentList: true,
+      presentBadge: false,
+      presentSound: false,
+      interruptionLevel: InterruptionLevel.passive,
+    );
+
+    final body = session.isPaused
+        ? '${copy.pausedLabel} · ${_elapsedLabel(session.elapsed)}'
+        : '${copy.stepLabel} · ${copy.stepText}';
+
+    await _plugin.show(
+      _kNotificationId,
+      session.recipeTitle,
+      body,
+      const NotificationDetails(iOS: iosDetails),
+    );
+  }
+
+  // ── Shared ─────────────────────────────────────────────────────────────────
 
   Future<void> _onForegroundResponse(NotificationResponse response) async {
     final actionId = response.actionId;

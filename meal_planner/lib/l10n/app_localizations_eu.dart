@@ -1416,6 +1416,12 @@ class AppLocalizationsEu extends AppLocalizations {
   }
 
   @override
+  String get cookingFinishedTitle => 'Errezeta amaituta!';
+
+  @override
+  String get cookingFinishedMessage => 'On egin!';
+
+  @override
   String get cookingInProgressTitle => 'Errezeta egiten';
 
   @override

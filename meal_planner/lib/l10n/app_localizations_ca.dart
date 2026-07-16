@@ -1417,6 +1417,12 @@ class AppLocalizationsCa extends AppLocalizations {
   }
 
   @override
+  String get cookingFinishedTitle => 'Recepta acabada!';
+
+  @override
+  String get cookingFinishedMessage => 'Que et aprofiti!';
+
+  @override
   String get cookingInProgressTitle => 'Recepta en curs';
 
   @override
@@ -1443,6 +1449,5 @@ class AppLocalizationsCa extends AppLocalizations {
   String get cookingNotificationChannelName => 'Sessió de cuina';
 
   @override
-  String get cookingNotificationChannelDescription =>
-      'Sessió de cuina en curs';
+  String get cookingNotificationChannelDescription => 'Sessió de cuina en curs';
 }

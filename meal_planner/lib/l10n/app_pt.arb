@@ -462,6 +462,8 @@
       "title": {"type": "String"}
     }
   },
+  "cookingFinishedTitle": "Receita terminada!",
+  "cookingFinishedMessage": "Bom apetite!",
   "cookingInProgressTitle": "Receita em curso",
   "cookingInProgressMessage": "Já está a cozinhar \"{title}\". Iniciar uma nova receita?",
   "@cookingInProgressMessage": {

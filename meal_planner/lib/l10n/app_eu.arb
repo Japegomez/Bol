@@ -462,6 +462,8 @@
       "title": {"type": "String"}
     }
   },
+  "cookingFinishedTitle": "Errezeta amaituta!",
+  "cookingFinishedMessage": "On egin!",
   "cookingInProgressTitle": "Errezeta egiten",
   "cookingInProgressMessage": "\"{title}\" egiten ari zara. Errezeta berria hasi?",
   "@cookingInProgressMessage": {

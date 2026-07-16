@@ -37,3 +37,30 @@ Future<void> confirmFinishCooking(
     await notifier.finish();
   }
 }
+
+/// Marks the last step complete, shows a congratulations dialog, then ends
+/// the cooking session.
+Future<void> celebrateAndFinishCooking(
+  BuildContext context,
+  CookingSessionNotifier notifier,
+) async {
+  notifier.completeStep();
+  if (!context.mounted) return;
+
+  final l10n = context.l10n;
+  await showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => AlertDialog(
+      title: Text(l10n.cookingFinishedTitle),
+      content: Text(l10n.cookingFinishedMessage),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+        ),
+      ],
+    ),
+  );
+  await notifier.finish();
+}

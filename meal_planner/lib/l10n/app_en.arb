@@ -568,6 +568,8 @@
       "title": {"type": "String"}
     }
   },
+  "cookingFinishedTitle": "Recipe finished!",
+  "cookingFinishedMessage": "Enjoy your meal!",
   "cookingInProgressTitle": "Recipe in progress",
   "cookingInProgressMessage": "You are already cooking \"{title}\". Start a new recipe?",
   "@cookingInProgressMessage": {

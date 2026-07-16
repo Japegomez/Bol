@@ -4,7 +4,6 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_utils.dart';
-import 'package:meal_planner/features/cooking/presentation/widgets/cooking_finish_hold_button.dart';
 
 /// Compact banner shown above the bottom [NavigationBar] while a cooking
 /// session is minimized.
@@ -86,13 +85,11 @@ class CookingBanner extends ConsumerWidget {
                       ? () => notifier.resume()
                       : () => notifier.pause(),
                 ),
-                CookingFinishHoldButton(
-                  notifier: notifier,
-                  iconColor: onContainer,
-                  backgroundColor: Colors.transparent,
-                  size: 48,
-                  innerSize: 36,
-                  iconSize: 26,
+                _BannerIconButton(
+                  icon: Icons.stop_rounded,
+                  tooltip: l10n.finishCookingButton,
+                  color: onContainer,
+                  onPressed: () => confirmFinishCooking(context, notifier),
                 ),
                 _BannerIconButton(
                   icon: Icons.keyboard_arrow_up,
@@ -127,12 +124,13 @@ class _BannerIconButton extends StatelessWidget {
     return IconButton(
       onPressed: onPressed,
       tooltip: tooltip,
-      icon: Icon(icon, color: color, size: 26),
+      icon: Icon(icon, color: color, size: 32),
       style: IconButton.styleFrom(
         visualDensity: VisualDensity.compact,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: const EdgeInsets.all(2),
-        minimumSize: const Size(48, 48),
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(44, 44),
+        fixedSize: const Size(44, 44),
       ),
     );
   }
