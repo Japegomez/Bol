@@ -22,7 +22,7 @@ class CookingScreen extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => notifier.setExpanded(false),
+      onPopInvokedWithResult: (_, _) => notifier.setExpanded(false),
       child: Material(
         color: colorScheme.surface,
         child: SafeArea(
@@ -464,4 +464,3 @@ class _CookingIconButton extends StatelessWidget {
     );
   }
 }
-

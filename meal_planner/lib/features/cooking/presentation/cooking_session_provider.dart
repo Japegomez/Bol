@@ -38,8 +38,8 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
   // ── WidgetsBindingObserver ────────────────────────────────────────────────
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState appState) {
-    if (appState == AppLifecycleState.resumed) {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
       _handlePendingBackgroundAction();
     }
   }
