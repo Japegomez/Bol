@@ -74,65 +74,65 @@ struct CookingLockScreenView: View {
     let context: ActivityViewContext<CookingActivityAttributes>
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
 
-            // ── Header: recipe title + elapsed timer ─────────────────────────
-            HStack {
+            // ── Compact header: icon · title · step label · timer ────────────
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Image(systemName: "fork.knife")
+                    .font(.caption)
                     .foregroundStyle(.orange)
                 Text(context.attributes.recipeTitle)
-                    .font(.headline)
+                    .font(.footnote.weight(.semibold))
                     .lineLimit(1)
-                Spacer()
+                Text("·")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Text(context.state.stepLabel)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 4)
                 if context.state.isPaused {
                     Text(context.state.pausedLabel)
-                        .font(.subheadline.monospacedDigit())
+                        .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 } else {
                     Text(
                         timerInterval: context.state.chronometerBase...Date.distantFuture,
                         countsDown: false
                     )
-                    .font(.subheadline.monospacedDigit())
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.orange)
                 }
             }
 
-            Divider()
+            // ── Step text (expandable on iOS 17+) ────────────────────────────
+            Text(context.state.stepText)
+                .font(.callout)
+                .lineLimit(context.state.isTextExpanded ? nil : 3)
+                .fixedSize(horizontal: false, vertical: true)
 
-            // ── Step content (expandable on iOS 17+) ─────────────────────────
-            VStack(alignment: .leading, spacing: 4) {
-                Text(context.state.stepLabel)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(context.state.stepText)
-                    .font(.body)
-                    .lineLimit(context.state.isTextExpanded ? nil : 3)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                if #available(iOS 17.0, *) {
-                    Button(intent: CookingToggleTextIntent()) {
-                        Image(systemName: context.state.isTextExpanded
-                              ? "chevron.up.circle" : "chevron.down.circle")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
+            if #available(iOS 17.0, *) {
+                Button(intent: CookingToggleTextIntent()) {
+                    Image(systemName: context.state.isTextExpanded
+                          ? "chevron.up.circle" : "chevron.down.circle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
+                .buttonStyle(.plain)
             }
 
             // ── Action buttons ────────────────────────────────────────────────
             if #available(iOS 17.0, *) {
                 HStack(spacing: 6) {
-                    // Previous step
+                    // ← Previous step (green chevron)
                     Button(intent: CookingPreviousStepIntent()) {
-                        Image(systemName: "backward.step.fill")
+                        Image(systemName: "chevron.left")
                     }
                     .buttonStyle(.bordered)
-                    .tint(.secondary)
+                    .tint(.green)
                     .disabled(context.state.stepIndex == 0)
 
-                    Spacer()
+                    Spacer(minLength: 0)
 
                     // Pause / Resume
                     Button(intent: CookingPauseResumeIntent(isPaused: context.state.isPaused)) {
@@ -153,14 +153,14 @@ struct CookingLockScreenView: View {
                     .buttonStyle(.bordered)
                     .tint(.red)
 
-                    Spacer()
+                    Spacer(minLength: 0)
 
-                    // Next step
+                    // → Next step (green chevron)
                     Button(intent: CookingNextStepIntent()) {
-                        Image(systemName: "forward.step.fill")
+                        Image(systemName: "chevron.right")
                     }
                     .buttonStyle(.bordered)
-                    .tint(.secondary)
+                    .tint(.green)
                     .disabled(context.state.stepIndex >= context.state.totalSteps - 1)
                 }
             } else {
@@ -183,6 +183,7 @@ struct CookingLockScreenView: View {
                 }
             }
         }
-        .padding()
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 }
