@@ -26,6 +26,19 @@ DECLARE
   v_elapsed_seconds   numeric;
   v_retry_after       integer;
 BEGIN
+  -- Validate required parameters before any quota logic runs
+  IF p_daily_limit IS NULL OR p_daily_limit <= 0 THEN
+    RAISE EXCEPTION 'p_daily_limit must be a positive integer, got: %', p_daily_limit;
+  END IF;
+
+  IF p_min_interval_seconds IS NULL OR p_min_interval_seconds < 0 THEN
+    RAISE EXCEPTION 'p_min_interval_seconds must be non-negative, got: %', p_min_interval_seconds;
+  END IF;
+
+  IF p_global_daily_limit IS NOT NULL AND p_global_daily_limit <= 0 THEN
+    RAISE EXCEPTION 'p_global_daily_limit must be NULL or a positive integer, got: %', p_global_daily_limit;
+  END IF;
+
   INSERT INTO public.ai_assistant_usage (user_id, usage_date, request_count, last_request_at)
   VALUES (p_user_id, v_today, 0, NULL)
   ON CONFLICT (user_id, usage_date) DO NOTHING;

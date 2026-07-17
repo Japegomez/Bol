@@ -660,6 +660,22 @@ Deno.serve(async (req) => {
     const globalLimitRaw = Deno.env.get("AI_ASSISTANT_GLOBAL_DAILY_LIMIT");
     const globalLimit = globalLimitRaw ? Number(globalLimitRaw) : null;
 
+    // Validate parameters before invoking RPC
+    if (!Number.isFinite(dailyLimit) || dailyLimit <= 0) {
+      console.error("Invalid AI_ASSISTANT_DAILY_LIMIT:", dailyLimit);
+      return jsonResponse({ error: "quota_check_failed" }, 503);
+    }
+
+    if (!Number.isFinite(minInterval) || minInterval < 0) {
+      console.error("Invalid AI_ASSISTANT_MIN_INTERVAL_SECONDS:", minInterval);
+      return jsonResponse({ error: "quota_check_failed" }, 503);
+    }
+
+    if (globalLimit !== null && (!Number.isFinite(globalLimit) || globalLimit <= 0)) {
+      console.error("Invalid AI_ASSISTANT_GLOBAL_DAILY_LIMIT:", globalLimit);
+      return jsonResponse({ error: "quota_check_failed" }, 503);
+    }
+
     const { data: quotaRows, error: quotaError } = await adminClient
       .rpc("check_and_increment_ai_usage", {
         p_user_id: userId,
