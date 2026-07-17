@@ -16,15 +16,33 @@ actor CookingActivityManager {
 
   private var activeActivity: Activity<CookingActivityAttributes>?
 
+  private let kAppGroupId = "group.com.japegomez.mealPlanner.cooking"
+
   // MARK: – Public API
 
   /// Create-or-update the single cooking Live Activity.
-  /// If no activity is running a new one is started; otherwise the existing
-  /// activity's content state is refreshed.
+  /// Saves all step texts/labels to the shared App Group so intents can navigate steps
+  /// without waiting for Flutter to resume. Preserves the user's text-expanded state
+  /// as long as the step index has not changed.
   func update(data: [String: Any]) async throws {
-    let (attrs, state) = try unpack(data)
+    // Persist step data to App Group so intents can read it.
+    let defaults = UserDefaults(suiteName: kAppGroupId)
+    if let texts = data["allStepTexts"] as? [String] {
+      defaults?.set(texts, forKey: "cooking_all_step_texts")
+    }
+    if let labels = data["allStepLabels"] as? [String] {
+      defaults?.set(labels, forKey: "cooking_all_step_labels")
+    }
+
+    let (attrs, unpackedState) = try unpack(data)
+    var state = unpackedState
 
     if let activity = activeActivity {
+      let currentState = activity.content.state
+      // Keep the user's expand/collapse choice unless the step changed.
+      if currentState.stepIndex == state.stepIndex {
+        state.isTextExpanded = currentState.isTextExpanded
+      }
       await activity.update(ActivityContent(state: state, staleDate: nil))
     } else {
       let activity = try Activity<CookingActivityAttributes>.request(
@@ -63,7 +81,8 @@ actor CookingActivityManager {
       stepLabel:          try str(d, "stepLabel"),
       pauseAction:        try str(d, "pauseAction"),
       resumeAction:       try str(d, "resumeAction"),
-      finishAction:       try str(d, "finishAction")
+      finishAction:       try str(d, "finishAction"),
+      isTextExpanded:     false
     )
     return (attrs, state)
   }

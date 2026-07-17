@@ -22,7 +22,9 @@ class CookingScreen extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, _) => notifier.setExpanded(false),
+      onPopInvokedWithResult: (_, _) async {
+        await notifier.setExpanded(false);
+      },
       child: Material(
         color: colorScheme.surface,
         child: SafeArea(
@@ -100,7 +102,9 @@ class _TopBar extends ConsumerWidget {
           IconButton.filledTonal(
             icon: const Icon(Icons.keyboard_arrow_down),
             tooltip: l10n.minimize,
-            onPressed: () => notifier.setExpanded(false),
+            onPressed: () async {
+              await notifier.setExpanded(false);
+            },
             style: IconButton.styleFrom(
               foregroundColor: theme.colorScheme.primary,
             ),
@@ -138,7 +142,9 @@ class _StepRail extends StatelessWidget {
                 index: i,
                 isCompleted: session.completedSteps.contains(i),
                 isCurrent: i == session.currentStepIndex,
-                onTap: () => notifier.goToStep(i),
+                onTap: () async {
+                  await notifier.goToStep(i);
+                },
               ),
             ],
           ],
@@ -318,7 +324,9 @@ class _NavigationBar extends StatelessWidget {
           _CookingIconButton(
             icon: const Icon(Icons.arrow_back_ios_new),
             tooltip: l10n.previousStep,
-            onPressed: isFirst ? null : notifier.previousStep,
+            onPressed: isFirst ? null : () async {
+              await notifier.previousStep();
+            },
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -330,9 +338,13 @@ class _NavigationBar extends StatelessWidget {
                 tooltip: session.isPaused
                     ? l10n.cookingResumeTooltip
                     : l10n.cookingPauseTooltip,
-                onPressed: session.isPaused
-                    ? notifier.resume
-                    : notifier.pause,
+                onPressed: () async {
+                  if (session.isPaused) {
+                    await notifier.resume();
+                  } else {
+                    await notifier.pause();
+                  }
+                },
               ),
               const SizedBox(width: 16),
               _CookingIconButton(
@@ -352,7 +364,9 @@ class _NavigationBar extends StatelessWidget {
               : _CookingIconButton(
                   icon: const Icon(Icons.arrow_forward_ios),
                   tooltip: l10n.nextStep,
-                  onPressed: notifier.completeStep,
+                  onPressed: () async {
+                    await notifier.completeStep();
+                  },
                 ),
         ],
       ),

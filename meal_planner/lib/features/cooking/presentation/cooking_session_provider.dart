@@ -103,17 +103,17 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     await _persist();
   }
 
-  void nextStep() {
+  Future<void> nextStep() async {
     if (state == null) return;
     final next = state!.currentStepIndex + 1;
     if (next < state!.totalSteps) {
       state = state!.copyWith(currentStepIndex: next);
-      _persist();
-      _syncPlatform();
+      await _persist();
+      await _syncPlatform();
     }
   }
 
-  void completeStep() {
+  Future<void> completeStep() async {
     if (state == null) return;
     final completed = {...state!.completedSteps, state!.currentStepIndex};
     final next = state!.currentStepIndex + 1;
@@ -122,43 +122,58 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
       currentStepIndex:
           next < state!.totalSteps ? next : state!.currentStepIndex,
     );
-    _persist();
-    _syncPlatform();
+    await _persist();
+    await _syncPlatform();
   }
 
-  void previousStep() {
+  Future<void> previousStep() async {
     if (state == null) return;
     final prev = state!.currentStepIndex - 1;
     if (prev >= 0) {
       // Going back un-completes the step we return to and any later ones.
-      goToStep(prev);
+      await goToStep(prev);
     }
   }
 
-  void goToStep(int index) {
+  Future<void> goToStep(int index) async {
     if (state == null) return;
     if (index >= 0 && index < state!.totalSteps) {
+      final currentIndex = state!.currentStepIndex;
       var completed = state!.completedSteps;
+      // Jumping forward marks all traversed steps as completed.
+      if (index > currentIndex) {
+        completed = {
+          ...completed,
+          for (var i = currentIndex; i < index; i++) i,
+        };
+      }
       // Jumping backward un-completes that step and any later ones.
-      if (index < state!.currentStepIndex) {
+      if (index < currentIndex) {
         completed = {...completed}..removeWhere((i) => i >= index);
       }
       state = state!.copyWith(
         currentStepIndex: index,
         completedSteps: completed,
       );
-      _persist();
-      _syncPlatform();
+      await _persist();
+      await _syncPlatform();
     }
   }
 
-  void setExpanded(bool expanded) {
+  Future<void> setExpanded(bool expanded) async {
     if (state == null) return;
     state = state!.copyWith(isExpanded: expanded);
-    _persist();
+    await _persist();
   }
 
   Future<void> _applyAction(String action) async {
+    if (action.startsWith('step:')) {
+      final index = int.tryParse(action.substring('step:'.length));
+      if (index != null) {
+        goToStep(index);
+      }
+      return;
+    }
     switch (action) {
       case 'pause':
         await pause();
@@ -166,6 +181,10 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
         await resume();
       case 'finish':
         await finish();
+      case 'next':
+        await completeStep();
+      case 'prev':
+        await previousStep();
     }
   }
 

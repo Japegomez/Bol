@@ -35,7 +35,9 @@ class CookingBanner extends ConsumerWidget {
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => notifier.setExpanded(true),
+                    onTap: () async {
+                      await notifier.setExpanded(true);
+                    },
                     child: Row(
                       children: [
                         Flexible(
@@ -81,9 +83,13 @@ class CookingBanner extends ConsumerWidget {
                       ? l10n.cookingResumeTooltip
                       : l10n.cookingPauseTooltip,
                   color: onContainer,
-                  onPressed: session.isPaused
-                      ? () => notifier.resume()
-                      : () => notifier.pause(),
+                  onPressed: () async {
+                    if (session.isPaused) {
+                      await notifier.resume();
+                    } else {
+                      await notifier.pause();
+                    }
+                  },
                 ),
                 _BannerIconButton(
                   icon: Icons.stop_rounded,
@@ -95,7 +101,9 @@ class CookingBanner extends ConsumerWidget {
                   icon: Icons.keyboard_arrow_up,
                   tooltip: l10n.expandCookingSession,
                   color: onContainer,
-                  onPressed: () => notifier.setExpanded(true),
+                  onPressed: () async {
+                    await notifier.setExpanded(true);
+                  },
                 ),
               ],
             ),
