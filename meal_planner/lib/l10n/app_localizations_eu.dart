@@ -1373,6 +1373,18 @@ class AppLocalizationsEu extends AppLocalizations {
       'Eskaerak denbora gehiegi hartu du. Saiatu berriro.';
 
   @override
+  String get recipeAssistantDailyLimitReached =>
+      'Laguntzailearen eguneroko muga gainditu duzu. Itzuli bihar.';
+
+  @override
+  String get recipeAssistantTooFast =>
+      'Itxoin une bat laguntzailea berriro erabili aurretik.';
+
+  @override
+  String get recipeAssistantServiceAtCapacity =>
+      'Laguntzailea momentu honetan gainezka dago. Saiatu geroago.';
+
+  @override
   String get completeNutritionWithAssistant => 'IA-rekin osatu';
 
   @override

@@ -1371,6 +1371,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'The request took too long. Please try again.';
 
   @override
+  String get recipeAssistantDailyLimitReached =>
+      'You have reached your daily assistant limit. Come back tomorrow.';
+
+  @override
+  String get recipeAssistantTooFast =>
+      'Please wait a moment before using the assistant again.';
+
+  @override
+  String get recipeAssistantServiceAtCapacity =>
+      'The assistant is currently at capacity. Please try again later.';
+
+  @override
   String get completeNutritionWithAssistant => 'Complete with AI';
 
   @override

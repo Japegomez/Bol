@@ -9,6 +9,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 const recipeAssistantNotRecipeRequestKey = 'recipeAssistantNotRecipeRequest';
 const recipeAssistantRateLimitedKey = 'recipeAssistantRateLimited';
+const recipeAssistantDailyLimitKey = 'recipeAssistantDailyLimitReached';
+const recipeAssistantTooFastKey = 'recipeAssistantTooFast';
+const recipeAssistantServiceAtCapacityKey = 'recipeAssistantServiceAtCapacity';
 const recipeAssistantFailedKey = 'recipeAssistantFailed';
 const recipeAssistantOfflineKey = 'recipeAssistantOffline';
 const recipeAssistantNotConfiguredKey = 'recipeAssistantNotConfigured';
@@ -129,6 +132,15 @@ class RecipeAssistantRepository {
 
     if (status == 422 || errorCode == 'not_a_recipe_request') {
       return recipeAssistantNotRecipeRequestKey;
+    }
+    if (errorCode == 'too_fast') {
+      return recipeAssistantTooFastKey;
+    }
+    if (errorCode == 'daily_limit_reached') {
+      return recipeAssistantDailyLimitKey;
+    }
+    if (errorCode == 'service_at_capacity' || errorCode == 'quota_check_failed') {
+      return recipeAssistantServiceAtCapacityKey;
     }
     if (status == 429 || errorCode == 'rate_limited') {
       return recipeAssistantRateLimitedKey;

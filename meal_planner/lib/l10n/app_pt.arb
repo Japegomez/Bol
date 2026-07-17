@@ -437,6 +437,9 @@
   "recipeAssistantOffline": "É necessária ligação à internet para usar o assistente.",
   "recipeAssistantNotConfigured": "O assistente de IA ainda não está configurado.",
   "recipeAssistantTimeout": "O pedido demorou demasiado. Tente novamente.",
+  "recipeAssistantDailyLimitReached": "Atingiu o limite diário do assistente. Volte amanhã.",
+  "recipeAssistantTooFast": "Aguarde um momento antes de usar o assistente novamente.",
+  "recipeAssistantServiceAtCapacity": "O assistente está sobrecarregado neste momento. Tente mais tarde.",
   "completeNutritionWithAssistant": "Completar com IA",
   "recipeAssistantNutritionSaved": "Ficha nutricional completada",
 
