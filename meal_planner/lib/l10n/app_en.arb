@@ -543,6 +543,9 @@
   "recipeAssistantOffline": "An internet connection is required to use the assistant.",
   "recipeAssistantNotConfigured": "The AI assistant is not configured yet.",
   "recipeAssistantTimeout": "The request took too long. Please try again.",
+  "recipeAssistantDailyLimitReached": "You have reached your daily assistant limit. Come back tomorrow.",
+  "recipeAssistantTooFast": "Please wait a moment before using the assistant again.",
+  "recipeAssistantServiceAtCapacity": "The assistant is currently at capacity. Please try again later.",
   "completeNutritionWithAssistant": "Complete with AI",
   "recipeAssistantNutritionSaved": "Nutrition information completed",
 

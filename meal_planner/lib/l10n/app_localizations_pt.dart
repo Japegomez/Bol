@@ -1378,6 +1378,18 @@ class AppLocalizationsPt extends AppLocalizations {
       'O pedido demorou demasiado. Tente novamente.';
 
   @override
+  String get recipeAssistantDailyLimitReached =>
+      'Atingiu o limite diário do assistente. Volte amanhã.';
+
+  @override
+  String get recipeAssistantTooFast =>
+      'Aguarde um momento antes de usar o assistente novamente.';
+
+  @override
+  String get recipeAssistantServiceAtCapacity =>
+      'O assistente está sobrecarregado neste momento. Tente mais tarde.';
+
+  @override
   String get completeNutritionWithAssistant => 'Completar com IA';
 
   @override

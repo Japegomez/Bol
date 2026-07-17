@@ -1375,6 +1375,18 @@ class AppLocalizationsGl extends AppLocalizations {
       'A solicitude tardou demasiado. Téntao de novo.';
 
   @override
+  String get recipeAssistantDailyLimitReached =>
+      'Acadaches o límite diario do asistente. Volve mañá.';
+
+  @override
+  String get recipeAssistantTooFast =>
+      'Agarda un momento antes de volver a usar o asistente.';
+
+  @override
+  String get recipeAssistantServiceAtCapacity =>
+      'O asistente está saturado neste momento. Téntao máis tarde.';
+
+  @override
   String get completeNutritionWithAssistant => 'Completar con IA';
 
   @override
