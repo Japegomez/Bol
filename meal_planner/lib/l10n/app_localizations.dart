@@ -2614,6 +2614,24 @@ abstract class AppLocalizations {
   /// **'The request took too long. Please try again.'**
   String get recipeAssistantTimeout;
 
+  /// No description provided for @recipeAssistantDailyLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached your daily assistant limit. Come back tomorrow.'**
+  String get recipeAssistantDailyLimitReached;
+
+  /// No description provided for @recipeAssistantTooFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait a moment before using the assistant again.'**
+  String get recipeAssistantTooFast;
+
+  /// No description provided for @recipeAssistantServiceAtCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant is currently at capacity. Please try again later.'**
+  String get recipeAssistantServiceAtCapacity;
+
   /// No description provided for @completeNutritionWithAssistant.
   ///
   /// In en, this message translates to:

@@ -103,23 +103,89 @@ supabase functions deploy translate-titles
 
 La función `recipe-assistant` genera fichas de receta completas o estima la información nutricional por ración usando un proveedor LLM compatible con la API de OpenAI.
 
-**Proveedor recomendado:** [Cerebras](https://cloud.cerebras.ai) con `gpt-oss-120b` (JSON Schema nativo, 1M tokens/día gratis, ~30 RPM).
+La función valida el JWT de Supabase, extrae el `user_id` real y aplica cuota por usuario y tope global antes de llamar al proveedor LLM.
 
-**Secrets (Supabase):**
+### Proveedor recomendado: Google Gemini 3.1 Flash-Lite (Opción A)
+
+**Mejor calidad-precio para es/en/ca/eu/gl/pt** en free tier. El endpoint es compatible con la API de OpenAI, así que solo cambian los secrets.
+
+> **Importante (julio 2026):** `gemini-2.5-flash` devuelve `404 NOT_FOUND` en proyectos/cuentas nuevas ("no longer available to new users"). Usa `gemini-3.1-flash-lite` (barato) o `gemini-3.5-flash` (más calidad).
+
+> **Trampa de facturación — IMPORTANTE:** Si habilitaste la facturación de Google Cloud para Translation API o Vision API, ese proyecto pasa al tier de pago de Gemini automáticamente. Para mantener el free tier de Gemini (sin billing), **usa dos proyectos GCP distintos**:
+>
+> - Proyecto A (billing ON): solo `GOOGLE_API_KEY` para Translation + Vision.
+> - Proyecto B (billing OFF): solo `LLM_API_KEY` para Gemini. **Nunca actives billing en este proyecto.**
+
+Configura los secrets del asistente apuntando al proyecto B:
+
+```bash
+npx supabase secrets set \
+  LLM_API_KEY=tu_clave_proyecto_gemini_sin_billing \
+  LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/ \
+  LLM_MODEL=gemini-3.1-flash-lite \
+  --project-ref hxtynisikjpwlvpdgdbt
+```
+
+Alternativa con más calidad (mismo endpoint, solo cambia el modelo):
+
+```bash
+npx supabase secrets set LLM_MODEL=gemini-3.5-flash --project-ref hxtynisikjpwlvpdgdbt
+```
+
+### Secrets de proveedor LLM
 
 | Secret | Valor por defecto (código) | Descripción |
 |---|---|---|
-| `LLM_API_KEY` | — | API key del proveedor |
+| `LLM_API_KEY` | — | API key del proveedor (obligatorio) |
 | `LLM_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai/` | Endpoint OpenAI-compatible |
-| `LLM_MODEL` | `gemini-2.5-flash` | Modelo a invocar |
-| `LLM_MAX_TOKENS` | `8192` (receta) / `1024` (nutrición) | Opcional; límite de salida |
+| `LLM_MODEL` | `gemini-3.1-flash-lite` | Modelo a invocar (`gemini-3.5-flash` si quieres más calidad) |
+| `LLM_MAX_TOKENS` | `8192` (receta) / `4096` (nutrición) | Opcional; límite de tokens de salida |
 
 Para cambiar de proveedor, solo actualiza estos secrets; el código de la función y la app no cambian.
 
-### Cerebras (recomendado)
+### Secrets de cuota (opcionales)
 
-1. Crea una API key en [cloud.cerebras.ai](https://cloud.cerebras.ai) (prefijo `csk_`).
-2. Configura los secrets (no hace falta redesplegar la función):
+| Secret | Default en código | Descripción |
+|---|---|---|
+| `AI_ASSISTANT_DAILY_LIMIT` | `20` | Llamadas máximas por usuario y día (genera receta + nutrición cuentan juntas) |
+| `AI_ASSISTANT_MIN_INTERVAL_SECONDS` | `3` | Cooldown mínimo entre llamadas del mismo usuario (anti-bucle) |
+| `AI_ASSISTANT_GLOBAL_DAILY_LIMIT` | desactivado (no configurado) | Tope global diario de todas las llamadas de todos los usuarios; protege ante picos que agoten el RPM/tokens-día del proveedor. Si no se configura, no aplica. |
+
+```bash
+# Ejemplo activando el tope global (ajusta el número a tu cuota del proveedor)
+npx supabase secrets set \
+  AI_ASSISTANT_DAILY_LIMIT=20 \
+  AI_ASSISTANT_MIN_INTERVAL_SECONDS=3 \
+  AI_ASSISTANT_GLOBAL_DAILY_LIMIT=500 \
+  --project-ref hxtynisikjpwlvpdgdbt
+```
+
+Nuevos códigos de error de cuota (distintos de `rate_limited`, que sigue siendo el 429 del *proveedor* LLM):
+
+| Código | HTTP | Causa |
+|---|---|---|
+| `too_fast` | 429 | Cooldown: otra petición del mismo usuario hace menos de `AI_ASSISTANT_MIN_INTERVAL_SECONDS` |
+| `daily_limit_reached` | 429 | El usuario agotó su cuota diaria |
+| `service_at_capacity` | 503 | Se alcanzó el tope global diario (no es culpa del usuario) |
+| `quota_check_failed` | 503 | Error interno al consultar la cuota; rechazado fail-closed |
+
+### Migración de base de datos requerida (022)
+
+La migración `022_ai_assistant_usage.sql` crea las tablas `ai_assistant_usage` y `ai_assistant_global_usage` y la función RPC `check_and_increment_ai_usage`. **Debe aplicarse antes de redesplegar la función**, de lo contrario la función devolverá `quota_check_failed` en cada petición.
+
+```bash
+supabase link --project-ref hxtynisikjpwlvpdgdbt
+supabase db push
+supabase functions deploy recipe-assistant
+```
+
+### Alternativas de proveedor (fallback / emergencia)
+
+Si necesitas cambiar de proveedor, actualiza los secrets `LLM_*`; el código no cambia.
+
+#### Cerebras `gpt-oss-120b`
+
+> **Nota:** el free trial de Cerebras (julio 2026) son solo **$5 de crédito con tarjeta que caducan en 30 días** y **5 RPM / 30K TPM**. El plan de pago (Developer PAYGO) es $0.35/$0.75 por 1M tokens con 1K RPM. No hay tier de uso gratuito indefinido.
 
 ```bash
 npx supabase secrets set \
@@ -129,37 +195,32 @@ npx supabase secrets set \
   --project-ref hxtynisikjpwlvpdgdbt
 ```
 
-Límites free orientativos: **1M tokens/día**, ~30 RPM, ~60K TPM. Soporta `json_schema` estándar (la función usa `strict: false`).
+#### DeepSeek V4 Flash
 
-### Google Gemini (alternativa)
+Precio más bajo del mercado ($0.14/$0.28 por 1M tokens, contexto 1M). Buena calidad en es/en/pt; menos datos públicos para eu/gl/ca.
 
 ```bash
 npx supabase secrets set \
-  LLM_API_KEY=tu_clave_google \
-  LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/ \
-  LLM_MODEL=gemini-2.5-flash \
+  LLM_API_KEY=tu_clave_deepseek \
+  LLM_BASE_URL=https://api.deepseek.com/v1 \
+  LLM_MODEL=deepseek-chat \
   --project-ref hxtynisikjpwlvpdgdbt
 ```
 
-### Probar con Groq
-
-1. Crea una API key en [console.groq.com/keys](https://console.groq.com/keys) (empieza por `gsk_`).
-2. Configura los secrets (no hace falta redesplegar la función):
+#### Groq
 
 ```bash
-supabase secrets set \
+npx supabase secrets set \
   LLM_API_KEY=gsk_tu_clave \
   LLM_BASE_URL=https://api.groq.com/openai/v1 \
-  LLM_MODEL=openai/gpt-oss-20b
+  LLM_MODEL=openai/gpt-oss-20b \
+  --project-ref hxtynisikjpwlvpdgdbt
 ```
 
 | Modelo Groq | Cuándo usarlo |
 |---|---|
-| `openai/gpt-oss-20b` | **Recomendado** para el asistente: soporta JSON Schema (salida estructurada de recetas). |
-| `llama-3.3-70b-versatile` | Más capacidad de razonamiento; prueba si `gpt-oss-20b` no te convence. |
-| `llama-3.1-8b-instant` | Más rápido y barato en cuota; mejor para nutrición simple. |
-
-Límites gratis orientativos: ~30 RPM, ~1.000 peticiones/día (varía por modelo). Para volver a Gemini, repite `supabase secrets set` con los valores de Google.
+| `openai/gpt-oss-20b` | Generación de recetas (soporta JSON Schema). |
+| `llama-3.1-8b-instant` | Nutrición simple (más rápido y barato). |
 
 La función exige JWT de usuario autenticado. La app la invoca al crear una receta con el asistente o al completar la ficha nutricional de una receta existente.
 

@@ -437,6 +437,9 @@
   "recipeAssistantOffline": "Laguntzailea erabiltzeko internet konexioa behar da.",
   "recipeAssistantNotConfigured": "IA laguntzailea oraindik ez dago konfiguratuta.",
   "recipeAssistantTimeout": "Eskaerak denbora gehiegi hartu du. Saiatu berriro.",
+  "recipeAssistantDailyLimitReached": "Laguntzailearen eguneroko muga gainditu duzu. Itzuli bihar.",
+  "recipeAssistantTooFast": "Itxoin une bat laguntzailea berriro erabili aurretik.",
+  "recipeAssistantServiceAtCapacity": "Laguntzailea momentu honetan gainezka dago. Saiatu geroago.",
   "completeNutritionWithAssistant": "IA-rekin osatu",
   "recipeAssistantNutritionSaved": "Nutrizio fitxa osatuta",
 

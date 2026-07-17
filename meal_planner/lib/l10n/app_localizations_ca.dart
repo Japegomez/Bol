@@ -1374,6 +1374,18 @@ class AppLocalizationsCa extends AppLocalizations {
       'La sol·licitud ha trigat massa. Torna-ho a provar.';
 
   @override
+  String get recipeAssistantDailyLimitReached =>
+      'Has assolit el límit diari de l\'assistent. Torna demà.';
+
+  @override
+  String get recipeAssistantTooFast =>
+      'Espera un moment abans de tornar a usar l\'assistent.';
+
+  @override
+  String get recipeAssistantServiceAtCapacity =>
+      'L\'assistent està saturat en aquest moment. Torna-ho a provar més tard.';
+
+  @override
   String get completeNutritionWithAssistant => 'Completar amb IA';
 
   @override
