@@ -95,12 +95,11 @@ struct CookingNextStepIntent: AppIntent, LiveActivityIntent {
         let stepTexts  = defaults?.stringArray(forKey: kAllStepTextsKey) ?? []
         let stepLabels = defaults?.stringArray(forKey: kAllStepLabelsKey) ?? []
 
-        defaults?.set("next", forKey: kPendingActionKey)
-
         for activity in Activity<CookingActivityAttributes>.activities {
             var state = activity.content.state
             let newIndex = state.stepIndex + 1
             guard newIndex < state.totalSteps else { continue }
+            defaults?.set("step:\(newIndex)", forKey: kPendingActionKey)
             state.stepIndex = newIndex
             if newIndex < stepTexts.count  { state.stepText  = stepTexts[newIndex] }
             if newIndex < stepLabels.count { state.stepLabel = stepLabels[newIndex] }

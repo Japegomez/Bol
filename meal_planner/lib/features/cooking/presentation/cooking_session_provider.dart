@@ -138,9 +138,17 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
   Future<void> goToStep(int index) async {
     if (state == null) return;
     if (index >= 0 && index < state!.totalSteps) {
+      final currentIndex = state!.currentStepIndex;
       var completed = state!.completedSteps;
+      // Jumping forward marks all traversed steps as completed.
+      if (index > currentIndex) {
+        completed = {
+          ...completed,
+          for (var i = currentIndex; i < index; i++) i,
+        };
+      }
       // Jumping backward un-completes that step and any later ones.
-      if (index < state!.currentStepIndex) {
+      if (index < currentIndex) {
         completed = {...completed}..removeWhere((i) => i >= index);
       }
       state = state!.copyWith(
@@ -159,6 +167,13 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
   }
 
   Future<void> _applyAction(String action) async {
+    if (action.startsWith('step:')) {
+      final index = int.tryParse(action.substring('step:'.length));
+      if (index != null) {
+        goToStep(index);
+      }
+      return;
+    }
     switch (action) {
       case 'pause':
         await pause();
