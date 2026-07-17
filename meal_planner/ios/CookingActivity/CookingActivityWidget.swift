@@ -68,11 +68,15 @@ struct CookingActivityWidget: Widget {
     }
 }
 
+// MARK: – Lock screen view
+
 struct CookingLockScreenView: View {
     let context: ActivityViewContext<CookingActivityAttributes>
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+
+            // ── Header: recipe title + elapsed timer ─────────────────────────
             HStack {
                 Image(systemName: "fork.knife")
                     .foregroundStyle(.orange)
@@ -96,18 +100,41 @@ struct CookingLockScreenView: View {
 
             Divider()
 
+            // ── Step content (expandable on iOS 17+) ─────────────────────────
             VStack(alignment: .leading, spacing: 4) {
                 Text(context.state.stepLabel)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(context.state.stepText)
                     .font(.body)
-                    .lineLimit(3)
+                    .lineLimit(context.state.isTextExpanded ? nil : 3)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if #available(iOS 17.0, *) {
+                    Button(intent: CookingToggleTextIntent()) {
+                        Image(systemName: context.state.isTextExpanded
+                              ? "chevron.up.circle" : "chevron.down.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
-            HStack(spacing: 12) {
-                Spacer()
-                if #available(iOS 17.0, *) {
+            // ── Action buttons ────────────────────────────────────────────────
+            if #available(iOS 17.0, *) {
+                HStack(spacing: 6) {
+                    // Previous step
+                    Button(intent: CookingPreviousStepIntent()) {
+                        Image(systemName: "backward.step.fill")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.secondary)
+                    .disabled(context.state.stepIndex == 0)
+
+                    Spacer()
+
+                    // Pause / Resume
                     Button(intent: CookingPauseResumeIntent(isPaused: context.state.isPaused)) {
                         Label(
                             context.state.isPaused
@@ -119,13 +146,30 @@ struct CookingLockScreenView: View {
                     .buttonStyle(.bordered)
                     .tint(context.state.isPaused ? .green : .orange)
 
+                    // Finish
                     Button(intent: CookingFinishIntent()) {
                         Label(context.state.finishAction, systemImage: "stop.fill")
                     }
                     .buttonStyle(.bordered)
                     .tint(.red)
-                } else {
-                    Link(destination: URL(string: context.state.isPaused ? "recetea://cooking/resume" : "recetea://cooking/pause")!) {
+
+                    Spacer()
+
+                    // Next step
+                    Button(intent: CookingNextStepIntent()) {
+                        Image(systemName: "forward.step.fill")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.secondary)
+                    .disabled(context.state.stepIndex >= context.state.totalSteps - 1)
+                }
+            } else {
+                // iOS 16 fallback: deep-link buttons
+                HStack(spacing: 12) {
+                    Spacer()
+                    Link(destination: URL(string: context.state.isPaused
+                         ? "recetea://cooking/resume"
+                         : "recetea://cooking/pause")!) {
                         Label(
                             context.state.isPaused
                                 ? context.state.resumeAction

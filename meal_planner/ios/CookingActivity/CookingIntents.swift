@@ -12,6 +12,10 @@ import Foundation
 
 private let kAppGroupId = "group.com.japegomez.mealPlanner.cooking"
 private let kPendingActionKey = "cooking_pending_action_v1"
+private let kAllStepTextsKey = "cooking_all_step_texts"
+private let kAllStepLabelsKey = "cooking_all_step_labels"
+
+// MARK: – Pause / Resume
 
 @available(iOS 17.0, *)
 struct CookingPauseResumeIntent: AppIntent, LiveActivityIntent {
@@ -28,8 +32,7 @@ struct CookingPauseResumeIntent: AppIntent, LiveActivityIntent {
         UserDefaults(suiteName: kAppGroupId)?.set(action, forKey: kPendingActionKey)
 
         let nowMs = Int(Date().timeIntervalSince1970 * 1000)
-        let activities = Activity<CookingActivityAttributes>.activities
-        for activity in activities {
+        for activity in Activity<CookingActivityAttributes>.activities {
             var state = activity.content.state
             if action == "pause" {
                 guard !state.isPaused else { continue }
@@ -43,14 +46,13 @@ struct CookingPauseResumeIntent: AppIntent, LiveActivityIntent {
                 state.isPaused = false
                 state.pausedAtMs = nil
             }
-            await activity.update(
-                ActivityContent(state: state, staleDate: nil)
-            )
+            await activity.update(ActivityContent(state: state, staleDate: nil))
         }
-
         return .result()
     }
 }
+
+// MARK: – Finish
 
 @available(iOS 17.0, *)
 struct CookingFinishIntent: AppIntent, LiveActivityIntent {
@@ -59,11 +61,79 @@ struct CookingFinishIntent: AppIntent, LiveActivityIntent {
     func perform() async throws -> some IntentResult {
         UserDefaults(suiteName: kAppGroupId)?.set("finish", forKey: kPendingActionKey)
 
-        let activities = Activity<CookingActivityAttributes>.activities
-        for activity in activities {
+        for activity in Activity<CookingActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
+        return .result()
+    }
+}
 
+// MARK: – Toggle step text expansion
+
+@available(iOS 17.0, *)
+struct CookingToggleTextIntent: AppIntent, LiveActivityIntent {
+    static var title: LocalizedStringResource = "Toggle Step Text"
+
+    func perform() async throws -> some IntentResult {
+        for activity in Activity<CookingActivityAttributes>.activities {
+            var state = activity.content.state
+            state.isTextExpanded.toggle()
+            await activity.update(ActivityContent(state: state, staleDate: nil))
+        }
+        return .result()
+    }
+}
+
+// MARK: – Next step
+
+@available(iOS 17.0, *)
+struct CookingNextStepIntent: AppIntent, LiveActivityIntent {
+    static var title: LocalizedStringResource = "Next Step"
+
+    func perform() async throws -> some IntentResult {
+        let defaults = UserDefaults(suiteName: kAppGroupId)
+        let stepTexts  = defaults?.stringArray(forKey: kAllStepTextsKey) ?? []
+        let stepLabels = defaults?.stringArray(forKey: kAllStepLabelsKey) ?? []
+
+        defaults?.set("next", forKey: kPendingActionKey)
+
+        for activity in Activity<CookingActivityAttributes>.activities {
+            var state = activity.content.state
+            let newIndex = state.stepIndex + 1
+            guard newIndex < state.totalSteps else { continue }
+            state.stepIndex = newIndex
+            if newIndex < stepTexts.count  { state.stepText  = stepTexts[newIndex] }
+            if newIndex < stepLabels.count { state.stepLabel = stepLabels[newIndex] }
+            state.isTextExpanded = false
+            await activity.update(ActivityContent(state: state, staleDate: nil))
+        }
+        return .result()
+    }
+}
+
+// MARK: – Previous step
+
+@available(iOS 17.0, *)
+struct CookingPreviousStepIntent: AppIntent, LiveActivityIntent {
+    static var title: LocalizedStringResource = "Previous Step"
+
+    func perform() async throws -> some IntentResult {
+        let defaults = UserDefaults(suiteName: kAppGroupId)
+        let stepTexts  = defaults?.stringArray(forKey: kAllStepTextsKey) ?? []
+        let stepLabels = defaults?.stringArray(forKey: kAllStepLabelsKey) ?? []
+
+        defaults?.set("prev", forKey: kPendingActionKey)
+
+        for activity in Activity<CookingActivityAttributes>.activities {
+            var state = activity.content.state
+            let newIndex = state.stepIndex - 1
+            guard newIndex >= 0 else { continue }
+            state.stepIndex = newIndex
+            if newIndex < stepTexts.count  { state.stepText  = stepTexts[newIndex] }
+            if newIndex < stepLabels.count { state.stepLabel = stepLabels[newIndex] }
+            state.isTextExpanded = false
+            await activity.update(ActivityContent(state: state, staleDate: nil))
+        }
         return .result()
     }
 }

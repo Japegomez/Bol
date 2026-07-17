@@ -166,6 +166,10 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
         await resume();
       case 'finish':
         await finish();
+      case 'next':
+        completeStep();
+      case 'prev':
+        previousStep();
     }
   }
 

@@ -1,9 +1,12 @@
+import 'dart:ui' show Locale, PlatformDispatcher;
+
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/cooking/domain/cooking_session.dart';
 import 'package:meal_planner/features/cooking/platform/cooking_platform_copy.dart';
+import 'package:meal_planner/l10n/app_localizations.dart';
 
 const _kChannel = MethodChannel('com.japegomez.mealPlanner/live_activity');
 
@@ -48,10 +51,32 @@ class CookingLiveActivityService {
 
   static Map<String, dynamic> _buildData(CookingSession session) {
     final copy = CookingPlatformCopy.resolve(session);
+
+    // Resolve l10n for building all-step arrays.
+    AppLocalizations l10n;
+    try {
+      l10n = lookupAppLocalizations(PlatformDispatcher.instance.locale);
+    } catch (_) {
+      l10n = lookupAppLocalizations(const Locale('en'));
+    }
+
+    final total = session.totalSteps;
+
+    // All step texts: index 0 is the synthetic "check ingredients" step.
+    final allStepTexts = <String>[
+      l10n.checkIngredientsStep,
+      ...session.steps.map((s) => s.description),
+    ];
+
+    // Localized step labels ("Step X of Y") for each index.
+    final allStepLabels = <String>[
+      for (int i = 0; i < total; i++) l10n.stepXofY(i + 1, total),
+    ];
+
     return {
       'recipeTitle': session.recipeTitle,
       'stepIndex': session.currentStepIndex,
-      'totalSteps': session.totalSteps,
+      'totalSteps': total,
       'stepText': copy.stepText,
       'isPaused': session.isPaused,
       'startedAtMs': session.startedAt.millisecondsSinceEpoch,
@@ -64,6 +89,12 @@ class CookingLiveActivityService {
       'pauseAction': copy.pauseAction,
       'resumeAction': copy.resumeAction,
       'finishAction': copy.finishAction,
+      // Step navigation data for Live Activity intents.
+      'allStepTexts': allStepTexts,
+      'allStepLabels': allStepLabels,
+      // Always reset to collapsed; the native manager preserves the value
+      // when the step index has not changed (see CookingActivityManager.update).
+      'isTextExpanded': false,
     };
   }
 }

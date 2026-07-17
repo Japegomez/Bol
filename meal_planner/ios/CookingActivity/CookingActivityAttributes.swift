@@ -12,8 +12,11 @@ public struct CookingActivityAttributes: ActivityAttributes {
         public var totalSteps: Int
         public var stepText: String
         public var isPaused: Bool
+        /// Milliseconds since epoch at which cooking started.
         public var startedAtMs: Int
+        /// Accumulated pause duration in milliseconds.
         public var accumulatedPauseMs: Int
+        /// Milliseconds since epoch at which the session was paused, or nil.
         public var pausedAtMs: Int?
         /// Localized labels pushed from Flutter.
         public var pausedLabel: String
@@ -21,6 +24,8 @@ public struct CookingActivityAttributes: ActivityAttributes {
         public var pauseAction: String
         public var resumeAction: String
         public var finishAction: String
+        /// Whether the step text is expanded (iOS 17+ interactive toggle).
+        public var isTextExpanded: Bool
 
         var chronometerBase: Date {
             let epochMs = startedAtMs + accumulatedPauseMs
