@@ -349,7 +349,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     if (current != null) {
       if (current.recipeId == widget.recipeId) {
         // Same recipe already in progress — expand it.
-        notifier.setExpanded(true);
+        await notifier.setExpanded(true);
         return;
       }
       // Different recipe in progress — ask to replace.

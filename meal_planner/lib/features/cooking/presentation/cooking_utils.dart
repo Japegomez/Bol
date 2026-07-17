@@ -44,7 +44,7 @@ Future<void> celebrateAndFinishCooking(
   BuildContext context,
   CookingSessionNotifier notifier,
 ) async {
-  notifier.completeStep();
+  await notifier.completeStep();
   if (!context.mounted) return;
 
   final l10n = context.l10n;
