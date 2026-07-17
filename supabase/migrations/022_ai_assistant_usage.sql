@@ -23,8 +23,9 @@ ALTER TABLE public.ai_assistant_global_usage ENABLE ROW LEVEL SECURITY;
 --
 -- Atomically checks three gates in a single transaction (row-level FOR UPDATE
 -- prevents race conditions under concurrent requests):
---   1. Burst cooldown  — rejects if last_request_at < p_min_interval_seconds ago.
---   2. Per-user limit  — rejects if user's daily count >= p_daily_limit.
+--   1. Per-user limit  — rejects if user's daily count >= p_daily_limit.
+--   2. Burst cooldown  — rejects if last_request_at < p_min_interval_seconds ago
+--                        (only for users still within their daily allowance).
 --   3. Global cap      — rejects if today's global count >= p_global_daily_limit
 --                        (only when p_global_daily_limit IS NOT NULL).
 -- On success, increments both counters atomically.
@@ -72,7 +73,14 @@ BEGIN
    WHERE u.user_id = p_user_id AND u.usage_date = v_today
      FOR UPDATE;
 
-  -- Gate 1: burst cooldown
+  -- Gate 1: daily per-user limit (before cooldown so exhausted users get
+  -- daily_limit_reached, not too_fast)
+  IF v_user_count >= p_daily_limit THEN
+    RETURN QUERY SELECT false, 'daily_limit_reached'::text, 0, 0;
+    RETURN;
+  END IF;
+
+  -- Gate 2: burst cooldown (only reached when the user still has daily allowance)
   IF v_last_request_at IS NOT NULL AND p_min_interval_seconds > 0 THEN
     v_elapsed_seconds := EXTRACT(EPOCH FROM (v_now - v_last_request_at));
     IF v_elapsed_seconds < p_min_interval_seconds THEN
@@ -80,12 +88,6 @@ BEGIN
       RETURN QUERY SELECT false, 'too_fast'::text, (p_daily_limit - v_user_count), v_retry_after;
       RETURN;
     END IF;
-  END IF;
-
-  -- Gate 2: daily per-user limit
-  IF v_user_count >= p_daily_limit THEN
-    RETURN QUERY SELECT false, 'daily_limit_reached'::text, 0, 0;
-    RETURN;
   END IF;
 
   -- ── Gate 3: global cap (only when p_global_daily_limit is set) ────────────
