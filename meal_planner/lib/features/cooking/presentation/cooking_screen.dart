@@ -22,7 +22,7 @@ class CookingScreen extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) async {
+      onPopInvokedWithResult: (_, _) async {
         await notifier.setExpanded(false);
       },
       child: Material(
