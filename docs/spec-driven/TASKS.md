@@ -101,9 +101,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Invocada al elegir imagen en formulario de receta y edición de perfil
   - Secret `GOOGLE_VISION_API_KEY` en Supabase; despliegue documentado en `supabase/README.md` (PR #37)
 - [x] Edge Function `recipe-assistant`: generación/adaptación de recetas y estimación nutricional (PR #47)
-  - Modos: `generate_recipe`, `generate_nutrition`; JWT de usuario requerido
-  - Cliente OpenAI-compatible vía secrets `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` (recomendado Cerebras `gpt-oss-120b`; alternativa Gemini)
-  - Documentado en `supabase/README.md` y `meal_planner/.env.example`
+  - Modos: `generate_recipe`, `generate_nutrition`; JWT de usuario validado (`auth.getUser`)
+  - Cuota por usuario + cooldown + tope global opcional (migración `022_ai_assistant_usage.sql`, RPC `check_and_increment_ai_usage`)
+  - Cliente OpenAI-compatible vía secrets `LLM_*` (recomendado Gemini `gemini-3.1-flash-lite` en proyecto GCP **sin** billing; Translation/Vision en proyecto con billing)
+  - Documentado en `supabase/README.md`
 
 ### Servicios externos (observabilidad y UX)
 

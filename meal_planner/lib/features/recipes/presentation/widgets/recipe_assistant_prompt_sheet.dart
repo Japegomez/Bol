@@ -12,6 +12,9 @@ String resolveRecipeAssistantError(String error, AppLocalizations l10n) {
   return switch (error) {
     recipeAssistantNotRecipeRequestKey => l10n.recipeAssistantNotRecipeRequest,
     recipeAssistantRateLimitedKey => l10n.recipeAssistantRateLimited,
+    recipeAssistantDailyLimitKey => l10n.recipeAssistantDailyLimitReached,
+    recipeAssistantTooFastKey => l10n.recipeAssistantTooFast,
+    recipeAssistantServiceAtCapacityKey => l10n.recipeAssistantServiceAtCapacity,
     recipeAssistantOfflineKey => l10n.recipeAssistantOffline,
     recipeAssistantNotConfiguredKey => l10n.recipeAssistantNotConfigured,
     recipeAssistantTimeoutKey => l10n.recipeAssistantTimeout,

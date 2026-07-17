@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -166,7 +167,9 @@ function getLlmConfig() {
   const apiKey = Deno.env.get("LLM_API_KEY");
   const baseUrl = Deno.env.get("LLM_BASE_URL") ??
     "https://generativelanguage.googleapis.com/v1beta/openai/";
-  const model = Deno.env.get("LLM_MODEL") ?? "gemini-2.5-flash";
+  // gemini-2.5-flash is blocked for new Google AI projects (404 NOT_FOUND).
+  // Prefer gemini-3.1-flash-lite (cheap) or gemini-3.5-flash (higher quality).
+  const model = Deno.env.get("LLM_MODEL") ?? "gemini-3.1-flash-lite";
   return { apiKey, baseUrl: baseUrl.replace(/\/?$/, "/"), model };
 }
 
@@ -607,6 +610,14 @@ function formatIngredientsForPrompt(ingredients: IngredientInput[]): string {
     .join("\n");
 }
 
+// ── Quota result shape returned by check_and_increment_ai_usage ──────────────
+type QuotaRow = {
+  allowed: boolean;
+  reason: string | null;
+  remaining: number;
+  retry_after_seconds: number;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -618,11 +629,54 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "unauthorized" }, 401);
     }
 
+    // ── Validate JWT and extract the real user id ─────────────────────────────
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return jsonResponse({ error: "unauthorized" }, 401);
+    }
+    const userId = userData.user.id;
+
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
     const body = await req.json();
     const mode = body?.mode as AssistantMode | undefined;
 
     if (mode !== "generate_recipe" && mode !== "generate_nutrition") {
       return jsonResponse({ error: "invalid_mode" }, 400);
+    }
+
+    // ── Quota check (per-user + global) ───────────────────────────────────────
+    const dailyLimit = Number(Deno.env.get("AI_ASSISTANT_DAILY_LIMIT") ?? "20");
+    const minInterval = Number(
+      Deno.env.get("AI_ASSISTANT_MIN_INTERVAL_SECONDS") ?? "3",
+    );
+    const globalLimitRaw = Deno.env.get("AI_ASSISTANT_GLOBAL_DAILY_LIMIT");
+    const globalLimit = globalLimitRaw ? Number(globalLimitRaw) : null;
+
+    const { data: quotaRows, error: quotaError } = await adminClient
+      .rpc("check_and_increment_ai_usage", {
+        p_user_id: userId,
+        p_daily_limit: dailyLimit,
+        p_min_interval_seconds: minInterval,
+        p_global_daily_limit: globalLimit,
+      });
+
+    if (quotaError || !quotaRows || (quotaRows as QuotaRow[]).length === 0) {
+      console.error("quota check error:", quotaError);
+      return jsonResponse({ error: "quota_check_failed" }, 503);
+    }
+
+    const quota = (quotaRows as QuotaRow[])[0];
+    if (!quota.allowed) {
+      const status = quota.reason === "service_at_capacity" ? 503 : 429;
+      return jsonResponse({ error: quota.reason }, status);
     }
 
     if (mode === "generate_recipe") {
