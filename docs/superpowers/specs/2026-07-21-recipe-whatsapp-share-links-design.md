@@ -129,6 +129,53 @@ Fork: reuse existing `forkIntoMyBook` / social fork after resolve; block self-fo
 - [ ] Deleted recipe → share resolve fails gracefully.
 - [ ] App Links / Universal Links open the app when installed (Firebase host).
 
+## What you must do manually (human)
+
+Agent can write code, migrations, hosting site files, and app config. These steps need your accounts / Apple / Google / Firebase console:
+
+### 1. Firebase Hosting (first time)
+
+1. In [Firebase Console](https://console.firebase.google.com/) → project `mealplanner-a818e` → **Build → Hosting** → Get started (if not enabled).
+2. Locally (once): `firebase login`, then from the hosting site folder: `firebase init hosting` targeting that project (or use an existing `firebase.json` hosting block).
+3. Deploy when the landing is ready: `firebase deploy --only hosting`.
+4. Note the live URL (`https://mealplanner-a818e.web.app` or the assigned `*.web.app` / `*.firebaseapp.com`) and keep it as the share base URL in app config.
+
+### 2. Android App Links — signing certificate
+
+1. Get the **SHA-256** of the keystore that signs the builds users install:
+   - Debug (dev): `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey` (password `android`).
+   - Release / Codemagic: from Play Console → App integrity / App signing, or from your CI keystore.
+2. Put that fingerprint into `/.well-known/assetlinks.json` (`package_name`: `com.japegomez.meal_planner`).
+3. Redeploy Hosting after any fingerprint change.
+4. Optional verify: [Google Digital Asset Links API](https://developers.google.com/digital-asset-links/tools/generator).
+
+### 3. iOS Universal Links — Apple Team ID + Associated Domains
+
+1. Apple Developer → Membership → copy **Team ID**.
+2. Provide Team ID for `apple-app-site-association` (`appID` = `TEAMID.com.japegomez.mealPlanner`).
+3. In Xcode (or Apple Developer → Identifiers → App ID): enable **Associated Domains**.
+4. Add capability / entitlement: `applinks:mealplanner-a818e.web.app` (and later custom domain if any).
+5. Redeploy Hosting after AASA changes. AASA must be served with no redirects and correct content-type.
+
+### 4. Store listings (when not installed)
+
+1. Confirm Play Store URL and App Store URL (or TestFlight) for the landing “Install / Open” buttons.
+2. Until published, landing can show a simple “Install Recetea” placeholder.
+
+### 5. Supabase migration
+
+1. Apply the new migration on the remote project when ready (`supabase db push` / dashboard), after review.
+2. Smoke-test RPCs with a real logged-in user.
+
+### 6. Manual QA
+
+1. Share private + public recipes to WhatsApp on a real device.
+2. Open link with app installed (logged in / logged out).
+3. Open link with app not installed → landing.
+4. Confirm expired private link after forcing `expires_at` in DB (or wait / SQL update in staging).
+
+**Not required for MVP:** buying a custom domain. Attach one later in Firebase Hosting → Custom domain.
+
 ## Out of scope follow-ups
 
 - Custom domain (`share.recetea.app` or similar).
