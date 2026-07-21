@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/legal_urls.dart';
@@ -25,10 +26,13 @@ import 'package:meal_planner/features/social/presentation/feed_screen.dart';
 import 'package:meal_planner/features/social/presentation/public_screens.dart';
 import 'package:meal_planner/router/home_shell.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/',
     redirect: (context, state) {
       final isLoggingIn = state.matchedLocation.startsWith('/auth');

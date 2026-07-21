@@ -201,6 +201,16 @@
   "clearListConfirm": "Erosketa-zerrendako elementu guztiak ezabatu?",
   "shoppingListTitle": "Erosketa-zerrenda",
   "shareListTooltip": "Partekatu zerrenda",
+  "shareRecipeTooltip": "Partekatu errezeta",
+  "shareRecipeMessage": "{title}\n{url}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "Esteka hau iraungi da",
+  "shareLinkInvalid": "Esteka hau ez da baliozkoa",
   "clearListTooltip": "Garbitu zerrenda",
   "shoppingListLoadError": "Ezin izan da zerrenda kargatu: {error}",
   "shoppingListEmpty": "Zure zerrenda hutsik dago",
@@ -252,7 +262,7 @@
   "kickMemberConfirm": "{username} etxetik kendu?",
   "kick": "Kendu",
   "leaveHouseholdTitle": "Utzi etxea",
-  "leaveHouseholdMessage": "Planifikatzaile eta zerrenda partekatuen sarbidea galduko duzu. Jarraitu?",
+  "leaveHouseholdMessage": "Etxeko planifikatzailea eta erosketa-zerrenda zure banakako modura kopiatuko dira (oraingo astea eta etorkizunekoak). Jarraitu?",
   "leave": "Utzi",
   "myHouseholdTitle": "Nire etxea",
   "inviteCode": "Gonbidapen-kodea",

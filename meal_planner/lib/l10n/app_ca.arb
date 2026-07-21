@@ -201,6 +201,16 @@
   "clearListConfirm": "Eliminar tots els ítems de la llista de la compra?",
   "shoppingListTitle": "Llista de la compra",
   "shareListTooltip": "Compartir llista",
+  "shareRecipeTooltip": "Compartir recepta",
+  "shareRecipeMessage": "{title}\n{url}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "Aquest enllaç ha caducat",
+  "shareLinkInvalid": "Aquest enllaç no és vàlid",
   "clearListTooltip": "Netejar llista",
   "shoppingListLoadError": "No s'ha pogut carregar la llista: {error}",
   "shoppingListEmpty": "La teva llista està buida",
@@ -252,7 +262,7 @@
   "kickMemberConfirm": "Expulsar {username} de la llar?",
   "kick": "Expulsar",
   "leaveHouseholdTitle": "Abandonar llar",
-  "leaveHouseholdMessage": "Perdràs accés al planificador i llista compartits. Continuar?",
+  "leaveHouseholdMessage": "Es copiarà el planificador i la llista de la llar al teu mode individual (setmana actual i futures). Continuar?",
   "leave": "Abandonar",
   "myHouseholdTitle": "La meva llar",
   "inviteCode": "Codi d'invitació",

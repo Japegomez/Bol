@@ -3,10 +3,7 @@ import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.d
 
 // Test helper to access the private mapper
 String mapFunctionErrorForTest(int status, dynamic details) {
-  final repo = RecipeAssistantRepository();
-  // We can't directly test the private method without reflection or making it public,
-  // but we can test the behavior through the exception flow in a real-world scenario.
-  // For now, create a test double that exercises the same logic:
+  // Exercises the same status/error-code mapping used by RecipeAssistantRepository.
   final errorCode = details is Map ? details['error']?.toString() : null;
 
   if (status == 422 || errorCode == 'not_a_recipe_request') {
@@ -75,7 +72,7 @@ void main() {
 
   group('error mapper function', () {
     test('maps 422 status to not_a_recipe_request', () {
-      expect(mapFunctionErrorForTest(422, {}),
+      expect(mapFunctionErrorForTest(422, <String, dynamic>{}),
           equals(recipeAssistantNotRecipeRequestKey));
     });
 
@@ -115,7 +112,7 @@ void main() {
     });
 
     test('maps 429 status without error code to rate_limited key', () {
-      expect(mapFunctionErrorForTest(429, {}),
+      expect(mapFunctionErrorForTest(429, <String, dynamic>{}),
           equals(recipeAssistantRateLimitedKey));
     });
 
@@ -126,12 +123,12 @@ void main() {
     });
 
     test('maps 503 status without error code to not_configured key', () {
-      expect(mapFunctionErrorForTest(503, {}),
+      expect(mapFunctionErrorForTest(503, <String, dynamic>{}),
           equals(recipeAssistantNotConfiguredKey));
     });
 
     test('maps unknown status to failed key', () {
-      expect(mapFunctionErrorForTest(500, {}),
+      expect(mapFunctionErrorForTest(500, <String, dynamic>{}),
           equals(recipeAssistantFailedKey));
     });
 

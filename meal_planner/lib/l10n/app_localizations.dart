@@ -1264,6 +1264,30 @@ abstract class AppLocalizations {
   /// **'Share list'**
   String get shareListTooltip;
 
+  /// No description provided for @shareRecipeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share recipe'**
+  String get shareRecipeTooltip;
+
+  /// No description provided for @shareRecipeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}\n{url}'**
+  String shareRecipeMessage(String title, String url);
+
+  /// No description provided for @shareLinkExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This share link has expired'**
+  String get shareLinkExpired;
+
+  /// No description provided for @shareLinkInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This share link is invalid'**
+  String get shareLinkInvalid;
+
   /// No description provided for @clearListTooltip.
   ///
   /// In en, this message translates to:
@@ -1561,7 +1585,7 @@ abstract class AppLocalizations {
   /// No description provided for @leaveHouseholdMessage.
   ///
   /// In en, this message translates to:
-  /// **'You will lose access to the shared planner and list. Continue?'**
+  /// **'The household planner and shopping list will be copied to your individual mode (current and future weeks). Continue?'**
   String get leaveHouseholdMessage;
 
   /// No description provided for @leave.

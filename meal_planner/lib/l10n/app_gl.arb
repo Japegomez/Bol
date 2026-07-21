@@ -201,6 +201,16 @@
   "clearListConfirm": "Eliminar todos os elementos da lista da compra?",
   "shoppingListTitle": "Lista da compra",
   "shareListTooltip": "Compartir lista",
+  "shareRecipeTooltip": "Compartir receita",
+  "shareRecipeMessage": "{title}\n{url}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "Esta ligazón caducou",
+  "shareLinkInvalid": "Esta ligazón non é válida",
   "clearListTooltip": "Limpar lista",
   "shoppingListLoadError": "Non se puido cargar a lista: {error}",
   "shoppingListEmpty": "A túa lista está baleira",
@@ -252,7 +262,7 @@
   "kickMemberConfirm": "Expulsar a {username} do fogar?",
   "kick": "Expulsar",
   "leaveHouseholdTitle": "Abandonar fogar",
-  "leaveHouseholdMessage": "Perderás acceso ao planificador e lista compartidos. Continuar?",
+  "leaveHouseholdMessage": "Copiarase o planificador e a lista do fogar ao teu modo individual (semana actual e futuras). Continuar?",
   "leave": "Abandonar",
   "myHouseholdTitle": "O meu fogar",
   "inviteCode": "Código de invitación",

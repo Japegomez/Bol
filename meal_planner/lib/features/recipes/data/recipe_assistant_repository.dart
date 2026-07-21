@@ -59,6 +59,7 @@ class RecipeAssistantRepository {
     required String title,
     required int servings,
     required List<IngredientFormItem> ingredients,
+    NutritionFormData? existingNutrition,
   }) async {
     await _ensureOnline();
 
@@ -68,6 +69,8 @@ class RecipeAssistantRepository {
     if (validIngredients.isEmpty) {
       throw Exception(recipeAssistantFailedKey);
     }
+
+    final existingPayload = existingNutrition?.toAssistantPayload();
 
     final data = await _invoke(
       body: {
@@ -86,6 +89,7 @@ class RecipeAssistantRepository {
               },
             )
             .toList(),
+        'existingNutrition': ?existingPayload,
       },
       timeout: _nutritionGenerationTimeout,
     );

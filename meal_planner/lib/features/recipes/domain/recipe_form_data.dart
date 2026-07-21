@@ -92,6 +92,18 @@ class NutritionFormData {
       carbohydrates != null ||
       fat != null ||
       fiber != null;
+
+  /// Payload for the recipe assistant when re-estimating nutrition.
+  Map<String, int?>? toAssistantPayload() {
+    if (!hasAnyValue) return null;
+    return {
+      'calories': calories?.round(),
+      'protein': protein?.round(),
+      'carbohydrates': carbohydrates?.round(),
+      'fat': fat?.round(),
+      'fiber': fiber?.round(),
+    };
+  }
 }
 
 class RecipeFormData {

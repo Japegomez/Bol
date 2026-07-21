@@ -1,7 +1,7 @@
-import 'dart:typed_data';
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -230,6 +230,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
         title: _data!.title,
         servings: _data!.servings,
         ingredients: _data!.ingredients,
+        existingNutrition: _data!.nutrition,
         onSuccess: (nutrition) {
           if (!mounted) return;
           setState(() {
@@ -910,14 +911,17 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   void initState() {
     super.initState();
     _calories =
-        TextEditingController(text: widget.data.calories?.toString() ?? '');
+        TextEditingController(text: _intText(widget.data.calories));
     _protein =
-        TextEditingController(text: widget.data.protein?.toString() ?? '');
+        TextEditingController(text: _intText(widget.data.protein));
     _carbohydrates =
-        TextEditingController(text: widget.data.carbohydrates?.toString() ?? '');
-    _fat = TextEditingController(text: widget.data.fat?.toString() ?? '');
-    _fiber = TextEditingController(text: widget.data.fiber?.toString() ?? '');
+        TextEditingController(text: _intText(widget.data.carbohydrates));
+    _fat = TextEditingController(text: _intText(widget.data.fat));
+    _fiber = TextEditingController(text: _intText(widget.data.fiber));
   }
+
+  static String _intText(num? value) =>
+      value == null ? '' : value.round().toString();
 
   @override
   void dispose() {
@@ -940,11 +944,11 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   }
 
   void _syncControllerFromData(TextEditingController controller, num? value) {
-    final newText = value?.toString() ?? '';
+    final newText = value == null ? '' : value.round().toString();
     if (controller.text == newText) return;
 
-    final currentParsed = num.tryParse(controller.text.replaceAll(',', '.'));
-    if (currentParsed != null && value != null && currentParsed == value) {
+    final currentParsed = int.tryParse(controller.text);
+    if (currentParsed != null && value != null && currentParsed == value.round()) {
       return;
     }
 
@@ -983,8 +987,9 @@ class _NutritionFieldsState extends State<_NutritionFields> {
           border: const OutlineInputBorder(),
           isDense: true,
         ),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        onChanged: (t) => onChanged(num.tryParse(t.replaceAll(',', '.'))),
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onChanged: (t) => onChanged(t.isEmpty ? null : int.tryParse(t)),
       ),
     );
   }

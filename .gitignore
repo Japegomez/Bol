@@ -17,3 +17,6 @@ supabase/.temp/
 
 # Graphify
 /graphify-out
+
+# Firebase CLI cache
+.firebase/

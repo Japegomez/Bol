@@ -254,7 +254,7 @@ void main() {
   });
 
   group('nutritionFromAssistantJson', () {
-    test('maps partial nutrition values', () {
+    test('maps partial nutrition values as non-negative integers', () {
       final nutrition = nutritionFromAssistantJson({
         'calories': '210',
         'protein': 8.5,
@@ -264,11 +264,21 @@ void main() {
       });
 
       expect(nutrition.calories, 210);
-      expect(nutrition.protein, 8.5);
+      expect(nutrition.protein, 9);
       expect(nutrition.carbohydrates, isNull);
       expect(nutrition.fat, 10);
-      expect(nutrition.fiber, 2.5);
+      expect(nutrition.fiber, 3);
       expect(nutrition.hasAnyValue, isTrue);
+    });
+
+    test('rejects negative nutrition values', () {
+      final nutrition = nutritionFromAssistantJson({
+        'calories': -1,
+        'protein': 4,
+      });
+
+      expect(nutrition.calories, isNull);
+      expect(nutrition.protein, 4);
     });
   });
 }

@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 16/07/2026 — Modo cocina paso a paso (UI, persistencia, Android/iOS lock screen); rama `feature/cooking-mode`
+> Actualizado: 21/07/2026 — Compartir recetas por WhatsApp/enlace (privadas con token 30 días + públicas); Hosting Firebase + App/Universal Links; migración hogar; nutrición IA; AppBar receta
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -14,9 +14,20 @@
 | Fase 3 — Recetario      | Completada | CRUD + asistente IA (crear/adaptar receta, completar nutrición); F4–F5          |
 | Fase 4 — Planificador   | Completada | Vista semanal vertical, slots, drag-and-drop, sobras, texto libre, Realtime |
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
-| Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos (en `main`) |
+| Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos; **compartir por enlace** (privado token / público id) |
 | Fase 7 — Acceso offline | Completada | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
 | Fase 8 — Modo cocina   | Implementada (validación pendiente) | Código listo; pendiente perfil extensión iOS en builds y validación manual en dispositivo |
+
+---
+
+## Compartir recetas por enlace (RF-SOC-08)
+
+- [x] Spec + plan: `docs/superpowers/specs/2026-07-21-recipe-whatsapp-share-links-design.md`, `docs/superpowers/plans/2026-07-21-recipe-whatsapp-share-links-plan.md`
+- [x] Migración `025_recipe_share_links.sql` (tabla, RLS lectura con enlace activo, RPCs `get_or_create_recipe_share_link` / `resolve_recipe_share`) aplicada en remoto
+- [x] Firebase Hosting en `mealplanner-a818e.web.app` (landing + `.well-known` AASA / assetlinks; SHA-256 = Play **app signing**)
+- [x] UI compartir en ficha propia y detalle público (Explore); `share_plus`
+- [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
+- [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado
 
 ---
 
@@ -238,8 +249,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Lista de miembros del hogar con rol (admin / miembro)
 - [x] Expulsar miembro del hogar (solo admin, con confirmación modal)
 - [x] Abandonar hogar (con confirmación modal)
+  - RPC `leave_household`: snapshot del plan del hogar → individual (semana actual + futuras) y recálculo de lista; recetas ajenas → texto libre
 - [x] Lógica de modo individual: si el usuario no tiene hogar, usa su propio planificador y lista
   - `weekly_plans` / `shopping_lists` por `user_id` en `PlannerRepository` y `ShoppingRepository`
+- [x] Migración aditiva individual → hogar al **crear** / **unirse** (RF-HH-09)
+  - Migración `024_household_planner_migration.sql` (aplicada en remoto 21/07/2026): `merge_user_plans_into_household` + `rebuild_shopping_from_plans` en `create_household` / `join_household`
+- [x] Lectura de recetas entre co-miembros del hogar + fork «Guardar en mi recetario» desde ficha (RF-HH-11)
+  - RLS `shares_household_with`; `RecipesRepository.forkIntoMyBook`; UI solo lectura si no es propietario
 
 ---
 
@@ -322,8 +338,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Adaptar recetas pegadas: conservar todos los ingredientes; dividir el método en pasos accionables
 - [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
 - [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
+  - Al regenerar, se envía `existingNutrition` y el prompt pide conservar valores coherentes; schema/mapper/formulario en **enteros** (sin decimales)
 - [x] L10n (es, en, ca, eu, gl, pt) y errores localizados (offline, rate limit, no configurado, no es receta)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
+- [x] Título en AppBar de detalle (propia y pública): margen, scrim blanco semitransparente al expandir, ellipsis al colapsar (`RecipeAppBarTitle`)
 
 ### F4c — Modo cocina (rama `feature/cooking-mode`)
 
@@ -335,6 +353,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Minimizar a banner sobre bottom nav (`CookingBanner` en `home_shell.dart`); título izquierda, tiempo centrado, acciones a la derecha
 - [x] **Android:** notificación persistente interactiva (`flutter_local_notifications`; cronómetro, BigText del paso, acciones pausar/continuar/terminar)
 - [x] **iOS:** Live Activity (`live_activities` + extensión WidgetKit `CookingActivity`; App Group; target en `project.pbxproj` para Codemagic)
+  - Título y texto del paso con `.foregroundStyle(.primary)` para contraste correcto desde el primer render (lock screen / notification centre)
 - [x] Compatibilidad **web:** servicios de plataforma no-op (`kIsWeb` + `defaultTargetPlatform`; sin `dart:io` Platform)
 - [x] L10n (es, en, ca, eu, gl, pt) para textos de cocina
 - [ ] Perfil de aprovisionamiento App Store para `com.japegomez.mealPlanner.CookingActivity` en Codemagic (manual en Apple Developer Portal)
@@ -580,10 +599,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Mergear `feature/cooking-mode` → `develop`** tras review, CI y perfil de extensión iOS en Codemagic.
-2. **Validar modo cocina en dispositivo** (Android: notificación lock screen; iOS: Live Activity; restauración de sesión).
-3. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
-4. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-5. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA.
-6. **Tests unitarios** de escalado de ingredientes al planificar.
-7. **README de desarrollo** con instrucciones de setup local.
+1. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp → App Links → login si hace falta → ficha → fork; enlace privado caducado.
+2. **Commit / merge del fix Live Activity** (`.foregroundStyle(.primary)` en `CookingActivityWidget.swift`) si aún no está en la rama de integración.
+3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork.
+4. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
+5. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
+6. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
+7. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links.
+8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
