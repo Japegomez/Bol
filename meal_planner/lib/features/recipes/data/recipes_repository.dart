@@ -630,6 +630,90 @@ class RecipesRepository {
     await _cacheRecipeDetailBestEffort(recipeId);
   }
 
+  /// Copies another member's (or public) recipe into the current user's book.
+  Future<String> forkIntoMyBook(String sourceRecipeId) async {
+    final detail = await fetchRecipeDetail(sourceRecipeId);
+    final source = detail.recipe;
+
+    if (source.userId == _userId) {
+      throw Exception('Cannot fork own recipe');
+    }
+
+    final recipeData = await supabase
+        .from(Recipe.table_name)
+        .insert({
+          ...Recipe.insert(
+            userId: _userId,
+            title: source.title,
+            servings: source.servings,
+            prepTime: source.prepTime,
+            cookTime: source.cookTime,
+            tags: source.tags,
+            isPublic: false,
+            tips: source.tips,
+          ),
+          'forked_from_id': sourceRecipeId,
+        })
+        .select()
+        .single();
+
+    final newId = recipeData['id'].toString();
+
+    if (detail.ingredients.isNotEmpty) {
+      await supabase.from(Ingredient.table_name).insert(
+            detail.ingredients
+                .asMap()
+                .entries
+                .map(
+                  (entry) => Ingredient.insert(
+                    recipeId: newId,
+                    name: entry.value.name,
+                    quantity: entry.value.quantity,
+                    unit: entry.value.unit,
+                    category: entry.value.category,
+                    position: entry.key,
+                    isOptional: entry.value.isOptional,
+                    isIncluded: entry.value.isIncluded,
+                    isToTaste: entry.value.isToTaste,
+                  ),
+                )
+                .toList(),
+          );
+    }
+
+    if (detail.steps.isNotEmpty) {
+      await supabase.from(RecipeStep.table_name).insert(
+            detail.steps
+                .map(
+                  (step) => RecipeStep.insert(
+                    recipeId: newId,
+                    position: step.position,
+                    description: step.description,
+                    isOptional: step.isOptional,
+                  ),
+                )
+                .toList(),
+          );
+    }
+
+    if (detail.nutrition != null) {
+      final n = detail.nutrition!;
+      await supabase.from(NutritionInfo.table_name).insert(
+            NutritionInfo.insert(
+              recipeId: newId,
+              calories: n.calories,
+              protein: n.protein,
+              carbohydrates: n.carbohydrates,
+              fat: n.fat,
+              fiber: n.fiber,
+            ),
+          );
+    }
+
+    await _cacheRecipeDetailBestEffort(newId);
+    return newId;
+  }
+
   Future<void> deleteRecipeRemote(String id) async {
     final detail = await _fetchRecipeDetailRemote(id);
     if (detail.recipe.photoUrl != null) {

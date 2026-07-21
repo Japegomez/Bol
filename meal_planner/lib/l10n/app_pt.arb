@@ -252,7 +252,7 @@
   "kickMemberConfirm": "Expulsar {username} da casa?",
   "kick": "Expulsar",
   "leaveHouseholdTitle": "Abandonar casa",
-  "leaveHouseholdMessage": "Perderá acesso ao planificador e lista partilhados. Continuar?",
+  "leaveHouseholdMessage": "O planificador e a lista da casa serão copiados para o seu modo individual (semana atual e futuras). Continuar?",
   "leave": "Abandonar",
   "myHouseholdTitle": "A minha casa",
   "inviteCode": "Código de convite",

@@ -805,7 +805,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'You will lose access to the shared planner and list. Continue?';
+      'The household planner and shopping list will be copied to your individual mode (current and future weeks). Continue?';
 
   @override
   String get leave => 'Leave';

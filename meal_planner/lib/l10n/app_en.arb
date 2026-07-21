@@ -348,7 +348,7 @@
   },
   "kick": "Remove",
   "leaveHouseholdTitle": "Leave household",
-  "leaveHouseholdMessage": "You will lose access to the shared planner and list. Continue?",
+  "leaveHouseholdMessage": "The household planner and shopping list will be copied to your individual mode (current and future weeks). Continue?",
   "leave": "Leave",
   "myHouseholdTitle": "My household",
   "inviteCode": "Invitation code",

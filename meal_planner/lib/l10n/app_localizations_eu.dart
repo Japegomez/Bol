@@ -809,7 +809,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'Planifikatzaile eta zerrenda partekatuen sarbidea galduko duzu. Jarraitu?';
+      'Etxeko planifikatzailea eta erosketa-zerrenda zure banakako modura kopiatuko dira (oraingo astea eta etorkizunekoak). Jarraitu?';
 
   @override
   String get leave => 'Utzi';

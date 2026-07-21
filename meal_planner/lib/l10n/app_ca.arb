@@ -252,7 +252,7 @@
   "kickMemberConfirm": "Expulsar {username} de la llar?",
   "kick": "Expulsar",
   "leaveHouseholdTitle": "Abandonar llar",
-  "leaveHouseholdMessage": "Perdràs accés al planificador i llista compartits. Continuar?",
+  "leaveHouseholdMessage": "Es copiarà el planificador i la llista de la llar al teu mode individual (setmana actual i futures). Continuar?",
   "leave": "Abandonar",
   "myHouseholdTitle": "La meva llar",
   "inviteCode": "Codi d'invitació",

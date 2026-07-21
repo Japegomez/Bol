@@ -808,7 +808,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'Perderás acceso ao planificador e lista compartidos. Continuar?';
+      'Copiarase o planificador e a lista do fogar ao teu modo individual (semana actual e futuras). Continuar?';
 
   @override
   String get leave => 'Abandonar';

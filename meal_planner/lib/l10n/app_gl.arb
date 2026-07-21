@@ -252,7 +252,7 @@
   "kickMemberConfirm": "Expulsar a {username} do fogar?",
   "kick": "Expulsar",
   "leaveHouseholdTitle": "Abandonar fogar",
-  "leaveHouseholdMessage": "Perderás acceso ao planificador e lista compartidos. Continuar?",
+  "leaveHouseholdMessage": "Copiarase o planificador e a lista do fogar ao teu modo individual (semana actual e futuras). Continuar?",
   "leave": "Abandonar",
   "myHouseholdTitle": "O meu fogar",
   "inviteCode": "Código de invitación",

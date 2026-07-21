@@ -807,7 +807,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'Perdràs accés al planificador i llista compartits. Continuar?';
+      'Es copiarà el planificador i la llista de la llar al teu mode individual (setmana actual i futures). Continuar?';
 
   @override
   String get leave => 'Abandonar';

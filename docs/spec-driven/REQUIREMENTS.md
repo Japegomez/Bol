@@ -103,6 +103,11 @@ Un **hogar** es un espacio compartido que agrupa un planificador semanal y una l
 **RF-HH-06** Un usuario puede abandonar el hogar.  
 **RF-HH-07** Todos los miembros del hogar ven y editan el mismo planificador y la misma lista de la compra en tiempo real.  
 **RF-HH-08** Un usuario sin hogar tiene su propio planificador y lista personal (modo individual).  
+**RF-HH-09** Al **crear** o **unirse** a un hogar, el planificador individual del usuario (semana actual y futuras) se **fusiona de forma aditiva** en el planificador del hogar; la lista de la compra del hogar se **recalcula** desde ese plan.  
+**RF-HH-10** Al **abandonar** el hogar, se hace un **snapshot** del planificador del hogar (semana actual y futuras) sobre el individual (sustituye esas semanas) y se recalcula la lista individual; recetas ajenas pasan a texto libre.  
+**RF-HH-11** Un miembro puede abrir en solo lectura una receta de otro miembro del hogar y **añadirla a su recetario** (fork explícito).
+
+> **Nota de implementación — migración de plan (024):** RPCs `merge_user_plans_into_household`, `snapshot_household_plans_to_user`, `rebuild_shopping_from_plans`; `create_household` / `join_household` / `leave_household` las invocan. RLS `shares_household_with` para SELECT de recetas/ingredientes/pasos/nutrición/fotos entre co-miembros.  
 
 ---
 
