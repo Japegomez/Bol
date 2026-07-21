@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 21/07/2026 — Compartir recetas por WhatsApp/enlace (privadas con token 30 días + públicas); Hosting Firebase + App/Universal Links; migración hogar; nutrición IA; AppBar receta
+> Actualizado: 21/07/2026 — Sobras al nivel de texto libre en el selector; cierre inmediato del picker al confirmar; compartir recetas por enlace; migración hogar; nutrición IA; AppBar receta
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -388,8 +388,11 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] Modal/pantalla de selección de receta para un slot (lista del recetario con buscador)
 - [x] Botón «Añadir texto libre» para entradas sin receta (nombre + raciones; no va a lista de la compra)
-- [x] Al seleccionar receta (tap o drag): diálogo de raciones con stepper **− / número / +** y checkbox **Son sobras** (omite ingredientes en lista de la compra)
+- [x] Opción **Son sobras** al mismo nivel que texto libre (RF-PLAN-10): activa modo sobras → lista sin raciones → al elegir receta se añade con `is_leftover` (sin diálogo de raciones; no va a la compra)
+  - Spec: `docs/superpowers/specs/2026-07-21-planner-leftovers-picker-design.md`
+- [x] Al seleccionar receta normal (tap o drag): diálogo de raciones con stepper **− / número / +** (**sin** checkbox de sobras)
   - `servings_dialog.dart` → `_ServingsStepper`
+- [x] Tras confirmar raciones / sobras / texto libre: el sheet del selector se **cierra de inmediato**; el `addSlot` continúa en segundo plano (no deja el menú abierto mientras guarda)
 - [x] Confirmar asignación: inserta fila en `plan_slots` y sincroniza ingredientes en `shopping_items` (si hay receta y no es sobra)
 - [x] Actualización optimista de la UI (sin recarga completa al añadir/quitar)
 - [x] Eliminar comida concreta de un slot (botón ✕ + confirmación; no afecta a otras del mismo slot)
