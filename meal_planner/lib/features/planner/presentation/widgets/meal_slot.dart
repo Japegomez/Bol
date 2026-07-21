@@ -43,7 +43,7 @@ class MealSlot extends ConsumerWidget {
           recipeId: recipe.id,
           servings: result.servings,
           recipeTitle: recipe.title,
-          isLeftover: result.isLeftover,
+          isLeftover: false,
         );
   }
 

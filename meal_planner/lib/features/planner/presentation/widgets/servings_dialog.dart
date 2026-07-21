@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 
 class ServingsResult {
-  const ServingsResult({required this.servings, this.isLeftover = false});
+  const ServingsResult({required this.servings});
 
   final int servings;
-  final bool isLeftover;
 }
 
-/// Shown after selecting a recipe: asks for number of servings and whether
-/// this is a leftover (skips shopping-list sync when true).
+/// Shown after selecting a recipe: asks for number of servings.
 Future<ServingsResult?> showServingsDialog(
   BuildContext context, {
   required int defaultServings,
@@ -53,7 +51,6 @@ class _ServingsDialog extends StatefulWidget {
 
 class _ServingsDialogState extends State<_ServingsDialog> {
   late int _servings;
-  bool _isLeftover = false;
 
   @override
   void initState() {
@@ -64,7 +61,7 @@ class _ServingsDialogState extends State<_ServingsDialog> {
   void _confirm() {
     Navigator.pop(
       context,
-      ServingsResult(servings: _servings, isLeftover: _isLeftover),
+      ServingsResult(servings: _servings),
     );
   }
 
@@ -84,11 +81,6 @@ class _ServingsDialogState extends State<_ServingsDialog> {
           _ServingsStepper(
             value: _servings,
             onChanged: (value) => setState(() => _servings = value),
-          ),
-          const SizedBox(height: 12),
-          _LeftoverCheckbox(
-            value: _isLeftover,
-            onChanged: (v) => setState(() => _isLeftover = v ?? false),
           ),
         ],
       ),
@@ -222,54 +214,6 @@ class _ServingsStepper extends StatelessWidget {
           tooltip: l10n.moreServingsTooltip,
         ),
       ],
-    );
-  }
-}
-
-// ─── Shared checkbox ─────────────────────────────────────────────────────────
-
-class _LeftoverCheckbox extends StatelessWidget {
-  const _LeftoverCheckbox({required this.value, required this.onChanged});
-
-  final bool value;
-  final ValueChanged<bool?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return InkWell(
-      onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Checkbox(
-              value: value,
-              onChanged: onChanged,
-              visualDensity: VisualDensity.compact,
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.leftovers,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    l10n.leftoversShoppingHint,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

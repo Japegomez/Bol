@@ -190,7 +190,7 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-07** Al eliminar una receta del planificador, sus ingredientes generados por esa asignación se eliminan de la lista de la compra (por `plan_slot_id`).  
 **RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot (chip ampliado) para abrir su ficha en el recetario. Las entradas de texto libre no navegan.  
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
-**RF-PLAN-10** Al asignar una receta, el usuario puede marcar **Son sobras**: los ingredientes **no** se añaden a la lista de la compra.  
+**RF-PLAN-10** El usuario puede marcar **Son sobras** desde el selector de recetas (opción al mismo nivel que texto libre): elige una receta **sin** diálogo de raciones; los ingredientes **no** se añaden a la lista de la compra. El diálogo de raciones de una asignación normal ya no incluye el checkbox de sobras.  
 **RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
 **RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
 
