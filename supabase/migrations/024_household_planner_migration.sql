@@ -207,6 +207,21 @@ BEGIN
     END IF;
   END IF;
 
+  -- Preserve is_checked state before dropping auto-generated items.
+  CREATE TEMP TABLE IF NOT EXISTS temp_checked_state (
+    plan_slot_id uuid,
+    ingredient_id uuid,
+    is_checked boolean
+  ) ON COMMIT DROP;
+
+  INSERT INTO temp_checked_state (plan_slot_id, ingredient_id, is_checked)
+  SELECT si.plan_slot_id, si.ingredient_id, si.is_checked
+  FROM public.shopping_items si
+  WHERE si.shopping_list_id = list_id
+    AND si.is_manual = false
+    AND si.plan_slot_id IS NOT NULL
+    AND si.ingredient_id IS NOT NULL;
+
   -- Drop auto-generated items; keep manual ones.
   DELETE FROM public.shopping_items si
   WHERE si.shopping_list_id = list_id
@@ -233,7 +248,7 @@ BEGIN
     END,
     i.unit,
     i.category,
-    false,
+    COALESCE(tcs.is_checked, false),
     false,
     ps.id,
     i.id
@@ -241,6 +256,9 @@ BEGIN
   JOIN public.plan_slots ps ON ps.plan_id = wp.id
   JOIN public.recipes r ON r.id = ps.recipe_id
   JOIN public.ingredients i ON i.recipe_id = r.id
+  LEFT JOIN temp_checked_state tcs
+    ON tcs.plan_slot_id = ps.id
+   AND tcs.ingredient_id = i.id
   WHERE (
       (p_household_id IS NOT NULL AND wp.household_id = p_household_id)
       OR (p_user_id IS NOT NULL AND wp.user_id = p_user_id)
@@ -249,6 +267,8 @@ BEGIN
     AND COALESCE(ps.is_leftover, false) = false
     AND COALESCE(i.is_included, true) = true
     AND COALESCE(i.is_to_taste, false) = false;
+
+  DROP TABLE IF EXISTS temp_checked_state;
 END;
 $$;
 
