@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 21/07/2026 — Sobras al nivel de texto libre en el selector; cierre inmediato del picker al confirmar; compartir recetas por enlace; migración hogar; nutrición IA; AppBar receta
+> Actualizado: 21/07/2026 — Docs 026 (fork RPC, is_checked); sobras en picker; share links; nutrición int?; AppBar title scrim
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -25,8 +25,10 @@
 - [x] Spec + plan: `docs/superpowers/specs/2026-07-21-recipe-whatsapp-share-links-design.md`, `docs/superpowers/plans/2026-07-21-recipe-whatsapp-share-links-plan.md`
 - [x] Migración `025_recipe_share_links.sql` (tabla, RLS lectura con enlace activo, RPCs `get_or_create_recipe_share_link` / `resolve_recipe_share`) aplicada en remoto
 - [x] Firebase Hosting en `mealplanner-a818e.web.app` (landing + `.well-known` AASA / assetlinks; SHA-256 = Play **app signing**)
+  - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `recetea://`
 - [x] UI compartir en ficha propia y detalle público (Explore); `share_plus`
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
+- [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`)
 - [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado
 
 ---
@@ -254,8 +256,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `weekly_plans` / `shopping_lists` por `user_id` en `PlannerRepository` y `ShoppingRepository`
 - [x] Migración aditiva individual → hogar al **crear** / **unirse** (RF-HH-09)
   - Migración `024_household_planner_migration.sql` (aplicada en remoto 21/07/2026): `merge_user_plans_into_household` + `rebuild_shopping_from_plans` en `create_household` / `join_household`
+  - Migración `026_fork_rpc_and_shopping_checked.sql` (aplicada 21/07/2026): `rebuild` preserva `is_checked`; REVOKE de RPCs internas a `authenticated`
 - [x] Lectura de recetas entre co-miembros del hogar + fork «Guardar en mi recetario» desde ficha (RF-HH-11)
-  - RLS `shares_household_with`; `RecipesRepository.forkIntoMyBook`; UI solo lectura si no es propietario
+  - RLS `shares_household_with`; fork vía RPC `fork_recipe_into_my_book`; UI solo lectura si no es propietario
 
 ---
 
@@ -338,7 +341,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Adaptar recetas pegadas: conservar todos los ingredientes; dividir el método en pasos accionables
 - [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
 - [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
-  - Al regenerar, se envía `existingNutrition` y el prompt pide conservar valores coherentes; schema/mapper/formulario en **enteros** (sin decimales)
+  - Al regenerar, se envía `existingNutrition` y el prompt pide conservar valores coherentes; `NutritionFormData` usa `int?` + `normalizeNutritionValue` (redondeo, rechaza negativos/NaN/Infinity); formulario solo dígitos
 - [x] L10n (es, en, ca, eu, gl, pt) y errores localizados (offline, rate limit, no configurado, no es receta)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 - [x] Título en AppBar de detalle (propia y pública): margen, scrim blanco semitransparente al expandir, ellipsis al colapsar (`RecipeAppBarTitle`)
@@ -587,6 +590,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 ### F15 - Interacción social
 
 - [x] Guardar receta pública de otro usuario en el recetario propio (fork)
+  - RPC atómica `fork_recipe_into_my_book` (migración `026`); también usada desde fork de hogar / enlace compartido
   - Si hay ingredientes opcionales: aviso informativo + botones **Cerrar** / **Editar receta** (`fork_optional_ingredients_dialog.dart`)
   - Fork copia todos los ingredientes; el usuario ajusta inclusión en su ficha
   - **No** se puede forkear la propia receta (UI + `social_repository.forkRecipe`)
