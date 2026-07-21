@@ -108,23 +108,16 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   child: _WeekNavigationHeader(weekStart: weekStart),
                 ),
                 Expanded(
-                  child: AnimatedPadding(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOut,
-                    padding: EdgeInsets.only(
-                      right: _paletteOpen ? paletteWidth : 0,
-                    ),
-                    child: slotsAsync.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, _) =>
-                          Center(child: Text(l10n.errorWithMessage('$error'))),
-                      data: (slots) => _VerticalPlanner(
-                        listKey: _listKey,
-                        scrollController: _scrollController,
-                        weekStart: weekStart,
-                        slots: slots,
-                      ),
+                  child: slotsAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, _) =>
+                        Center(child: Text(l10n.errorWithMessage('$error'))),
+                    data: (slots) => _VerticalPlanner(
+                      listKey: _listKey,
+                      scrollController: _scrollController,
+                      weekStart: weekStart,
+                      slots: slots,
                     ),
                   ),
                 ),

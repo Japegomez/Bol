@@ -107,6 +107,12 @@
       "count": {"type": "int"}
     }
   },
+  "servingsCountShort": "{count} srv.",
+  "@servingsCountShort": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "deleteRecipeTitle": "Delete recipe",
   "deleteRecipeConfirm": "Are you sure you want to delete \"{title}\"?",
   "@deleteRecipeConfirm": {
@@ -541,7 +547,7 @@
   "createRecipeWithAssistant": "Create with AI assistant",
   "createRecipeWithAssistantSubtitle": "Describe the dish and AI will build the recipe card",
   "recipeAssistantTitle": "Recipe assistant",
-  "recipeAssistantDescription": "Describe the dish you want to create: just the name or a detailed recipe with ingredients and steps.",
+  "recipeAssistantDescription": "Tell me what you're craving, what's in your fridge, or describe a detailed recipe with ingredients and steps.",
   "recipeAssistantPromptHint": "E.g.: Spanish potato omelette for 4 with onion...",
   "recipeAssistantGenerate": "Generate recipe",
   "recipeAssistantGenerating": "Generating...",

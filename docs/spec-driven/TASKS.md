@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 21/07/2026 — Docs 026 (fork RPC, is_checked); sobras en picker; share links; nutrición int?; AppBar title scrim
+> Actualizado: 22/07/2026 — Fix deep links share; panel planificador overlay; raciones cortas; copy asistente IA
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -28,6 +28,9 @@
   - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `recetea://`
 - [x] UI compartir en ficha propia y detalle público (Explore); `share_plus`
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
+  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS y esquema `recetea://`); `onException` de respaldo
+  - Resolver privado `SharePrivateLinkScreen`; detalle sin filtrar por owner (RLS share/hogar/público); no cachear fichas ajenas en Drift
+  - Tests: `test/share_urls_test.dart`
 - [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`)
 - [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado
 
@@ -338,6 +341,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] FAB «+» del recetario → bottom sheet: crear manualmente / crear con asistente IA
 - [x] Sheet de prompt + overlay bloqueante mientras genera; navega a `/home/recipes/new` con formulario pre-rellenado (no guarda directo)
+  - Copy de ayuda: invita a decir qué apetece, qué hay en la nevera o pegar una receta detallada (`recipeAssistantDescription`)
 - [x] Adaptar recetas pegadas: conservar todos los ingredientes; dividir el método en pasos accionables
 - [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
 - [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
@@ -378,12 +382,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Pantalla del planificador: **layout vertical móvil** (lista de días con desayuno/comida/cena apilados; sustituye el grid 7×3 del diseño inicial)
 - [x] Panel lateral deslizable con recetario (buscador + tarjetas arrastrables)
   - Lista vía `recipesProvider`; se invalida al crear/borrar receta para no mostrar recetas eliminadas
+  - **Overlay**: al abrirse **no** reduce el ancho de los días (se superpone); scrollbar siempre visible a la **izquierda**
 - [x] Drag-and-drop de recetas desde el panel al planificador; autoscroll al acercarse a los bordes
 - [x] Navegación entre semanas (flechas anterior / siguiente; etiqueta con rango de fechas)
 - [x] Indicador visual de semana actual
 - [x] Destacar la tarjeta del **día de hoy** con fondo verde más oscuro, borde primario y badge «Hoy»
-- [x] Slot vacío: pulsar o soltar receta para añadir
-- [x] Slot con receta(s): chips amplios (altura mín. 52 px, título hasta 2 líneas, raciones legibles) con color según tipo (receta / sobras / texto libre)
+- [x] Slot vacío: pulsar o soltar receta para añadir (texto con ellipsis si el espacio es estrecho)
+- [x] Slot con receta(s): chips amplios (altura mín. 52 px, título **1 línea** + ellipsis, raciones cortas `servingsCountShort` p. ej. `2 r.`) con color según tipo (receta / sobras / texto libre)
 - [x] Slot con varias recetas: lista vertical con botón «Añadir»
 - [x] Desde el planificador: pulsar una receta del recetario en un slot → navegar a detalle (`/home/recipes/:id`); entradas de texto libre no navegan
 

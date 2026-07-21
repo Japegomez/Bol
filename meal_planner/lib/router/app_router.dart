@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/legal_urls.dart';
+import 'package:meal_planner/core/config/share_urls.dart';
+import 'package:meal_planner/core/deep_links/deep_link_listener.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -20,6 +22,7 @@ import 'package:meal_planner/features/recipes/presentation/cooking_glossary_scre
 import 'package:meal_planner/features/recipes/presentation/recipe_detail_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_form_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_list_screen.dart';
+import 'package:meal_planner/features/recipes/presentation/share_private_link_screen.dart';
 import 'package:meal_planner/features/shopping/presentation/shopping_list_screen.dart';
 import 'package:meal_planner/features/social/presentation/explore_screen.dart';
 import 'package:meal_planner/features/social/presentation/feed_screen.dart';
@@ -34,18 +37,50 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/',
+    onException: (context, state, router) {
+      final mapped = ShareUrls.appLocationForIncomingUri(state.uri);
+      if (mapped != null) {
+        router.go(mapped);
+      }
+    },
     redirect: (context, state) {
       final isLoggingIn = state.matchedLocation.startsWith('/auth');
       final isLegal = state.matchedLocation.startsWith('/legal');
+      final isShareResolve = state.matchedLocation.startsWith('/share/');
       final isAuthenticated = authState.maybeWhen(
         data: (value) => value is AuthAuthenticated,
         orElse: () => false,
       );
 
+      final shareLocation = ShareUrls.appLocationForIncomingUri(state.uri);
+      final isIncomingSharePath = state.uri.path.startsWith('/p/') ||
+          state.uri.path.startsWith('/r/') ||
+          ShareUrls.isShareHost(state.uri.host);
+
+      if (shareLocation != null && (isIncomingSharePath || isShareResolve)) {
+        if (!isAuthenticated) {
+          // Preserve for DeepLinkListener after login.
+          final pending = ref.read(pendingShareLinkProvider);
+          if (pending != state.uri) {
+            ref.read(pendingShareLinkProvider.notifier).state = state.uri;
+          }
+          return isLoggingIn ? null : '/auth/login';
+        }
+        if (isIncomingSharePath) return shareLocation;
+      }
+
       if (!isAuthenticated && !isLoggingIn && !isLegal) {
         return '/auth/login';
       }
       if (isAuthenticated && isLoggingIn) {
+        final pending = ref.read(pendingShareLinkProvider);
+        if (pending != null) {
+          final mapped = ShareUrls.appLocationForIncomingUri(pending);
+          if (mapped != null) {
+            ref.read(pendingShareLinkProvider.notifier).state = null;
+            return mapped;
+          }
+        }
         return '/home/planner';
       }
       return null;
@@ -54,6 +89,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         redirect: (_, _) => '/home/planner',
+      ),
+      GoRoute(
+        path: '/share/r/:token',
+        builder: (_, state) => SharePrivateLinkScreen(
+          token: state.pathParameters['token']!,
+        ),
+      ),
+      GoRoute(
+        path: '/p/:id',
+        redirect: (_, state) =>
+            '/home/explore/${state.pathParameters['id']}',
+      ),
+      GoRoute(
+        path: '/r/:token',
+        redirect: (_, state) =>
+            '/share/r/${state.pathParameters['token']}',
       ),
       GoRoute(
         path: '/auth/login',

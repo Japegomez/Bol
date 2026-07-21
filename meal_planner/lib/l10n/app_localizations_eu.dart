@@ -258,6 +258,11 @@ class AppLocalizationsEu extends AppLocalizations {
   }
 
   @override
+  String servingsCountShort(int count) {
+    return '$count p.';
+  }
+
+  @override
   String get deleteRecipeTitle => 'Ezabatu errezeta';
 
   @override
@@ -1342,7 +1347,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get recipeAssistantDescription =>
-      'Deskribatu sortu nahi duzun platera: izena bakarrik edo osagai eta urratsekin errezeta zehatza.';
+      'Esan iezadazu zer jateko gogoa duzun, hozkailuan zer duzun edo deskribatu osagai eta urratsekin errezeta zehatza.';
 
   @override
   String get recipeAssistantPromptHint =>

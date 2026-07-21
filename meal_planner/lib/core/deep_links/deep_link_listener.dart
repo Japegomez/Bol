@@ -4,11 +4,9 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/config/share_urls.dart';
-import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
-import 'package:meal_planner/features/recipes/presentation/recipe_share_provider.dart';
 import 'package:meal_planner/router/app_router.dart';
 
 /// Holds a pending share deep link until the user is authenticated.
@@ -53,88 +51,24 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
   }
 
   Future<void> _onUri(Uri uri) async {
-    final shareUri = _normalizeShareUri(uri);
-    if (shareUri == null) return;
+    final location = ShareUrls.appLocationForIncomingUri(uri);
+    if (location == null) return;
 
     final auth = ref.read(authStateProvider).valueOrNull;
     final isAuthenticated = auth is AuthAuthenticated;
     if (!isAuthenticated) {
-      ref.read(pendingShareLinkProvider.notifier).state = shareUri;
+      ref.read(pendingShareLinkProvider.notifier).state = uri;
       return;
     }
 
-    await _navigateForShareUri(shareUri);
+    await _navigateTo(location);
   }
 
-  /// Accepts HTTPS Hosting links and `recetea://r|p/...` fallbacks from the landing page.
-  Uri? _normalizeShareUri(Uri uri) {
-    if (_isShareHost(uri)) return uri;
-
-    if (uri.scheme == 'recetea') {
-      final host = uri.host;
-      final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
-      if ((host == 'r' || host == 'p') && segments.isNotEmpty) {
-        return Uri(
-          scheme: 'https',
-          host: ShareUrls.host,
-          pathSegments: [host, segments.first],
-        );
-      }
-      if (segments.length >= 2 && (segments[0] == 'r' || segments[0] == 'p')) {
-        return Uri(
-          scheme: 'https',
-          host: ShareUrls.host,
-          pathSegments: segments.take(2).toList(),
-        );
-      }
-    }
-    return null;
-  }
-
-  bool _isShareHost(Uri uri) {
-    final host = uri.host.toLowerCase();
-    return host == ShareUrls.host ||
-        host == 'mealplanner-a818e.firebaseapp.com';
-  }
-
-  Future<void> _navigateForShareUri(Uri uri) async {
+  Future<void> _navigateTo(String location) async {
     if (_handling) return;
     _handling = true;
     try {
-      final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
-      if (segments.length < 2) return;
-
-      final kind = segments[0];
-      final value = segments[1];
-      final router = ref.read(routerProvider);
-
-      if (kind == 'p') {
-        router.go('/home/explore/$value');
-        return;
-      }
-
-      if (kind == 'r') {
-        try {
-          final recipeId = await ref
-              .read(recipeShareRepositoryProvider)
-              .resolvePrivateShareToken(value);
-          router.go('/home/recipes/$recipeId');
-        } catch (e) {
-          log.w('Failed to resolve share token: $e');
-          router.go('/home/recipes');
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final ctx = rootNavigatorKey.currentContext;
-            if (ctx == null || !ctx.mounted) return;
-            final l10n = ctx.l10n;
-            final message = e.toString().toLowerCase().contains('expired')
-                ? l10n.shareLinkExpired
-                : l10n.shareLinkInvalid;
-            ScaffoldMessenger.of(ctx).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
-          });
-        }
-      }
+      ref.read(routerProvider).go(location);
     } finally {
       _handling = false;
     }
@@ -155,7 +89,10 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
         final pending = ref.read(pendingShareLinkProvider);
         if (pending != null) {
           ref.read(pendingShareLinkProvider.notifier).state = null;
-          unawaited(_navigateForShareUri(pending));
+          final location = ShareUrls.appLocationForIncomingUri(pending);
+          if (location != null) {
+            unawaited(_navigateTo(location));
+          }
         }
       }
     });

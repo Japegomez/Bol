@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025), **fork atómico + rebuild compra con `is_checked`** (026).
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025; deep links Hosting mapeados en go_router), **fork atómico + rebuild compra con `is_checked`** (026).
 
 ---
 
@@ -171,7 +171,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).  
 **RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.  
 **RF-REC-23** Al añadir un ingrediente en el formulario de receta, la unidad por defecto es **`unidad`** y la categoría por defecto es **Verduras** (`vegetables`). La deserialización offline (`RecipeFormDataCodec`) aplica los mismos defaults si el payload no incluye esos campos (salvo «al gusto» o unidad personalizada).  
-**RF-REC-24** El usuario puede crear una receta con **asistente de IA** (opción en el FAB del recetario): describe un plato o pega una receta completa; la Edge Function `recipe-assistant` (`generate_recipe`) genera/adapta la ficha y **pre-rellena** el formulario de creación (el usuario revisa y guarda). Si el input es una receta pegada, se conservan todos los ingredientes (excepto agua solo de cocción) y se dividen los pasos. Los nombres de ingrediente se normalizan a singular con mayúscula inicial.  
+**RF-REC-24** El usuario puede crear una receta con **asistente de IA** (opción en el FAB del recetario): indica qué le apetece, qué tiene en la nevera, o pega una receta completa; la Edge Function `recipe-assistant` (`generate_recipe`) genera/adapta la ficha y **pre-rellena** el formulario de creación (el usuario revisa y guarda). Si el input es una receta pegada, se conservan todos los ingredientes (excepto agua solo de cocción) y se dividen los pasos. Los nombres de ingrediente se normalizan a singular con mayúscula inicial.  
 **RF-REC-25** El usuario puede **completar la información nutricional** de una receta existente con IA desde el detalle o el formulario de edición (`generate_nutrition`); los valores estimados por ración se pueden guardar sin reescribir el resto de la receta. Si ya hay valores, se **adjuntan** a la petición (`existingNutrition`) y el modelo debe **conservarlos** cuando sean coherentes con la receta. Los valores nutricionales son **enteros ≥ 0** end-to-end: `NutritionFormData` (`int?` + `normalizeNutritionValue`: redondeo, rechaza negativos y no finitos), schema LLM, mapper y formulario (solo dígitos). El proveedor LLM es configurable por secrets (`LLM_*`; recomendado Gemini `gemini-3.1-flash-lite` en un proyecto GCP sin facturación, separado del de Translation/Vision).
 **RF-REC-26** El asistente IA implementa mecanismos de mitigación de abuso y control de gasto en servidor (`check_and_increment_ai_usage`): **cuota diaria por usuario**, **cooldown anti-bucle** (intervalo mínimo entre llamadas) y **tope global diario opcional** (límite agregado de todas las llamadas). Estos límites configurables actúan como capa de protección frente a uso repetitivo o atípico, complementando (no sustituyendo) los límites de tokens y las restricciones del proveedor LLM, que se configuran y aplican por separado mediante secrets `LLM_*` y las políticas de la API del proveedor. Los errores de cuota se muestran con mensajes localizados distintos del rate-limit del proveedor. No existe contabilidad explícita de tokens ni costo en el código actual; la función de cuota opera únicamente sobre recuento de llamadas.
 
@@ -179,7 +179,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 
 ### 3.4 Planificador semanal
 
-El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comida** y **Cena**. En móvil la UI es una **lista vertical por día** con un panel lateral deslizable del recetario (buscador + drag-and-drop).
+El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comida** y **Cena**. En móvil la UI es una **lista vertical por día** con un panel lateral del recetario (buscador + drag-and-drop) que se **superpone** a la lista (no reduce el ancho de los días).
 
 **RF-PLAN-01** La semana comienza en lunes.  
 **RF-PLAN-02** El usuario puede navegar hacia semanas pasadas y futuras con flechas de paginación.  
@@ -194,7 +194,7 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
 **RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
 
-> **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono). Selector (`RecipePickerSheet`): acciones «texto libre» y «sobras» al mismo nivel; en modo sobras la lista no muestra raciones; el diálogo de raciones solo pide cantidad. El sheet se cierra antes de await del guardado del slot.
+> **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono); título en **1 línea** + raciones cortas (`servingsCountShort`, p. ej. `2 r.`). Panel `RecipePalette`: overlay sin `padding` derecho en la lista; scrollbar visible a la izquierda. Selector (`RecipePickerSheet`): acciones «texto libre» y «sobras» al mismo nivel; en modo sobras la lista no muestra raciones; el diálogo de raciones solo pide cantidad. El sheet se cierra antes de await del guardado del slot.
 
 ---
 
@@ -548,6 +548,9 @@ supabase
 /auth/login
 /auth/register
 /auth/forgot-password
+/share/r/:token           → Resolver enlace privado de receta
+/p/:id                    → Redirect a detalle público
+/r/:token                 → Redirect a resolver privado
 /home                     → Shell con bottom nav (Explorar | Recetario | Planificador | Compra | Perfil)
   /home/explore           → Exploración de recetas públicas
     /home/explore/feed    → Feed de usuarios seguidos
@@ -585,3 +588,10 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
   - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
   - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
   - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`. Landing: CTA «Abrir en Recetea» (sin redirect automático al esquema custom).
+  - En app: `ShareUrls.appLocationForIncomingUri` + rutas `/p/:id`, `/r/:token`, `/share/r/:token`; fetch de detalle sin filtro de owner (RLS); tests `share_urls_test.dart`.
+
+```
+/share/r/:token           → Resolver enlace privado → /home/recipes/:id
+/p/:id                    → Redirect → /home/explore/:id
+/r/:token                 → Redirect → /share/r/:token
+```
