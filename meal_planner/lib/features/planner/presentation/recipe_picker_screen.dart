@@ -41,18 +41,21 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
 
   Future<void> _selectRecipe(Recipe recipe) async {
     final canEdit = ref.read(canEditOfflineProvider);
+    final notifier = ref.read(planSlotsProvider.notifier);
+    final dayOfWeek = widget.dayOfWeek;
+    final mealType = widget.mealType;
 
     if (_leftoverMode) {
       if (!canEdit) return;
-      await ref.read(planSlotsProvider.notifier).addSlot(
-            dayOfWeek: widget.dayOfWeek,
-            mealType: widget.mealType,
-            recipeId: recipe.id,
-            servings: recipe.servings > 0 ? recipe.servings : 1,
-            recipeTitle: recipe.title,
-            isLeftover: true,
-          );
-      if (mounted) Navigator.pop(context);
+      Navigator.pop(context);
+      await notifier.addSlot(
+        dayOfWeek: dayOfWeek,
+        mealType: mealType,
+        recipeId: recipe.id,
+        servings: recipe.servings > 0 ? recipe.servings : 1,
+        recipeTitle: recipe.title,
+        isLeftover: true,
+      );
       return;
     }
 
@@ -64,16 +67,15 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
 
     if (result == null || !mounted) return;
 
-    await ref.read(planSlotsProvider.notifier).addSlot(
-          dayOfWeek: widget.dayOfWeek,
-          mealType: widget.mealType,
-          recipeId: recipe.id,
-          servings: result.servings,
-          recipeTitle: recipe.title,
-          isLeftover: false,
-        );
-
-    if (mounted) Navigator.pop(context);
+    Navigator.pop(context);
+    await notifier.addSlot(
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      recipeId: recipe.id,
+      servings: result.servings,
+      recipeTitle: recipe.title,
+      isLeftover: false,
+    );
   }
 
   Future<void> _addTextEntry() async {
@@ -81,16 +83,18 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
     final result = await showAddTextDialog(context, canConfirm: canEdit);
     if (result == null || !mounted) return;
 
-    await ref.read(planSlotsProvider.notifier).addSlot(
-          dayOfWeek: widget.dayOfWeek,
-          mealType: widget.mealType,
-          recipeId: null,
-          servings: result.servings,
-          notes: result.notes,
-          isLeftover: false,
-        );
-
-    if (mounted) Navigator.pop(context);
+    final notifier = ref.read(planSlotsProvider.notifier);
+    final dayOfWeek = widget.dayOfWeek;
+    final mealType = widget.mealType;
+    Navigator.pop(context);
+    await notifier.addSlot(
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      recipeId: null,
+      servings: result.servings,
+      notes: result.notes,
+      isLeftover: false,
+    );
   }
 
   @override
