@@ -182,6 +182,15 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             ),
           )
           .toList(),
+      existingNutrition: widget.nutrition == null
+          ? null
+          : NutritionFormData(
+              calories: widget.nutrition!.calories,
+              protein: widget.nutrition!.protein,
+              carbohydrates: widget.nutrition!.carbohydrates,
+              fat: widget.nutrition!.fat,
+              fiber: widget.nutrition!.fiber,
+            ),
       onSuccess: (nutrition) async {
         await ref.read(recipesRepositoryProvider).saveNutrition(
               widget.recipeId,
@@ -775,6 +784,6 @@ class _NutritionGrid extends StatelessWidget {
 
   String? _fmt(num? value, String unit) {
     if (value == null) return null;
-    return '$value $unit';
+    return '${value.round()} $unit';
   }
 }

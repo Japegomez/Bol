@@ -618,6 +618,6 @@ class _NutritionGrid extends StatelessWidget {
 
   String? _fmt(num? value, String unit) {
     if (value == null) return null;
-    return '$value $unit';
+    return '${value.round()} $unit';
   }
 }

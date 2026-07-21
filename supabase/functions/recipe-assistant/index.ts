@@ -93,14 +93,88 @@ const nutritionSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
-    calories: { type: ["number", "null"], minimum: 0 },
-    protein: { type: ["number", "null"], minimum: 0 },
-    carbohydrates: { type: ["number", "null"], minimum: 0 },
-    fat: { type: ["number", "null"], minimum: 0 },
-    fiber: { type: ["number", "null"], minimum: 0 },
+    calories: { type: ["integer", "null"], minimum: 0 },
+    protein: { type: ["integer", "null"], minimum: 0 },
+    carbohydrates: { type: ["integer", "null"], minimum: 0 },
+    fat: { type: ["integer", "null"], minimum: 0 },
+    fiber: { type: ["integer", "null"], minimum: 0 },
   },
   required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
 };
+
+type NutritionInput = {
+  calories?: number | null;
+  protein?: number | null;
+  carbohydrates?: number | null;
+  fat?: number | null;
+  fiber?: number | null;
+};
+
+const NUTRITION_FIELDS = [
+  "calories",
+  "protein",
+  "carbohydrates",
+  "fat",
+  "fiber",
+] as const;
+
+function parseExistingNutrition(raw: unknown): NutritionInput | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const source = raw as Record<string, unknown>;
+  const parsed: NutritionInput = {};
+  let hasAny = false;
+
+  for (const field of NUTRITION_FIELDS) {
+    const value = source[field];
+    if (value === null || value === undefined || value === "") {
+      parsed[field] = null;
+      continue;
+    }
+    const num = typeof value === "number"
+      ? value
+      : typeof value === "string"
+      ? Number(value.replace(",", "."))
+      : NaN;
+    if (!Number.isFinite(num) || num < 0) {
+      parsed[field] = null;
+      continue;
+    }
+    parsed[field] = Math.round(num);
+    hasAny = true;
+  }
+
+  return hasAny ? parsed : null;
+}
+
+function formatExistingNutritionForPrompt(nutrition: NutritionInput): string {
+  return NUTRITION_FIELDS
+    .map((field) => {
+      const value = nutrition[field];
+      return `- ${field}: ${value === null || value === undefined ? "null" : value}`;
+    })
+    .join("\n");
+}
+
+/** Coerce nutrition payload to non-negative integers (or null). */
+function normalizeNutrition(
+  parsed: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const field of NUTRITION_FIELDS) {
+    const value = parsed[field];
+    if (value === null || value === undefined) {
+      out[field] = null;
+      continue;
+    }
+    const num = typeof value === "number"
+      ? value
+      : typeof value === "string"
+      ? Number(value.replace(",", "."))
+      : NaN;
+    out[field] = Number.isFinite(num) && num >= 0 ? Math.round(num) : null;
+  }
+  return out;
+}
 
 const recipeSchema = {
   type: "object",
@@ -347,18 +421,25 @@ function validateAgainstSchema(
   schema: Record<string, unknown>,
 ): boolean {
   if (schemaName === "recipe_nutrition" || schema === nutritionSchema) {
+    const normalized = normalizeNutrition(parsed);
+    Object.assign(parsed, normalized);
+
     const calories = parsed.calories;
     const protein = parsed.protein;
     const carbohydrates = parsed.carbohydrates;
     const fat = parsed.fat;
     const fiber = parsed.fiber;
 
+    const isValidIntOrNull = (value: unknown) =>
+      value === null ||
+      (typeof value === "number" && Number.isInteger(value) && value >= 0);
+
     if (
-      (calories !== null && (typeof calories !== "number" || calories < 0)) ||
-      (protein !== null && (typeof protein !== "number" || protein < 0)) ||
-      (carbohydrates !== null && (typeof carbohydrates !== "number" || carbohydrates < 0)) ||
-      (fat !== null && (typeof fat !== "number" || fat < 0)) ||
-      (fiber !== null && (typeof fiber !== "number" || fiber < 0))
+      !isValidIntOrNull(calories) ||
+      !isValidIntOrNull(protein) ||
+      !isValidIntOrNull(carbohydrates) ||
+      !isValidIntOrNull(fat) ||
+      !isValidIntOrNull(fiber)
     ) {
       return false;
     }
@@ -582,16 +663,19 @@ Shared rules (both modes):
 - Capitalize the first letter of every ingredient name (e.g. "Patata", not "patata").
 - Do NOT list water used only for cooking techniques (boiling pasta, blanching, steaming, bain-marie, etc.). Mention that water in the steps instead. Only include water when it is consumed as part of the dish (soups, broths, drinks).
 - Select relevant tags only from the allowed enum (dietary, course type, etc.).
-- Estimate nutritional values PER SERVING (calories in kcal, macros and fiber in grams). Provide your best reasonable estimates.
+- Estimate nutritional values PER SERVING as whole integers only (no decimals): calories in kcal, macros and fiber in grams. Provide your best reasonable estimates.
 - prepTime and cookTime are in minutes; use null if unknown.
 - Do not include photo references.`;
 
 const NUTRITION_SYSTEM_PROMPT = `You are a nutrition assistant for a meal planning app. Given a recipe title, servings count, and ingredient list, estimate the nutritional information PER SERVING.
 
 Rules:
-- Return a JSON object with exactly these five numeric fields: calories (kcal), protein (g), carbohydrates (g), fat (g), fiber (g).
+- Return a JSON object with exactly these five fields as non-negative INTEGERS only (no decimals): calories (kcal), protein (g), carbohydrates (g), fat (g), fiber (g).
 - Use null for a field only if it cannot be reasonably estimated.
 - Base estimates on the listed ingredients and quantities for the given servings.
+- If the user message includes "Existing nutrition (per serving)", treat those as the current saved values.
+- When existing values are present and are coherent with the recipe (title, servings, ingredients), return those values UNCHANGED.
+- Only change an existing value when it is clearly wrong or inconsistent; fill null/missing fields with estimates.
 - Do not include any other fields or commentary.`;
 
 function formatIngredientsForPrompt(ingredients: IngredientInput[]): string {
@@ -759,23 +843,33 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "input_too_large" }, 400);
     }
 
-    const userPrompt = [
+    const existingNutrition = parseExistingNutrition(body?.existingNutrition);
+
+    const userPromptParts = [
       `Recipe: ${title}`,
       `Servings: ${servings}`,
       "Ingredients:",
       formatIngredientsForPrompt(validIngredients),
-    ].join("\n");
+    ];
+    if (existingNutrition) {
+      userPromptParts.push(
+        "",
+        "Existing nutrition (per serving):",
+        formatExistingNutritionForPrompt(existingNutrition),
+        "If these values are coherent with the recipe, return them unchanged. Only adjust clearly wrong values; fill nulls.",
+      );
+    }
 
     const nutrition = await callLlm(
       NUTRITION_SYSTEM_PROMPT,
-      userPrompt,
+      userPromptParts.join("\n"),
       "recipe_nutrition",
       nutritionSchema,
       4096,
       { preferJsonObject: true, minMaxTokens: 4096 },
     );
 
-    return jsonResponse({ nutrition });
+    return jsonResponse({ nutrition: normalizeNutrition(nutrition) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "internal_error";
     console.error("recipe-assistant error:", error);
