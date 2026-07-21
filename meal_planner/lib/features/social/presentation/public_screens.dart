@@ -13,6 +13,7 @@ import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_app_bar_title.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
@@ -266,7 +267,14 @@ class _PublicRecipeDetailScreenState
                     ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  title: Text(detail.recipe.title),
+                  // start: clear back; end: clear save action when present
+                  titlePadding: EdgeInsetsDirectional.only(
+                    start: 72,
+                    end: (!isOwn) ? 56 : 16,
+                    // ~vertically centers titleLarge in kToolbarHeight (56)
+                    bottom: 14,
+                  ),
+                  title: RecipeAppBarTitle(title: detail.recipe.title),
                   background: detail.photoDisplayUrl != null
                       ? CachedNetworkImage(
                           imageUrl: detail.photoDisplayUrl!,
