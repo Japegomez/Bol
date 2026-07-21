@@ -640,6 +640,20 @@ class AppLocalizationsEu extends AppLocalizations {
   String get shareListTooltip => 'Partekatu zerrenda';
 
   @override
+  String get shareRecipeTooltip => 'Partekatu errezeta';
+
+  @override
+  String shareRecipeMessage(String title, String url) {
+    return '$title\n$url';
+  }
+
+  @override
+  String get shareLinkExpired => 'Esteka hau iraungi da';
+
+  @override
+  String get shareLinkInvalid => 'Esteka hau ez da baliozkoa';
+
+  @override
   String get clearListTooltip => 'Garbitu zerrenda';
 
   @override

@@ -201,6 +201,16 @@
   "clearListConfirm": "¿Eliminar todos los ítems de la lista de la compra?",
   "shoppingListTitle": "Lista de la compra",
   "shareListTooltip": "Compartir lista",
+  "shareRecipeTooltip": "Compartir receta",
+  "shareRecipeMessage": "{title}\n{url}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "Este enlace ha caducado",
+  "shareLinkInvalid": "Este enlace no es válido",
   "clearListTooltip": "Limpiar lista",
   "shoppingListLoadError": "No se pudo cargar la lista: {error}",
   "shoppingListEmpty": "Tu lista está vacía",

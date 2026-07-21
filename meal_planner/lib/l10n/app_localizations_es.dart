@@ -640,6 +640,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shareListTooltip => 'Compartir lista';
 
   @override
+  String get shareRecipeTooltip => 'Compartir receta';
+
+  @override
+  String shareRecipeMessage(String title, String url) {
+    return '$title\n$url';
+  }
+
+  @override
+  String get shareLinkExpired => 'Este enlace ha caducado';
+
+  @override
+  String get shareLinkInvalid => 'Este enlace no es válido';
+
+  @override
   String get clearListTooltip => 'Limpiar lista';
 
   @override

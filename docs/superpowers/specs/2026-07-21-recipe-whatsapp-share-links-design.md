@@ -1,8 +1,10 @@
 # Recipe WhatsApp share links (private token + public deep link)
 
 **Date:** 2026-07-21  
-**Status:** Approved for implementation  
+**Status:** Implemented (device QA pending)  
 **Scope:** Share recipes via WhatsApp (or system share sheet); open recipe detail in app when logged in; fork option; Firebase Hosting + App/Universal Links
+**Live host:** `https://mealplanner-a818e.web.app`  
+**Android SHA-256 in assetlinks:** Play app signing key (closed testing / production installs)
 
 ## Problem
 
@@ -119,15 +121,15 @@ Fork: reuse existing `forkIntoMyBook` / social fork after resolve; block self-fo
 
 ## Acceptance criteria
 
-- [ ] Owner shares a private recipe → WhatsApp receives HTTPS link; recipe remains non-public.
-- [ ] Logged-in recipient opens valid private link → sees detail and can fork.
-- [ ] Logged-out recipient opens link → login → then detail.
-- [ ] Private link older than 30 days → clear expired message; owner can generate a new link on next share.
-- [ ] Second share within 30 days reuses the same private URL.
-- [ ] Public recipe (own or Explore) share opens `/p/<id>` for any logged-in user; fork works if not owned.
-- [ ] Unpublish public recipe → `/p/<id>` fails gracefully.
-- [ ] Deleted recipe → share resolve fails gracefully.
-- [ ] App Links / Universal Links open the app when installed (Firebase host).
+- [x] Owner shares a private recipe → WhatsApp receives HTTPS link; recipe remains non-public. *(code)*
+- [x] Logged-in recipient opens valid private link → sees detail and can fork. *(code; device QA pending)*
+- [x] Logged-out recipient opens link → login → then detail. *(code; device QA pending)*
+- [x] Private link older than 30 days → clear expired message; owner can generate a new link on next share. *(code)*
+- [x] Second share within 30 days reuses the same private URL. *(code)*
+- [x] Public recipe (own or Explore) share opens `/p/<id>` for any logged-in user; fork works if not owned. *(code)*
+- [x] Unpublish public recipe → `/p/<id>` fails gracefully. *(code; relies on existing public RLS)*
+- [x] Deleted recipe → share resolve fails gracefully. *(code)*
+- [x] App Links / Universal Links files published on Firebase host. *(device verification pending in closed testing)*
 
 ## What you must do manually (human)
 

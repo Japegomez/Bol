@@ -272,6 +272,16 @@
   "clearListConfirm": "Delete all items from the shopping list?",
   "shoppingListTitle": "Shopping list",
   "shareListTooltip": "Share list",
+  "shareRecipeTooltip": "Share recipe",
+  "shareRecipeMessage": "{title}\n{url}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "This share link has expired",
+  "shareLinkInvalid": "This share link is invalid",
   "clearListTooltip": "Clear list",
   "shoppingListLoadError": "Could not load the list: {error}",
   "@shoppingListLoadError": {

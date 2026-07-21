@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.japegomez.meal_planner",
+      "sha256_cert_fingerprints": [
+        "93:93:68:AB:D8:E4:0B:54:0B:AD:E3:4F:56:F1:C4:80:D5:AD:C4:1D:4D:41:11:2F:BA:EF:DB:4E:AD:F4:30:52"
+      ]
+    }
+  }
+]

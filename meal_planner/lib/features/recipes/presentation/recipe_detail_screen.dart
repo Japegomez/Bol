@@ -20,6 +20,8 @@ import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_display_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/recipe_share_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/share_recipe.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_app_bar_title.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
@@ -150,6 +152,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
   bool _isUpdatingVisibility = false;
   bool _isGeneratingNutrition = false;
   bool _isForking = false;
+  bool _isSharing = false;
   final Set<String> _updatingIngredientIds = {};
 
   bool get _isOwned {
@@ -157,6 +160,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     if (auth is! AuthAuthenticated) return false;
     return auth.user.id == widget.ownerUserId;
   }
+
+  bool get _canShare => _isOwned || _isPublic;
 
   @override
   void initState() {
@@ -218,6 +223,26 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     );
     if (mounted) {
       setState(() => _isGeneratingNutrition = false);
+    }
+  }
+
+  Future<void> _shareRecipe() async {
+    if (_isSharing || !_canShare) return;
+    setState(() => _isSharing = true);
+    try {
+      final shareRepo = ref.read(recipeShareRepositoryProvider);
+      final url = _isOwned && !_isPublic
+          ? (await shareRepo.getOrCreatePrivateShareLink(widget.recipeId)).url
+          : shareRepo.publicShareUrl(widget.recipeId);
+      if (!mounted) return;
+      await shareRecipeLink(context, title: widget.title, url: url);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
@@ -451,6 +476,21 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             onPressed: () => context.pop(),
           ),
           actions: [
+            if (_canShare)
+              _isSharing
+                  ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.ios_share),
+                      tooltip: l10n.shareRecipeTooltip,
+                      onPressed: _shareRecipe,
+                    ),
             if (_isOwned) ...[
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
@@ -481,7 +521,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             // start: clear back; end: clear trailing actions
             titlePadding: EdgeInsetsDirectional.only(
               start: 72,
-              end: _isOwned ? 104 : 56,
+              end: _isOwned
+                  ? (_canShare ? 152 : 104)
+                  : (_canShare ? 104 : 56),
               // ~vertically centers titleLarge in kToolbarHeight (56)
               bottom: 14,
             ),

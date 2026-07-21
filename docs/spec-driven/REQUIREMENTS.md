@@ -477,7 +477,8 @@ lib/
 | `google_sign_in` | Google Sign-In nativo → `signInWithIdToken` en Supabase |
 | `sign_in_with_apple` | Sign in with Apple (obligatorio en iOS con OAuth) |
 | `image_picker` | Selección de foto de receta |
-| `share_plus` | Exportar lista de la compra |
+| `share_plus` | Exportar lista de la compra y compartir enlaces de recetas |
+| `app_links` | Deep links HTTPS (Firebase Hosting) y esquema `recetea://` |
 | `intl` | Formateo de fechas (semanas) |
 | `flutter_slidable` | Swipe en ítems de lista |
 | `cached_network_image` | Caché de fotos de recetas y avatares |
@@ -579,3 +580,8 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
 - **RF-SOC-05** Seguir usuarios (desde perfil público; acceso al perfil desde el nombre del autor en tarjeta o detalle) y feed en `/home/explore/feed` con filtro multi-etiqueta, orden por fecha de creación e indicador «Ordenado por: Más reciente».
 - **RF-SOC-06** Perfil público con avatar, nombre, recetas publicadas y valoración media. Sin campo bio (no está en `profiles`).
 - **RF-SOC-07** En el detalle de receta pública: texto «Receta creada por » (sin enlace) + nombre del autor (enlace al perfil), o «Receta creada por ti» si es la propia receta; fecha de creación visible junto a valoración y raciones.
+- **RF-SOC-08** El usuario puede **compartir una receta por enlace HTTPS** (WhatsApp u otras apps vía `share_plus`):
+  - Receta **privada propia**: enlace opaco `/r/<token>` (Firebase Hosting); caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
+  - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
+  - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
+  - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`.

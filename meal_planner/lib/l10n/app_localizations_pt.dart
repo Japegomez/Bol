@@ -640,6 +640,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get shareListTooltip => 'Partilhar lista';
 
   @override
+  String get shareRecipeTooltip => 'Partilhar receita';
+
+  @override
+  String shareRecipeMessage(String title, String url) {
+    return '$title\n$url';
+  }
+
+  @override
+  String get shareLinkExpired => 'Esta hiperligação expirou';
+
+  @override
+  String get shareLinkInvalid => 'Esta hiperligação não é válida';
+
+  @override
   String get clearListTooltip => 'Limpar lista';
 
   @override
