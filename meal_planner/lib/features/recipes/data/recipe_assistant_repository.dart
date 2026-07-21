@@ -89,7 +89,7 @@ class RecipeAssistantRepository {
               },
             )
             .toList(),
-        if (existingPayload != null) 'existingNutrition': existingPayload,
+        'existingNutrition': ?existingPayload,
       },
       timeout: _nutritionGenerationTimeout,
     );
