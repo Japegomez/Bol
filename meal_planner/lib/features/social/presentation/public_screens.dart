@@ -273,14 +273,7 @@ class _PublicRecipeDetailScreenState
                 ),
                 actions: [
                   _isSharing
-                      ? const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
+                      ? const _AppBarActionSpinner()
                       : IconButton(
                           icon: const Icon(Icons.ios_share),
                           tooltip: l10n.shareRecipeTooltip,
@@ -293,14 +286,7 @@ class _PublicRecipeDetailScreenState
                       onPressed: () => _forkRecipe(detail),
                     )
                   else if (!isOwn && _isForking)
-                    const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
+                    const _AppBarActionSpinner(),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   // start: clear back; end: clear trailing actions
@@ -619,6 +605,22 @@ class _InfoChip extends StatelessWidget {
         const SizedBox(width: 4),
         Text(label),
       ],
+    );
+  }
+}
+
+class _AppBarActionSpinner extends StatelessWidget {
+  const _AppBarActionSpinner();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.all(16),
+      child: SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
     );
   }
 }

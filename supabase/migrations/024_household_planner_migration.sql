@@ -376,9 +376,6 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.current_week_monday() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.shares_household_with(uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.merge_user_plans_into_household(uuid, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.snapshot_household_plans_to_user(uuid, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.rebuild_shopping_from_plans(uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.create_household(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.join_household(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.leave_household(uuid) TO authenticated;

@@ -822,7 +822,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'Copiarase o planificador e a lista do fogar ao teu modo individual (semana actual e futuras). Continuar?';
+      'Copiarase o planificador e a lista do fogar ao teu modo individual (a semana actual e as futuras). Continuar?';
 
   @override
   String get leave => 'Abandonar';

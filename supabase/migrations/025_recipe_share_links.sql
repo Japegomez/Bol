@@ -12,9 +12,6 @@ CREATE TABLE public.recipe_share_links (
 CREATE INDEX idx_recipe_share_links_recipe_active
   ON public.recipe_share_links (recipe_id, expires_at DESC);
 
-CREATE INDEX idx_recipe_share_links_token
-  ON public.recipe_share_links (token);
-
 ALTER TABLE public.recipe_share_links ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "recipe_share_links_select_own"

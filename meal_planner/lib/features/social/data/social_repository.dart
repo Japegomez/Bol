@@ -167,84 +167,15 @@ class SocialRepository {
 
   Future<String> forkRecipe(String publicRecipeId) async {
     final detail = await fetchPublicRecipeDetail(publicRecipeId);
-    final source = detail.recipe;
-
-    if (source.userId == _userId) {
+    if (detail.recipe.userId == _userId) {
       throw Exception('No puedes guardar tu propia receta en el recetario');
     }
 
-    final recipeData = await supabase
-        .from(Recipe.table_name)
-        .insert({
-          ...Recipe.insert(
-            userId: _userId,
-            title: source.title,
-            servings: source.servings,
-            prepTime: source.prepTime,
-            cookTime: source.cookTime,
-            tags: source.tags,
-            isPublic: false,
-            tips: source.tips,
-          ),
-          'forked_from_id': publicRecipeId,
-        })
-        .select()
-        .single();
-
-    final newId = recipeData['id'].toString();
-
-    if (detail.ingredients.isNotEmpty) {
-      await supabase.from(Ingredient.table_name).insert(
-            detail.ingredients
-                .asMap()
-                .entries
-                .map(
-                  (entry) => Ingredient.insert(
-                    recipeId: newId,
-                    name: entry.value.name,
-                    quantity: entry.value.quantity,
-                    unit: entry.value.unit,
-                    category: entry.value.category,
-                    position: entry.key,
-                    isOptional: entry.value.isOptional,
-                    isIncluded: entry.value.isIncluded,
-                    isToTaste: entry.value.isToTaste,
-                  ),
-                )
-                .toList(),
-          );
-    }
-
-    if (detail.steps.isNotEmpty) {
-      await supabase.from(RecipeStep.table_name).insert(
-            detail.steps
-                .map(
-                  (step) => RecipeStep.insert(
-                    recipeId: newId,
-                    position: step.position,
-                    description: step.description,
-                    isOptional: step.isOptional,
-                  ),
-                )
-                .toList(),
-          );
-    }
-
-    if (detail.nutrition != null) {
-      final n = detail.nutrition!;
-      await supabase.from(NutritionInfo.table_name).insert(
-            NutritionInfo.insert(
-              recipeId: newId,
-              calories: n.calories,
-              protein: n.protein,
-              carbohydrates: n.carbohydrates,
-              fat: n.fat,
-              fiber: n.fiber,
-            ),
-          );
-    }
-
-    return newId;
+    final newId = await supabase.rpc<dynamic>(
+      'fork_recipe_into_my_book',
+      params: {'p_source_recipe_id': publicRecipeId},
+    );
+    return newId.toString();
   }
 
   Future<void> rateRecipe(String recipeId, int score) async {

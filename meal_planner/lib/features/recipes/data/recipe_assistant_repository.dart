@@ -127,32 +127,8 @@ class RecipeAssistantRepository {
     } on TimeoutException {
       throw Exception(recipeAssistantTimeoutKey);
     } on FunctionException catch (e) {
-      throw Exception(_mapFunctionError(e.status, e.details));
+      throw Exception(mapRecipeAssistantFunctionError(e.status, e.details));
     }
-  }
-
-  String _mapFunctionError(int status, dynamic details) {
-    final errorCode = details is Map ? details['error']?.toString() : null;
-
-    if (status == 422 || errorCode == 'not_a_recipe_request') {
-      return recipeAssistantNotRecipeRequestKey;
-    }
-    if (errorCode == 'too_fast') {
-      return recipeAssistantTooFastKey;
-    }
-    if (errorCode == 'daily_limit_reached') {
-      return recipeAssistantDailyLimitKey;
-    }
-    if (errorCode == 'service_at_capacity' || errorCode == 'quota_check_failed') {
-      return recipeAssistantServiceAtCapacityKey;
-    }
-    if (status == 429 || errorCode == 'rate_limited') {
-      return recipeAssistantRateLimitedKey;
-    }
-    if (status == 503 || errorCode == 'not_configured') {
-      return recipeAssistantNotConfiguredKey;
-    }
-    return recipeAssistantFailedKey;
   }
 
   Future<void> _ensureOnline() async {
@@ -160,6 +136,31 @@ class RecipeAssistantRepository {
       throw Exception(recipeAssistantOfflineKey);
     }
   }
+}
+
+/// Maps edge-function HTTP status / error payload to UI localization keys.
+String mapRecipeAssistantFunctionError(int status, dynamic details) {
+  final errorCode = details is Map ? details['error']?.toString() : null;
+
+  if (status == 422 || errorCode == 'not_a_recipe_request') {
+    return recipeAssistantNotRecipeRequestKey;
+  }
+  if (errorCode == 'too_fast') {
+    return recipeAssistantTooFastKey;
+  }
+  if (errorCode == 'daily_limit_reached') {
+    return recipeAssistantDailyLimitKey;
+  }
+  if (errorCode == 'service_at_capacity' || errorCode == 'quota_check_failed') {
+    return recipeAssistantServiceAtCapacityKey;
+  }
+  if (status == 429 || errorCode == 'rate_limited') {
+    return recipeAssistantRateLimitedKey;
+  }
+  if (status == 503 || errorCode == 'not_configured') {
+    return recipeAssistantNotConfiguredKey;
+  }
+  return recipeAssistantFailedKey;
 }
 
 final recipeAssistantRepositoryProvider =

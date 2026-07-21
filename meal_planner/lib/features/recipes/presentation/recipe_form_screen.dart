@@ -920,8 +920,7 @@ class _NutritionFieldsState extends State<_NutritionFields> {
     _fiber = TextEditingController(text: _intText(widget.data.fiber));
   }
 
-  static String _intText(num? value) =>
-      value == null ? '' : value.round().toString();
+  static String _intText(int? value) => value == null ? '' : '$value';
 
   @override
   void dispose() {
@@ -943,12 +942,12 @@ class _NutritionFieldsState extends State<_NutritionFields> {
     _syncControllerFromData(_fiber, widget.data.fiber);
   }
 
-  void _syncControllerFromData(TextEditingController controller, num? value) {
-    final newText = value == null ? '' : value.round().toString();
+  void _syncControllerFromData(TextEditingController controller, int? value) {
+    final newText = value == null ? '' : value.toString();
     if (controller.text == newText) return;
 
     final currentParsed = int.tryParse(controller.text);
-    if (currentParsed != null && value != null && currentParsed == value.round()) {
+    if (currentParsed != null && value != null && currentParsed == value) {
       return;
     }
 
@@ -976,7 +975,7 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   Widget _field(
     String label,
     TextEditingController controller,
-    ValueChanged<num?> onChanged,
+    ValueChanged<int?> onChanged,
   ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -989,7 +988,11 @@ class _NutritionFieldsState extends State<_NutritionFields> {
         ),
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        onChanged: (t) => onChanged(t.isEmpty ? null : int.tryParse(t)),
+        onChanged: (t) => onChanged(
+          NutritionFormData.normalizeNutritionValue(
+            t.isEmpty ? null : int.tryParse(t),
+          ),
+        ),
       ),
     );
   }

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Title for recipe [FlexibleSpaceBar]s: scrim for contrast when expanded,
-/// plain text (no scrim) when collapsed, with ellipsis so it does not overlap
-/// leading/trailing actions.
+/// Title for recipe [FlexibleSpaceBar]s: dark scrim + light text for contrast
+/// when expanded over a photo and when collapsed on a dark AppBar.
 class RecipeAppBarTitle extends StatelessWidget {
   const RecipeAppBarTitle({required this.title, super.key});
 
   final String title;
 
   static const _scrimOpacity = 0.8;
-  static const _scrimColor = Colors.white;
+  static const _scrimColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +16,10 @@ class RecipeAppBarTitle extends StatelessWidget {
         context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
     final collapseT = _collapseT(settings);
     final isCollapsed = collapseT >= 0.85;
-    final scrimT = (1.0 - collapseT).clamp(0.0, 1.0);
+    final scrimT = isCollapsed ? 1.0 : (1.0 - collapseT).clamp(0.0, 1.0);
 
     final textStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
-          color: Colors.black,
+          color: Colors.white,
         );
 
     final text = Text(
@@ -29,9 +28,6 @@ class RecipeAppBarTitle extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: textStyle,
     );
-
-    // Collapsed: plain title so AppBar vertical alignment stays correct.
-    if (scrimT <= 0.01) return text;
 
     return Container(
       padding: EdgeInsets.symmetric(

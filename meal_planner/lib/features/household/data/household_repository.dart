@@ -93,7 +93,6 @@ class HouseholdRepository {
 
   Future<void> leaveHousehold({
     required String householdId,
-    required String userId,
   }) async {
     await supabase.rpc<void>(
       'leave_household',

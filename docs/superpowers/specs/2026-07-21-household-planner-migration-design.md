@@ -62,6 +62,15 @@ Same merge into the **existing** household plans, then rebuild household shoppin
 - [ ] Leave household → individual planner matches household snapshot for current/future weeks; foreign recipes become notes; shopping recalculated.
 - [ ] Member can open another member’s planned recipe read-only and fork it into their book.
 - [ ] Past individual weeks remain untouched in DB while in household mode.
+- [ ] Recalculating shopping on create/join/leave **preserves `is_checked`** for auto items that still match the same `plan_slot_id` + `ingredient_id`; new auto items start as `false`; manual items are unchanged.
+
+## Decisions (shopping checked state)
+
+| Topic | Choice |
+| --- | --- |
+| Auto items on rebuild | Preserve previous `is_checked` when slot+ingredient still present |
+| New auto items | `is_checked = false` |
+| Manual items | Never deleted/rewritten by rebuild |
 
 ## Out of scope follow-ups
 

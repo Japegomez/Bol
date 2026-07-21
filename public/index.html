@@ -73,8 +73,6 @@
 
         if (/^\/(r|p)\//.test(path)) {
           message.textContent = "Abriendo la receta en Recetea…";
-          // Best-effort handoff; Universal/App Links usually open the app first.
-          window.location.replace(appUrl);
         } else {
           message.textContent = "Comparte y abre recetas en Recetea.";
         }
