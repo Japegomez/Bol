@@ -76,7 +76,6 @@ class HouseholdNotifier extends AsyncNotifier<Household?> {
 
     await _repository.leaveHousehold(
       householdId: household.id,
-      userId: userId,
     );
     state = const AsyncData(null);
   }

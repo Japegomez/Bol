@@ -73,18 +73,22 @@ class StepFormItem {
 
 class NutritionFormData {
   NutritionFormData({
-    this.calories,
-    this.protein,
-    this.carbohydrates,
-    this.fat,
-    this.fiber,
-  });
+    num? calories,
+    num? protein,
+    num? carbohydrates,
+    num? fat,
+    num? fiber,
+  })  : calories = normalizeNutritionValue(calories),
+        protein = normalizeNutritionValue(protein),
+        carbohydrates = normalizeNutritionValue(carbohydrates),
+        fat = normalizeNutritionValue(fat),
+        fiber = normalizeNutritionValue(fiber);
 
-  num? calories;
-  num? protein;
-  num? carbohydrates;
-  num? fat;
-  num? fiber;
+  int? calories;
+  int? protein;
+  int? carbohydrates;
+  int? fat;
+  int? fiber;
 
   bool get hasAnyValue =>
       calories != null ||
@@ -92,6 +96,26 @@ class NutritionFormData {
       carbohydrates != null ||
       fat != null ||
       fiber != null;
+
+  /// Rejects negatives and non-finite values; rounds legacy decimals.
+  static int? normalizeNutritionValue(num? value) {
+    if (value == null) return null;
+    if (value is double && !value.isFinite) return null;
+    if (value < 0) return null;
+    return value.round();
+  }
+
+  /// Payload for the recipe assistant when re-estimating nutrition.
+  Map<String, int?>? toAssistantPayload() {
+    if (!hasAnyValue) return null;
+    return {
+      'calories': calories,
+      'protein': protein,
+      'carbohydrates': carbohydrates,
+      'fat': fat,
+      'fiber': fiber,
+    };
+  }
 }
 
 class RecipeFormData {

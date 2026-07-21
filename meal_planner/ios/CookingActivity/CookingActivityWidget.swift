@@ -83,6 +83,7 @@ struct CookingLockScreenView: View {
                     .foregroundStyle(.orange)
                 Text(context.attributes.recipeTitle)
                     .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text("·")
                     .font(.caption2)
@@ -106,8 +107,12 @@ struct CookingLockScreenView: View {
             }
 
             // ── Step text (expandable on iOS 17+) ────────────────────────────
+            // Explicit .primary: ActivityKit defaults to light labels on first
+            // paint; with systemBackground tint that makes title/step unreadable
+            // until the next Activity.update.
             Text(context.state.stepText)
                 .font(.callout)
+                .foregroundStyle(.primary)
                 .lineLimit(context.state.isTextExpanded ? nil : 3)
                 .fixedSize(horizontal: false, vertical: true)
 

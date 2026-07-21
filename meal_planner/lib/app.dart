@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/auth/session_lifecycle_handler.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/deep_links/deep_link_listener.dart';
 import 'package:meal_planner/core/locale/locale_provider.dart';
 import 'package:meal_planner/core/sync/sync_service.dart';
 import 'package:meal_planner/core/theme/app_theme.dart';
@@ -23,24 +24,26 @@ class MealPlannerApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return SessionLifecycleHandler(
-      child: MaterialApp.router(
-        title: AppBranding.displayName,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: themeMode,
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: router,
-        builder: (context, child) {
-          return UpgradeAlert(
-            child: OfflineEntryListener(
-              child: ConnectivityBanner(
-                child: child ?? const SizedBox.shrink(),
+      child: DeepLinkListener(
+        child: MaterialApp.router(
+          title: AppBranding.displayName,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: themeMode,
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+          builder: (context, child) {
+            return UpgradeAlert(
+              child: OfflineEntryListener(
+                child: ConnectivityBanner(
+                  child: child ?? const SizedBox.shrink(),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

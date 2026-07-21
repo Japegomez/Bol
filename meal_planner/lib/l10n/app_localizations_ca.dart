@@ -638,6 +638,20 @@ class AppLocalizationsCa extends AppLocalizations {
   String get shareListTooltip => 'Compartir llista';
 
   @override
+  String get shareRecipeTooltip => 'Compartir recepta';
+
+  @override
+  String shareRecipeMessage(String title, String url) {
+    return '$title\n$url';
+  }
+
+  @override
+  String get shareLinkExpired => 'Aquest enllaç ha caducat';
+
+  @override
+  String get shareLinkInvalid => 'Aquest enllaç no és vàlid';
+
+  @override
   String get clearListTooltip => 'Netejar llista';
 
   @override
@@ -807,7 +821,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'Perdràs accés al planificador i llista compartits. Continuar?';
+      'Es copiarà el planificador i la llista de la llar al teu mode individual (la setmana actual i les futures). Continuar?';
 
   @override
   String get leave => 'Abandonar';

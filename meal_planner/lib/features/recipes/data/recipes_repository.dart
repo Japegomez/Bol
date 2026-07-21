@@ -630,6 +630,17 @@ class RecipesRepository {
     await _cacheRecipeDetailBestEffort(recipeId);
   }
 
+  /// Copies another member's (or public/shared) recipe into the current user's book.
+  Future<String> forkIntoMyBook(String sourceRecipeId) async {
+    final newId = await supabase.rpc<dynamic>(
+      'fork_recipe_into_my_book',
+      params: {'p_source_recipe_id': sourceRecipeId},
+    );
+    final id = newId.toString();
+    await _cacheRecipeDetailBestEffort(id);
+    return id;
+  }
+
   Future<void> deleteRecipeRemote(String id) async {
     final detail = await _fetchRecipeDetailRemote(id);
     if (detail.recipe.photoUrl != null) {
@@ -922,11 +933,19 @@ class RecipesRepository {
               )
               .toList(),
       nutrition: NutritionFormData(
-        calories: detail.nutrition?.calories,
-        protein: detail.nutrition?.protein,
-        carbohydrates: detail.nutrition?.carbohydrates,
-        fat: detail.nutrition?.fat,
-        fiber: detail.nutrition?.fiber,
+        calories: NutritionFormData.normalizeNutritionValue(
+          detail.nutrition?.calories,
+        ),
+        protein: NutritionFormData.normalizeNutritionValue(
+          detail.nutrition?.protein,
+        ),
+        carbohydrates: NutritionFormData.normalizeNutritionValue(
+          detail.nutrition?.carbohydrates,
+        ),
+        fat: NutritionFormData.normalizeNutritionValue(detail.nutrition?.fat),
+        fiber: NutritionFormData.normalizeNutritionValue(
+          detail.nutrition?.fiber,
+        ),
       ),
       existingPhotoPath: recipe.photoUrl,
       isPublic: recipe.isPublic,

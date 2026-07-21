@@ -4,11 +4,11 @@ import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
 
 NutritionFormData nutritionFromAssistantJson(Map<String, dynamic> json) {
   return NutritionFormData(
-    calories: _parseNum(json['calories']),
-    protein: _parseNum(json['protein']),
-    carbohydrates: _parseNum(json['carbohydrates']),
-    fat: _parseNum(json['fat']),
-    fiber: _parseNum(json['fiber']),
+    calories: _parseNonNegativeInt(json['calories']),
+    protein: _parseNonNegativeInt(json['protein']),
+    carbohydrates: _parseNonNegativeInt(json['carbohydrates']),
+    fat: _parseNonNegativeInt(json['fat']),
+    fiber: _parseNonNegativeInt(json['fiber']),
   );
 }
 
@@ -145,4 +145,11 @@ num? _parseNum(dynamic value) {
   if (value is num) return value;
   if (value is String) return num.tryParse(value.replaceAll(',', '.'));
   return null;
+}
+
+/// Nutrition values are whole numbers only (round half away from zero via round).
+int? _parseNonNegativeInt(dynamic value) {
+  final parsed = _parseNum(value);
+  if (parsed == null || parsed < 0) return null;
+  return parsed.round();
 }

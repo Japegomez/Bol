@@ -180,6 +180,7 @@ Future<void> generateNutritionWithAssistant({
   required int servings,
   required List<IngredientFormItem> ingredients,
   required FutureOr<void> Function(NutritionFormData nutrition) onSuccess,
+  NutritionFormData? existingNutrition,
 }) async {
   final l10n = context.l10n;
   final messenger = ScaffoldMessenger.of(context);
@@ -193,6 +194,7 @@ Future<void> generateNutritionWithAssistant({
             title: title,
             servings: servings,
             ingredients: ingredients,
+            existingNutrition: existingNutrition,
           ),
     );
   } catch (error) {

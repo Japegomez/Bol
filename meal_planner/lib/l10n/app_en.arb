@@ -272,6 +272,16 @@
   "clearListConfirm": "Delete all items from the shopping list?",
   "shoppingListTitle": "Shopping list",
   "shareListTooltip": "Share list",
+  "shareRecipeTooltip": "Share recipe",
+  "shareRecipeMessage": "{title}\n{url}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "This share link has expired",
+  "shareLinkInvalid": "This share link is invalid",
   "clearListTooltip": "Clear list",
   "shoppingListLoadError": "Could not load the list: {error}",
   "@shoppingListLoadError": {
@@ -348,7 +358,7 @@
   },
   "kick": "Remove",
   "leaveHouseholdTitle": "Leave household",
-  "leaveHouseholdMessage": "You will lose access to the shared planner and list. Continue?",
+  "leaveHouseholdMessage": "The household planner and shopping list will be copied to your individual mode (current and future weeks). Continue?",
   "leave": "Leave",
   "myHouseholdTitle": "My household",
   "inviteCode": "Invitation code",

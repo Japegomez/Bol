@@ -1,7 +1,7 @@
-import 'dart:typed_data';
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -230,6 +230,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
         title: _data!.title,
         servings: _data!.servings,
         ingredients: _data!.ingredients,
+        existingNutrition: _data!.nutrition,
         onSuccess: (nutrition) {
           if (!mounted) return;
           setState(() {
@@ -910,14 +911,16 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   void initState() {
     super.initState();
     _calories =
-        TextEditingController(text: widget.data.calories?.toString() ?? '');
+        TextEditingController(text: _intText(widget.data.calories));
     _protein =
-        TextEditingController(text: widget.data.protein?.toString() ?? '');
+        TextEditingController(text: _intText(widget.data.protein));
     _carbohydrates =
-        TextEditingController(text: widget.data.carbohydrates?.toString() ?? '');
-    _fat = TextEditingController(text: widget.data.fat?.toString() ?? '');
-    _fiber = TextEditingController(text: widget.data.fiber?.toString() ?? '');
+        TextEditingController(text: _intText(widget.data.carbohydrates));
+    _fat = TextEditingController(text: _intText(widget.data.fat));
+    _fiber = TextEditingController(text: _intText(widget.data.fiber));
   }
+
+  static String _intText(int? value) => value == null ? '' : '$value';
 
   @override
   void dispose() {
@@ -939,11 +942,11 @@ class _NutritionFieldsState extends State<_NutritionFields> {
     _syncControllerFromData(_fiber, widget.data.fiber);
   }
 
-  void _syncControllerFromData(TextEditingController controller, num? value) {
-    final newText = value?.toString() ?? '';
+  void _syncControllerFromData(TextEditingController controller, int? value) {
+    final newText = value == null ? '' : value.toString();
     if (controller.text == newText) return;
 
-    final currentParsed = num.tryParse(controller.text.replaceAll(',', '.'));
+    final currentParsed = int.tryParse(controller.text);
     if (currentParsed != null && value != null && currentParsed == value) {
       return;
     }
@@ -972,7 +975,7 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   Widget _field(
     String label,
     TextEditingController controller,
-    ValueChanged<num?> onChanged,
+    ValueChanged<int?> onChanged,
   ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -983,8 +986,13 @@ class _NutritionFieldsState extends State<_NutritionFields> {
           border: const OutlineInputBorder(),
           isDense: true,
         ),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        onChanged: (t) => onChanged(num.tryParse(t.replaceAll(',', '.'))),
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onChanged: (t) => onChanged(
+          NutritionFormData.normalizeNutritionValue(
+            t.isEmpty ? null : int.tryParse(t),
+          ),
+        ),
       ),
     );
   }

@@ -9,6 +9,8 @@ import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/features/auth/domain/auth_state.dart';
+import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
@@ -18,6 +20,9 @@ import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_display_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/recipe_share_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/share_recipe.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_app_bar_title.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
@@ -65,6 +70,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           final detail = effective.detail;
           return _RecipeDetailBody(
             recipeId: widget.recipeId,
+            ownerUserId: detail.recipe.userId,
             photoUrl: detail.photoDisplayUrl,
             title: detail.recipe.title,
             servings: detail.recipe.servings,
@@ -97,6 +103,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 class _RecipeDetailBody extends ConsumerStatefulWidget {
   const _RecipeDetailBody({
     required this.recipeId,
+    required this.ownerUserId,
     required this.photoUrl,
     required this.title,
     required this.servings,
@@ -117,6 +124,7 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
   });
 
   final String recipeId;
+  final String ownerUserId;
   final String? photoUrl;
   final String title;
   final int servings;
@@ -143,7 +151,17 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
   late bool _isPublic;
   bool _isUpdatingVisibility = false;
   bool _isGeneratingNutrition = false;
+  bool _isForking = false;
+  bool _isSharing = false;
   final Set<String> _updatingIngredientIds = {};
+
+  bool get _isOwned {
+    final auth = ref.watch(authStateProvider).valueOrNull;
+    if (auth is! AuthAuthenticated) return false;
+    return auth.user.id == widget.ownerUserId;
+  }
+
+  bool get _canShare => _isOwned || _isPublic;
 
   @override
   void initState() {
@@ -181,6 +199,15 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             ),
           )
           .toList(),
+      existingNutrition: widget.nutrition == null
+          ? null
+          : NutritionFormData(
+              calories: widget.nutrition!.calories,
+              protein: widget.nutrition!.protein,
+              carbohydrates: widget.nutrition!.carbohydrates,
+              fat: widget.nutrition!.fat,
+              fiber: widget.nutrition!.fiber,
+            ),
       onSuccess: (nutrition) async {
         await ref.read(recipesRepositoryProvider).saveNutrition(
               widget.recipeId,
@@ -196,6 +223,49 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     );
     if (mounted) {
       setState(() => _isGeneratingNutrition = false);
+    }
+  }
+
+  Future<void> _shareRecipe() async {
+    if (_isSharing || !_canShare) return;
+    setState(() => _isSharing = true);
+    try {
+      final shareRepo = ref.read(recipeShareRepositoryProvider);
+      final url = _isOwned && !_isPublic
+          ? (await shareRepo.getOrCreatePrivateShareLink(widget.recipeId)).url
+          : shareRepo.publicShareUrl(widget.recipeId);
+      if (!mounted) return;
+      await shareRecipeLink(context, title: widget.title, url: url);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Future<void> _forkIntoMyBook() async {
+    if (_isForking) return;
+    setState(() => _isForking = true);
+    try {
+      final newId =
+          await ref.read(recipesRepositoryProvider).forkIntoMyBook(widget.recipeId);
+      ref.invalidate(recipesProvider);
+      ref.invalidate(recipeListProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.recipeSavedToBook)),
+      );
+      context.pushReplacement('/home/recipes/$newId');
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorWithMessage('$error'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isForking = false);
     }
   }
 
@@ -406,18 +476,58 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             onPressed: () => context.pop(),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () =>
-                  context.push('/home/recipes/${widget.recipeId}/edit'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () => _confirmDelete(context),
-            ),
+            if (_canShare)
+              _isSharing
+                  ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.ios_share),
+                      tooltip: l10n.shareRecipeTooltip,
+                      onPressed: _shareRecipe,
+                    ),
+            if (_isOwned) ...[
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () =>
+                    context.push('/home/recipes/${widget.recipeId}/edit'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => _confirmDelete(context),
+              ),
+            ] else if (!_isForking)
+              IconButton(
+                icon: const Icon(Icons.bookmark_add_outlined),
+                tooltip: l10n.saveToMyRecipeBookTooltip,
+                onPressed: _forkIntoMyBook,
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
           ],
           flexibleSpace: FlexibleSpaceBar(
-            title: Text(widget.title),
+            // start: clear back; end: clear trailing actions
+            titlePadding: EdgeInsetsDirectional.only(
+              start: 72,
+              end: _isOwned
+                  ? (_canShare ? 152 : 104)
+                  : (_canShare ? 104 : 56),
+              // ~vertically centers titleLarge in kToolbarHeight (56)
+              bottom: 14,
+            ),
+            title: RecipeAppBarTitle(title: widget.title),
             background: widget.photoUrl != null
                 ? CachedNetworkImage(
                     imageUrl: widget.photoUrl!,
@@ -487,7 +597,23 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (widget.isForked)
+                if (!_isOwned) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _isForking ? null : _forkIntoMyBook,
+                      icon: _isForking
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.bookmark_add_outlined),
+                      label: Text(l10n.saveToMyRecipeBook),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ] else if (widget.isForked)
                   Card(
                     child: ListTile(
                       leading: const Icon(Icons.bookmark_added_outlined),
@@ -548,7 +674,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                           contentLocaleName: contentLocale,
                           isUpdating:
                               _updatingIngredientIds.contains(ingredient.id),
-                          onIncludedChanged: ingredient.isOptional &&
+                          onIncludedChanged: _isOwned &&
+                                  ingredient.isOptional &&
                                   !ingredient.isToTaste
                               ? (included) => _toggleIngredientIncluded(
                                     ingredient,
@@ -601,7 +728,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                   ),
                   const SizedBox(height: 8),
                   _NutritionGrid(nutrition: widget.nutrition!, l10n: l10n),
-                ] else ...[
+                ] else if (_isOwned) ...[
                   const SizedBox(height: 24),
                   Text(
                     l10n.nutritionPerServing,
@@ -767,6 +894,6 @@ class _NutritionGrid extends StatelessWidget {
 
   String? _fmt(num? value, String unit) {
     if (value == null) return null;
-    return '$value $unit';
+    return '${value.round()} $unit';
   }
 }

@@ -640,6 +640,20 @@ class AppLocalizationsEu extends AppLocalizations {
   String get shareListTooltip => 'Partekatu zerrenda';
 
   @override
+  String get shareRecipeTooltip => 'Partekatu errezeta';
+
+  @override
+  String shareRecipeMessage(String title, String url) {
+    return '$title\n$url';
+  }
+
+  @override
+  String get shareLinkExpired => 'Esteka hau iraungi da';
+
+  @override
+  String get shareLinkInvalid => 'Esteka hau ez da baliozkoa';
+
+  @override
   String get clearListTooltip => 'Garbitu zerrenda';
 
   @override
@@ -809,7 +823,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get leaveHouseholdMessage =>
-      'Planifikatzaile eta zerrenda partekatuen sarbidea galduko duzu. Jarraitu?';
+      'Etxeko planifikatzailea eta erosketa-zerrenda zure banakako modura kopiatuko dira (oraingo astea eta etorkizunekoak). Jarraitu?';
 
   @override
   String get leave => 'Utzi';

@@ -13,6 +13,9 @@ import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/recipe_share_provider.dart';
+import 'package:meal_planner/features/recipes/presentation/share_recipe.dart';
+import 'package:meal_planner/features/recipes/presentation/widgets/recipe_app_bar_title.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_step_text.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/translation_status_banner.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
@@ -141,6 +144,7 @@ class _PublicRecipeDetailScreenState
     extends ConsumerState<PublicRecipeDetailScreen> {
   bool _isForking = false;
   bool _isRating = false;
+  bool _isSharing = false;
   bool _showOriginal = false;
   ProviderSubscription<String>? _languageSubscription;
 
@@ -158,6 +162,25 @@ class _PublicRecipeDetailScreenState
   void dispose() {
     _languageSubscription?.close();
     super.dispose();
+  }
+
+  Future<void> _shareRecipe(PublicRecipeDetail detail) async {
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
+    try {
+      final url = ref
+          .read(recipeShareRepositoryProvider)
+          .publicShareUrl(widget.recipeId);
+      if (!mounted) return;
+      await shareRecipeLink(context, title: detail.recipe.title, url: url);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
   }
 
   Future<void> _forkRecipe(PublicRecipeDetail detail) async {
@@ -249,6 +272,13 @@ class _PublicRecipeDetailScreenState
                   onPressed: () => context.pop(),
                 ),
                 actions: [
+                  _isSharing
+                      ? const _AppBarActionSpinner()
+                      : IconButton(
+                          icon: const Icon(Icons.ios_share),
+                          tooltip: l10n.shareRecipeTooltip,
+                          onPressed: () => _shareRecipe(detail),
+                        ),
                   if (!isOwn && !_isForking)
                     IconButton(
                       icon: const Icon(Icons.bookmark_add_outlined),
@@ -256,17 +286,17 @@ class _PublicRecipeDetailScreenState
                       onPressed: () => _forkRecipe(detail),
                     )
                   else if (!isOwn && _isForking)
-                    const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
+                    const _AppBarActionSpinner(),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  title: Text(detail.recipe.title),
+                  // start: clear back; end: clear trailing actions
+                  titlePadding: EdgeInsetsDirectional.only(
+                    start: 72,
+                    end: (!isOwn) ? 104 : 56,
+                    // ~vertically centers titleLarge in kToolbarHeight (56)
+                    bottom: 14,
+                  ),
+                  title: RecipeAppBarTitle(title: detail.recipe.title),
                   background: detail.photoDisplayUrl != null
                       ? CachedNetworkImage(
                           imageUrl: detail.photoDisplayUrl!,
@@ -579,6 +609,22 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
+class _AppBarActionSpinner extends StatelessWidget {
+  const _AppBarActionSpinner();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.all(16),
+      child: SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    );
+  }
+}
+
 class _NutritionGrid extends StatelessWidget {
   const _NutritionGrid({required this.nutrition});
 
@@ -610,6 +656,6 @@ class _NutritionGrid extends StatelessWidget {
 
   String? _fmt(num? value, String unit) {
     if (value == null) return null;
-    return '$value $unit';
+    return '${value.round()} $unit';
   }
 }

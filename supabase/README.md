@@ -90,7 +90,8 @@ Secreto compartido en Supabase: `GOOGLE_API_KEY`.
 
 ```bash
 supabase link --project-ref hxtynisikjpwlvpdgdbt
-# Crea un .env.local (gitignored) con GOOGLE_API_KEY=tu_api_key
+# Crea un .env.local (gitignored) con las claves sensibles
+# echo "GOOGLE_API_KEY=tu_api_key" > .env.local
 supabase secrets set --env-file .env.local
 supabase functions deploy moderate-image --no-verify-jwt=false
 supabase functions deploy translate-recipe
@@ -116,11 +117,15 @@ La función valida el JWT de Supabase, extrae el `user_id` real y aplica cuota p
 > - Proyecto A (billing ON): solo `GOOGLE_API_KEY` para Translation + Vision.
 > - Proyecto B (billing OFF): solo `LLM_API_KEY` para Gemini. **Nunca actives billing en este proyecto.**
 
-Configura los secrets del asistente apuntando al proyecto B:
+Configura los secrets del asistente apuntando al proyecto B. **IMPORTANTE**: no pases `LLM_API_KEY` directamente como argumento CLI (quedaría expuesto en el historial de shell y logs). Usa el archivo `.env.local` (ya incluido en `.gitignore`) y cárgalo con `--env-file`:
 
 ```bash
+# Crear .env.local (gitignored) con la clave sensible
+echo "LLM_API_KEY=tu_clave_proyecto_gemini_sin_billing" > .env.local
+
+# Configurar todos los secrets de una sola vez (LLM_API_KEY desde .env.local)
 npx supabase secrets set \
-  LLM_API_KEY=tu_clave_proyecto_gemini_sin_billing \
+  --env-file .env.local \
   LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/ \
   LLM_MODEL=gemini-3.1-flash-lite \
   --project-ref hxtynisikjpwlvpdgdbt
@@ -153,6 +158,8 @@ Para cambiar de proveedor, solo actualiza estos secrets; el código de la funci�
 
 ```bash
 # Ejemplo activando el tope global (ajusta el número a tu cuota del proveedor)
+# Si ya configuraste LLM_API_KEY previamente, estos secrets adicionales se pueden
+# pasar directamente (no son tan sensibles como claves API):
 npx supabase secrets set \
   AI_ASSISTANT_DAILY_LIMIT=20 \
   AI_ASSISTANT_MIN_INTERVAL_SECONDS=3 \
@@ -169,9 +176,9 @@ Nuevos códigos de error de cuota (distintos de `rate_limited`, que sigue siendo
 | `service_at_capacity` | 503 | Se alcanzó el tope global diario (no es culpa del usuario) |
 | `quota_check_failed` | 503 | Error interno al consultar la cuota; rechazado fail-closed |
 
-### Migración de base de datos requerida (022)
+### Migraciones de base de datos requeridas (022 y 023)
 
-La migración `022_ai_assistant_usage.sql` crea las tablas `ai_assistant_usage` y `ai_assistant_global_usage` y la función RPC `check_and_increment_ai_usage`. **Debe aplicarse antes de redesplegar la función**, de lo contrario la función devolverá `quota_check_failed` en cada petición.
+Las migraciones `022_ai_assistant_usage.sql` y `023_ai_assistant_usage_gate_order.sql` crean las tablas `ai_assistant_usage` y `ai_assistant_global_usage` y la función RPC `check_and_increment_ai_usage` con el orden de gates correcto. **Ambas deben aplicarse antes de redesplegar la función**, de lo contrario la función devolverá `quota_check_failed` en cada petición.
 
 ```bash
 supabase link --project-ref hxtynisikjpwlvpdgdbt
@@ -188,8 +195,11 @@ Si necesitas cambiar de proveedor, actualiza los secrets `LLM_*`; el código no 
 > **Nota:** el free trial de Cerebras (julio 2026) son solo **$5 de crédito con tarjeta que caducan en 30 días** y **5 RPM / 30K TPM**. El plan de pago (Developer PAYGO) es $0.35/$0.75 por 1M tokens con 1K RPM. No hay tier de uso gratuito indefinido.
 
 ```bash
+# Actualizar .env.local con la clave de Cerebras
+echo "LLM_API_KEY=csk_tu_clave" > .env.local
+
 npx supabase secrets set \
-  LLM_API_KEY=csk_tu_clave \
+  --env-file .env.local \
   LLM_BASE_URL=https://api.cerebras.ai/v1 \
   LLM_MODEL=gpt-oss-120b \
   --project-ref hxtynisikjpwlvpdgdbt
@@ -200,8 +210,11 @@ npx supabase secrets set \
 Precio más bajo del mercado ($0.14/$0.28 por 1M tokens, contexto 1M). Buena calidad en es/en/pt; menos datos públicos para eu/gl/ca.
 
 ```bash
+# Actualizar .env.local con la clave de DeepSeek
+echo "LLM_API_KEY=tu_clave_deepseek" > .env.local
+
 npx supabase secrets set \
-  LLM_API_KEY=tu_clave_deepseek \
+  --env-file .env.local \
   LLM_BASE_URL=https://api.deepseek.com/v1 \
   LLM_MODEL=deepseek-chat \
   --project-ref hxtynisikjpwlvpdgdbt
@@ -210,8 +223,11 @@ npx supabase secrets set \
 #### Groq
 
 ```bash
+# Actualizar .env.local con la clave de Groq
+echo "LLM_API_KEY=gsk_tu_clave" > .env.local
+
 npx supabase secrets set \
-  LLM_API_KEY=gsk_tu_clave \
+  --env-file .env.local \
   LLM_BASE_URL=https://api.groq.com/openai/v1 \
   LLM_MODEL=openai/gpt-oss-20b \
   --project-ref hxtynisikjpwlvpdgdbt

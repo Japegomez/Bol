@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024).
 
 ---
 
@@ -103,6 +103,11 @@ Un **hogar** es un espacio compartido que agrupa un planificador semanal y una l
 **RF-HH-06** Un usuario puede abandonar el hogar.  
 **RF-HH-07** Todos los miembros del hogar ven y editan el mismo planificador y la misma lista de la compra en tiempo real.  
 **RF-HH-08** Un usuario sin hogar tiene su propio planificador y lista personal (modo individual).  
+**RF-HH-09** Al **crear** o **unirse** a un hogar, el planificador individual del usuario (semana actual y futuras) se **fusiona de forma aditiva** en el planificador del hogar; la lista de la compra del hogar se **recalcula** desde ese plan.  
+**RF-HH-10** Al **abandonar** el hogar, se hace un **snapshot** del planificador del hogar (semana actual y futuras) sobre el individual (sustituye esas semanas) y se recalcula la lista individual; recetas ajenas pasan a texto libre.  
+**RF-HH-11** Un miembro puede abrir en solo lectura una receta de otro miembro del hogar y **añadirla a su recetario** (fork explícito).
+
+> **Nota de implementación — migración de plan (024):** RPCs `merge_user_plans_into_household`, `snapshot_household_plans_to_user`, `rebuild_shopping_from_plans`; `create_household` / `join_household` / `leave_household` las invocan. RLS `shares_household_with` para SELECT de recetas/ingredientes/pasos/nutrición/fotos entre co-miembros.  
 
 ---
 
@@ -167,8 +172,8 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.  
 **RF-REC-23** Al añadir un ingrediente en el formulario de receta, la unidad por defecto es **`unidad`** y la categoría por defecto es **Verduras** (`vegetables`). La deserialización offline (`RecipeFormDataCodec`) aplica los mismos defaults si el payload no incluye esos campos (salvo «al gusto» o unidad personalizada).  
 **RF-REC-24** El usuario puede crear una receta con **asistente de IA** (opción en el FAB del recetario): describe un plato o pega una receta completa; la Edge Function `recipe-assistant` (`generate_recipe`) genera/adapta la ficha y **pre-rellena** el formulario de creación (el usuario revisa y guarda). Si el input es una receta pegada, se conservan todos los ingredientes (excepto agua solo de cocción) y se dividen los pasos. Los nombres de ingrediente se normalizan a singular con mayúscula inicial.  
-**RF-REC-25** El usuario puede **completar la información nutricional** de una receta existente con IA desde el detalle o el formulario de edición (`generate_nutrition`); los valores estimados por ración se pueden guardar sin reescribir el resto de la receta. El proveedor LLM es configurable por secrets (`LLM_*`; recomendado Gemini `gemini-3.1-flash-lite` en un proyecto GCP sin facturación, separado del de Translation/Vision).  
-**RF-REC-26** El asistente IA aplica **límites de uso por usuario** (cuota diaria + cooldown anti-bucle) y un **tope global diario opcional** en servidor (`check_and_increment_ai_usage`), de modo que no se puedan agotar la cuota del proveedor ni disparar el gasto con llamadas repetidas o tokens filtrados. Los errores de cuota se muestran con mensajes localizados distintos del rate-limit del proveedor.
+**RF-REC-25** El usuario puede **completar la información nutricional** de una receta existente con IA desde el detalle o el formulario de edición (`generate_nutrition`); los valores estimados por ración se pueden guardar sin reescribir el resto de la receta. Si ya hay valores, se **adjuntan** a la petición (`existingNutrition`) y el modelo debe **conservarlos** cuando sean coherentes con la receta. Los valores nutricionales son **enteros** (sin decimales) en schema LLM, mapper y formulario. El proveedor LLM es configurable por secrets (`LLM_*`; recomendado Gemini `gemini-3.1-flash-lite` en un proyecto GCP sin facturación, separado del de Translation/Vision).  
+**RF-REC-26** El asistente IA implementa mecanismos de mitigación de abuso y control de gasto en servidor (`check_and_increment_ai_usage`): **cuota diaria por usuario**, **cooldown anti-bucle** (intervalo mínimo entre llamadas) y **tope global diario opcional** (límite agregado de todas las llamadas). Estos límites configurables actúan como capa de protección frente a uso repetitivo o atípico, complementando (no sustituyendo) los límites de tokens y las restricciones del proveedor LLM, que se configuran y aplican por separado mediante secrets `LLM_*` y las políticas de la API del proveedor. Los errores de cuota se muestran con mensajes localizados distintos del rate-limit del proveedor. No existe contabilidad explícita de tokens ni costo en el código actual; la función de cuota opera únicamente sobre recuento de llamadas.
 
 ---
 
@@ -185,11 +190,11 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-07** Al eliminar una receta del planificador, sus ingredientes generados por esa asignación se eliminan de la lista de la compra (por `plan_slot_id`).  
 **RF-PLAN-08** Desde el planificador, el usuario puede pulsar la receta de un slot (chip ampliado) para abrir su ficha en el recetario. Las entradas de texto libre no navegan.  
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
-**RF-PLAN-10** Al asignar una receta, el usuario puede marcar **Son sobras**: los ingredientes **no** se añaden a la lista de la compra.  
+**RF-PLAN-10** El usuario puede marcar **Son sobras** desde el selector de recetas (opción al mismo nivel que texto libre): elige una receta **sin** diálogo de raciones; los ingredientes **no** se añaden a la lista de la compra. El diálogo de raciones de una asignación normal ya no incluye el checkbox de sobras.  
 **RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
 **RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
 
-> **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono).
+> **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono). Selector (`RecipePickerSheet`): acciones «texto libre» y «sobras» al mismo nivel; en modo sobras la lista no muestra raciones; el diálogo de raciones solo pide cantidad. El sheet se cierra antes de await del guardado del slot.
 
 ---
 
@@ -243,7 +248,7 @@ Desde la ficha de una receta, el usuario puede iniciar una **sesión de cocina**
 **RF-COOK-08** Para **terminar** la sesión, el usuario debe **mantener pulsado** el botón de parar (~1,6 s) con indicador de progreso circular, seguido de un diálogo de confirmación.  
 **RF-COOK-09** La sesión se **persiste localmente** (`SharedPreferences`) y se **restaura** al reabrir la app (paso actual, pasos completados, tiempos y estado de pausa).  
 **RF-COOK-10** En **Android**, mientras la sesión está activa, se muestra una **notificación persistente** en pantalla de bloqueo con cronómetro, texto del paso y acciones pausar/continuar/terminar.  
-**RF-COOK-11** En **iOS 16.1+**, mientras la sesión está activa, se muestra una **Live Activity** (extensión WidgetKit `CookingActivity`) con tiempo, paso y acciones interactivas (iOS 17+) o deep links (fallback).  
+**RF-COOK-11** En **iOS 16.1+**, mientras la sesión está activa, se muestra una **Live Activity** (extensión WidgetKit `CookingActivity`) con tiempo, paso y acciones interactivas (iOS 17+) o deep links (fallback). El título y el texto del paso usan color de etiqueta del sistema (`.primary`) para legibilidad sobre `systemBackground` desde el primer render.  
 **RF-COOK-12** En **web** y escritorio, la UI de cocina funciona con normalidad; notificaciones y Live Activity son **no-op** (sin acceso a APIs nativas).
 
 > **Nota de implementación — modo cocina:** `lib/features/cooking/` (`CookingSession`, `cookingSessionProvider`, `CookingScreen`, `CookingBanner`). Integración en `home_shell.dart` (Stack) y `recipe_detail_screen.dart`. Plataforma: `CookingNotificationService` (Android), `CookingLiveActivityService` + extensión `ios/CookingActivity/` (iOS). App Group `group.com.japegomez.mealPlanner.cooking`. Target `CookingActivity` registrado en `project.pbxproj` para builds Codemagic. Perfil de aprovisionamiento App Store para `com.japegomez.mealPlanner.CookingActivity` pendiente de configuración manual.
@@ -472,7 +477,8 @@ lib/
 | `google_sign_in` | Google Sign-In nativo → `signInWithIdToken` en Supabase |
 | `sign_in_with_apple` | Sign in with Apple (obligatorio en iOS con OAuth) |
 | `image_picker` | Selección de foto de receta |
-| `share_plus` | Exportar lista de la compra |
+| `share_plus` | Exportar lista de la compra y compartir enlaces de recetas |
+| `app_links` | Deep links HTTPS (Firebase Hosting) y esquema `recetea://` |
 | `intl` | Formateo de fechas (semanas) |
 | `flutter_slidable` | Swipe en ítems de lista |
 | `cached_network_image` | Caché de fotos de recetas y avatares |
@@ -574,3 +580,8 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
 - **RF-SOC-05** Seguir usuarios (desde perfil público; acceso al perfil desde el nombre del autor en tarjeta o detalle) y feed en `/home/explore/feed` con filtro multi-etiqueta, orden por fecha de creación e indicador «Ordenado por: Más reciente».
 - **RF-SOC-06** Perfil público con avatar, nombre, recetas publicadas y valoración media. Sin campo bio (no está en `profiles`).
 - **RF-SOC-07** En el detalle de receta pública: texto «Receta creada por » (sin enlace) + nombre del autor (enlace al perfil), o «Receta creada por ti» si es la propia receta; fecha de creación visible junto a valoración y raciones.
+- **RF-SOC-08** El usuario puede **compartir una receta por enlace HTTPS** (WhatsApp u otras apps vía `share_plus`):
+  - Receta **privada propia**: enlace opaco `/r/<token>` (Firebase Hosting); caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
+  - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
+  - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
+  - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`.

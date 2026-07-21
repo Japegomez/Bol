@@ -25,6 +25,7 @@ class RecipePickerSheet extends ConsumerStatefulWidget {
 class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
   final _searchController = TextEditingController();
   Set<String> _selectedTags = {};
+  bool _leftoverMode = false;
 
   @override
   void initState() {
@@ -40,6 +41,24 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
 
   Future<void> _selectRecipe(Recipe recipe) async {
     final canEdit = ref.read(canEditOfflineProvider);
+    final notifier = ref.read(planSlotsProvider.notifier);
+    final dayOfWeek = widget.dayOfWeek;
+    final mealType = widget.mealType;
+
+    if (_leftoverMode) {
+      if (!canEdit) return;
+      Navigator.pop(context);
+      await notifier.addSlot(
+        dayOfWeek: dayOfWeek,
+        mealType: mealType,
+        recipeId: recipe.id,
+        servings: recipe.servings > 0 ? recipe.servings : 1,
+        recipeTitle: recipe.title,
+        isLeftover: true,
+      );
+      return;
+    }
+
     final result = await showServingsDialog(
       context,
       defaultServings: recipe.servings,
@@ -48,16 +67,15 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
 
     if (result == null || !mounted) return;
 
-    await ref.read(planSlotsProvider.notifier).addSlot(
-          dayOfWeek: widget.dayOfWeek,
-          mealType: widget.mealType,
-          recipeId: recipe.id,
-          servings: result.servings,
-          recipeTitle: recipe.title,
-          isLeftover: result.isLeftover,
-        );
-
-    if (mounted) Navigator.pop(context);
+    Navigator.pop(context);
+    await notifier.addSlot(
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      recipeId: recipe.id,
+      servings: result.servings,
+      recipeTitle: recipe.title,
+      isLeftover: false,
+    );
   }
 
   Future<void> _addTextEntry() async {
@@ -65,16 +83,18 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
     final result = await showAddTextDialog(context, canConfirm: canEdit);
     if (result == null || !mounted) return;
 
-    await ref.read(planSlotsProvider.notifier).addSlot(
-          dayOfWeek: widget.dayOfWeek,
-          mealType: widget.mealType,
-          recipeId: null,
-          servings: result.servings,
-          notes: result.notes,
-          isLeftover: false,
-        );
-
-    if (mounted) Navigator.pop(context);
+    final notifier = ref.read(planSlotsProvider.notifier);
+    final dayOfWeek = widget.dayOfWeek;
+    final mealType = widget.mealType;
+    Navigator.pop(context);
+    await notifier.addSlot(
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      recipeId: null,
+      servings: result.servings,
+      notes: result.notes,
+      isLeftover: false,
+    );
   }
 
   @override
@@ -83,6 +103,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
     final hasActiveFilter =
         _searchController.text.trim().isNotEmpty || _selectedTags.isNotEmpty;
     final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -94,7 +115,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    l10n.chooseRecipe,
+                    _leftoverMode ? l10n.leftovers : l10n.chooseRecipe,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
@@ -125,14 +146,47 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
           const SizedBox(height: 4),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              leading: const Icon(Icons.edit_note),
-              title: Text(l10n.addFreeText),
-              subtitle: Text(l10n.noRecipeExample),
-              onTap: _addTextEntry,
+            child: Column(
+              children: [
+                ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  leading: const Icon(Icons.edit_note),
+                  title: Text(l10n.addFreeText),
+                  subtitle: Text(l10n.noRecipeExample),
+                  onTap: () {
+                    if (_leftoverMode) {
+                      setState(() => _leftoverMode = false);
+                    }
+                    _addTextEntry();
+                  },
+                ),
+                ListTile(
+                  selected: _leftoverMode,
+                  selectedTileColor:
+                      colorScheme.tertiaryContainer.withValues(alpha: 0.45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  leading: Icon(
+                    Icons.dinner_dining_outlined,
+                    color: _leftoverMode
+                        ? colorScheme.onTertiaryContainer
+                        : null,
+                  ),
+                  title: Text(l10n.leftovers),
+                  subtitle: Text(l10n.leftoversShoppingHint),
+                  trailing: _leftoverMode
+                      ? Icon(
+                          Icons.check_circle,
+                          color: colorScheme.tertiary,
+                        )
+                      : null,
+                  onTap: () =>
+                      setState(() => _leftoverMode = !_leftoverMode),
+                ),
+              ],
             ),
           ),
           const Divider(height: 1),
@@ -166,7 +220,9 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                     final recipe = displayRecipes[index];
                     return ListTile(
                       title: Text(recipe.title),
-                      subtitle: Text(l10n.servingsCount(recipe.servings)),
+                      subtitle: _leftoverMode
+                          ? null
+                          : Text(l10n.servingsCount(recipe.servings)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _selectRecipe(recipe),
                     );

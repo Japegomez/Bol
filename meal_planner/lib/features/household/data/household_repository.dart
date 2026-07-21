@@ -93,13 +93,11 @@ class HouseholdRepository {
 
   Future<void> leaveHousehold({
     required String householdId,
-    required String userId,
   }) async {
-    await supabase
-        .from(HouseholdMember.table_name)
-        .delete()
-        .eq(HouseholdMember.c_householdId, householdId)
-        .eq(HouseholdMember.c_userId, userId);
+    await supabase.rpc<void>(
+      'leave_household',
+      params: {'p_household_id': householdId},
+    );
   }
 
   Future<String?> getMemberRole({
