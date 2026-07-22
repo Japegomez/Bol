@@ -191,9 +191,14 @@ class RecipesRepository {
     if (photoPath.startsWith('http')) return photoPath;
     if (!await NetworkStatus.isOnline) return null;
 
-    return supabase.storage
-        .from(_photoBucket)
-        .createSignedUrl(photoPath, _signedUrlExpiry);
+    try {
+      return await supabase.storage
+          .from(_photoBucket)
+          .createSignedUrl(photoPath, _signedUrlExpiry);
+    } catch (_) {
+      // Shared / household peeks may lack storage rights; load recipe without photo.
+      return null;
+    }
   }
 
   Future<String> createRecipe(

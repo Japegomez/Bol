@@ -153,6 +153,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
   bool _isGeneratingNutrition = false;
   bool _isForking = false;
   bool _isSharing = false;
+  bool _showAppBarTitle = false;
   final Set<String> _updatingIngredientIds = {};
 
   bool get _isOwned {
@@ -162,6 +163,16 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
   }
 
   bool get _canShare => _isOwned || _isPublic;
+
+  bool _onScroll(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    final show = notification.metrics.pixels >=
+        recipeAppBarCollapseOffset(hasPhoto: widget.photoUrl != null);
+    if (show != _showAppBarTitle) {
+      setState(() => _showAppBarTitle = show);
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -466,7 +477,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
       isTranslated: widget.isTranslated,
       showingOriginal: widget.showingOriginal,
     );
-    return CustomScrollView(
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScroll,
+      child: CustomScrollView(
       slivers: [
         SliverAppBar(
           expandedHeight: widget.photoUrl != null ? 240 : 120,
@@ -475,6 +488,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
+          title: _showAppBarTitle
+              ? RecipeAppBarTitle(title: widget.title)
+              : null,
           actions: [
             if (_canShare)
               _isSharing
@@ -518,16 +534,6 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
               ),
           ],
           flexibleSpace: FlexibleSpaceBar(
-            // start: clear back; end: clear trailing actions
-            titlePadding: EdgeInsetsDirectional.only(
-              start: 16,
-              end: _isOwned
-                  ? (_canShare ? 152 : 104)
-                  : (_canShare ? 104 : 56),
-              // ~vertically centers titleLarge in kToolbarHeight (56)
-              bottom: 14,
-            ),
-            title: RecipeAppBarTitle(title: widget.title),
             background: widget.photoUrl != null
                 ? CachedNetworkImage(
                     imageUrl: widget.photoUrl!,
@@ -543,6 +549,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                RecipeDetailBodyTitle(title: widget.title),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -754,6 +762,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
           ),
         ),
       ],
+      ),
     );
   }
 }
