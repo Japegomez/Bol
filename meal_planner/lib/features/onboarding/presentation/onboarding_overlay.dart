@@ -18,19 +18,13 @@ class OnboardingOverlay extends ConsumerStatefulWidget {
   ConsumerState<OnboardingOverlay> createState() => _OnboardingOverlayState();
 }
 
-class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
+class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay> {
   List<Rect> _targetRects = const [];
   int _measureGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncTabForStep();
       _scheduleMeasure();
@@ -41,12 +35,6 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _scheduleMeasure();
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
   }
 
   void _syncTabForStep() {
@@ -104,14 +92,15 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     final step = ref.watch(onboardingTourStepProvider);
     final tour = ref.read(onboardingTourStepProvider.notifier);
     final isLast = tour.isLastStep;
     final copy = _copyForStep(l10n, step);
     final mediaQuery = MediaQuery.of(context);
     final screenSize = mediaQuery.size;
-    final padding = mediaQuery.padding;
+    // viewPadding keeps system gesture/nav bars on Android edge-to-edge;
+    // padding alone can be 0 and let the card sit under the system footer.
+    final viewPadding = mediaQuery.viewPadding;
 
     ref.listen<int>(onboardingTourStepProvider, (previous, next) {
       if (previous != next) {
@@ -138,7 +127,7 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay>
     final cardWidth = math.min(screenSize.width - 32, 420.0);
     final cardLayout = _resolveCardLayout(
       screenSize: screenSize,
-      padding: padding,
+      viewPadding: viewPadding,
       cardWidth: cardWidth,
       targetRect: _layoutRect,
     );
@@ -152,18 +141,11 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay>
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () {},
-                child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, _) {
-                    return CustomPaint(
-                      painter: _OnboardingScrimPainter(
-                        targetRects: _targetRects,
-                        pulseValue: _pulseController.value,
-                        scrimColor: Colors.black.withValues(alpha: 0.62),
-                        haloColor: theme.colorScheme.primary,
-                      ),
-                    );
-                  },
+                child: CustomPaint(
+                  painter: _OnboardingScrimPainter(
+                    targetRects: _targetRects,
+                    scrimColor: Colors.black.withValues(alpha: 0.62),
+                  ),
                 ),
               ),
             ),
@@ -235,17 +217,21 @@ class _CardLayout {
 
 _CardLayout _resolveCardLayout({
   required Size screenSize,
-  required EdgeInsets padding,
+  required EdgeInsets viewPadding,
   required double cardWidth,
   required Rect? targetRect,
 }) {
   const horizontalMargin = 16.0;
   const gap = 16.0;
-  const estimatedCardHeight = 220.0;
+  // Tall enough for localized copy + actions; underestimating overlaps FABs.
+  const estimatedCardHeight = 280.0;
   const pointerSize = 12.0;
+  // App bottom NavigationBar sits above system insets; keep cards clear of it.
+  const bottomNavClearance = 80.0;
 
-  final safeTop = padding.top + 12;
-  final safeBottom = screenSize.height - padding.bottom - 12;
+  final safeTop = viewPadding.top + 12;
+  final safeBottom =
+      screenSize.height - viewPadding.bottom - bottomNavClearance - 12;
   final maxTop = math.max(safeTop, safeBottom - estimatedCardHeight);
   final centeredLeft = (screenSize.width - cardWidth) / 2;
   final centeredTop =
@@ -253,34 +239,73 @@ _CardLayout _resolveCardLayout({
 
   if (targetRect == null) {
     return _CardLayout(
-      left: centeredLeft.clamp(horizontalMargin, screenSize.width - cardWidth - horizontalMargin),
+      left: centeredLeft.clamp(
+        horizontalMargin,
+        screenSize.width - cardWidth - horizontalMargin,
+      ),
       top: centeredTop.clamp(safeTop, maxTop),
       pointerOnTop: false,
       pointerOffset: cardWidth / 2,
     );
   }
 
-  final spaceAbove = targetRect.top - safeTop;
-  final spaceBelow = safeBottom - targetRect.bottom;
-  final placeAbove = spaceAbove >= spaceBelow;
+  // Multi-target unions (e.g. search + glossary FAB) can span most of the
+  // screen; anchor the card to the top band so it does not fall under the
+  // Android system navigation bar.
+  final placementRect = targetRect.height > screenSize.height * 0.35
+      ? Rect.fromLTWH(
+          targetRect.left,
+          targetRect.top,
+          targetRect.width,
+          math.min(88, targetRect.height),
+        )
+      : targetRect;
 
-  final targetCenterX = targetRect.center.dx;
+  final spaceAbove = placementRect.top - safeTop;
+  final spaceBelow = safeBottom - placementRect.bottom;
+  var placeAbove = spaceAbove >= estimatedCardHeight + gap + pointerSize ||
+      spaceAbove >= spaceBelow;
+
+  // Bottom FABs: always prefer above so the tooltip does not cover them.
+  final isBottomTarget =
+      placementRect.center.dy > screenSize.height * 0.55;
+  if (isBottomTarget && spaceAbove >= estimatedCardHeight * 0.6) {
+    placeAbove = true;
+  }
+
+  final targetCenterX = placementRect.center.dx;
   var left = targetCenterX - cardWidth / 2;
   left = left.clamp(
     horizontalMargin,
     screenSize.width - cardWidth - horizontalMargin,
   );
 
-  final pointerOffset =
-      (targetCenterX - left).clamp(24.0, cardWidth - 24.0);
+  final pointerOffset = (targetCenterX - left).clamp(24.0, cardWidth - 24.0);
 
-  final top = placeAbove
-      ? targetRect.top - estimatedCardHeight - gap - pointerSize
-      : targetRect.bottom + gap + pointerSize;
+  double top;
+  if (placeAbove) {
+    final desiredTop =
+        placementRect.top - estimatedCardHeight - gap - pointerSize;
+    // Never clamp downward past the target — that was overlapping FABs on Android.
+    final maxTopAbove =
+        placementRect.top - gap - pointerSize - estimatedCardHeight * 0.55;
+    top = desiredTop.clamp(safeTop, math.max(safeTop, maxTopAbove));
+    if (top + estimatedCardHeight + gap > placementRect.top) {
+      top = math.max(
+        safeTop,
+        placementRect.top - estimatedCardHeight - gap - pointerSize,
+      );
+    }
+  } else {
+    final desiredTop = placementRect.bottom + gap + pointerSize;
+    top = desiredTop.clamp(safeTop, maxTop);
+  }
+
+  top = top.clamp(safeTop, maxTop);
 
   return _CardLayout(
     left: left,
-    top: top.clamp(safeTop, maxTop),
+    top: top,
     pointerOnTop: !placeAbove,
     pointerOffset: pointerOffset,
   );
@@ -531,15 +556,11 @@ class _CardPointerPainter extends CustomPainter {
 class _OnboardingScrimPainter extends CustomPainter {
   const _OnboardingScrimPainter({
     required this.targetRects,
-    required this.pulseValue,
     required this.scrimColor,
-    required this.haloColor,
   });
 
   final List<Rect> targetRects;
-  final double pulseValue;
   final Color scrimColor;
-  final Color haloColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -560,29 +581,6 @@ class _OnboardingScrimPainter extends CustomPainter {
     }
     scrimPath.fillType = PathFillType.evenOdd;
     canvas.drawPath(scrimPath, scrimPaint);
-
-    final pulse = 0.5 + 0.5 * math.sin(pulseValue * 2 * math.pi);
-    for (final targetRect in targetRects) {
-      final holeRect = _holeRectFor(targetRect);
-      final haloPaint = Paint()
-        ..color = haloColor.withValues(alpha: 0.18 + pulse * 0.22)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3 + pulse * 2;
-      final haloRect = holeRect.inflate(6 + pulse * 8);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(haloRect, const Radius.circular(18)),
-        haloPaint,
-      );
-
-      final innerGlow = Paint()
-        ..color = haloColor.withValues(alpha: 0.12 + pulse * 0.1)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(holeRect, const Radius.circular(14)),
-        innerGlow,
-      );
-    }
   }
 
   Rect _holeRectFor(Rect target) {
@@ -604,8 +602,6 @@ class _OnboardingScrimPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _OnboardingScrimPainter oldDelegate) {
     return oldDelegate.targetRects != targetRects ||
-        oldDelegate.pulseValue != pulseValue ||
-        oldDelegate.scrimColor != scrimColor ||
-        oldDelegate.haloColor != haloColor;
+        oldDelegate.scrimColor != scrimColor;
   }
 }
