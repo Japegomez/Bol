@@ -82,6 +82,12 @@
   "noRecipesYet": "No hay recetas todavía",
   "createFirstRecipe": "Crear primera receta",
   "servingsCount": "{count, plural, =1{1 ración} other{{count} raciones}}",
+  "servingsCountShort": "{count} r.",
+  "@servingsCountShort": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "deleteRecipeTitle": "Eliminar receta",
   "deleteRecipeConfirm": "¿Seguro que quieres eliminar \"{title}\"?",
   "publishRecipeTitle": "Publicar receta",
@@ -435,7 +441,7 @@
   "createRecipeWithAssistant": "Crear con asistente de IA",
   "createRecipeWithAssistantSubtitle": "Describe el plato y la IA elaborará la ficha",
   "recipeAssistantTitle": "Asistente de recetas",
-  "recipeAssistantDescription": "Describe el plato que quieres crear: solo el nombre o una receta detallada con ingredientes y pasos.",
+  "recipeAssistantDescription": "Dime lo que te apetece, lo que tienes en la nevera o describe una receta detallada con ingredientes y pasos.",
   "recipeAssistantPromptHint": "Ej.: tortilla de patatas para 4 personas con cebolla...",
   "recipeAssistantGenerate": "Generar receta",
   "recipeAssistantGenerating": "Generando...",

@@ -25,6 +25,7 @@ class RecipePalette extends ConsumerStatefulWidget {
 
 class _RecipePaletteState extends ConsumerState<RecipePalette> {
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
   String _query = '';
   Set<String> _selectedTags = {};
 
@@ -39,6 +40,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -129,17 +131,30 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                     );
                   }
 
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      return _DraggableRecipeCard(
-                        recipe: filtered[index],
-                        onDragUpdate: widget.onDragUpdate,
-                        onDragEnd: widget.onDragEnd,
-                      );
-                    },
+                  return Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true,
+                      trackVisibility: true,
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            return _DraggableRecipeCard(
+                              recipe: filtered[index],
+                              onDragUpdate: widget.onDragUpdate,
+                              onDragEnd: widget.onDragEnd,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),

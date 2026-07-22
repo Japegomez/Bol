@@ -520,7 +520,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
           flexibleSpace: FlexibleSpaceBar(
             // start: clear back; end: clear trailing actions
             titlePadding: EdgeInsetsDirectional.only(
-              start: 72,
+              start: 16,
               end: _isOwned
                   ? (_canShare ? 152 : 104)
                   : (_canShare ? 104 : 56),

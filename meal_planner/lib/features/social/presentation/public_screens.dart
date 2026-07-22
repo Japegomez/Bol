@@ -291,7 +291,7 @@ class _PublicRecipeDetailScreenState
                 flexibleSpace: FlexibleSpaceBar(
                   // start: clear back; end: clear trailing actions
                   titlePadding: EdgeInsetsDirectional.only(
-                    start: 72,
+                    start: 16,
                     end: (!isOwn) ? 104 : 56,
                     // ~vertically centers titleLarge in kToolbarHeight (56)
                     bottom: 14,

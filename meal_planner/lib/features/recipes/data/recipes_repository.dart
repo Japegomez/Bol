@@ -101,13 +101,16 @@ class RecipesRepository {
     if (await NetworkStatus.isOnline) {
       try {
         final detail = await _fetchRecipeDetailRemote(id);
-        await _cache.saveRecipeDetail(
-          recipe: detail.recipe,
-          ingredients: detail.ingredients,
-          steps: detail.steps,
-          nutrition: detail.nutrition,
-          forkedFromId: detail.forkedFromId,
-        );
+        // Only cache own recipes (share-link / foreign peeks must not pollute local DB).
+        if (detail.recipe.userId == _userId) {
+          await _cache.saveRecipeDetail(
+            recipe: detail.recipe,
+            ingredients: detail.ingredients,
+            steps: detail.steps,
+            nutrition: detail.nutrition,
+            forkedFromId: detail.forkedFromId,
+          );
+        }
         return detail;
       } catch (error) {
         if (!shouldFallbackToCache(error)) rethrow;
@@ -123,11 +126,11 @@ class RecipesRepository {
   }
 
   Future<RecipeDetail> _fetchRecipeDetailRemote(String id) async {
+    // No owner filter: RLS allows own, public, household, and active share-link reads.
     final recipeData = await supabase
         .from(Recipe.table_name)
         .select()
         .eq(Recipe.c_id, id)
-        .eq(Recipe.c_userId, _userId)
         .maybeSingle();
 
     if (recipeData == null) {

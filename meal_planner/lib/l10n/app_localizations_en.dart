@@ -257,6 +257,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String servingsCountShort(int count) {
+    return '$count srv.';
+  }
+
+  @override
   String get deleteRecipeTitle => 'Delete recipe';
 
   @override
@@ -1340,7 +1345,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeAssistantDescription =>
-      'Describe the dish you want to create: just the name or a detailed recipe with ingredients and steps.';
+      'Tell me what you\'re craving, what\'s in your fridge, or describe a detailed recipe with ingredients and steps.';
 
   @override
   String get recipeAssistantPromptHint =>

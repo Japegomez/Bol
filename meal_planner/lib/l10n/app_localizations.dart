@@ -562,6 +562,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 serving} other{{count} servings}}'**
   String servingsCount(int count);
 
+  /// No description provided for @servingsCountShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} srv.'**
+  String servingsCountShort(int count);
+
   /// No description provided for @deleteRecipeTitle.
   ///
   /// In en, this message translates to:
@@ -2569,7 +2575,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeAssistantDescription.
   ///
   /// In en, this message translates to:
-  /// **'Describe the dish you want to create: just the name or a detailed recipe with ingredients and steps.'**
+  /// **'Tell me what you\'re craving, what\'s in your fridge, or describe a detailed recipe with ingredients and steps.'**
   String get recipeAssistantDescription;
 
   /// No description provided for @recipeAssistantPromptHint.

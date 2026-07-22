@@ -191,11 +191,15 @@ class _EmptySlot extends StatelessWidget {
               color: colorScheme.outline,
             ),
             const SizedBox(width: 4),
-            Text(
-              isHovering ? l10n.dropHere : l10n.dragOrTap,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.outline,
-                  ),
+            Expanded(
+              child: Text(
+                isHovering ? l10n.dropHere : l10n.dragOrTap,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.outline,
+                    ),
+              ),
             ),
           ],
         ),
@@ -297,7 +301,7 @@ class _RecipeChip extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.displayTitle,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: onChipColor,
@@ -306,9 +310,9 @@ class _RecipeChip extends StatelessWidget {
                         ),
                       ),
                       if (item.slot.servings > 0) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Text(
-                          l10n.servingsCount(item.slot.servings),
+                          l10n.servingsCountShort(item.slot.servings),
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                 color: onChipColor.withValues(alpha: 0.85),
                               ),

@@ -258,6 +258,11 @@ class AppLocalizationsCa extends AppLocalizations {
   }
 
   @override
+  String servingsCountShort(int count) {
+    return '$count r.';
+  }
+
+  @override
   String get deleteRecipeTitle => 'Eliminar recepta';
 
   @override
@@ -1343,7 +1348,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get recipeAssistantDescription =>
-      'Descriu el plat que vols crear: només el nom o una recepta detallada amb ingredients i passos.';
+      'Digues-me què et ve de gust, què tens a la nevera o descriu una recepta detallada amb ingredients i passos.';
 
   @override
   String get recipeAssistantPromptHint =>
