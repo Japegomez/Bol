@@ -146,6 +146,7 @@ class _PublicRecipeDetailScreenState
   bool _isRating = false;
   bool _isSharing = false;
   bool _showOriginal = false;
+  bool _showAppBarTitle = false;
   ProviderSubscription<String>? _languageSubscription;
 
   @override
@@ -162,6 +163,16 @@ class _PublicRecipeDetailScreenState
   void dispose() {
     _languageSubscription?.close();
     super.dispose();
+  }
+
+  bool _onScroll(ScrollNotification notification, {required bool hasPhoto}) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    final show = notification.metrics.pixels >=
+        recipeAppBarCollapseOffset(hasPhoto: hasPhoto);
+    if (show != _showAppBarTitle) {
+      setState(() => _showAppBarTitle = show);
+    }
+    return false;
   }
 
   Future<void> _shareRecipe(PublicRecipeDetail detail) async {
@@ -262,15 +273,22 @@ class _PublicRecipeDetailScreenState
             showingOriginal: _showOriginal,
           );
           final isOwn = detail.recipe.userId == currentUserId;
-          return CustomScrollView(
+          final hasPhoto = detail.photoDisplayUrl != null;
+          return NotificationListener<ScrollNotification>(
+            onNotification: (notification) =>
+                _onScroll(notification, hasPhoto: hasPhoto),
+            child: CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: detail.photoDisplayUrl != null ? 240 : 120,
+                expandedHeight: hasPhoto ? 240 : 120,
                 pinned: true,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => context.pop(),
                 ),
+                title: _showAppBarTitle
+                    ? RecipeAppBarTitle(title: detail.recipe.title)
+                    : null,
                 actions: [
                   _isSharing
                       ? const _AppBarActionSpinner()
@@ -289,15 +307,7 @@ class _PublicRecipeDetailScreenState
                     const _AppBarActionSpinner(),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  // start: clear back; end: clear trailing actions
-                  titlePadding: EdgeInsetsDirectional.only(
-                    start: 16,
-                    end: (!isOwn) ? 104 : 56,
-                    // ~vertically centers titleLarge in kToolbarHeight (56)
-                    bottom: 14,
-                  ),
-                  title: RecipeAppBarTitle(title: detail.recipe.title),
-                  background: detail.photoDisplayUrl != null
+                  background: hasPhoto
                       ? CachedNetworkImage(
                           imageUrl: detail.photoDisplayUrl!,
                           fit: BoxFit.cover,
@@ -312,6 +322,8 @@ class _PublicRecipeDetailScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      RecipeDetailBodyTitle(title: detail.recipe.title),
+                      const SizedBox(height: 16),
                       TranslationStatusBanner(
                         l10n: l10n,
                         isTranslated: displayState.isTranslated,
@@ -412,6 +424,26 @@ class _PublicRecipeDetailScreenState
                           ),
                         ],
                       ),
+                      if (!isOwn) ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed:
+                                _isForking ? null : () => _forkRecipe(detail),
+                            icon: _isForking
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.bookmark_add_outlined),
+                            label: Text(l10n.saveToMyRecipeBook),
+                          ),
+                        ),
+                      ],
                       if (!isOwn) ...[
                         const SizedBox(height: 16),
                         Text(
@@ -530,22 +562,12 @@ class _PublicRecipeDetailScreenState
                         const SizedBox(height: 8),
                         _NutritionGrid(nutrition: detail.nutrition!),
                       ],
-                      const SizedBox(height: 16),
-                      if (!isOwn)
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed:
-                                _isForking ? null : () => _forkRecipe(detail),
-                            icon: const Icon(Icons.bookmark_add_outlined),
-                            label: Text(l10n.saveToMyRecipeBook),
-                          ),
-                        ),
                     ],
                   ),
                 ),
               ),
             ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
