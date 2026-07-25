@@ -934,6 +934,108 @@ class AppLocalizationsEu extends AppLocalizations {
   String get privacyPolicy => 'Pribatutasun-politika';
 
   @override
+  String get rateYourApp => 'Baloratu aplikazioa';
+
+  @override
+  String get rateYourAppSubtitle => 'Utzi iruzkin bat dendan';
+
+  @override
+  String get rateAppUnavailable =>
+      'Balorazioa ez dago erabilgarri gailu honetan une honetan.';
+
+  @override
+  String get sendFeedback => 'Bidali feedbacka';
+
+  @override
+  String get adminControlPanel => 'Kontrol-panela';
+
+  @override
+  String get adminFeedbackTitle => 'Feedbacka';
+
+  @override
+  String get feedbackWhatAbout => 'Zer kontatu nahi diguzu?';
+
+  @override
+  String get feedbackCategoryIssue => 'Arazo edo errorea';
+
+  @override
+  String get feedbackCategoryFeature => 'Eginbide-iradokizuna';
+
+  @override
+  String get feedbackCategoryOther => 'Bestelakoa';
+
+  @override
+  String get feedbackTypeLabel => 'Mota';
+
+  @override
+  String get feedbackYourMessage => 'Zure mezua';
+
+  @override
+  String get feedbackMessageHint =>
+      'Deskribatu arazoa edo ideia ahalik eta xehetasun handienarekin…';
+
+  @override
+  String get feedbackMinCharsHint => 'Gutxienez 10 karaktere';
+
+  @override
+  String get feedbackMessageTooShort =>
+      'Mezuak gutxienez 10 karaktere izan behar ditu.';
+
+  @override
+  String get feedbackSentSuccess =>
+      'Eskerrik asko zure mezuagatik. Aplikazioa hobetzeko berrikusiko dugu.';
+
+  @override
+  String get feedbackSendError =>
+      'Ezin izan da feedbacka bidali. Saiatu berriro.';
+
+  @override
+  String get feedbackCategoryFilter => 'Kategoria';
+
+  @override
+  String get feedbackStatusFilter => 'Egoera';
+
+  @override
+  String get feedbackFilterAll => 'Guztiak';
+
+  @override
+  String get feedbackStatusPending => 'Zain';
+
+  @override
+  String get feedbackStatusResolved => 'Ebatzita';
+
+  @override
+  String get feedbackStatusIgnored => 'Ez ikusia';
+
+  @override
+  String get feedbackMarkResolved => 'Markatu ebatzita gisa';
+
+  @override
+  String get feedbackMarkIgnored => 'Markatu ez ikusia gisa';
+
+  @override
+  String get feedbackMarkedResolved => 'Feedbacka ebatzita gisa markatu da.';
+
+  @override
+  String get feedbackMarkedIgnored => 'Feedbacka ez ikusia gisa markatu da.';
+
+  @override
+  String get feedbackStatusUpdateError =>
+      'Ezin izan da feedbackaren egoera eguneratu.';
+
+  @override
+  String get adminFeedbackEmpty => 'Ez dago feedbackik iragazki hauekin.';
+
+  @override
+  String get adminFeedbackLoadError => 'Ezin izan da feedbacka kargatu.';
+
+  @override
+  String get back => 'Atzera';
+
+  @override
+  String get send => 'Bidali';
+
+  @override
   String get signOut => 'Itxi saioa';
 
   @override

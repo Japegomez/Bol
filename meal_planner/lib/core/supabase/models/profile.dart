@@ -7,12 +7,14 @@ class Profile implements SupadartClass<Profile> {
   final String id;
   final String username;
   final String? avatarUrl;
+  final bool isAdmin;
   final DateTime createdAt;
 
   const Profile({
     required this.id,
     required this.username,
     this.avatarUrl,
+    this.isAdmin = false,
     required this.createdAt,
   });
 
@@ -20,6 +22,7 @@ class Profile implements SupadartClass<Profile> {
   static String get c_id => 'id';
   static String get c_username => 'username';
   static String get c_avatarUrl => 'avatar_url';
+  static String get c_isAdmin => 'is_admin';
   static String get c_createdAt => 'created_at';
 
   static List<Profile> converter(List<Map<String, dynamic>> data) {
@@ -30,6 +33,8 @@ class Profile implements SupadartClass<Profile> {
     return Profile.fromJson(data);
   }
 
+  /// Client write payloads never include [is_admin]; only the server/admin
+  /// bootstrap path may change that column.
   static Map<String, dynamic> _generateMap({
     String? id,
     String? username,
@@ -79,6 +84,7 @@ class Profile implements SupadartClass<Profile> {
       avatarUrl: jsonn['avatar_url'] != null
           ? jsonn['avatar_url'].toString()
           : null,
+      isAdmin: jsonn['is_admin'] == true,
       createdAt: jsonn['created_at'] != null
           ? DateTime.parse(jsonn['created_at'].toString())
           : DateTime.fromMillisecondsSinceEpoch(0),
@@ -113,12 +119,14 @@ class Profile implements SupadartClass<Profile> {
     Object? id = _unset,
     Object? username = _unset,
     Object? avatarUrl = _unset,
+    Object? isAdmin = _unset,
     Object? createdAt = _unset,
   }) {
     return Profile(
       id: id == _unset ? this.id : id as String,
       username: username == _unset ? this.username : username as String,
       avatarUrl: avatarUrl == _unset ? this.avatarUrl : avatarUrl as String?,
+      isAdmin: isAdmin == _unset ? this.isAdmin : isAdmin as bool,
       createdAt: createdAt == _unset ? this.createdAt : createdAt as DateTime,
     );
   }

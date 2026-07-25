@@ -10,6 +10,8 @@ import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/auth/presentation/forgot_password_screen.dart';
 import 'package:meal_planner/features/auth/presentation/login_screen.dart';
 import 'package:meal_planner/features/auth/presentation/register_screen.dart';
+import 'package:meal_planner/features/feedback/presentation/admin_feedback_screen.dart';
+import 'package:meal_planner/features/feedback/presentation/send_feedback_screen.dart';
 import 'package:meal_planner/features/household/presentation/create_household_screen.dart';
 import 'package:meal_planner/features/household/presentation/household_screen.dart';
 import 'package:meal_planner/features/household/presentation/join_household_screen.dart';
@@ -17,6 +19,7 @@ import 'package:meal_planner/features/planner/presentation/planner_screen.dart';
 import 'package:meal_planner/features/profile/presentation/delete_account_screen.dart';
 import 'package:meal_planner/features/profile/presentation/edit_profile_screen.dart';
 import 'package:meal_planner/features/profile/presentation/legal_document_screen.dart';
+import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
 import 'package:meal_planner/features/profile/presentation/profile_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/cooking_glossary_screen.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_detail_screen.dart';
@@ -33,6 +36,7 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final profileAsync = ref.watch(profileProvider);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -51,6 +55,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         data: (value) => value is AuthAuthenticated,
         orElse: () => false,
       );
+
+      if (state.matchedLocation.startsWith('/home/profile/admin')) {
+        // Wait until profile finished loading before denying access.
+        if (profileAsync.isLoading && !profileAsync.hasValue) {
+          return null;
+        }
+        if (profileAsync.valueOrNull?.isAdmin != true) {
+          return '/home/profile';
+        }
+      }
 
       final shareLocation = ShareUrls.appLocationForIncomingUri(state.uri);
       final isIncomingSharePath = state.uri.path.startsWith('/p/') ||
@@ -237,6 +251,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'delete-account',
                     builder: (_, _) => const DeleteAccountScreen(),
+                  ),
+                  GoRoute(
+                    path: 'feedback',
+                    builder: (_, _) => const SendFeedbackScreen(),
+                  ),
+                  GoRoute(
+                    path: 'admin/feedback',
+                    builder: (_, _) => const AdminFeedbackScreen(),
                   ),
                 ],
               ),

@@ -933,6 +933,108 @@ class AppLocalizationsCa extends AppLocalizations {
   String get privacyPolicy => 'Política de Privacitat';
 
   @override
+  String get rateYourApp => 'Valora l\'app';
+
+  @override
+  String get rateYourAppSubtitle => 'Deixa una ressenya a la botiga';
+
+  @override
+  String get rateAppUnavailable =>
+      'La valoració no està disponible en aquest dispositiu ara mateix.';
+
+  @override
+  String get sendFeedback => 'Enviar feedback';
+
+  @override
+  String get adminControlPanel => 'Panell de control';
+
+  @override
+  String get adminFeedbackTitle => 'Feedback';
+
+  @override
+  String get feedbackWhatAbout => 'Què ens vols explicar?';
+
+  @override
+  String get feedbackCategoryIssue => 'Problema o error';
+
+  @override
+  String get feedbackCategoryFeature => 'Suggeriment de funció';
+
+  @override
+  String get feedbackCategoryOther => 'Altre';
+
+  @override
+  String get feedbackTypeLabel => 'Tipus';
+
+  @override
+  String get feedbackYourMessage => 'El teu missatge';
+
+  @override
+  String get feedbackMessageHint =>
+      'Descriu el problema o la teva idea amb el màxim detall possible…';
+
+  @override
+  String get feedbackMinCharsHint => 'Mínim 10 caràcters';
+
+  @override
+  String get feedbackMessageTooShort =>
+      'El missatge ha de tenir almenys 10 caràcters.';
+
+  @override
+  String get feedbackSentSuccess =>
+      'Gràcies pel teu missatge. El revisarem per millorar l\'app.';
+
+  @override
+  String get feedbackSendError =>
+      'No s\'ha pogut enviar el feedback. Torna-ho a provar.';
+
+  @override
+  String get feedbackCategoryFilter => 'Categoria';
+
+  @override
+  String get feedbackStatusFilter => 'Estat';
+
+  @override
+  String get feedbackFilterAll => 'Totes';
+
+  @override
+  String get feedbackStatusPending => 'Pendent';
+
+  @override
+  String get feedbackStatusResolved => 'Resolt';
+
+  @override
+  String get feedbackStatusIgnored => 'Ignorat';
+
+  @override
+  String get feedbackMarkResolved => 'Marcar com a resolt';
+
+  @override
+  String get feedbackMarkIgnored => 'Marcar com a ignorat';
+
+  @override
+  String get feedbackMarkedResolved => 'Feedback marcat com a resolt.';
+
+  @override
+  String get feedbackMarkedIgnored => 'Feedback marcat com a ignorat.';
+
+  @override
+  String get feedbackStatusUpdateError =>
+      'No s\'ha pogut actualitzar l\'estat del feedback.';
+
+  @override
+  String get adminFeedbackEmpty => 'No hi ha feedback amb aquests filtres.';
+
+  @override
+  String get adminFeedbackLoadError => 'No s\'ha pogut carregar el feedback.';
+
+  @override
+  String get back => 'Enrere';
+
+  @override
+  String get send => 'Enviar';
+
+  @override
   String get signOut => 'Tancar sessió';
 
   @override

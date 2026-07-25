@@ -1792,6 +1792,198 @@ abstract class AppLocalizations {
   /// **'Privacy Policy'**
   String get privacyPolicy;
 
+  /// No description provided for @rateYourApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Your App'**
+  String get rateYourApp;
+
+  /// No description provided for @rateYourAppSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a review on the store'**
+  String get rateYourAppSubtitle;
+
+  /// No description provided for @rateAppUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating is not available on this device right now.'**
+  String get rateAppUnavailable;
+
+  /// No description provided for @sendFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send feedback'**
+  String get sendFeedback;
+
+  /// No description provided for @adminControlPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin control panel'**
+  String get adminControlPanel;
+
+  /// No description provided for @adminFeedbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get adminFeedbackTitle;
+
+  /// No description provided for @feedbackWhatAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to tell us?'**
+  String get feedbackWhatAbout;
+
+  /// No description provided for @feedbackCategoryIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem or bug'**
+  String get feedbackCategoryIssue;
+
+  /// No description provided for @feedbackCategoryFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature suggestion'**
+  String get feedbackCategoryFeature;
+
+  /// No description provided for @feedbackCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get feedbackCategoryOther;
+
+  /// No description provided for @feedbackTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get feedbackTypeLabel;
+
+  /// No description provided for @feedbackYourMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message'**
+  String get feedbackYourMessage;
+
+  /// No description provided for @feedbackMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the problem or idea in as much detail as possible…'**
+  String get feedbackMessageHint;
+
+  /// No description provided for @feedbackMinCharsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum 10 characters'**
+  String get feedbackMinCharsHint;
+
+  /// No description provided for @feedbackMessageTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'The message must be at least 10 characters.'**
+  String get feedbackMessageTooShort;
+
+  /// No description provided for @feedbackSentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your feedback. We\'ll review it to improve the app.'**
+  String get feedbackSentSuccess;
+
+  /// No description provided for @feedbackSendError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send feedback. Please try again.'**
+  String get feedbackSendError;
+
+  /// No description provided for @feedbackCategoryFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get feedbackCategoryFilter;
+
+  /// No description provided for @feedbackStatusFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get feedbackStatusFilter;
+
+  /// No description provided for @feedbackFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get feedbackFilterAll;
+
+  /// No description provided for @feedbackStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get feedbackStatusPending;
+
+  /// No description provided for @feedbackStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get feedbackStatusResolved;
+
+  /// No description provided for @feedbackStatusIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored'**
+  String get feedbackStatusIgnored;
+
+  /// No description provided for @feedbackMarkResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as resolved'**
+  String get feedbackMarkResolved;
+
+  /// No description provided for @feedbackMarkIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as ignored'**
+  String get feedbackMarkIgnored;
+
+  /// No description provided for @feedbackMarkedResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback marked as resolved.'**
+  String get feedbackMarkedResolved;
+
+  /// No description provided for @feedbackMarkedIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback marked as ignored.'**
+  String get feedbackMarkedIgnored;
+
+  /// No description provided for @feedbackStatusUpdateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update feedback status.'**
+  String get feedbackStatusUpdateError;
+
+  /// No description provided for @adminFeedbackEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No feedback with these filters.'**
+  String get adminFeedbackEmpty;
+
+  /// No description provided for @adminFeedbackLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load feedback.'**
+  String get adminFeedbackLoadError;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
   /// No description provided for @signOut.
   ///
   /// In en, this message translates to:

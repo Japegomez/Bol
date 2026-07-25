@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/language_selector_tile.dart';
+import 'package:meal_planner/core/review/review_prompt_service.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -14,6 +15,16 @@ import 'package:meal_planner/features/profile/presentation/profile_provider.dart
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _rateApp(BuildContext context) async {
+    final l10n = context.l10n;
+    final opened = await ReviewPromptService.openRateApp();
+    if (!context.mounted || opened) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.rateAppUnavailable)),
+    );
+  }
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
@@ -192,10 +203,35 @@ class ProfileScreen extends ConsumerWidget {
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/legal/privacy'),
                       ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.star_outline),
+                        title: Text(l10n.rateYourApp),
+                        subtitle: Text(l10n.rateYourAppSubtitle),
+                        trailing: const Icon(Icons.open_in_new),
+                        onTap: () => _rateApp(context),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (profile?.isAdmin == true) ...[
+                  FilledButton.tonalIcon(
+                    onPressed: () =>
+                        context.push('/home/profile/admin/feedback'),
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    label: Text(l10n.adminControlPanel),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                OutlinedButton.icon(
+                  onPressed: user == null
+                      ? null
+                      : () => context.push('/home/profile/feedback'),
+                  icon: const Icon(Icons.feedback_outlined),
+                  label: Text(l10n.sendFeedback),
+                ),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: user == null
                       ? null
