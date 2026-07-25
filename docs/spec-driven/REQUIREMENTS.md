@@ -55,7 +55,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Analytics | **Firebase Analytics (GA4)** | Eventos de producto; en Android declara uso de ID de publicidad solo para **analíticas** (`AD_ID` en manifiesto) |
 | Logs en cliente | **`logger`** (Dart) | Logs con niveles (`debug`→`error`), pretty-print en dev, redirigibles a Sentry en prod |
 | Actualizaciones forzadas | **`upgrader`** | Diálogo nativo cuando existe una versión mínima requerida en la store |
-| Valoración en tienda | **`in_app_review`** | Prompt nativo de iOS/Android tras hitos clave (ej. primera semana completada) |
+| Valoración en tienda | **`in_app_review`** | Prompt nativo semanal (cooldown 7 días) al entrar en el home tras onboarding; CTA manual «Valorar la app» en Perfil abre la ficha de la store |
 | Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase (solo iOS/Android) |
 | Caché offline (móvil) | **Drift** + **sqlite3_flutter_libs** | SQLite local en iOS/Android: espejo de recetario, planificador y lista de compra; cola de operaciones pendientes |
 | Almacenamiento seguro | **`flutter_secure_storage`** | Token de sesión en Keychain (iOS) / Keystore (Android) en lugar de SharedPreferences |
@@ -77,9 +77,16 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
 **RF-AUTH-11** El usuario puede activar/desactivar el **modo oscuro** con un toggle en Perfil. Por defecto la app sigue el modo del sistema; al cambiar el toggle, la preferencia manual se persiste en el dispositivo (`shared_preferences`) y prevalece sobre el ajuste del sistema.  
+**RF-AUTH-12** El perfil puede marcarse como administrador de app (`profiles.is_admin`). Solo bootstrap/service role o un admin existente pueden cambiar ese flag (trigger `profiles_guard_admin`). Los payloads de cliente no envían `is_admin`.  
 **RF-UX-01** Tras el primer acceso autenticado, la app muestra un **tour de onboarding** (11 pasos) con overlay tipo spotlight: resalta controles concretos (FABs, buscadores, acciones de compra/comunidad, secciones de perfil), tarjeta explicativa contextual, navegación con flechas y opción Omitir. Persistencia por usuario; la barra inferior queda bloqueada hasta finalizar u omitir.  
+**RF-UX-02** La app puede solicitar valoración en la store como máximo **una vez por semana** (prompt nativo vía `in_app_review` al entrar en el home tras completar onboarding; cooldown 7 días en secure storage).  
+**RF-UX-03** Desde Perfil, el usuario puede abrir la ficha de la app en la store («Valorar la app» / `openStoreListing`).  
+**RF-UX-04** Desde Perfil, el usuario puede **enviar feedback** (categorías: problema, sugerencia, otro; mensaje ≥ 10 caracteres) a la tabla `user_feedback`.  
+**RF-UX-05** Un usuario con `profiles.is_admin = true` ve un **panel de control** en Perfil para listar feedback, filtrar por estado/categoría y marcar ítems como resueltos o ignorados. La ruta `/home/profile/admin/*` solo es accesible tras cargar el perfil y confirmar `is_admin`.  
 
 > **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar, `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen.
+
+> **Nota de implementación — feedback y admin (migraciones `028`–`032`):** `profiles.is_admin` (boolean, default false); `user_feedback` (category `issue|feature|other`, status `pending|resolved|ignored`, RLS insert propio / select propio o admin / update solo admin). Función `auth_is_admin()` + trigger de guardia en INSERT/UPDATE.
 
 > **Nota de implementación — Google (nativo):** Flutter usa `google_sign_in` para el flujo nativo del SDK de Google y `supabase_flutter` recibe la sesión con `signInWithIdToken`. En Google Cloud se crean **3 clientes OAuth** (Web, Android, iOS). Supabase Auth se configura con el Client ID + Secret del cliente **Web** y **Skip nonce check** activado (iOS). Android requiere SHA-1 del keystore debug/release **y** del certificado de **App signing** de Google Play en el cliente OAuth Android y en Firebase (sin ello, `ApiException: 10` / `DEVELOPER_ERROR`). Tras registrar huellas, regenerar `google-services.json` (`flutterfire configure`) y verificar que `oauth_client` no está vacío. Errores de configuración se mapean a `AuthGoogleSignInConfigurationException` en `auth_error_mapper.dart`. Guía: `docs/OAUTH_SETUP.md`.
 >
@@ -268,7 +275,19 @@ CREATE TABLE profiles (
   id          uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username    text NOT NULL,
   avatar_url  text,
+  is_admin    boolean NOT NULL DEFAULT false,
   created_at  timestamptz DEFAULT now()
+);
+
+-- Feedback in-app (moderación admin)
+CREATE TABLE user_feedback (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  category   text NOT NULL CHECK (category IN ('issue', 'feature', 'other')),
+  message    text NOT NULL CHECK (char_length(trim(message)) >= 10),
+  status     text NOT NULL DEFAULT 'pending'
+               CHECK (status IN ('pending', 'resolved', 'ignored')),
+  created_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- Hogares
@@ -486,7 +505,7 @@ lib/
 | `firebase_core` + `firebase_analytics` | Analytics de producto (GA4) |
 | `logger` | Logs estructurados con niveles en cliente |
 | `upgrader` | Diálogo de actualización forzada desde la store |
-| `in_app_review` | Prompt nativo de valoración en tienda |
+| `in_app_review` | Prompt nativo semanal + apertura de ficha en store desde Perfil |
 | `connectivity_plus` | Detección de estado de red (móvil) |
 | `drift` + `sqlite3_flutter_libs` | Caché SQLite offline en iOS/Android |
 | `flutter_secure_storage` | Almacenamiento seguro de tokens (Keychain / Keystore) |

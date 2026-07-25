@@ -148,7 +148,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `UpgradeAlert` envuelve la app en `app.dart`
 - [x] Instalar **`in_app_review`**
   - `ReviewPromptService` en `lib/core/review/review_prompt_service.dart`
-  - Cooldown 6 días en secure storage; llamar `onFirstWeekCompleted()` desde el planificador (Fase 4)
+  - Prompt semanal (cooldown 7 días) vía `WeeklyReviewPrompt` en el home tras onboarding
+  - CTA manual «Valorar la app» en Perfil (`openStoreListing`)
 
 ### Setup CI/CD (Codemagic) ✅
 
@@ -489,9 +490,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## UX — Cuenta y feedback
 
-- [ ] Prompt de valoración en tienda (`in_app_review`) tras completar la primera semana planificada
-  - `ReviewPromptService` implementado; falta invocar `onFirstWeekCompleted()` desde el planificador
-  - Cooldown 6 días en secure storage; fallback manual «Valorar la app» en ajustes (pendiente)
+- [x] Prompt de valoración en tienda (`in_app_review`) **una vez por semana**
+  - `ReviewPromptService.maybeRequestReview()` con cooldown 7 días en secure storage
+  - `WeeklyReviewPrompt` en `home_shell.dart` tras completar onboarding
+- [x] CTA manual «Valorar la app» en Perfil (abre ficha de la store; sin depender de `isAvailable` previo)
+- [x] Enviar feedback desde Perfil (`/home/profile/feedback`; categorías issue/feature/other; mín. 10 caracteres)
+- [x] Panel de control admin (`profiles.is_admin`) para listar / filtrar / resolver o ignorar feedback
+  - Migraciones `028`–`032`; RLS + guardia INSERT/UPDATE de `is_admin`
 - [x] Banner «Sin conexión» persistente cuando no hay red (`ConnectivityBanner` en `app.dart`; solo móvil, desactivado en web)
 - [x] Diálogo de actualización de versión (`UpgradeAlert` / `upgrader` en `app.dart`)
 - [x] Modo oscuro manual desde Perfil (`SwitchListTile` en `profile_screen.dart`)
@@ -616,7 +621,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork.
 4. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
 5. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
-6. **Integrar `ReviewPromptService.onFirstWeekCompleted()`** en el planificador al completar la primera semana con comidas asignadas.
-7. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links.
+6. **Validar feedback + panel admin en dispositivo** (enviar comentario; marcar `is_admin` por SQL editor; resolver/ignorar).
+7. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
 8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
 9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
