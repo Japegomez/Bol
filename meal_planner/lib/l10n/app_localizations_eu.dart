@@ -934,6 +934,16 @@ class AppLocalizationsEu extends AppLocalizations {
   String get privacyPolicy => 'Pribatutasun-politika';
 
   @override
+  String get rateYourApp => 'Baloratu aplikazioa';
+
+  @override
+  String get rateYourAppSubtitle => 'Utzi iruzkin bat dendan';
+
+  @override
+  String get rateAppUnavailable =>
+      'Balorazioa ez dago erabilgarri gailu honetan une honetan.';
+
+  @override
   String get signOut => 'Itxi saioa';
 
   @override

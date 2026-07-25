@@ -933,6 +933,16 @@ class AppLocalizationsCa extends AppLocalizations {
   String get privacyPolicy => 'Política de Privacitat';
 
   @override
+  String get rateYourApp => 'Valora l\'app';
+
+  @override
+  String get rateYourAppSubtitle => 'Deixa una ressenya a la botiga';
+
+  @override
+  String get rateAppUnavailable =>
+      'La valoració no està disponible en aquest dispositiu ara mateix.';
+
+  @override
   String get signOut => 'Tancar sessió';
 
   @override
