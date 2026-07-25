@@ -497,6 +497,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Enviar feedback desde Perfil (`/home/profile/feedback`; categorías issue/feature/other; mín. 10 caracteres)
 - [x] Panel de control admin (`profiles.is_admin`) para listar / filtrar / resolver o ignorar feedback
   - Migraciones `028`–`032`; RLS + guardia INSERT/UPDATE de `is_admin`
+  - Validado en dispositivo (enviar feedback, acceso admin, resolver/ignorar)
 - [x] Banner «Sin conexión» persistente cuando no hay red (`ConnectivityBanner` en `app.dart`; solo móvil, desactivado en web)
 - [x] Diálogo de actualización de versión (`UpgradeAlert` / `upgrader` en `app.dart`)
 - [x] Modo oscuro manual desde Perfil (`SwitchListTile` en `profile_screen.dart`)
@@ -621,7 +622,6 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork.
 4. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
 5. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
-6. **Validar feedback + panel admin en dispositivo** (enviar comentario; marcar `is_admin` por SQL editor; resolver/ignorar).
-7. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
-8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+6. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
+7. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+8. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
