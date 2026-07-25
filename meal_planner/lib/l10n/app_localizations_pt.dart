@@ -997,7 +997,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get feedbackStatusFilter => 'Estado';
 
   @override
-  String get feedbackFilterAll => 'Todas';
+  String get feedbackFilterAll => 'Todos';
 
   @override
   String get feedbackStatusPending => 'Pendente';

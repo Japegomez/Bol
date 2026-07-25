@@ -322,7 +322,7 @@
   "feedbackSendError": "No se pudo enviar el feedback. Inténtalo de nuevo.",
   "feedbackCategoryFilter": "Categoría",
   "feedbackStatusFilter": "Estado",
-  "feedbackFilterAll": "Todas",
+  "feedbackFilterAll": "Todos",
   "feedbackStatusPending": "Pendiente",
   "feedbackStatusResolved": "Resuelto",
   "feedbackStatusIgnored": "Ignorado",

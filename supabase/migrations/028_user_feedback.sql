@@ -52,6 +52,13 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.is_admin = true AND NOT public.auth_is_admin() THEN
+      RAISE EXCEPTION 'cannot_change_admin_flag' USING ERRCODE = '42501';
+    END IF;
+    RETURN NEW;
+  END IF;
+
   IF TG_OP = 'UPDATE'
      AND NEW.is_admin IS DISTINCT FROM OLD.is_admin
      AND NOT public.auth_is_admin() THEN
@@ -63,7 +70,7 @@ $$;
 
 DROP TRIGGER IF EXISTS profiles_guard_admin ON public.profiles;
 CREATE TRIGGER profiles_guard_admin
-  BEFORE UPDATE ON public.profiles
+  BEFORE INSERT OR UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.profiles_guard_admin_column();
 

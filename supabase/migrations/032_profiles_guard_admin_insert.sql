@@ -1,36 +1,4 @@
--- Fix duplicate admin columns: keep profiles.is_admin, drop profiles.admin
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'profiles'
-      AND column_name = 'admin'
-  ) THEN
-    UPDATE public.profiles
-    SET is_admin = true
-    WHERE admin = true AND is_admin = false;
-
-    ALTER TABLE public.profiles DROP COLUMN admin;
-  END IF;
-END $$;
-
-CREATE OR REPLACE FUNCTION public.auth_is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.profiles
-    WHERE id = auth.uid()
-      AND is_admin = true
-  );
-$$;
+-- Guard is_admin on INSERT as well as UPDATE (live correction for applied DBs).
 
 CREATE OR REPLACE FUNCTION public.profiles_guard_admin_column()
 RETURNS trigger
@@ -59,3 +27,9 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS profiles_guard_admin ON public.profiles;
+CREATE TRIGGER profiles_guard_admin
+  BEFORE INSERT OR UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.profiles_guard_admin_column();

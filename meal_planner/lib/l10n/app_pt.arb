@@ -317,7 +317,7 @@
   "feedbackSendError": "Não foi possível enviar o feedback. Tente novamente.",
   "feedbackCategoryFilter": "Categoria",
   "feedbackStatusFilter": "Estado",
-  "feedbackFilterAll": "Todas",
+  "feedbackFilterAll": "Todos",
   "feedbackStatusPending": "Pendente",
   "feedbackStatusResolved": "Resolvido",
   "feedbackStatusIgnored": "Ignorado",

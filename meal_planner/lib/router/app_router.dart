@@ -36,7 +36,7 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
-  final isAdmin = ref.watch(profileProvider).valueOrNull?.isAdmin == true;
+  final profileAsync = ref.watch(profileProvider);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -56,9 +56,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         orElse: () => false,
       );
 
-      if (state.matchedLocation.startsWith('/home/profile/admin') &&
-          !isAdmin) {
-        return '/home/profile';
+      if (state.matchedLocation.startsWith('/home/profile/admin')) {
+        // Wait until profile finished loading before denying access.
+        if (profileAsync.isLoading && !profileAsync.hasValue) {
+          return null;
+        }
+        if (profileAsync.valueOrNull?.isAdmin != true) {
+          return '/home/profile';
+        }
       }
 
       final shareLocation = ShareUrls.appLocationForIncomingUri(state.uri);

@@ -983,7 +983,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get feedbackSentSuccess =>
-      'Grazas pola túa mensaxe. Revisaremola para mellorar a app.';
+      'Grazas pola túa mensaxe. Revisarémola para mellorar a app.';
 
   @override
   String get feedbackSendError =>
@@ -996,7 +996,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get feedbackStatusFilter => 'Estado';
 
   @override
-  String get feedbackFilterAll => 'Todas';
+  String get feedbackFilterAll => 'Todos';
 
   @override
   String get feedbackStatusPending => 'Pendente';

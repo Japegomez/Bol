@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
+import 'package:meal_planner/features/onboarding/presentation/onboarding_card_layout.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_tour_provider.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
@@ -125,7 +126,7 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay> {
     });
 
     final cardWidth = math.min(screenSize.width - 32, 420.0);
-    final cardLayout = _resolveCardLayout(
+    final cardLayout = resolveOnboardingCardLayout(
       screenSize: screenSize,
       viewPadding: viewPadding,
       cardWidth: cardWidth,
@@ -199,116 +200,6 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay> {
       ),
     );
   }
-}
-
-class _CardLayout {
-  const _CardLayout({
-    required this.left,
-    required this.top,
-    required this.pointerOnTop,
-    required this.pointerOffset,
-  });
-
-  final double left;
-  final double top;
-  final bool pointerOnTop;
-  final double pointerOffset;
-}
-
-_CardLayout _resolveCardLayout({
-  required Size screenSize,
-  required EdgeInsets viewPadding,
-  required double cardWidth,
-  required Rect? targetRect,
-}) {
-  const horizontalMargin = 16.0;
-  const gap = 16.0;
-  // Tall enough for localized copy + actions; underestimating overlaps FABs.
-  const estimatedCardHeight = 280.0;
-  const pointerSize = 12.0;
-  // App bottom NavigationBar sits above system insets; keep cards clear of it.
-  const bottomNavClearance = 80.0;
-
-  final safeTop = viewPadding.top + 12;
-  final safeBottom =
-      screenSize.height - viewPadding.bottom - bottomNavClearance - 12;
-  final maxTop = math.max(safeTop, safeBottom - estimatedCardHeight);
-  final centeredLeft = (screenSize.width - cardWidth) / 2;
-  final centeredTop =
-      (screenSize.height - estimatedCardHeight) / 2 - pointerSize;
-
-  if (targetRect == null) {
-    return _CardLayout(
-      left: centeredLeft.clamp(
-        horizontalMargin,
-        screenSize.width - cardWidth - horizontalMargin,
-      ),
-      top: centeredTop.clamp(safeTop, maxTop),
-      pointerOnTop: false,
-      pointerOffset: cardWidth / 2,
-    );
-  }
-
-  // Multi-target unions (e.g. search + glossary FAB) can span most of the
-  // screen; anchor the card to the top band so it does not fall under the
-  // Android system navigation bar.
-  final placementRect = targetRect.height > screenSize.height * 0.35
-      ? Rect.fromLTWH(
-          targetRect.left,
-          targetRect.top,
-          targetRect.width,
-          math.min(88, targetRect.height),
-        )
-      : targetRect;
-
-  final spaceAbove = placementRect.top - safeTop;
-  final spaceBelow = safeBottom - placementRect.bottom;
-  var placeAbove = spaceAbove >= estimatedCardHeight + gap + pointerSize ||
-      spaceAbove >= spaceBelow;
-
-  // Bottom FABs: always prefer above so the tooltip does not cover them.
-  final isBottomTarget =
-      placementRect.center.dy > screenSize.height * 0.55;
-  if (isBottomTarget && spaceAbove >= estimatedCardHeight * 0.6) {
-    placeAbove = true;
-  }
-
-  final targetCenterX = placementRect.center.dx;
-  var left = targetCenterX - cardWidth / 2;
-  left = left.clamp(
-    horizontalMargin,
-    screenSize.width - cardWidth - horizontalMargin,
-  );
-
-  final pointerOffset = (targetCenterX - left).clamp(24.0, cardWidth - 24.0);
-
-  double top;
-  if (placeAbove) {
-    final desiredTop =
-        placementRect.top - estimatedCardHeight - gap - pointerSize;
-    // Never clamp downward past the target — that was overlapping FABs on Android.
-    final maxTopAbove =
-        placementRect.top - gap - pointerSize - estimatedCardHeight * 0.55;
-    top = desiredTop.clamp(safeTop, math.max(safeTop, maxTopAbove));
-    if (top + estimatedCardHeight + gap > placementRect.top) {
-      top = math.max(
-        safeTop,
-        placementRect.top - estimatedCardHeight - gap - pointerSize,
-      );
-    }
-  } else {
-    final desiredTop = placementRect.bottom + gap + pointerSize;
-    top = desiredTop.clamp(safeTop, maxTop);
-  }
-
-  top = top.clamp(safeTop, maxTop);
-
-  return _CardLayout(
-    left: left,
-    top: top,
-    pointerOnTop: !placeAbove,
-    pointerOffset: pointerOffset,
-  );
 }
 
 class _OnboardingCard extends StatelessWidget {

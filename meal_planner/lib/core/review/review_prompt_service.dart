@@ -39,11 +39,6 @@ abstract final class ReviewPromptService {
   /// Returns `true` if the store was opened, `false` otherwise.
   static Future<bool> openRateApp() async {
     try {
-      if (!await _inAppReview.isAvailable()) {
-        log.d('Store listing not available on this platform');
-        return false;
-      }
-
       await _inAppReview.openStoreListing(appStoreId: AppBranding.appStoreId);
       log.i('Opened store listing for rating');
       return true;

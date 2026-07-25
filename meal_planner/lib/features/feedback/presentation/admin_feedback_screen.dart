@@ -299,10 +299,12 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                     children: [
                                       IconButton(
                                         tooltip: l10n.feedbackMarkResolved,
-                                        onPressed: () => _setStatus(
-                                          item,
-                                          FeedbackStatus.resolved,
-                                        ),
+                                        onPressed: updating
+                                            ? null
+                                            : () => _setStatus(
+                                                  item,
+                                                  FeedbackStatus.resolved,
+                                                ),
                                         iconSize: 32,
                                         style: IconButton.styleFrom(
                                           foregroundColor:
@@ -315,10 +317,12 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                       ),
                                       IconButton(
                                         tooltip: l10n.feedbackMarkIgnored,
-                                        onPressed: () => _setStatus(
-                                          item,
-                                          FeedbackStatus.ignored,
-                                        ),
+                                        onPressed: updating
+                                            ? null
+                                            : () => _setStatus(
+                                                  item,
+                                                  FeedbackStatus.ignored,
+                                                ),
                                         iconSize: 32,
                                         style: IconButton.styleFrom(
                                           foregroundColor:

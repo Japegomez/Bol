@@ -33,18 +33,18 @@ class Profile implements SupadartClass<Profile> {
     return Profile.fromJson(data);
   }
 
+  /// Client write payloads never include [is_admin]; only the server/admin
+  /// bootstrap path may change that column.
   static Map<String, dynamic> _generateMap({
     String? id,
     String? username,
     String? avatarUrl,
-    bool? isAdmin,
     DateTime? createdAt,
   }) {
     return {
       'id': ?id,
       'username': ?username,
       'avatar_url': ?avatarUrl,
-      'is_admin': ?isAdmin,
       if (createdAt != null) 'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
@@ -53,14 +53,12 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     required String username,
     String? avatarUrl,
-    bool? isAdmin,
     DateTime? createdAt,
   }) {
     return _generateMap(
       id: id,
       username: username,
       avatarUrl: avatarUrl,
-      isAdmin: isAdmin,
       createdAt: createdAt,
     );
   }
@@ -69,14 +67,12 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     String? username,
     String? avatarUrl,
-    bool? isAdmin,
     DateTime? createdAt,
   }) {
     return _generateMap(
       id: id,
       username: username,
       avatarUrl: avatarUrl,
-      isAdmin: isAdmin,
       createdAt: createdAt,
     );
   }
@@ -99,14 +95,12 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     String? username,
     String? avatarUrl,
-    bool? isAdmin,
     DateTime? createdAt,
   }) {
     return {
       'id': ?id,
       'username': ?username,
       'avatar_url': ?avatarUrl,
-      'is_admin': ?isAdmin,
       'created_at': ?createdAt,
     };
   }
@@ -116,7 +110,6 @@ class Profile implements SupadartClass<Profile> {
       id: id,
       username: username,
       avatarUrl: avatarUrl,
-      isAdmin: isAdmin,
       createdAt: createdAt,
     );
   }
