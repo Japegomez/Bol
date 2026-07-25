@@ -934,6 +934,16 @@ class AppLocalizationsGl extends AppLocalizations {
   String get privacyPolicy => 'Política de Privacidade';
 
   @override
+  String get rateYourApp => 'Valora a app';
+
+  @override
+  String get rateYourAppSubtitle => 'Deixa unha reseña na tenda';
+
+  @override
+  String get rateAppUnavailable =>
+      'A valoración non está dispoñible neste dispositivo agora mesmo.';
+
+  @override
   String get signOut => 'Pechar sesión';
 
   @override

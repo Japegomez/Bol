@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
+import 'package:meal_planner/core/review/weekly_review_prompt.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_screen.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/widgets/cooking_banner.dart';
@@ -96,30 +97,32 @@ class HomeShell extends ConsumerWidget {
       ],
     );
 
-    return Stack(
-      children: [
-        Scaffold(
-          body: navigationShell,
-          bottomNavigationBar: IgnorePointer(
-            ignoring: onboardingPending,
-            child: cookingSession != null && !cookingSession.isExpanded
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CookingBanner(session: cookingSession),
-                      navigationBar,
-                    ],
-                  )
-                : navigationBar,
+    return WeeklyReviewPrompt(
+      child: Stack(
+        children: [
+          Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: IgnorePointer(
+              ignoring: onboardingPending,
+              child: cookingSession != null && !cookingSession.isExpanded
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CookingBanner(session: cookingSession),
+                        navigationBar,
+                      ],
+                    )
+                  : navigationBar,
+            ),
           ),
-        ),
-        if (cookingSession != null &&
-            cookingSession.isExpanded &&
-            !onboardingPending)
-          CookingScreen(session: cookingSession),
-        if (onboardingPending)
-          OnboardingOverlay(navigationShell: navigationShell),
-      ],
+          if (cookingSession != null &&
+              cookingSession.isExpanded &&
+              !onboardingPending)
+            CookingScreen(session: cookingSession),
+          if (onboardingPending)
+            OnboardingOverlay(navigationShell: navigationShell),
+        ],
+      ),
     );
   }
 }

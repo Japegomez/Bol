@@ -935,6 +935,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get privacyPolicy => 'Política de Privacidad';
 
   @override
+  String get rateYourApp => 'Valora la app';
+
+  @override
+  String get rateYourAppSubtitle => 'Deja una reseña en la tienda';
+
+  @override
+  String get rateAppUnavailable =>
+      'La valoración no está disponible en este dispositivo ahora mismo.';
+
+  @override
   String get signOut => 'Cerrar sesión';
 
   @override

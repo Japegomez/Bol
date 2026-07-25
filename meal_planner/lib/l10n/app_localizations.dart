@@ -1792,6 +1792,24 @@ abstract class AppLocalizations {
   /// **'Privacy Policy'**
   String get privacyPolicy;
 
+  /// No description provided for @rateYourApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Your App'**
+  String get rateYourApp;
+
+  /// No description provided for @rateYourAppSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a review on the store'**
+  String get rateYourAppSubtitle;
+
+  /// No description provided for @rateAppUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating is not available on this device right now.'**
+  String get rateAppUnavailable;
+
   /// No description provided for @signOut.
   ///
   /// In en, this message translates to:
