@@ -941,6 +941,96 @@ class AppLocalizationsEn extends AppLocalizations {
       'Rating is not available on this device right now.';
 
   @override
+  String get sendFeedback => 'Send feedback';
+
+  @override
+  String get adminControlPanel => 'Admin control panel';
+
+  @override
+  String get adminFeedbackTitle => 'Feedback';
+
+  @override
+  String get feedbackWhatAbout => 'What do you want to tell us?';
+
+  @override
+  String get feedbackCategoryIssue => 'Problem or bug';
+
+  @override
+  String get feedbackCategoryFeature => 'Feature suggestion';
+
+  @override
+  String get feedbackCategoryOther => 'Other';
+
+  @override
+  String get feedbackTypeLabel => 'Type';
+
+  @override
+  String get feedbackYourMessage => 'Your message';
+
+  @override
+  String get feedbackMessageHint =>
+      'Describe the problem or idea in as much detail as possible…';
+
+  @override
+  String get feedbackMinCharsHint => 'Minimum 10 characters';
+
+  @override
+  String get feedbackMessageTooShort =>
+      'The message must be at least 10 characters.';
+
+  @override
+  String get feedbackSentSuccess =>
+      'Thanks for your feedback. We\'ll review it to improve the app.';
+
+  @override
+  String get feedbackSendError => 'Could not send feedback. Please try again.';
+
+  @override
+  String get feedbackCategoryFilter => 'Category';
+
+  @override
+  String get feedbackStatusFilter => 'Status';
+
+  @override
+  String get feedbackFilterAll => 'All';
+
+  @override
+  String get feedbackStatusPending => 'Pending';
+
+  @override
+  String get feedbackStatusResolved => 'Resolved';
+
+  @override
+  String get feedbackStatusIgnored => 'Ignored';
+
+  @override
+  String get feedbackMarkResolved => 'Mark as resolved';
+
+  @override
+  String get feedbackMarkIgnored => 'Mark as ignored';
+
+  @override
+  String get feedbackMarkedResolved => 'Feedback marked as resolved.';
+
+  @override
+  String get feedbackMarkedIgnored => 'Feedback marked as ignored.';
+
+  @override
+  String get feedbackStatusUpdateError => 'Could not update feedback status.';
+
+  @override
+  String get adminFeedbackEmpty => 'No feedback with these filters.';
+
+  @override
+  String get adminFeedbackLoadError => 'Could not load feedback.';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get send => 'Send';
+
+  @override
   String get signOut => 'Sign out';
 
   @override

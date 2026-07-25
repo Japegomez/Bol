@@ -215,6 +215,23 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (profile?.isAdmin == true) ...[
+                  FilledButton.tonalIcon(
+                    onPressed: () =>
+                        context.push('/home/profile/admin/feedback'),
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    label: Text(l10n.adminControlPanel),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                OutlinedButton.icon(
+                  onPressed: user == null
+                      ? null
+                      : () => context.push('/home/profile/feedback'),
+                  icon: const Icon(Icons.feedback_outlined),
+                  label: Text(l10n.sendFeedback),
+                ),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: user == null
                       ? null
