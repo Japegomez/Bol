@@ -2599,7 +2599,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep0Title.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Recetea!'**
+  /// **'Welcome to Böl!'**
   String get onboardingStep0Title;
 
   /// No description provided for @onboardingStep0Body.

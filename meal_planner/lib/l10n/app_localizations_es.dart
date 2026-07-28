@@ -1354,7 +1354,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get onboardingFinish => 'Finalizar';
 
   @override
-  String get onboardingStep0Title => '¡Bienvenido/a a Recetea!';
+  String get onboardingStep0Title => '¡Bienvenido/a a Böl!';
 
   @override
   String get onboardingStep0Body =>

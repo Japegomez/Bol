@@ -173,8 +173,8 @@ struct CookingLockScreenView: View {
                 HStack(spacing: 12) {
                     Spacer()
                     Link(destination: URL(string: context.state.isPaused
-                         ? "recetea://cooking/resume"
-                         : "recetea://cooking/pause")!) {
+                         ? "bol://cooking/resume"
+                         : "bol://cooking/pause")!) {
                         Label(
                             context.state.isPaused
                                 ? context.state.resumeAction
@@ -182,7 +182,7 @@ struct CookingLockScreenView: View {
                             systemImage: context.state.isPaused ? "play.fill" : "pause.fill"
                         )
                     }
-                    Link(destination: URL(string: "recetea://cooking/finish")!) {
+                    Link(destination: URL(string: "bol://cooking/finish")!) {
                         Label(context.state.finishAction, systemImage: "stop.fill")
                     }
                 }

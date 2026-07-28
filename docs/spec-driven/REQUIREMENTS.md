@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025; deep links Hosting mapeados en go_router), **fork atómico + rebuild compra con `is_checked`** (026).
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Böl**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025; deep links Hosting mapeados en go_router; esquema `bol://`), **fork atómico + rebuild compra con `is_checked`** (026).
 
 ---
 
@@ -27,7 +27,7 @@
 
 ## 1. Visión del producto
 
-MealPlanner (marca visible **Recetea**) es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
+MealPlanner (marca visible **Böl**) es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
 
 - **Gestionar un recetario personal** con instrucciones, ingredientes e información nutricional.
 - **Planificar las comidas de cada semana** asignando recetas a slots de desayuno, comida y cena.
@@ -176,7 +176,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
 **RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (FAB con icono de libro, encima de «Nueva receta») con términos y definiciones predefinidos (p. ej. ahumar, al dente, caramelizar, tamizar), buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
 **RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).  
-**RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.  
+**RF-REC-22** La marca visible de la app es **Böl** (`AppBranding.displayName`); nombre e icono en iOS/Android/web/desktop y textos de login/registro/onboarding. Logo lettermark basado en la **ö** (círculo + dos hojas). El identificador técnico del paquete (`meal_planner` / `com.japegomez.meal_planner`) no cambia. El esquema de deep link custom es `bol://`.  
 **RF-REC-23** Al añadir un ingrediente en el formulario de receta, la unidad por defecto es **`unidad`** y la categoría por defecto es **Verduras** (`vegetables`). La deserialización offline (`RecipeFormDataCodec`) aplica los mismos defaults si el payload no incluye esos campos (salvo «al gusto» o unidad personalizada).  
 **RF-REC-24** El usuario puede crear una receta con **asistente de IA** (opción en el FAB del recetario): indica qué le apetece, qué tiene en la nevera, o pega una receta completa; la Edge Function `recipe-assistant` (`generate_recipe`) genera/adapta la ficha y **pre-rellena** el formulario de creación (el usuario revisa y guarda). Si el input es una receta pegada, se conservan todos los ingredientes (excepto agua solo de cocción) y se dividen los pasos. Los nombres de ingrediente se normalizan a singular con mayúscula inicial.  
 **RF-REC-25** El usuario puede **completar la información nutricional** de una receta existente con IA desde el detalle o el formulario de edición (`generate_nutrition`); los valores estimados por ración se pueden guardar sin reescribir el resto de la receta. Si ya hay valores, se **adjuntan** a la petición (`existingNutrition`) y el modelo debe **conservarlos** cuando sean coherentes con la receta. Los valores nutricionales son **enteros ≥ 0** end-to-end: `NutritionFormData` (`int?` + `normalizeNutritionValue`: redondeo, rechaza negativos y no finitos), schema LLM, mapper y formulario (solo dígitos). El proveedor LLM es configurable por secrets (`LLM_*`; recomendado Gemini `gemini-3.1-flash-lite` en un proyecto GCP sin facturación, separado del de Translation/Vision).
@@ -497,7 +497,7 @@ lib/
 | `sign_in_with_apple` | Sign in with Apple (obligatorio en iOS con OAuth) |
 | `image_picker` | Selección de foto de receta |
 | `share_plus` | Exportar lista de la compra y compartir enlaces de recetas |
-| `app_links` | Deep links HTTPS (Firebase Hosting) y esquema `recetea://` |
+| `app_links` | Deep links HTTPS (Firebase Hosting) y esquema `bol://` |
 | `intl` | Formateo de fechas (semanas) |
 | `flutter_slidable` | Swipe en ítems de lista |
 | `cached_network_image` | Caché de fotos de recetas y avatares |
@@ -606,7 +606,7 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
   - Receta **privada propia**: enlace opaco `/r/<token>` (Firebase Hosting); caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
   - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
   - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
-  - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`. Landing: CTA «Abrir en Recetea» (sin redirect automático al esquema custom).
+  - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`. Landing: CTA «Abrir en Böl» (sin redirect automático al esquema custom).
   - En app: `ShareUrls.appLocationForIncomingUri` + rutas `/p/:id`, `/r/:token`, `/share/r/:token`; fetch de detalle sin filtro de owner (RLS); tests `share_urls_test.dart`.
 
 ```

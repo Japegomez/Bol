@@ -39,12 +39,12 @@ void main() {
     test('maps custom scheme', () {
       expect(
         ShareUrls.appLocationForIncomingUri(
-          Uri.parse('recetea://p/3101fa52-2927-4259-b9f1-9b206acc27bb'),
+          Uri.parse('bol://p/3101fa52-2927-4259-b9f1-9b206acc27bb'),
         ),
         '/home/explore/3101fa52-2927-4259-b9f1-9b206acc27bb',
       );
       expect(
-        ShareUrls.appLocationForIncomingUri(Uri.parse('recetea://r/tok')),
+        ShareUrls.appLocationForIncomingUri(Uri.parse('bol://r/tok')),
         '/share/r/tok',
       );
     });

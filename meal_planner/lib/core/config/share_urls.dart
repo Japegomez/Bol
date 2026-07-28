@@ -1,3 +1,5 @@
+import 'package:meal_planner/core/config/app_branding.dart';
+
 /// Base URL for recipe share deep links (Firebase Hosting).
 abstract final class ShareUrls {
   static const base = String.fromEnvironment(
@@ -21,7 +23,7 @@ abstract final class ShareUrls {
   ///
   /// Returns null when [uri] is not a recipe share link.
   static String? appLocationForIncomingUri(Uri uri) {
-    if (uri.scheme == 'recetea') {
+    if (uri.scheme == AppBranding.urlScheme) {
       final host = uri.host;
       final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
       if ((host == 'r' || host == 'p') && segments.isNotEmpty) {
