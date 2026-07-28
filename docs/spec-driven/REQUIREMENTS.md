@@ -74,7 +74,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-06** Al autenticarse por primera vez (cualquier método) se crea automáticamente un perfil con nombre de usuario y avatar opcional.  
 **RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`). Al seleccionar una nueva foto, la app la valida con moderación de contenido antes de aceptarla.  
 **RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
-**RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
+**RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; expira cuando caduca el refresh token de Supabase (~1 semana), tras **>10 minutos en background** (cierre automático al volver), o cuando el usuario cierra sesión manualmente.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
 **RF-AUTH-11** El usuario puede activar/desactivar el **modo oscuro** con un toggle en Perfil. Por defecto la app sigue el modo del sistema; al cambiar el toggle, la preferencia manual se persiste en el dispositivo (`shared_preferences`) y prevalece sobre el ajuste del sistema.  
 **RF-AUTH-12** El perfil puede marcarse como administrador de app (`profiles.is_admin`). Solo bootstrap/service role o un admin existente pueden cambiar ese flag (trigger `profiles_guard_admin`). Los payloads de cliente no envían `is_admin`.  
@@ -102,6 +102,7 @@ Un **hogar** es un espacio compartido que agrupa un planificador semanal y una l
 **RF-HH-02** El sistema genera un **código de invitación** único (alfanumérico, 6 caracteres) para cada hogar.  
 **RF-HH-03** Cualquier usuario registrado puede unirse a un hogar introduciendo el código de invitación.  
 **RF-HH-04** El administrador puede revocar el código de invitación y generar uno nuevo.  
+**RF-HH-04b** El administrador puede **compartir el código de invitación por WhatsApp** (u otras apps vía `share_plus`) desde la pantalla del hogar.
 > **Nota de implementación — RPCs (migración `006_household_rpcs`):** `create_household(name)`, `join_household(code)` y `regenerate_invite_code(household_id)` expuestas como funciones `SECURITY DEFINER` con `GRANT` a `authenticated`. Código de invitación alfanumérico de 6 caracteres (sin caracteres ambiguos).
 >
 > **UI Flutter:** `HouseholdRepository` + `currentHouseholdProvider`; miembros vía `householdMembersByIdProvider(householdId)` (family, evita dependencias circulares en Riverpod).
@@ -199,7 +200,9 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
 **RF-PLAN-10** El usuario puede marcar **Son sobras** desde el selector de recetas (opción al mismo nivel que texto libre): elige una receta **sin** diálogo de raciones; los ingredientes **no** se añaden a la lista de la compra. El diálogo de raciones de una asignación normal ya no incluye el checkbox de sobras.  
 **RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
-**RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
+**RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.  
+**RF-PLAN-13** El usuario puede **arrastrar comidas ya asignadas** entre slots del planificador (mismo día u otro; online y offline en modo individual).  
+**RF-PLAN-14** El usuario puede **copiar o compartir** el planificador semanal visible como texto plano (AppBar del planificador; mismo patrón que exportar lista de la compra).
 
 > **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono); título en **1 línea** + raciones cortas (`servingsCountShort`, p. ej. `2 r.`). Panel `RecipePalette`: overlay sin `padding` derecho en la lista; scrollbar visible a la izquierda. Selector (`RecipePickerSheet`): acciones «texto libre» y «sobras» al mismo nivel; en modo sobras la lista no muestra raciones; el diálogo de raciones solo pide cantidad. El sheet se cierra antes de await del guardado del slot.
 
@@ -603,11 +606,12 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
 - **RF-SOC-06** Perfil público con avatar, nombre, recetas publicadas y valoración media. Sin campo bio (no está en `profiles`).
 - **RF-SOC-07** En el detalle de receta pública: texto «Receta creada por » (sin enlace) + nombre del autor (enlace al perfil), o «Receta creada por ti» si es la propia receta; fecha de creación visible junto a valoración y raciones.
 - **RF-SOC-08** El usuario puede **compartir una receta por enlace HTTPS** (WhatsApp u otras apps vía `share_plus`):
-  - Receta **privada propia**: enlace opaco `/r/<token>` (Firebase Hosting); caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
+  - Receta **privada propia**: enlace opaco `/r/<token>`; caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
   - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
   - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
-  - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`. Landing: CTA «Abrir en Böl» (sin redirect automático al esquema custom).
-  - En app: `ShareUrls.appLocationForIncomingUri` + rutas `/p/:id`, `/r/:token`, `/share/r/:token`; fetch de detalle sin filtro de owner (RLS); tests `share_urls_test.dart`.
+  - **Preview en WhatsApp (Open Graph):** landing Supabase `share-landing` sirve HTML con meta OG; imagen vía `share-image` (1200×630 JPEG). Firebase Hosting redirige `/r/*` y `/p/*` hacia Supabase (plan Spark). La app comparte **solo el enlace** (modelo YouTube), no adjunta archivo de imagen.
+  - Migraciones `025_recipe_share_links`, `032_share_og_metadata` (RPCs `get_private_share_og`, `get_public_recipe_og`).
+  - En app: `ShareUrls` (base Supabase landing); pending link en memoria + `SharedPreferences`; `GoRouter` estable entre refresh de token; tests `share_urls_test.dart`.
 
 ```
 /share/r/:token           → Resolver enlace privado → /home/recipes/:id
