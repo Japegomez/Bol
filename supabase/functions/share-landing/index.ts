@@ -3,8 +3,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const APP_NAME = "Böl";
 const APP_SCHEME = "bol://";
-const OG_WIDTH = 1200;
-const OG_HEIGHT = 630;
+const FIREBASE_HOST = "https://mealplanner-a818e.web.app";
+const OG_BUCKET = "share-og";
 
 function escapeHtml(s: string): string {
   return s
@@ -18,34 +18,17 @@ function html({
   title,
   description,
   pageUrl,
-  imageUrl,
   appPath,
 }: {
   title: string;
   description: string;
   pageUrl: string;
-  imageUrl: string | null;
   appPath: string;
 }): string {
   const t = escapeHtml(title);
   const d = escapeHtml(description);
   const u = escapeHtml(pageUrl);
-  const img = imageUrl ? escapeHtml(imageUrl) : "";
   const appUrl = escapeHtml(`${APP_SCHEME}${appPath.replace(/^\//, "")}`);
-
-  const imageMeta = img
-    ? `
-    <link rel="image_src" href="${img}" />
-    <meta property="og:image" content="${img}" />
-    <meta property="og:image:url" content="${img}" />
-    <meta property="og:image:secure_url" content="${img}" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="${OG_WIDTH}" />
-    <meta property="og:image:height" content="${OG_HEIGHT}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="${img}" />`
-    : `
-    <meta name="twitter:card" content="summary" />`;
 
   return `<!DOCTYPE html>
 <html lang="es" prefix="og: https://ogp.me/ns#">
@@ -60,7 +43,7 @@ function html({
     <meta property="og:title" content="${t}" />
     <meta property="og:description" content="${d}" />
     <meta property="og:url" content="${u}" />
-    ${imageMeta}
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="${t}" />
     <meta name="twitter:description" content="${d}" />
     <style>
@@ -70,12 +53,10 @@ function html({
       h1{margin:0 0 8px;font-size:2rem}
       p{margin:0 0 24px;color:#6b635c;line-height:1.5}
       a.btn{display:inline-block;background:#2f6f5e;color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
-      img.preview{width:min(320px,100%);aspect-ratio:1200/630;object-fit:cover;border-radius:16px;margin:0 auto 20px;display:block}
     </style>
   </head>
   <body>
     <main>
-      ${img ? `<img class="preview" src="${img}" alt="${t}" width="${OG_WIDTH}" height="${OG_HEIGHT}" />` : ""}
       <h1>${t}</h1>
       <p>${d}</p>
       <a class="btn" href="${appUrl}">Abrir en ${APP_NAME}</a>
@@ -94,26 +75,65 @@ function parsePath(pathname: string): { kind: string; id: string } | null {
   return null;
 }
 
-async function getOgData(
+async function getOgTitle(
   supabase: ReturnType<typeof createClient>,
   kind: string,
   id: string,
-): Promise<{ title: string; hasPhoto: boolean } | null> {
+): Promise<string | null> {
   if (kind === "r") {
     const { data, error } = await supabase.rpc("get_private_share_og", {
       p_token: id,
     });
     if (error || !data?.valid) return null;
-    return { title: data.title, hasPhoto: Boolean(data.photo_path) };
+    return data.title as string;
   }
   if (kind === "p") {
     const { data, error } = await supabase.rpc("get_public_recipe_og", {
       p_recipe_id: id,
     });
     if (error || !data?.valid) return null;
-    return { title: data.title, hasPhoto: Boolean(data.photo_path) };
+    return data.title as string;
   }
   return null;
+}
+
+/** Publish HTML to Storage (real text/html) and redirect crawlers there. */
+async function publishAndRedirect(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  kind: string,
+  id: string,
+  body: string,
+): Promise<Response> {
+  const objectPath = `${kind}/${id}.html`;
+  const bytes = new TextEncoder().encode(body);
+  const { error } = await supabase.storage.from(OG_BUCKET).upload(
+    objectPath,
+    bytes,
+    {
+      contentType: "text/html",
+      upsert: true,
+      cacheControl: "300",
+    },
+  );
+  if (error) {
+    console.error("share-og upload failed", error);
+    return new Response(
+      `Preview temporarily unavailable (${error.message}). Open the link in Böl.`,
+      { status: 502, headers: { "Content-Type": "text/plain; charset=utf-8" } },
+    );
+  }
+
+  const publicUrl =
+    `${supabaseUrl}/storage/v1/object/public/${OG_BUCKET}/${objectPath}`;
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: publicUrl,
+      "Cache-Control": "public, max-age=60",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -127,73 +147,38 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   const appPath = parsed ? `/${parsed.kind}/${parsed.id}` : "/";
-  // Canonical share URL must match what users paste into WhatsApp
   const pageUrl = parsed
-    ? `${supabaseUrl}/functions/v1/share-landing/${parsed.kind}/${parsed.id}`
-    : `${supabaseUrl}/functions/v1/share-landing`;
-
-  const respond = (body: string, maxAge = 60) =>
-    new Response(req.method === "HEAD" ? null : body, {
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": `public, max-age=${maxAge}`,
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
+    ? `${FIREBASE_HOST}/${parsed.kind}/${parsed.id}`
+    : FIREBASE_HOST;
 
   if (!supabaseUrl || !serviceKey || !parsed) {
-    return respond(
-      html({
-        title: APP_NAME,
-        description: "Abriendo la receta en la app…",
-        pageUrl,
-        imageUrl: null,
-        appPath,
-      }),
-    );
+    return new Response("Not found", { status: 404 });
   }
 
   try {
     const supabase = createClient(supabaseUrl, serviceKey);
-    const og = await getOgData(supabase, parsed.kind, parsed.id);
-    if (!og) {
-      return respond(
-        html({
-          title: APP_NAME,
-          description: "Abriendo la receta en la app…",
-          pageUrl,
-          imageUrl: null,
-          appPath,
-        }),
-      );
-    }
+    const title = (await getOgTitle(supabase, parsed.kind, parsed.id)) ??
+      APP_NAME;
+    const description = title === APP_NAME
+      ? "Abriendo la receta en la app…"
+      : `Receta en ${APP_NAME}`;
 
-    // Clean URL without query params — WhatsApp crawlers handle this better
-    // than long signed storage tokens. Image is resized to 1200x630 JPEG.
-    const imageUrl = og.hasPhoto
-      ? `${supabaseUrl}/functions/v1/share-image/${parsed.kind}/${parsed.id}`
-      : null;
+    const body = html({
+      title,
+      description,
+      pageUrl,
+      appPath,
+    });
 
-    return respond(
-      html({
-        title: og.title,
-        description: `Receta en ${APP_NAME}`,
-        pageUrl,
-        imageUrl,
-        appPath,
-      }),
-      300,
+    return await publishAndRedirect(
+      supabase,
+      supabaseUrl,
+      parsed.kind,
+      parsed.id,
+      body,
     );
   } catch (error) {
     console.error("share-landing error", error);
-    return respond(
-      html({
-        title: APP_NAME,
-        description: "Abriendo la receta en la app…",
-        pageUrl,
-        imageUrl: null,
-        appPath,
-      }),
-    );
+    return new Response("Error", { status: 500 });
   }
 });

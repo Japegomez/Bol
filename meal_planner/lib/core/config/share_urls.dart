@@ -1,15 +1,22 @@
 import 'package:meal_planner/core/config/app_branding.dart';
 
-/// Base URL for recipe share links (Supabase landing with Open Graph previews).
+/// Base URL for recipe share links (Firebase Hosting → App Links).
+///
+/// WhatsApp/link crawlers: Hosting redirects to `share-landing`, which publishes
+/// a title-only HTML page to Supabase Storage (`text/html`). Edge Functions on
+/// `*.supabase.co` are forced to `text/plain`, so Storage is used for the page.
 abstract final class ShareUrls {
   static const supabaseProjectRef = 'hxtynisikjpwlvpdgdbt';
 
   static const landingBase =
       'https://$supabaseProjectRef.supabase.co/functions/v1/share-landing';
 
+  static const storageOgBase =
+      'https://$supabaseProjectRef.supabase.co/storage/v1/object/public/share-og';
+
   static const base = String.fromEnvironment(
     'SHARE_BASE_URL',
-    defaultValue: landingBase,
+    defaultValue: 'https://mealplanner-a818e.web.app',
   );
 
   static const host = 'mealplanner-a818e.web.app';
@@ -28,9 +35,10 @@ abstract final class ShareUrls {
   }
 
   static String? _locationFromKindAndId(String kind, String id) {
+    final cleanId = id.endsWith('.html') ? id.substring(0, id.length - 5) : id;
     return switch (kind) {
-      'p' => '/home/explore/$id',
-      'r' => '/share/r/$id',
+      'p' => '/home/explore/$cleanId',
+      'r' => '/share/r/$cleanId',
       _ => null,
     };
   }
@@ -59,6 +67,15 @@ abstract final class ShareUrls {
       return _locationFromKindAndId(
         segments[landingIndex + 1],
         segments[landingIndex + 2],
+      );
+    }
+
+    // Storage OG page: .../storage/v1/object/public/share-og/p/<id>.html
+    final ogIndex = segments.indexOf('share-og');
+    if (ogIndex >= 0 && segments.length > ogIndex + 2) {
+      return _locationFromKindAndId(
+        segments[ogIndex + 1],
+        segments[ogIndex + 2],
       );
     }
 

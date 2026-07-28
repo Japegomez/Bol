@@ -609,9 +609,8 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
   - Receta **privada propia**: enlace opaco `/r/<token>`; caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
   - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
   - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
-  - **Preview en WhatsApp (Open Graph):** landing Supabase `share-landing` sirve HTML con meta OG; imagen vía `share-image` (1200×630 JPEG). Firebase Hosting redirige `/r/*` y `/p/*` hacia Supabase (plan Spark). La app comparte **solo el enlace** (modelo YouTube), no adjunta archivo de imagen.
-  - Migraciones `025_recipe_share_links`, `032_share_og_metadata` (RPCs `get_private_share_og`, `get_public_recipe_og`).
-  - En app: `ShareUrls` (base Supabase landing); pending link en memoria + `SharedPreferences`; `GoRouter` estable entre refresh de token; tests `share_urls_test.dart`.
+  - **Compartir:** enlace HTTPS + texto (sin adjuntar foto). Landing `share-landing` publica HTML de título en Storage; Firebase Hosting redirige `/r/*` y `/p/*`. Migraciones `025`, `032`, `034`.
+  - En app: `ShareUrls` (base Firebase Hosting); pending link en memoria + `SharedPreferences`; tests `share_urls_test.dart`.
 
 ```
 /share/r/:token           → Resolver enlace privado → /home/recipes/:id

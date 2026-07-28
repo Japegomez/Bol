@@ -21,10 +21,7 @@ supabase/.temp/
 # Firebase CLI cache
 .firebase/
 
-# Firebase Cloud Functions (local npm install; not used on Spark plan)
-functions/node_modules/
-
-# Local share/OG test artifacts
+# Local share test artifacts
 fb_test.html
 v4.html
 img_test.jpg

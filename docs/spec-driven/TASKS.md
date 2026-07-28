@@ -26,15 +26,15 @@
 - [x] Migración `025_recipe_share_links.sql` (tabla, RLS lectura con enlace activo, RPCs `get_or_create_recipe_share_link` / `resolve_recipe_share`) aplicada en remoto
 - [x] Firebase Hosting en `mealplanner-a818e.web.app` (landing + `.well-known` AASA / assetlinks; SHA-256 = Play **app signing**)
   - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `bol://`
-- [x] UI compartir en ficha propia y detalle público (Explore); `share_plus` (solo enlace; preview vía Open Graph)
+- [x] UI compartir en ficha propia y detalle público (Explore); `share_plus` (enlace + texto; **sin** adjuntar foto)
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
   - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS, Supabase landing y esquema `bol://`); `onException` de respaldo
   - Pending link persistido en `SharedPreferences` (cold start / proceso muerto); `GoRouter` estable entre refresh de token
   - Resolver privado `SharePrivateLinkScreen`; detalle sin filtrar por owner (RLS share/hogar/público); no cachear fichas ajenas en Drift
-  - URLs de share apuntan a Supabase `share-landing`; mensaje WhatsApp con URL primero (preview tipo YouTube)
+  - URLs de share vía Firebase Hosting; mensaje WhatsApp con URL + título
   - Tests: `test/share_urls_test.dart`
 - [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`)
-- [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp preview con imagen → app → ficha → fork; enlace caducado
+- [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado
 
 ---
 
@@ -124,8 +124,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Límite de prompt **3.000 caracteres** (cliente + Edge Function)
   - Cliente OpenAI-compatible vía secrets `LLM_*` (recomendado Gemini `gemini-3.1-flash-lite` en proyecto GCP **sin** billing; Translation/Vision en proyecto con billing)
   - Documentado en `supabase/README.md`
-- [x] Edge Functions **`share-landing`** y **`share-image`**: landing HTML con meta Open Graph + imagen 1200×630 para crawlers (WhatsApp)
-  - Migración `032_share_og_metadata.sql` (RPCs `get_private_share_og`, `get_public_recipe_og`); `verify_jwt: false`
+- [x] Edge Function **`share-landing`**: landing HTML con meta Open Graph (título; **sin** imagen de receta)
+  - Migraciones `032_share_og_metadata.sql` / `034_share_og_no_photo.sql`; `verify_jwt: false`
+  - HTML en Storage (`share-og`) porque Edge Functions en `*.supabase.co` fuerzan `text/plain`
   - Firebase Hosting redirige `/r/*` y `/p/*` → Supabase landing (plan Spark, sin Cloud Functions)
 
 ### Servicios externos (observabilidad y UX)
@@ -629,7 +630,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp preview con imagen OG → App Links → login si hace falta → ficha → fork; enlace privado caducado (WhatsApp cachea previews agresivamente).
+1. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → login si hace falta → ficha → fork; enlace privado caducado.
 2. **Commit / merge del fix Live Activity** (`.foregroundStyle(.primary)` en `CookingActivityWidget.swift`) si aún no está en la rama de integración.
 3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork; invitar por WhatsApp.
 4. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
