@@ -1352,7 +1352,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get onboardingFinish => 'Amaitu';
 
   @override
-  String get onboardingStep0Title => 'Ongi etorri Receteara!';
+  String get onboardingStep0Title => 'Ongi etorri Böl!';
 
   @override
   String get onboardingStep0Body =>

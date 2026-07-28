@@ -1353,7 +1353,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get onboardingFinish => 'Finalizar';
 
   @override
-  String get onboardingStep0Title => 'Benvido/a a Recetea!';
+  String get onboardingStep0Title => 'Benvido/a a Böl!';
 
   @override
   String get onboardingStep0Body =>

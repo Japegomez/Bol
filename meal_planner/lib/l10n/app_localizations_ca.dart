@@ -1352,7 +1352,7 @@ class AppLocalizationsCa extends AppLocalizations {
   String get onboardingFinish => 'Finalitzar';
 
   @override
-  String get onboardingStep0Title => 'Benvingut/da a Recetea!';
+  String get onboardingStep0Title => 'Benvingut/da a Böl!';
 
   @override
   String get onboardingStep0Body =>

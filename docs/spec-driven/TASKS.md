@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 22/07/2026 — Fix deep links share; panel planificador overlay; raciones cortas; copy asistente IA
+> Actualizado: 28/07/2026 — Rebranding a **Böl** (nombre, logo ö, deep links `bol://`); fix deep links share; panel planificador; feedback admin
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -25,10 +25,10 @@
 - [x] Spec + plan: `docs/superpowers/specs/2026-07-21-recipe-whatsapp-share-links-design.md`, `docs/superpowers/plans/2026-07-21-recipe-whatsapp-share-links-plan.md`
 - [x] Migración `025_recipe_share_links.sql` (tabla, RLS lectura con enlace activo, RPCs `get_or_create_recipe_share_link` / `resolve_recipe_share`) aplicada en remoto
 - [x] Firebase Hosting en `mealplanner-a818e.web.app` (landing + `.well-known` AASA / assetlinks; SHA-256 = Play **app signing**)
-  - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `recetea://`
+  - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `bol://`
 - [x] UI compartir en ficha propia y detalle público (Explore); `share_plus`
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
-  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS y esquema `recetea://`); `onException` de respaldo
+  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS y esquema `bol://`); `onException` de respaldo
   - Resolver privado `SharePrivateLinkScreen`; detalle sin filtrar por owner (RLS share/hogar/público); no cachear fichas ajenas en Drift
   - Tests: `test/share_urls_test.dart`
 - [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`)
@@ -329,7 +329,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Glosario culinario desde recetario (FAB libro encima de «Nueva receta»)
   - Términos predefinidos + entradas personalizadas (`shared_preferences`); buscador; ruta `/home/recipes/glossary`
 - [x] Categoría de ingrediente `Repostería` sustituye `Panadería` (migración `018_rename_panaderia_to_reposteria.sql`)
-- [x] Marca visible de la app unificada como **Recetea** (`AppBranding.displayName`; iOS/Android/web)
+- [x] Marca visible de la app unificada como **Böl** (`AppBranding.displayName`; iOS/Android/web/desktop; logo lettermark ö; esquema deep link `bol://`)
+  - Rebranding desde Recetea: iconos en todas las plataformas; landing Hosting; onboarding l10n; sin alias `recetea://`
 - [x] Moderación de contenido en fotos de receta y avatar (`lib/core/moderation/`; Edge Function `moderate-image`)
 - [x] Etiquetas sugeridas de tipo de plato: `entrante`, `plato principal`, `postre` (`recipe_constants.dart`)
 - [x] Filtro de etiquetas **multi-selección** (AND) en recetario, selector/panel del planificador y Explorar
