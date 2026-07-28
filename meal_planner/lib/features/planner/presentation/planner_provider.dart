@@ -20,6 +20,9 @@ final currentWeekProvider = StateProvider<DateTime>((ref) {
   return startOfIsoWeek(DateTime.now());
 });
 
+/// True while a recipe or assigned meal is being dragged onto the planner.
+final plannerDragActiveProvider = StateProvider<bool>((ref) => false);
+
 final weeklyPlanProvider = FutureProvider.autoDispose<WeeklyPlan>((ref) async {
   ref.watch(currentWeekProvider);
   ref.watch(currentHouseholdProvider);
@@ -56,7 +59,6 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
 
   @override
   Future<List<SlotItem>> build() async {
-    ref.watch(authStateProvider);
     ref.watch(currentWeekProvider);
     final plan = await ref.watch(weeklyPlanProvider.future);
 
@@ -179,6 +181,61 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
       await _repository.removeSlot(slotId, householdId: household?.id);
       state = AsyncData(await _repository.getSlotsForPlan(plan.id));
       await ref.read(shoppingItemsProvider.notifier).reload();
+    } catch (_) {
+      state = AsyncData(previous);
+    }
+  }
+
+  Future<void> moveSlot({
+    required String slotId,
+    required int dayOfWeek,
+    required String mealType,
+  }) async {
+    final plan = ref.read(weeklyPlanProvider).valueOrNull;
+    if (plan == null) return;
+
+    final previous = state.valueOrNull ?? const <SlotItem>[];
+    final moving = previous.where((item) => item.slot.id == slotId).firstOrNull;
+    if (moving == null) return;
+    if (moving.slot.dayOfWeek == dayOfWeek &&
+        moving.slot.mealType == mealType) {
+      return;
+    }
+
+    final destinationCount = previous
+        .where(
+          (item) =>
+              item.slot.id != slotId &&
+              item.slot.dayOfWeek == dayOfWeek &&
+              item.slot.mealType == mealType,
+        )
+        .length;
+
+    state = AsyncData([
+      for (final item in previous)
+        if (item.slot.id == slotId)
+          SlotItem(
+            slot: item.slot.copyWith(
+              dayOfWeek: dayOfWeek,
+              mealType: mealType,
+              position: destinationCount,
+            ),
+            recipeTitle: item.recipeTitle,
+          )
+        else
+          item,
+    ]);
+
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
+
+    try {
+      await _repository.moveSlot(
+        slotId: slotId,
+        dayOfWeek: dayOfWeek,
+        mealType: mealType,
+        householdId: household?.id,
+      );
+      state = AsyncData(await _repository.getSlotsForPlan(plan.id));
     } catch (_) {
       state = AsyncData(previous);
     }

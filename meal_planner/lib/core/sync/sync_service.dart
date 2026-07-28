@@ -243,6 +243,14 @@ class SyncService {
         final slotId =
             await cache.resolveIdOrSelf(payload['slotId'] as String);
         await plannerRepository.removeSlotRemote(slotId);
+      case PendingOp.update:
+        final slotId =
+            await cache.resolveIdOrSelf(payload['slotId'] as String);
+        await plannerRepository.moveSlotRemote(
+          slotId: slotId,
+          dayOfWeek: payload['dayOfWeek'] as int,
+          mealType: payload['mealType'] as String,
+        );
       default:
         throw StateError('Unknown plan slot op type: $opType');
     }

@@ -834,6 +834,28 @@ class LocalCacheStore {
     });
   }
 
+  Future<void> moveSlotWithPendingOp({
+    required SlotItem slotItem,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
+    await _db.transaction(() async {
+      await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
+            _slotItemToRow(slotItem),
+          );
+      await _insertPendingOperation(
+        userId: userId,
+        entityType: PendingEntity.planSlot,
+        opType: PendingOp.update,
+        payload: payload,
+      );
+    });
+  }
+
   // ── Mappers ────────────────────────────────────────────────────────────────
 
   LocalRecipesCompanion _recipeToRow(Recipe recipe, {String? forkedFromId}) {

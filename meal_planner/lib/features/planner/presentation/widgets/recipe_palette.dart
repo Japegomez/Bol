@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
+import 'package:meal_planner/features/planner/domain/planner_drag_payload.dart';
+import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
 
@@ -166,7 +168,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
   }
 }
 
-class _DraggableRecipeCard extends StatelessWidget {
+class _DraggableRecipeCard extends ConsumerWidget {
   const _DraggableRecipeCard({
     required this.recipe,
     required this.onDragUpdate,
@@ -177,18 +179,26 @@ class _DraggableRecipeCard extends StatelessWidget {
   final void Function(Offset globalPosition) onDragUpdate;
   final VoidCallback onDragEnd;
 
+  void _finishDrag(WidgetRef ref) {
+    ref.read(plannerDragActiveProvider.notifier).state = false;
+    onDragEnd();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final card = _RecipeCardContent(recipe: recipe);
 
-    return Draggable<Recipe>(
-      data: recipe,
+    return Draggable<PlannerDragPayload>(
+      data: PlannerRecipeDrag(recipe),
+      rootOverlay: true,
       dragAnchorStrategy: pointerDragAnchorStrategy,
       feedback: _DragFeedback(recipe: recipe),
       childWhenDragging: Opacity(opacity: 0.4, child: card),
+      onDragStarted: () =>
+          ref.read(plannerDragActiveProvider.notifier).state = true,
       onDragUpdate: (details) => onDragUpdate(details.globalPosition),
-      onDragEnd: (_) => onDragEnd(),
-      onDraggableCanceled: (_, _) => onDragEnd(),
+      onDragEnd: (_) => _finishDrag(ref),
+      onDraggableCanceled: (_, _) => _finishDrag(ref),
       child: card,
     );
   }

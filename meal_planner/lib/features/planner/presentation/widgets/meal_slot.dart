@@ -5,24 +5,28 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
+import 'package:meal_planner/features/planner/domain/planner_drag_payload.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/planner/presentation/recipe_picker_screen.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/servings_dialog.dart';
 
 /// A single meal row (breakfast/lunch/dinner) of a day.
-/// Acts as a [DragTarget] so recipes can be dropped from the palette.
 class MealSlot extends ConsumerWidget {
   const MealSlot({
     required this.dayOfWeek,
     required this.mealType,
     required this.slots,
+    this.onDragUpdate,
+    this.onDragEnd,
     super.key,
   });
 
   final int dayOfWeek;
   final String mealType;
   final List<SlotItem> slots;
+  final void Function(Offset globalPosition)? onDragUpdate;
+  final VoidCallback? onDragEnd;
 
   Future<void> _addRecipe(
     BuildContext context,
@@ -44,6 +48,17 @@ class MealSlot extends ConsumerWidget {
           servings: result.servings,
           recipeTitle: recipe.title,
           isLeftover: false,
+        );
+  }
+
+  Future<void> _moveSlot(
+    WidgetRef ref,
+    SlotItem item,
+  ) async {
+    await ref.read(planSlotsProvider.notifier).moveSlot(
+          slotId: item.slot.id,
+          dayOfWeek: dayOfWeek,
+          mealType: mealType,
         );
   }
 
@@ -90,87 +105,146 @@ class MealSlot extends ConsumerWidget {
     }
   }
 
+  void _handleDrop(
+    BuildContext context,
+    WidgetRef ref,
+    PlannerDragPayload payload,
+  ) {
+    switch (payload) {
+      case PlannerRecipeDrag(:final recipe):
+        _addRecipe(context, ref, recipe);
+      case PlannerSlotDrag(:final item):
+        _moveSlot(ref, item);
+    }
+  }
+
+  bool _willAccept(PlannerDragPayload payload) {
+    return switch (payload) {
+      PlannerRecipeDrag() => true,
+      PlannerSlotDrag(:final item) =>
+        item.slot.dayOfWeek != dayOfWeek || item.slot.mealType != mealType,
+    };
+  }
+
+  void _finishDrag(WidgetRef ref) {
+    ref.read(plannerDragActiveProvider.notifier).state = false;
+    onDragEnd?.call();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final canEdit = ref.watch(canEditOfflineProvider);
-    final l10n = context.l10n;
+    final dragActive = ref.watch(plannerDragActiveProvider);
 
-    return DragTarget<Recipe>(
-      onAcceptWithDetails: canEdit
-          ? (details) => _addRecipe(context, ref, details.data)
-          : null,
-      builder: (context, candidate, rejected) {
-        final isHovering = candidate.isNotEmpty;
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          decoration: BoxDecoration(
-            color: isHovering
-                ? colorScheme.primaryContainer.withValues(alpha: 0.5)
-                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isHovering ? colorScheme.primary : Colors.transparent,
-              width: 1.5,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 64,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                MealType.label(context.l10n, mealType),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
             ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 64,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    MealType.label(l10n, mealType),
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+          Expanded(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (slots.isEmpty)
+                        _EmptySlot(
+                          onTap: canEdit ? () => _openPicker(context) : null,
+                        )
+                      else ...[
+                        ...slots.map(
+                          (item) => _RecipeChip(
+                            item: item,
+                            canRemove: canEdit,
+                            canDrag: canEdit,
+                            onDragStart: () => ref
+                                .read(plannerDragActiveProvider.notifier)
+                                .state = true,
+                            onDragUpdate: onDragUpdate,
+                            onDragEnd: () => _finishDrag(ref),
+                            onOpenRecipe: item.isTextSlot
+                                ? null
+                                : () => context.push(
+                                      '/home/recipes/${item.slot.recipeId}',
+                                    ),
+                            onRemove: () =>
+                                _confirmRemove(context, ref, item),
+                          ),
                         ),
+                        if (canEdit)
+                          _AddMoreButton(onTap: () => _openPicker(context)),
+                      ],
+                    ],
                   ),
                 ),
-              ),
-              Expanded(
-                child: slots.isEmpty
-                    ? _EmptySlot(
-                        isHovering: isHovering,
-                        onTap: canEdit ? () => _openPicker(context) : null,
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ...slots.map(
-                            (item) => _RecipeChip(
-                              item: item,
-                              canRemove: canEdit,
-                              onOpenRecipe: item.isTextSlot
-                                  ? null
-                                  : () => context.push(
-                                        '/home/recipes/${item.slot.recipeId}',
-                                      ),
-                              onRemove: () =>
-                                  _confirmRemove(context, ref, item),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    ignoring: !dragActive,
+                    child: DragTarget<PlannerDragPayload>(
+                      onWillAcceptWithDetails: canEdit
+                          ? (details) => _willAccept(details.data)
+                          : null,
+                      onAcceptWithDetails: canEdit
+                          ? (details) =>
+                              _handleDrop(context, ref, details.data)
+                          : null,
+                      builder: (context, candidate, rejected) {
+                        final isHovering = candidate.isNotEmpty;
+
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          decoration: BoxDecoration(
+                            color: isHovering
+                                ? colorScheme.primaryContainer
+                                    .withValues(alpha: 0.5)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isHovering
+                                  ? colorScheme.primary
+                                  : Colors.transparent,
+                              width: 1.5,
                             ),
                           ),
-                          if (canEdit)
-                            _AddMoreButton(onTap: () => _openPicker(context)),
-                        ],
-                      ),
-              ),
-            ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
 
 class _EmptySlot extends StatelessWidget {
-  const _EmptySlot({required this.isHovering, this.onTap});
+  const _EmptySlot({this.onTap});
 
-  final bool isHovering;
   final VoidCallback? onTap;
 
   @override
@@ -182,7 +256,7 @@ class _EmptySlot extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         child: Row(
           children: [
             Icon(
@@ -193,7 +267,7 @@ class _EmptySlot extends StatelessWidget {
             const SizedBox(width: 4),
             Expanded(
               child: Text(
-                isHovering ? l10n.dropHere : l10n.dragOrTap,
+                l10n.dragOrTap,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -221,7 +295,7 @@ class _AddMoreButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
         child: Row(
           children: [
             Icon(Icons.add, size: 16, color: colorScheme.primary),
@@ -245,12 +319,84 @@ class _RecipeChip extends StatelessWidget {
     required this.onRemove,
     this.onOpenRecipe,
     this.canRemove = true,
+    this.canDrag = false,
+    this.onDragStart,
+    this.onDragUpdate,
+    this.onDragEnd,
   });
 
   final SlotItem item;
   final VoidCallback? onOpenRecipe;
   final VoidCallback onRemove;
   final bool canRemove;
+  final bool canDrag;
+  final VoidCallback? onDragStart;
+  final void Function(Offset globalPosition)? onDragUpdate;
+  final VoidCallback? onDragEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final chip = _RecipeChipBody(
+      item: item,
+      onOpenRecipe: onOpenRecipe,
+      onRemove: onRemove,
+      canRemove: canRemove,
+      showDragHandle: canDrag,
+    );
+
+    if (!canDrag) return chip;
+
+    return Draggable<PlannerDragPayload>(
+      data: PlannerSlotDrag(item),
+      rootOverlay: true,
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      maxSimultaneousDrags: 1,
+      feedback: Material(
+        elevation: 6,
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.transparent,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.72,
+          ),
+          child: _RecipeChipBody(
+            item: item,
+            onOpenRecipe: null,
+            onRemove: () {},
+            canRemove: false,
+            showDragHandle: true,
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(opacity: 0.35, child: chip),
+      onDragStarted: onDragStart,
+      onDragUpdate: onDragUpdate == null
+          ? null
+          : (details) => onDragUpdate!(details.globalPosition),
+      onDragEnd: (_) => onDragEnd?.call(),
+      onDraggableCanceled: (_, _) => onDragEnd?.call(),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.grab,
+        child: chip,
+      ),
+    );
+  }
+}
+
+class _RecipeChipBody extends StatelessWidget {
+  const _RecipeChipBody({
+    required this.item,
+    required this.onRemove,
+    this.onOpenRecipe,
+    this.canRemove = true,
+    this.showDragHandle = false,
+  });
+
+  final SlotItem item;
+  final VoidCallback? onOpenRecipe;
+  final VoidCallback onRemove;
+  final bool canRemove;
+  final bool showDragHandle;
 
   @override
   Widget build(BuildContext context) {
@@ -259,18 +405,8 @@ class _RecipeChip extends StatelessWidget {
     final isText = item.isTextSlot;
     final isLeftover = !isText && item.slot.isLeftover;
     final isRecipe = onOpenRecipe != null;
-
-    final chipColor = isText
-        ? Colors.orange.shade100
-        : isLeftover
-            ? colorScheme.tertiaryContainer
-            : colorScheme.primaryContainer;
-
-    final onChipColor = isText
-        ? Colors.orange.shade900
-        : isLeftover
-            ? colorScheme.onTertiaryContainer
-            : colorScheme.onPrimaryContainer;
+    final chipColor = _chipBackgroundColor(colorScheme, item);
+    final onChipColor = _chipForegroundColor(colorScheme, item);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
@@ -281,11 +417,25 @@ class _RecipeChip extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Row(
           children: [
+            if (showDragHandle)
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Icon(
+                  Icons.drag_indicator,
+                  size: 20,
+                  color: onChipColor.withValues(alpha: 0.7),
+                ),
+              ),
             Expanded(
               child: InkWell(
                 onTap: onOpenRecipe,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                  padding: EdgeInsets.fromLTRB(
+                    showDragHandle ? 4 : 12,
+                    10,
+                    8,
+                    10,
+                  ),
                   child: Row(
                     children: [
                       if (isText) ...[
@@ -345,4 +495,16 @@ class _RecipeChip extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _chipBackgroundColor(ColorScheme colorScheme, SlotItem item) {
+  if (item.isTextSlot) return Colors.orange.shade100;
+  if (item.slot.isLeftover) return colorScheme.tertiaryContainer;
+  return colorScheme.primaryContainer;
+}
+
+Color _chipForegroundColor(ColorScheme colorScheme, SlotItem item) {
+  if (item.isTextSlot) return Colors.orange.shade900;
+  if (item.slot.isLeftover) return colorScheme.onTertiaryContainer;
+  return colorScheme.onPrimaryContainer;
 }

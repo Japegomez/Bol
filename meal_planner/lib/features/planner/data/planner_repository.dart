@@ -371,6 +371,118 @@ class PlannerRepository {
     );
   }
 
+  Future<void> moveSlot({
+    required String slotId,
+    required int dayOfWeek,
+    required String mealType,
+    String? householdId,
+  }) async {
+    final isOnline = await NetworkStatus.isOnline;
+    await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
+
+    if (isOnline) {
+      final cached = await _cache.getSlotsForPlanBySlotId(slotId);
+      await moveSlotRemote(
+        slotId: slotId,
+        dayOfWeek: dayOfWeek,
+        mealType: mealType,
+      );
+      if (cached != null) {
+        try {
+          final slots = await _fetchSlotsRemote(cached.slot.planId);
+          await _cache.cacheSlots(cached.slot.planId, slots);
+        } catch (_) {
+          // Best-effort cache refresh; remote move succeeded.
+        }
+      }
+      return;
+    }
+
+    await _moveSlotOffline(
+      slotId: slotId,
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+    );
+  }
+
+  Future<void> moveSlotRemote({
+    required String slotId,
+    required int dayOfWeek,
+    required String mealType,
+  }) async {
+    final slotRow = await supabase
+        .from(PlanSlot.table_name)
+        .select()
+        .eq(PlanSlot.c_id, slotId)
+        .maybeSingle();
+    if (slotRow == null) return;
+
+    final slot = PlanSlot.fromJson(slotRow);
+    if (slot.dayOfWeek == dayOfWeek && slot.mealType == mealType) return;
+
+    final existingSlots = await _fetchSlotsRemote(slot.planId);
+    final position = existingSlots
+        .where(
+          (item) =>
+              item.slot.id != slotId &&
+              item.slot.dayOfWeek == dayOfWeek &&
+              item.slot.mealType == mealType,
+        )
+        .length;
+
+    await supabase
+        .from(PlanSlot.table_name)
+        .update(
+          PlanSlot.update(
+            dayOfWeek: dayOfWeek,
+            mealType: mealType,
+            position: position,
+          ),
+        )
+        .eq(PlanSlot.c_id, slotId);
+  }
+
+  Future<void> _moveSlotOffline({
+    required String slotId,
+    required int dayOfWeek,
+    required String mealType,
+  }) async {
+    final cached = await _cache.getSlotsForPlanBySlotId(slotId);
+    if (cached == null) return;
+    if (cached.slot.dayOfWeek == dayOfWeek &&
+        cached.slot.mealType == mealType) {
+      return;
+    }
+
+    final existingSlots = await _cache.getSlotsForPlan(cached.slot.planId);
+    final position = existingSlots
+        .where(
+          (item) =>
+              item.slot.id != slotId &&
+              item.slot.dayOfWeek == dayOfWeek &&
+              item.slot.mealType == mealType,
+        )
+        .length;
+
+    final updated = SlotItem(
+      slot: cached.slot.copyWith(
+        dayOfWeek: dayOfWeek,
+        mealType: mealType,
+        position: position,
+      ),
+      recipeTitle: cached.recipeTitle,
+    );
+
+    await _cache.moveSlotWithPendingOp(
+      slotItem: updated,
+      payload: {
+        'slotId': slotId,
+        'dayOfWeek': dayOfWeek,
+        'mealType': mealType,
+      },
+    );
+  }
+
   Future<ShoppingList> getOrCreateShoppingList({
     required String userId,
     String? householdId,
