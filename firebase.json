@@ -25,6 +25,18 @@
         ]
       }
     ],
+    "redirects": [
+      {
+        "source": "/r/:token",
+        "destination": "https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/r/:token",
+        "type": 302
+      },
+      {
+        "source": "/p/:recipeId",
+        "destination": "https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/p/:recipeId",
+        "type": 302
+      }
+    ],
     "rewrites": [
       {
         "source": "**",

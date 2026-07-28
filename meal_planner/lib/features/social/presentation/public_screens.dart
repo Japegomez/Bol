@@ -183,7 +183,11 @@ class _PublicRecipeDetailScreenState
           .read(recipeShareRepositoryProvider)
           .publicShareUrl(widget.recipeId);
       if (!mounted) return;
-      await shareRecipeLink(context, title: detail.recipe.title, url: url);
+      await shareRecipeLink(
+        context,
+        title: detail.recipe.title,
+        url: url,
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

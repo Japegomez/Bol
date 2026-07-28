@@ -3,6 +3,16 @@ import 'package:meal_planner/core/config/share_urls.dart';
 
 void main() {
   group('ShareUrls.appLocationForIncomingUri', () {
+    test('maps Supabase landing public recipe URL', () {
+      final uri = Uri.parse(
+        'https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/p/3101fa52-2927-4259-b9f1-9b206acc27bb',
+      );
+      expect(
+        ShareUrls.appLocationForIncomingUri(uri),
+        '/home/explore/3101fa52-2927-4259-b9f1-9b206acc27bb',
+      );
+    });
+
     test('maps Hosting public recipe URL', () {
       final uri = Uri.parse(
         'https://mealplanner-a818e.web.app/p/3101fa52-2927-4259-b9f1-9b206acc27bb',
