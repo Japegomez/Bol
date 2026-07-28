@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:meal_planner/core/auth/session_background.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/features/auth/data/auth_error_mapper.dart';
@@ -160,6 +161,11 @@ class AuthRepository {
         // Best-effort; Supabase sign-out still runs below.
       }
     }
+    try {
+      await SessionBackground.clearMarker();
+    } catch (_) {
+      // Best-effort; auth sign-out still runs below.
+    }
     await supabase.auth.signOut();
   }
 
@@ -192,6 +198,7 @@ class AuthRepository {
 
   Stream<AuthState> get authStateChanges async* {
     var wasAuthenticated = supabase.auth.currentSession != null;
+    String? lastUserId = supabase.auth.currentUser?.id;
 
     yield wasAuthenticated
         ? AuthAuthenticated(supabase.auth.currentUser!)
@@ -200,11 +207,19 @@ class AuthRepository {
     await for (final event in supabase.auth.onAuthStateChange) {
       final session = event.session;
       if (session != null) {
+        final userId = session.user.id;
+        // Skip token-refresh emissions that would recreate the router / reload
+        // providers with an equivalent AuthAuthenticated state.
+        if (wasAuthenticated && lastUserId == userId) {
+          continue;
+        }
         wasAuthenticated = true;
+        lastUserId = userId;
         yield AuthAuthenticated(session.user);
       } else {
         final sessionExpired = wasAuthenticated && !_manualSignOut;
         wasAuthenticated = false;
+        lastUserId = null;
         _manualSignOut = false;
         yield AuthUnauthenticated(sessionExpired: sessionExpired);
       }
