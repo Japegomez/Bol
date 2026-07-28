@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'MealPlanner';
+  String get appName => 'Böl';
 
   @override
   String get languageEnglish => 'English';
@@ -28,6 +28,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languagePortuguese => 'Portuguese';
+
+  @override
+  String get languageItalian => 'Italian';
 
   @override
   String get languageSystemDefault => 'System default';
@@ -550,6 +553,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plannerTitle => 'Planner';
 
   @override
+  String get sharePlannerTooltip => 'Share planner';
+
+  @override
+  String get copyPlannerTooltip => 'Copy planner';
+
+  @override
+  String get plannerCopied => 'Planner copied to clipboard';
+
+  @override
+  String get plannerShareLeftoverLabel => 'leftovers';
+
+  @override
   String get thisWeek => 'This week';
 
   @override
@@ -645,7 +660,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shareRecipeMessage(String title, String url) {
-    return '$title\n$url';
+    return '$url\n\nCheck out this recipe on Böl: $title';
   }
 
   @override
@@ -834,6 +849,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteCode => 'Invitation code';
+
+  @override
+  String get inviteViaWhatsApp => 'Invite via WhatsApp';
+
+  @override
+  String inviteWhatsAppHouseholdMessage(String appName, String code) {
+    return 'Hi! Join my household on $appName. Use this code: $code';
+  }
 
   @override
   String get copyTooltip => 'Copy';
@@ -1348,7 +1371,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingFinish => 'Finish';
 
   @override
-  String get onboardingStep0Title => 'Welcome to Recetea!';
+  String get onboardingStep0Title => 'Welcome to Böl!';
 
   @override
   String get onboardingStep0Body =>
@@ -1488,6 +1511,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recipeAssistantTimeout =>
       'The request took too long. Please try again.';
+
+  @override
+  String get recipeAssistantPromptTooLong =>
+      'The recipe description cannot exceed 3,000 characters.';
 
   @override
   String get recipeAssistantDailyLimitReached =>

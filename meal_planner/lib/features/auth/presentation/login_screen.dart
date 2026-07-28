@@ -46,7 +46,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(authOperationInProgressProvider.notifier).state = true;
     try {
       await action();
-      if (mounted) context.go('/');
+      // Do not force navigation here: GoRouter redirect (and DeepLinkListener)
+      // consume any pending share link and route to the recipe or planner.
     } on AuthCancelledException {
       // User dismissed the provider sheet — no error banner.
     } on AuthException catch (e) {

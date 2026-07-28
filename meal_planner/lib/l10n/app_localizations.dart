@@ -10,6 +10,7 @@ import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_eu.dart';
 import 'app_localizations_gl.dart';
+import 'app_localizations_it.dart';
 import 'app_localizations_pt.dart';
 
 // ignore_for_file: type=lint
@@ -103,13 +104,14 @@ abstract class AppLocalizations {
     Locale('es'),
     Locale('eu'),
     Locale('gl'),
+    Locale('it'),
     Locale('pt'),
   ];
 
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
-  /// **'MealPlanner'**
+  /// **'Böl'**
   String get appName;
 
   /// No description provided for @languageEnglish.
@@ -147,6 +149,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Portuguese'**
   String get languagePortuguese;
+
+  /// No description provided for @languageItalian.
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get languageItalian;
 
   /// No description provided for @languageSystemDefault.
   ///
@@ -1096,6 +1104,30 @@ abstract class AppLocalizations {
   /// **'Planner'**
   String get plannerTitle;
 
+  /// No description provided for @sharePlannerTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share planner'**
+  String get sharePlannerTooltip;
+
+  /// No description provided for @copyPlannerTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy planner'**
+  String get copyPlannerTooltip;
+
+  /// No description provided for @plannerCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Planner copied to clipboard'**
+  String get plannerCopied;
+
+  /// No description provided for @plannerShareLeftoverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'leftovers'**
+  String get plannerShareLeftoverLabel;
+
   /// No description provided for @thisWeek.
   ///
   /// In en, this message translates to:
@@ -1279,7 +1311,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareRecipeMessage.
   ///
   /// In en, this message translates to:
-  /// **'{title}\n{url}'**
+  /// **'{url}\n\nCheck out this recipe on Böl: {title}'**
   String shareRecipeMessage(String title, String url);
 
   /// No description provided for @shareLinkExpired.
@@ -1611,6 +1643,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invitation code'**
   String get inviteCode;
+
+  /// No description provided for @inviteViaWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite via WhatsApp'**
+  String get inviteViaWhatsApp;
+
+  /// No description provided for @inviteWhatsAppHouseholdMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi! Join my household on {appName}. Use this code: {code}'**
+  String inviteWhatsAppHouseholdMessage(String appName, String code);
 
   /// No description provided for @copyTooltip.
   ///
@@ -2599,7 +2643,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep0Title.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Recetea!'**
+  /// **'Welcome to Böl!'**
   String get onboardingStep0Title;
 
   /// No description provided for @onboardingStep0Body.
@@ -2836,6 +2880,12 @@ abstract class AppLocalizations {
   /// **'The request took too long. Please try again.'**
   String get recipeAssistantTimeout;
 
+  /// No description provided for @recipeAssistantPromptTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe description cannot exceed 3,000 characters.'**
+  String get recipeAssistantPromptTooLong;
+
   /// No description provided for @recipeAssistantDailyLimitReached.
   ///
   /// In en, this message translates to:
@@ -3015,6 +3065,7 @@ class _AppLocalizationsDelegate
     'es',
     'eu',
     'gl',
+    'it',
     'pt',
   ].contains(locale.languageCode);
 
@@ -3035,6 +3086,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEu();
     case 'gl':
       return AppLocalizationsGl();
+    case 'it':
+      return AppLocalizationsIt();
     case 'pt':
       return AppLocalizationsPt();
   }

@@ -9,7 +9,7 @@ class AppLocalizationsEu extends AppLocalizations {
   AppLocalizationsEu([String locale = 'eu']) : super(locale);
 
   @override
-  String get appName => 'MealPlanner';
+  String get appName => 'Böl';
 
   @override
   String get languageEnglish => 'Ingelesa';
@@ -28,6 +28,9 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get languagePortuguese => 'Portugesa';
+
+  @override
+  String get languageItalian => 'Italiera';
 
   @override
   String get languageSystemDefault => 'Sistemaren hizkuntza';
@@ -553,6 +556,18 @@ class AppLocalizationsEu extends AppLocalizations {
   String get plannerTitle => 'Planifikatzailea';
 
   @override
+  String get sharePlannerTooltip => 'Partekatu planifikatzailea';
+
+  @override
+  String get copyPlannerTooltip => 'Kopiatu planifikatzailea';
+
+  @override
+  String get plannerCopied => 'Planifikatzailea arbelean kopiatu da';
+
+  @override
+  String get plannerShareLeftoverLabel => 'sobrak';
+
+  @override
   String get thisWeek => 'Aste honetan';
 
   @override
@@ -649,7 +664,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String shareRecipeMessage(String title, String url) {
-    return '$title\n$url';
+    return '$url\n\nIkusi errezeta hau Bölen: $title';
   }
 
   @override
@@ -838,6 +853,14 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get inviteCode => 'Gonbidapen-kodea';
+
+  @override
+  String get inviteViaWhatsApp => 'Gonbidatu WhatsApp bidez';
+
+  @override
+  String inviteWhatsAppHouseholdMessage(String appName, String code) {
+    return 'Kaixo! Etorri nire etxera $appName aplikazioan. Erabili kode hau: $code';
+  }
 
   @override
   String get copyTooltip => 'Kopiatu';
@@ -1352,7 +1375,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get onboardingFinish => 'Amaitu';
 
   @override
-  String get onboardingStep0Title => 'Ongi etorri Receteara!';
+  String get onboardingStep0Title => 'Ongi etorri Böl!';
 
   @override
   String get onboardingStep0Body =>
@@ -1492,6 +1515,10 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get recipeAssistantTimeout =>
       'Eskaerak denbora gehiegi hartu du. Saiatu berriro.';
+
+  @override
+  String get recipeAssistantPromptTooLong =>
+      'Errezetaren deskribapenak ezin ditu 3.000 karaktere baino gehiago izan.';
 
   @override
   String get recipeAssistantDailyLimitReached =>

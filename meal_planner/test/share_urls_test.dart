@@ -3,6 +3,26 @@ import 'package:meal_planner/core/config/share_urls.dart';
 
 void main() {
   group('ShareUrls.appLocationForIncomingUri', () {
+    test('maps Supabase landing public recipe URL', () {
+      final uri = Uri.parse(
+        'https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/p/3101fa52-2927-4259-b9f1-9b206acc27bb',
+      );
+      expect(
+        ShareUrls.appLocationForIncomingUri(uri),
+        '/home/explore/3101fa52-2927-4259-b9f1-9b206acc27bb',
+      );
+    });
+
+    test('maps Storage OG HTML public recipe URL', () {
+      final uri = Uri.parse(
+        'https://hxtynisikjpwlvpdgdbt.supabase.co/storage/v1/object/public/share-og/p/3101fa52-2927-4259-b9f1-9b206acc27bb.html',
+      );
+      expect(
+        ShareUrls.appLocationForIncomingUri(uri),
+        '/home/explore/3101fa52-2927-4259-b9f1-9b206acc27bb',
+      );
+    });
+
     test('maps Hosting public recipe URL', () {
       final uri = Uri.parse(
         'https://mealplanner-a818e.web.app/p/3101fa52-2927-4259-b9f1-9b206acc27bb',
@@ -39,12 +59,12 @@ void main() {
     test('maps custom scheme', () {
       expect(
         ShareUrls.appLocationForIncomingUri(
-          Uri.parse('recetea://p/3101fa52-2927-4259-b9f1-9b206acc27bb'),
+          Uri.parse('bol://p/3101fa52-2927-4259-b9f1-9b206acc27bb'),
         ),
         '/home/explore/3101fa52-2927-4259-b9f1-9b206acc27bb',
       );
       expect(
-        ShareUrls.appLocationForIncomingUri(Uri.parse('recetea://r/tok')),
+        ShareUrls.appLocationForIncomingUri(Uri.parse('bol://r/tok')),
         '/share/r/tok',
       );
     });

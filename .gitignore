@@ -20,3 +20,8 @@ supabase/.temp/
 
 # Firebase CLI cache
 .firebase/
+
+# Local share test artifacts
+fb_test.html
+v4.html
+img_test.jpg

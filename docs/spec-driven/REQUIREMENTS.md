@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Recetea**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025; deep links Hosting mapeados en go_router), **fork atómico + rebuild compra con `is_checked`** (026).
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Böl**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift, filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025; deep links Hosting mapeados en go_router; esquema `bol://`), **fork atómico + rebuild compra con `is_checked`** (026).
 
 ---
 
@@ -27,7 +27,7 @@
 
 ## 1. Visión del producto
 
-MealPlanner (marca visible **Recetea**) es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
+MealPlanner (marca visible **Böl**) es una app móvil (iOS y Android) que permite a usuarios individuales o grupos familiares:
 
 - **Gestionar un recetario personal** con instrucciones, ingredientes e información nutricional.
 - **Planificar las comidas de cada semana** asignando recetas a slots de desayuno, comida y cena.
@@ -74,7 +74,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-06** Al autenticarse por primera vez (cualquier método) se crea automáticamente un perfil con nombre de usuario y avatar opcional.  
 **RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`). Al seleccionar una nueva foto, la app la valida con moderación de contenido antes de aceptarla.  
 **RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
-**RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; solo expira cuando caduca el refresh token de Supabase (~1 semana) o el usuario cierra sesión.  
+**RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; expira cuando caduca el refresh token de Supabase (~1 semana), tras **>10 minutos en background** (cierre automático al volver), o cuando el usuario cierra sesión manualmente.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
 **RF-AUTH-11** El usuario puede activar/desactivar el **modo oscuro** con un toggle en Perfil. Por defecto la app sigue el modo del sistema; al cambiar el toggle, la preferencia manual se persiste en el dispositivo (`shared_preferences`) y prevalece sobre el ajuste del sistema.  
 **RF-AUTH-12** El perfil puede marcarse como administrador de app (`profiles.is_admin`). Solo bootstrap/service role o un admin existente pueden cambiar ese flag (trigger `profiles_guard_admin`). Los payloads de cliente no envían `is_admin`.  
@@ -102,6 +102,7 @@ Un **hogar** es un espacio compartido que agrupa un planificador semanal y una l
 **RF-HH-02** El sistema genera un **código de invitación** único (alfanumérico, 6 caracteres) para cada hogar.  
 **RF-HH-03** Cualquier usuario registrado puede unirse a un hogar introduciendo el código de invitación.  
 **RF-HH-04** El administrador puede revocar el código de invitación y generar uno nuevo.  
+**RF-HH-04b** El administrador puede **compartir el código de invitación por WhatsApp** (u otras apps vía `share_plus`) desde la pantalla del hogar.
 > **Nota de implementación — RPCs (migración `006_household_rpcs`):** `create_household(name)`, `join_household(code)` y `regenerate_invite_code(household_id)` expuestas como funciones `SECURITY DEFINER` con `GRANT` a `authenticated`. Código de invitación alfanumérico de 6 caracteres (sin caracteres ambiguos).
 >
 > **UI Flutter:** `HouseholdRepository` + `currentHouseholdProvider`; miembros vía `householdMembersByIdProvider(householdId)` (family, evita dependencias circulares en Riverpod).
@@ -176,7 +177,7 @@ El **recetario** es la colección personal de recetas de cada usuario. Las recet
 **RF-REC-19** En las tarjetas del recetario y de exploración, las etiquetas de receta se muestran en una fila con **scroll horizontal** para no alargar la ficha verticalmente.  
 **RF-REC-20** Desde el recetario, el usuario puede abrir un **glosario culinario** (FAB con icono de libro, encima de «Nueva receta») con términos y definiciones predefinidos (p. ej. ahumar, al dente, caramelizar, tamizar), buscador y posibilidad de añadir o eliminar entradas personalizadas (persistidas en el dispositivo).  
 **RF-REC-21** Las fotos de receta y los avatares de perfil se moderan al seleccionarse (no al guardar): la app envía la imagen a la Edge Function `moderate-image`, que consulta Google Cloud Vision SafeSearch. Si el contenido es adulto, violento o explícito (`LIKELY`/`VERY_LIKELY`), se rechaza con un aviso al usuario; si el servicio falla, la imagen no se acepta (fail-closed).  
-**RF-REC-22** La marca visible de la app es **Recetea** (`AppBranding.displayName`); nombre en icono iOS/Android y textos de login/registro. El identificador técnico del paquete (`meal_planner` / `com.japegomez.mealPlanner`) no cambia.  
+**RF-REC-22** La marca visible de la app es **Böl** (`AppBranding.displayName`); nombre e icono en iOS/Android/web/desktop y textos de login/registro/onboarding. Logo lettermark basado en la **ö** (círculo + dos hojas). El identificador técnico del paquete (`meal_planner` / `com.japegomez.meal_planner`) no cambia. El esquema de deep link custom es `bol://`.  
 **RF-REC-23** Al añadir un ingrediente en el formulario de receta, la unidad por defecto es **`unidad`** y la categoría por defecto es **Verduras** (`vegetables`). La deserialización offline (`RecipeFormDataCodec`) aplica los mismos defaults si el payload no incluye esos campos (salvo «al gusto» o unidad personalizada).  
 **RF-REC-24** El usuario puede crear una receta con **asistente de IA** (opción en el FAB del recetario): indica qué le apetece, qué tiene en la nevera, o pega una receta completa; la Edge Function `recipe-assistant` (`generate_recipe`) genera/adapta la ficha y **pre-rellena** el formulario de creación (el usuario revisa y guarda). Si el input es una receta pegada, se conservan todos los ingredientes (excepto agua solo de cocción) y se dividen los pasos. Los nombres de ingrediente se normalizan a singular con mayúscula inicial.  
 **RF-REC-25** El usuario puede **completar la información nutricional** de una receta existente con IA desde el detalle o el formulario de edición (`generate_nutrition`); los valores estimados por ración se pueden guardar sin reescribir el resto de la receta. Si ya hay valores, se **adjuntan** a la petición (`existingNutrition`) y el modelo debe **conservarlos** cuando sean coherentes con la receta. Los valores nutricionales son **enteros ≥ 0** end-to-end: `NutritionFormData` (`int?` + `normalizeNutritionValue`: redondeo, rechaza negativos y no finitos), schema LLM, mapper y formulario (solo dígitos). El proveedor LLM es configurable por secrets (`LLM_*`; recomendado Gemini `gemini-3.1-flash-lite` en un proyecto GCP sin facturación, separado del de Translation/Vision).
@@ -199,7 +200,9 @@ El planificador muestra una semana con 7 días × 3 slots: **Desayuno**, **Comid
 **RF-PLAN-09** En modo hogar, todos los miembros ven y modifican el mismo planificador en tiempo real (Supabase Realtime).  
 **RF-PLAN-10** El usuario puede marcar **Son sobras** desde el selector de recetas (opción al mismo nivel que texto libre): elige una receta **sin** diálogo de raciones; los ingredientes **no** se añaden a la lista de la compra. El diálogo de raciones de una asignación normal ya no incluye el checkbox de sobras.  
 **RF-PLAN-11** El usuario puede añadir una **entrada de texto libre** a un slot (sin receta asociada): se guarda en `plan_slots.notes`, no genera ítems en la lista de la compra y se distingue visualmente de recetas y sobras.  
-**RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.
+**RF-PLAN-12** El día actual de la semana visible se destaca visualmente en el planificador (fondo verde más oscuro, borde y etiqueta «Hoy») para localizarlo de un vistazo.  
+**RF-PLAN-13** El usuario puede **arrastrar comidas ya asignadas** entre slots del planificador (mismo día u otro; online y offline en modo individual).  
+**RF-PLAN-14** El usuario puede **copiar o compartir** el planificador semanal visible como texto plano (AppBar del planificador; mismo patrón que exportar lista de la compra).
 
 > **Nota de implementación — slots (migración `009_plan_slots_extras`):** `plan_slots.is_leftover boolean DEFAULT false`; `plan_slots.notes text` (nullable). Chips en UI: receta normal (`primaryContainer`), sobras (`tertiaryContainer` + icono), texto libre (naranja suave + icono); título en **1 línea** + raciones cortas (`servingsCountShort`, p. ej. `2 r.`). Panel `RecipePalette`: overlay sin `padding` derecho en la lista; scrollbar visible a la izquierda. Selector (`RecipePickerSheet`): acciones «texto libre» y «sobras» al mismo nivel; en modo sobras la lista no muestra raciones; el diálogo de raciones solo pide cantidad. El sheet se cierra antes de await del guardado del slot.
 
@@ -497,7 +500,7 @@ lib/
 | `sign_in_with_apple` | Sign in with Apple (obligatorio en iOS con OAuth) |
 | `image_picker` | Selección de foto de receta |
 | `share_plus` | Exportar lista de la compra y compartir enlaces de recetas |
-| `app_links` | Deep links HTTPS (Firebase Hosting) y esquema `recetea://` |
+| `app_links` | Deep links HTTPS (Firebase Hosting) y esquema `bol://` |
 | `intl` | Formateo de fechas (semanas) |
 | `flutter_slidable` | Swipe en ítems de lista |
 | `cached_network_image` | Caché de fotos de recetas y avatares |
@@ -603,11 +606,11 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
 - **RF-SOC-06** Perfil público con avatar, nombre, recetas publicadas y valoración media. Sin campo bio (no está en `profiles`).
 - **RF-SOC-07** En el detalle de receta pública: texto «Receta creada por » (sin enlace) + nombre del autor (enlace al perfil), o «Receta creada por ti» si es la propia receta; fecha de creación visible junto a valoración y raciones.
 - **RF-SOC-08** El usuario puede **compartir una receta por enlace HTTPS** (WhatsApp u otras apps vía `share_plus`):
-  - Receta **privada propia**: enlace opaco `/r/<token>` (Firebase Hosting); caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
+  - Receta **privada propia**: enlace opaco `/r/<token>`; caduca a **30 días**; se reutiliza mientras esté activo; la receta **no** se hace pública.
   - Receta **pública** (propia o de Explore): enlace estable `/p/<recipe_id>`.
   - Abrir el enlace exige **sesión**; tras login se muestra la ficha (solo lectura si no es propia) con opción de **fork**.
-  - Hosting: `https://mealplanner-a818e.web.app`; App Links (Android) + Universal Links (iOS). Migración `025_recipe_share_links`. Landing: CTA «Abrir en Recetea» (sin redirect automático al esquema custom).
-  - En app: `ShareUrls.appLocationForIncomingUri` + rutas `/p/:id`, `/r/:token`, `/share/r/:token`; fetch de detalle sin filtro de owner (RLS); tests `share_urls_test.dart`.
+  - **Compartir:** enlace HTTPS + texto (sin adjuntar foto). Landing `share-landing` publica HTML de título en Storage; Firebase Hosting redirige `/r/*` y `/p/*`. Migraciones `025`, `032`, `034`.
+  - En app: `ShareUrls` (base Firebase Hosting); pending link en memoria + `SharedPreferences`; tests `share_urls_test.dart`.
 
 ```
 /share/r/:token           → Resolver enlace privado → /home/recipes/:id

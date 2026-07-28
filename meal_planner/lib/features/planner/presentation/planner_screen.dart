@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/utils/date_utils.dart';
@@ -8,8 +9,10 @@ import 'package:meal_planner/features/onboarding/presentation/onboarding_targets
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
+import 'package:meal_planner/features/planner/presentation/planner_share.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/meal_slot.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/recipe_palette.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -80,12 +83,45 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     _autoScrollDirection = 0;
   }
 
+  String _planText(List<SlotItem> slots) {
+    final localeName = Localizations.localeOf(context).languageCode;
+    return formatWeeklyPlanForShare(
+      l10n: context.l10n,
+      weekStart: ref.read(currentWeekProvider),
+      localeName: localeName,
+      slots: slots,
+    );
+  }
+
+  Future<void> _copyPlan(List<SlotItem> slots) async {
+    if (!weeklyPlanHasMeals(slots)) return;
+
+    await Clipboard.setData(ClipboardData(text: _planText(slots)));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.plannerCopied)),
+    );
+  }
+
+  Future<void> _sharePlan(List<SlotItem> slots) async {
+    if (!weeklyPlanHasMeals(slots)) return;
+
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : const Rect.fromLTWH(0, 0, 1, 1);
+
+    await Share.share(_planText(slots), sharePositionOrigin: origin);
+  }
+
   @override
   Widget build(BuildContext context) {
     final weekStart = ref.watch(currentWeekProvider);
     final planAsync = ref.watch(weeklyPlanProvider);
     final slotsAsync = ref.watch(planSlotsProvider);
     final l10n = context.l10n;
+    final slots = slotsAsync.valueOrNull ?? const <SlotItem>[];
+    final hasMeals = weeklyPlanHasMeals(slots);
 
     final screenWidth = MediaQuery.of(context).size.width;
     final paletteWidth = (screenWidth * 0.55).clamp(190.0, 280.0);
@@ -93,6 +129,18 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.plannerTitle),
+        actions: [
+          IconButton(
+            onPressed: hasMeals ? () => _copyPlan(slots) : null,
+            icon: const Icon(Icons.copy_outlined),
+            tooltip: l10n.copyPlannerTooltip,
+          ),
+          IconButton(
+            onPressed: hasMeals ? () => _sharePlan(slots) : null,
+            icon: const Icon(Icons.share_outlined),
+            tooltip: l10n.sharePlannerTooltip,
+          ),
+        ],
       ),
       body: planAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -118,6 +166,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                       scrollController: _scrollController,
                       weekStart: weekStart,
                       slots: slots,
+                      onDragUpdate: _onDragUpdate,
+                      onDragEnd: _stopAutoScroll,
                     ),
                   ),
                 ),
@@ -210,12 +260,16 @@ class _VerticalPlanner extends StatelessWidget {
     required this.scrollController,
     required this.weekStart,
     required this.slots,
+    required this.onDragUpdate,
+    required this.onDragEnd,
   });
 
   final Key listKey;
   final ScrollController scrollController;
   final DateTime weekStart;
   final List<SlotItem> slots;
+  final void Function(Offset globalPosition) onDragUpdate;
+  final VoidCallback onDragEnd;
 
   List<SlotItem> _slotsForCell(int dayOfWeek, String mealType) {
     return slots
@@ -241,6 +295,8 @@ class _VerticalPlanner extends StatelessWidget {
           dayOfWeek: dayOfWeek,
           date: date,
           slotsForCell: _slotsForCell,
+          onDragUpdate: onDragUpdate,
+          onDragEnd: onDragEnd,
         );
       },
     );
@@ -252,11 +308,15 @@ class _DayCard extends StatelessWidget {
     required this.dayOfWeek,
     required this.date,
     required this.slotsForCell,
+    required this.onDragUpdate,
+    required this.onDragEnd,
   });
 
   final int dayOfWeek;
   final DateTime date;
   final List<SlotItem> Function(int dayOfWeek, String mealType) slotsForCell;
+  final void Function(Offset globalPosition) onDragUpdate;
+  final VoidCallback onDragEnd;
 
   bool _isToday(DateTime date) {
     final now = DateTime.now();
@@ -329,6 +389,8 @@ class _DayCard extends StatelessWidget {
                 dayOfWeek: dayOfWeek,
                 mealType: mealType,
                 slots: slotsForCell(dayOfWeek, mealType),
+                onDragUpdate: onDragUpdate,
+                onDragEnd: onDragEnd,
               ),
           ],
         ),

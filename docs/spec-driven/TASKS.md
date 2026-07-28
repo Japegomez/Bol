@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 22/07/2026 — Fix deep links share; panel planificador overlay; raciones cortas; copy asistente IA
+> Actualizado: 28/07/2026 — Preview OG WhatsApp (Supabase share-landing); arrastrar comidas entre slots; compartir planificador; invitar hogar por WhatsApp; italiano; sesión tras background; fix deep links
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -25,11 +25,13 @@
 - [x] Spec + plan: `docs/superpowers/specs/2026-07-21-recipe-whatsapp-share-links-design.md`, `docs/superpowers/plans/2026-07-21-recipe-whatsapp-share-links-plan.md`
 - [x] Migración `025_recipe_share_links.sql` (tabla, RLS lectura con enlace activo, RPCs `get_or_create_recipe_share_link` / `resolve_recipe_share`) aplicada en remoto
 - [x] Firebase Hosting en `mealplanner-a818e.web.app` (landing + `.well-known` AASA / assetlinks; SHA-256 = Play **app signing**)
-  - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `recetea://`
-- [x] UI compartir en ficha propia y detalle público (Explore); `share_plus`
+  - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `bol://`
+- [x] UI compartir en ficha propia y detalle público (Explore); `share_plus` (enlace + texto; **sin** adjuntar foto)
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
-  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS y esquema `recetea://`); `onException` de respaldo
+  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS, Supabase landing y esquema `bol://`); `onException` de respaldo
+  - Pending link persistido en `SharedPreferences` (cold start / proceso muerto); `GoRouter` estable entre refresh de token
   - Resolver privado `SharePrivateLinkScreen`; detalle sin filtrar por owner (RLS share/hogar/público); no cachear fichas ajenas en Drift
+  - URLs de share vía Firebase Hosting; mensaje WhatsApp con URL + título
   - Tests: `test/share_urls_test.dart`
 - [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`)
 - [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado
@@ -119,8 +121,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Edge Function `recipe-assistant`: generación/adaptación de recetas y estimación nutricional (PR #47)
   - Modos: `generate_recipe`, `generate_nutrition`; JWT de usuario validado (`auth.getUser`)
   - Cuota por usuario + cooldown + tope global opcional (migraciones `022_ai_assistant_usage.sql` y `023_ai_assistant_usage_gate_order.sql`, RPC `check_and_increment_ai_usage`)
+  - Límite de prompt **3.000 caracteres** (cliente + Edge Function)
   - Cliente OpenAI-compatible vía secrets `LLM_*` (recomendado Gemini `gemini-3.1-flash-lite` en proyecto GCP **sin** billing; Translation/Vision en proyecto con billing)
   - Documentado en `supabase/README.md`
+- [x] Edge Function **`share-landing`**: landing HTML con meta Open Graph (título; **sin** imagen de receta)
+  - Migraciones `032_share_og_metadata.sql` / `034_share_og_no_photo.sql`; `verify_jwt: false`
+  - HTML en Storage (`share-og`) porque Edge Functions en `*.supabase.co` fuerzan `text/plain`
+  - Firebase Hosting redirige `/r/*` y `/p/*` → Supabase landing (plan Spark, sin Cloud Functions)
 
 ### Servicios externos (observabilidad y UX)
 
@@ -227,6 +234,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Mensajes de error amigables en login/registro (mapeo `AuthApiException` → `AuthException`)
 - [x] Sesión persistente al minimizar la app (sin cierre automático en background)
   - `SessionLifecycleHandler` ya no hace `signOut` al pausar; eliminado `signOut()` en arranque de `main.dart`
+- [x] Cierre de sesión tras **10 minutos** en background (`SessionBackground` + revalidación JWT al volver)
+  - Mismo patrón que musApp; errores de red no cierran sesión (offline sigue funcionando)
 - [x] Aviso en login cuando la sesión caduca por expiración del refresh token (`AuthUnauthenticated.sessionExpired`)
 - [x] Campos de contraseña con icono mostrar/ocultar (`PasswordTextField`)
 
@@ -249,6 +258,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Crear hogar: formulario con nombre → llamada a RPC `create_household`
   - `create_household_screen.dart`
 - [x] Mostrar código de invitación del hogar (copiable al portapapeles)
+- [x] **Invitar por WhatsApp** (compartir código de invitación vía `share_plus`)
 - [x] Unirse a hogar: input de código de 6 caracteres → RPC `join_household`
   - `join_household_screen.dart`
 - [x] Regenerar código de invitación (solo admin del hogar)
@@ -329,7 +339,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Glosario culinario desde recetario (FAB libro encima de «Nueva receta»)
   - Términos predefinidos + entradas personalizadas (`shared_preferences`); buscador; ruta `/home/recipes/glossary`
 - [x] Categoría de ingrediente `Repostería` sustituye `Panadería` (migración `018_rename_panaderia_to_reposteria.sql`)
-- [x] Marca visible de la app unificada como **Recetea** (`AppBranding.displayName`; iOS/Android/web)
+- [x] Marca visible de la app unificada como **Böl** (`AppBranding.displayName`; iOS/Android/web/desktop; logo lettermark ö; esquema deep link `bol://`)
+  - Rebranding desde Recetea: iconos en todas las plataformas; landing Hosting; onboarding l10n; sin alias `recetea://`
 - [x] Moderación de contenido en fotos de receta y avatar (`lib/core/moderation/`; Edge Function `moderate-image`)
 - [x] Etiquetas sugeridas de tipo de plato: `entrante`, `plato principal`, `postre` (`recipe_constants.dart`)
 - [x] Filtro de etiquetas **multi-selección** (AND) en recetario, selector/panel del planificador y Explorar
@@ -347,7 +358,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
 - [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
   - Al regenerar, se envía `existingNutrition` y el prompt pide conservar valores coherentes; `NutritionFormData` usa `int?` + `normalizeNutritionValue` (redondeo, rechaza negativos/NaN/Infinity); formulario solo dígitos
-- [x] L10n (es, en, ca, eu, gl, pt) y errores localizados (offline, rate limit, no configurado, no es receta)
+- [x] L10n (es, en, ca, eu, gl, pt, **it**) y errores localizados (offline, rate limit, no configurado, no es receta, prompt demasiado largo)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 - [x] Título en AppBar de detalle (propia y pública): margen, scrim blanco semitransparente al expandir, ellipsis al colapsar (`RecipeAppBarTitle`)
 
@@ -385,6 +396,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Lista vía `recipesProvider`; se invalida al crear/borrar receta para no mostrar recetas eliminadas
   - **Overlay**: al abrirse **no** reduce el ancho de los días (se superpone); scrollbar siempre visible a la **izquierda**
 - [x] Drag-and-drop de recetas desde el panel al planificador; autoscroll al acercarse a los bordes
+- [x] **Arrastrar comidas ya asignadas** entre slots (mismo chip draggable; `moveSlot` online/offline)
+- [x] **Copiar / compartir planificador** semanal como texto plano (iconos en AppBar; `planner_share.dart`)
 - [x] Navegación entre semanas (flechas anterior / siguiente; etiqueta con rango de fechas)
 - [x] Indicador visual de semana actual
 - [x] Destacar la tarjeta del **día de hoy** con fondo verde más oscuro, borde primario y badge «Hoy»
@@ -617,11 +630,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp → App Links → login si hace falta → ficha → fork; enlace privado caducado.
+1. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → login si hace falta → ficha → fork; enlace privado caducado.
 2. **Commit / merge del fix Live Activity** (`.foregroundStyle(.primary)` en `CookingActivityWidget.swift`) si aún no está en la rama de integración.
-3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork.
+3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork; invitar por WhatsApp.
 4. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
-5. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura).
-6. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
-7. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-8. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+5. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura); mover slots offline.
+6. **Validar cierre de sesión tras background** (>10 min) y que no haya doble carga del planificador al volver.
+7. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
+8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).

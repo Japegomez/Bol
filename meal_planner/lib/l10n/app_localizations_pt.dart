@@ -9,7 +9,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get appName => 'MealPlanner';
+  String get appName => 'Böl';
 
   @override
   String get languageEnglish => 'Inglês';
@@ -28,6 +28,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get languagePortuguese => 'Português';
+
+  @override
+  String get languageItalian => 'Italiano';
 
   @override
   String get languageSystemDefault => 'Idioma do sistema';
@@ -554,6 +557,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String get plannerTitle => 'Planificador';
 
   @override
+  String get sharePlannerTooltip => 'Partilhar planificador';
+
+  @override
+  String get copyPlannerTooltip => 'Copiar planificador';
+
+  @override
+  String get plannerCopied =>
+      'Planificador copiado para a área de transferência';
+
+  @override
+  String get plannerShareLeftoverLabel => 'sobras';
+
+  @override
   String get thisWeek => 'Esta semana';
 
   @override
@@ -649,7 +665,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String shareRecipeMessage(String title, String url) {
-    return '$title\n$url';
+    return '$url\n\nVê esta receita no Böl: $title';
   }
 
   @override
@@ -838,6 +854,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get inviteCode => 'Código de convite';
+
+  @override
+  String get inviteViaWhatsApp => 'Convidar via WhatsApp';
+
+  @override
+  String inviteWhatsAppHouseholdMessage(String appName, String code) {
+    return 'Olá! Junta-te à minha casa no $appName. Usa este código: $code';
+  }
 
   @override
   String get copyTooltip => 'Copiar';
@@ -1356,7 +1380,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get onboardingFinish => 'Concluir';
 
   @override
-  String get onboardingStep0Title => 'Bem-vindo/a ao Recetea!';
+  String get onboardingStep0Title => 'Bem-vindo/a ao Böl!';
 
   @override
   String get onboardingStep0Body =>
@@ -1497,6 +1521,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get recipeAssistantTimeout =>
       'O pedido demorou demasiado. Tente novamente.';
+
+  @override
+  String get recipeAssistantPromptTooLong =>
+      'A descrição da receita não pode exceder 3.000 caracteres.';
 
   @override
   String get recipeAssistantDailyLimitReached =>

@@ -1,7 +1,7 @@
 {
   "@@locale": "pt",
 
-  "appName": "MealPlanner",
+  "appName": "Böl",
 
   "languageEnglish": "Inglês",
   "languageSpanish": "Espanhol",
@@ -9,6 +9,7 @@
   "languageCatalan": "Catalão",
   "languageGalician": "Galego",
   "languagePortuguese": "Português",
+  "languageItalian": "Italiano",
   "languageSystemDefault": "Idioma do sistema",
   "languageTitle": "Idioma",
 
@@ -172,6 +173,10 @@
   "translationFailed": "Não foi possível traduzir esta receita",
 
   "plannerTitle": "Planificador",
+  "sharePlannerTooltip": "Partilhar planificador",
+  "copyPlannerTooltip": "Copiar planificador",
+  "plannerCopied": "Planificador copiado para a área de transferência",
+  "plannerShareLeftoverLabel": "sobras",
   "thisWeek": "Esta semana",
   "today": "Hoje",
   "showRecipeBookTooltip": "Mostrar livro de receitas",
@@ -203,7 +208,7 @@
   "shoppingListTitle": "Lista de compras",
   "shareListTooltip": "Partilhar lista",
   "shareRecipeTooltip": "Partilhar receita",
-  "shareRecipeMessage": "{title}\n{url}",
+  "shareRecipeMessage": "{url}\n\nVê esta receita no Böl: {title}",
   "@shareRecipeMessage": {
     "placeholders": {
       "title": {"type": "String"},
@@ -267,6 +272,14 @@
   "leave": "Abandonar",
   "myHouseholdTitle": "A minha casa",
   "inviteCode": "Código de convite",
+  "inviteViaWhatsApp": "Convidar via WhatsApp",
+  "inviteWhatsAppHouseholdMessage": "Olá! Junta-te à minha casa no {appName}. Usa este código: {code}",
+  "@inviteWhatsAppHouseholdMessage": {
+    "placeholders": {
+      "appName": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
   "copyTooltip": "Copiar",
   "members": "Membros",
   "leaveHousehold": "Abandonar casa",
@@ -439,7 +452,7 @@
   "onboardingNext": "Seguinte",
   "onboardingPrevious": "Anterior",
   "onboardingFinish": "Concluir",
-  "onboardingStep0Title": "Bem-vindo/a ao Recetea!",
+  "onboardingStep0Title": "Bem-vindo/a ao Böl!",
   "onboardingStep0Body": "Mostramos como a app funciona em cerca de um minuto. Pode ignorar este tutorial quando quiser.",
   "onboardingStep1Title": "Planificador semanal",
   "onboardingStep1Body": "Vê todos os dias com as suas refeições. As setas ‹ › mudam a semana. O dia de hoje aparece destacado a verde.",
@@ -480,6 +493,7 @@
   "recipeAssistantOffline": "É necessária ligação à internet para usar o assistente.",
   "recipeAssistantNotConfigured": "O assistente de IA ainda não está configurado.",
   "recipeAssistantTimeout": "O pedido demorou demasiado. Tente novamente.",
+  "recipeAssistantPromptTooLong": "A descrição da receita não pode exceder 3.000 caracteres.",
   "recipeAssistantDailyLimitReached": "Atingiu o limite diário do assistente. Volte amanhã.",
   "recipeAssistantTooFast": "Aguarde um momento antes de usar o assistente novamente.",
   "recipeAssistantServiceAtCapacity": "O assistente está sobrecarregado neste momento. Tente mais tarde.",

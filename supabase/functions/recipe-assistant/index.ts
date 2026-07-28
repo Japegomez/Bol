@@ -785,7 +785,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "missing_prompt" }, 400);
       }
 
-      if (prompt.length > 10000) {
+      if (prompt.length > 3000) {
         return jsonResponse({ error: "prompt_too_long" }, 400);
       }
 

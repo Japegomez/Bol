@@ -16,6 +16,10 @@ const recipeAssistantFailedKey = 'recipeAssistantFailed';
 const recipeAssistantOfflineKey = 'recipeAssistantOffline';
 const recipeAssistantNotConfiguredKey = 'recipeAssistantNotConfigured';
 const recipeAssistantTimeoutKey = 'recipeAssistantTimeout';
+const recipeAssistantPromptTooLongKey = 'recipeAssistantPromptTooLong';
+
+/// Maximum characters allowed in the recipe assistant prompt.
+const maxRecipeAssistantPromptLength = 3000;
 
 /// Client timeouts aligned with the Edge Function budget (~240s total).
 const _recipeGenerationTimeout = Duration(seconds: 210);
@@ -35,10 +39,15 @@ class RecipeAssistantRepository {
   Future<GeneratedRecipeResult> generateRecipe(String prompt) async {
     await _ensureOnline();
 
+    final trimmed = prompt.trim();
+    if (trimmed.length > maxRecipeAssistantPromptLength) {
+      throw Exception(recipeAssistantPromptTooLongKey);
+    }
+
     final data = await _invoke(
       body: {
         'mode': 'generate_recipe',
-        'prompt': prompt.trim(),
+        'prompt': trimmed,
       },
       timeout: _recipeGenerationTimeout,
     );
@@ -144,6 +153,9 @@ String mapRecipeAssistantFunctionError(int status, dynamic details) {
 
   if (status == 422 || errorCode == 'not_a_recipe_request') {
     return recipeAssistantNotRecipeRequestKey;
+  }
+  if (errorCode == 'prompt_too_long') {
+    return recipeAssistantPromptTooLongKey;
   }
   if (errorCode == 'too_fast') {
     return recipeAssistantTooFastKey;

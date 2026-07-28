@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/domain/household_member_info.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HouseholdScreen extends ConsumerWidget {
   const HouseholdScreen({super.key});
@@ -19,6 +21,22 @@ class HouseholdScreen extends ConsumerWidget {
         SnackBar(content: Text(context.l10n.inviteCodeCopied)),
       );
     }
+  }
+
+  Future<void> _shareInviteViaWhatsApp(
+    BuildContext context, {
+    required String code,
+  }) async {
+    final l10n = context.l10n;
+    final text = l10n.inviteWhatsAppHouseholdMessage(
+      AppBranding.displayName,
+      code,
+    );
+    final renderObject = context.findRenderObject();
+    final origin = renderObject is RenderBox
+        ? renderObject.localToGlobal(Offset.zero) & renderObject.size
+        : const Rect.fromLTWH(0, 0, 1, 1);
+    await Share.share(text, sharePositionOrigin: origin);
   }
 
   Future<void> _confirmRegenerateCode(
@@ -226,6 +244,17 @@ class HouseholdScreen extends ConsumerWidget {
                       ),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Builder(
+              builder: (buttonContext) => FilledButton.tonalIcon(
+                onPressed: () => _shareInviteViaWhatsApp(
+                  buttonContext,
+                  code: household.inviteCode,
+                ),
+                icon: const Icon(Icons.chat_outlined),
+                label: Text(l10n.inviteViaWhatsApp),
               ),
             ),
             const SizedBox(height: 24),

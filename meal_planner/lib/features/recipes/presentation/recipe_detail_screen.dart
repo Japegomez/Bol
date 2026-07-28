@@ -246,7 +246,11 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
           ? (await shareRepo.getOrCreatePrivateShareLink(widget.recipeId)).url
           : shareRepo.publicShareUrl(widget.recipeId);
       if (!mounted) return;
-      await shareRecipeLink(context, title: widget.title, url: url);
+      await shareRecipeLink(
+        context,
+        title: widget.title,
+        url: url,
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

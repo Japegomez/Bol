@@ -458,6 +458,7 @@ class LocalCacheStore {
             if (tempId != null) ids.add(tempId);
           }
         case PendingOp.remove:
+        case PendingOp.update:
           final slotId = payload['slotId'] as String?;
           if (slotId != null) ids.add(slotId);
       }
@@ -829,6 +830,28 @@ class LocalCacheStore {
         userId: userId,
         entityType: PendingEntity.planSlot,
         opType: PendingOp.remove,
+        payload: payload,
+      );
+    });
+  }
+
+  Future<void> moveSlotWithPendingOp({
+    required SlotItem slotItem,
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_db == null) return;
+
+    final userId = _requireCurrentUserId();
+    if (userId == null) return;
+
+    await _db.transaction(() async {
+      await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
+            _slotItemToRow(slotItem),
+          );
+      await _insertPendingOperation(
+        userId: userId,
+        entityType: PendingEntity.planSlot,
+        opType: PendingOp.update,
         payload: payload,
       );
     });

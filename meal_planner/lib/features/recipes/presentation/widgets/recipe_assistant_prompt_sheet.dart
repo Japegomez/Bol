@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
@@ -18,6 +19,7 @@ String resolveRecipeAssistantError(String error, AppLocalizations l10n) {
     recipeAssistantOfflineKey => l10n.recipeAssistantOffline,
     recipeAssistantNotConfiguredKey => l10n.recipeAssistantNotConfigured,
     recipeAssistantTimeoutKey => l10n.recipeAssistantTimeout,
+    recipeAssistantPromptTooLongKey => l10n.recipeAssistantPromptTooLong,
     _ => l10n.recipeAssistantFailed,
   };
 }
@@ -142,6 +144,11 @@ class _RecipeAssistantPromptSheetState
             enabled: !isOffline,
             maxLines: 5,
             minLines: 3,
+            maxLength: maxRecipeAssistantPromptLength,
+            maxLengthEnforcement: MaxLengthEnforcement.enforced,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(maxRecipeAssistantPromptLength),
+            ],
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
               hintText: l10n.recipeAssistantPromptHint,

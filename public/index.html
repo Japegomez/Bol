@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Recetea</title>
+    <title>Böl</title>
     <style>
       :root {
         color-scheme: light;
@@ -56,9 +56,9 @@
   </head>
   <body>
     <main>
-      <h1>Recetea</h1>
+      <h1>Böl</h1>
       <p id="message">Abriendo la receta en la app…</p>
-      <a class="button" id="open" href="#">Abrir en Recetea</a>
+      <a class="button" id="open" href="#">Abrir en Böl</a>
       <p class="hint">
         Si no tienes la app instalada, instálala y vuelve a abrir este enlace.
       </p>
@@ -66,15 +66,15 @@
     <script>
       (function () {
         var path = window.location.pathname || "/";
-        var appUrl = "recetea://" + path.replace(/^\//, "");
+        var appUrl = "bol://" + path.replace(/^\//, "");
         var open = document.getElementById("open");
         var message = document.getElementById("message");
         open.href = appUrl;
 
         if (/^\/(r|p)\//.test(path)) {
-          message.textContent = "Abriendo la receta en Recetea…";
+          message.textContent = "Abriendo la receta en Böl…";
         } else {
-          message.textContent = "Comparte y abre recetas en Recetea.";
+          message.textContent = "Comparte y abre recetas en Böl.";
         }
       })();
     </script>
