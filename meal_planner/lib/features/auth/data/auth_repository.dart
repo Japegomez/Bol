@@ -152,7 +152,10 @@ class AuthRepository {
     }
   }
 
-  Future<void> signOut({bool manual = false}) async {
+  Future<void> signOut({
+    bool manual = false,
+    SignOutScope scope = SignOutScope.global,
+  }) async {
     _manualSignOut = manual;
     if (_signedInWithGoogle) {
       try {
@@ -166,7 +169,7 @@ class AuthRepository {
     } catch (_) {
       // Best-effort; auth sign-out still runs below.
     }
-    await supabase.auth.signOut();
+    await supabase.auth.signOut(scope: scope);
   }
 
   bool get _signedInWithGoogle {
@@ -210,7 +213,9 @@ class AuthRepository {
         final userId = session.user.id;
         // Skip token-refresh emissions that would recreate the router / reload
         // providers with an equivalent AuthAuthenticated state.
-        if (wasAuthenticated && lastUserId == userId) {
+        if (wasAuthenticated &&
+            lastUserId == userId &&
+            event.event == AuthChangeEvent.tokenRefreshed) {
           continue;
         }
         wasAuthenticated = true;

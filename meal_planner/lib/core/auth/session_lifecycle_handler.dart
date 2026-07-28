@@ -97,7 +97,9 @@ class _SessionLifecycleHandlerState
       if (_isTransientNetworkError(e)) return;
       log.i('Session invalid on resume: ${e.message}');
       try {
-        await supabase.auth.signOut(scope: SignOutScope.local);
+        await ref
+            .read(authRepositoryProvider)
+            .signOut(scope: SignOutScope.local);
       } catch (_) {
         // Storage may already be inconsistent.
       }
@@ -114,7 +116,7 @@ class _SessionLifecycleHandlerState
   bool _isTransientNetworkMessage(String message) {
     final msg = message.toLowerCase();
     return RegExp(
-      r'network|fetch|offline|timeout|failed to fetch|socket|econnreset|enotfound',
+      r'network|fetch|offline|timeout|failed to fetch|socket|econnreset|enotfound|host lookup|name resolution',
     ).hasMatch(msg);
   }
 

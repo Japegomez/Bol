@@ -32,9 +32,9 @@ class HouseholdScreen extends ConsumerWidget {
       AppBranding.displayName,
       code,
     );
-    final box = context.findRenderObject() as RenderBox?;
-    final origin = box != null
-        ? box.localToGlobal(Offset.zero) & box.size
+    final renderObject = context.findRenderObject();
+    final origin = renderObject is RenderBox
+        ? renderObject.localToGlobal(Offset.zero) & renderObject.size
         : const Rect.fromLTWH(0, 0, 1, 1);
     await Share.share(text, sharePositionOrigin: origin);
   }
@@ -247,13 +247,15 @@ class HouseholdScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            FilledButton.tonalIcon(
-              onPressed: () => _shareInviteViaWhatsApp(
-                context,
-                code: household.inviteCode,
+            Builder(
+              builder: (buttonContext) => FilledButton.tonalIcon(
+                onPressed: () => _shareInviteViaWhatsApp(
+                  buttonContext,
+                  code: household.inviteCode,
+                ),
+                icon: const Icon(Icons.chat_outlined),
+                label: Text(l10n.inviteViaWhatsApp),
               ),
-              icon: const Icon(Icons.chat_outlined),
-              label: Text(l10n.inviteViaWhatsApp),
             ),
             const SizedBox(height: 24),
             Text(

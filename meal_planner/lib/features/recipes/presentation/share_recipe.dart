@@ -1,8 +1,8 @@
-/// Shares a recipe as plain text with an HTTPS link (system share sheet).
 import 'package:flutter/material.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:share_plus/share_plus.dart';
 
+/// Shares a recipe as plain text with an HTTPS link (system share sheet).
 Future<void> shareRecipeLink(
   BuildContext context, {
   required String title,

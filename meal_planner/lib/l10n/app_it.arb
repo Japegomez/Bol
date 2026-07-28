@@ -1,7 +1,7 @@
 {
   "@@locale": "it",
 
-  "appName": "MealPlanner",
+  "appName": "Böl",
 
   "languageEnglish": "Inglese",
   "languageSpanish": "Spagnolo",
@@ -108,7 +108,7 @@
       "count": {"type": "int"}
     }
   },
-  "servingsCountShort": "{count} pz.",
+  "servingsCountShort": "{count} porz.",
   "@servingsCountShort": {
     "placeholders": {
       "count": {"type": "int"}
@@ -140,7 +140,7 @@
     }
   },
   "publicBadge": "Pubblica",
-  "prepTimeMin": "Prep: {minutes} min",
+  "prepTimeMin": "Preparazione: {minutes} min",
   "@prepTimeMin": {
     "placeholders": {
       "minutes": {"type": "int"}
@@ -247,7 +247,7 @@
   "sharePlannerTooltip": "Condividi pianificatore",
   "copyPlannerTooltip": "Copia pianificatore",
   "plannerCopied": "Pianificatore copiato negli appunti",
-  "plannerShareLeftoverLabel": "avanzo",
+  "plannerShareLeftoverLabel": "avanzi",
   "thisWeek": "Questa settimana",
   "today": "Oggi",
   "showRecipeBookTooltip": "Mostra ricettario",

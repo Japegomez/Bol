@@ -8,13 +8,13 @@ VALUES (
   'share-og',
   true,
   512000,
-  NULL
+  ARRAY['text/html']
 )
 ON CONFLICT (id) DO UPDATE
 SET
   public = true,
   file_size_limit = 512000,
-  allowed_mime_types = NULL;
+  allowed_mime_types = ARRAY['text/html'];
 
 DROP POLICY IF EXISTS "Public read share-og" ON storage.objects;
 CREATE POLICY "Public read share-og"

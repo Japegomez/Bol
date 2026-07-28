@@ -192,6 +192,7 @@ class _DraggableRecipeCard extends ConsumerWidget {
       data: PlannerRecipeDrag(recipe),
       rootOverlay: true,
       dragAnchorStrategy: pointerDragAnchorStrategy,
+      maxSimultaneousDrags: 1,
       feedback: _DragFeedback(recipe: recipe),
       childWhenDragging: Opacity(opacity: 0.4, child: card),
       onDragStarted: () =>

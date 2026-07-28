@@ -9,7 +9,7 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
-  String get appName => 'MealPlanner';
+  String get appName => 'Böl';
 
   @override
   String get languageEnglish => 'Inglese';
@@ -261,7 +261,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String servingsCountShort(int count) {
-    return '$count pz.';
+    return '$count porz.';
   }
 
   @override
@@ -307,7 +307,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String prepTimeMin(int minutes) {
-    return 'Prep: $minutes min';
+    return 'Preparazione: $minutes min';
   }
 
   @override
@@ -561,7 +561,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get plannerCopied => 'Pianificatore copiato negli appunti';
 
   @override
-  String get plannerShareLeftoverLabel => 'avanzo';
+  String get plannerShareLeftoverLabel => 'avanzi';
 
   @override
   String get thisWeek => 'Questa settimana';

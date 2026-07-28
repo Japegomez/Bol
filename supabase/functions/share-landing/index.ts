@@ -5,11 +5,14 @@ const APP_NAME = "Böl";
 const APP_SCHEME = "bol://";
 const FIREBASE_HOST = "https://mealplanner-a818e.web.app";
 const OG_BUCKET = "share-og";
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.japegomez.meal_planner";
 
 function escapeHtml(s: string): string {
   return s
     .replaceAll("&", "&amp;")
     .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
@@ -29,6 +32,7 @@ function html({
   const d = escapeHtml(description);
   const u = escapeHtml(pageUrl);
   const appUrl = escapeHtml(`${APP_SCHEME}${appPath.replace(/^\//, "")}`);
+  const playUrl = escapeHtml(PLAY_STORE_URL);
 
   return `<!DOCTYPE html>
 <html lang="es" prefix="og: https://ogp.me/ns#">
@@ -52,14 +56,21 @@ function html({
       main{width:min(420px,100%);text-align:center}
       h1{margin:0 0 8px;font-size:2rem}
       p{margin:0 0 24px;color:#6b635c;line-height:1.5}
+      .actions{display:flex;flex-direction:column;gap:12px;align-items:center}
       a.btn{display:inline-block;background:#2f6f5e;color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
+      a.btn-secondary{background:transparent;color:#2f6f5e;border:1.5px solid #2f6f5e}
+      .hint{margin-top:8px;font-size:0.9rem;color:#6b635c}
     </style>
   </head>
   <body>
     <main>
       <h1>${t}</h1>
       <p>${d}</p>
-      <a class="btn" href="${appUrl}">Abrir en ${APP_NAME}</a>
+      <div class="actions">
+        <a class="btn" href="${appUrl}">Abrir en ${APP_NAME}</a>
+        <a class="btn btn-secondary" href="${playUrl}">Instalar la app</a>
+      </div>
+      <p class="hint">Si no tienes la app, instálala y vuelve a abrir este enlace.</p>
     </main>
   </body>
 </html>`;
@@ -146,26 +157,23 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  const appPath = parsed ? `/${parsed.kind}/${parsed.id}` : "/";
-  const pageUrl = parsed
-    ? `${FIREBASE_HOST}/${parsed.kind}/${parsed.id}`
-    : FIREBASE_HOST;
-
   if (!supabaseUrl || !serviceKey || !parsed) {
     return new Response("Not found", { status: 404 });
   }
 
+  const appPath = `/${parsed.kind}/${parsed.id}`;
+  const pageUrl = `${FIREBASE_HOST}/${parsed.kind}/${parsed.id}`;
+
   try {
     const supabase = createClient(supabaseUrl, serviceKey);
-    const title = (await getOgTitle(supabase, parsed.kind, parsed.id)) ??
-      APP_NAME;
-    const description = title === APP_NAME
-      ? "Abriendo la receta en la app…"
-      : `Receta en ${APP_NAME}`;
+    const title = await getOgTitle(supabase, parsed.kind, parsed.id);
+    if (title == null) {
+      return new Response("Not found", { status: 404 });
+    }
 
     const body = html({
       title,
-      description,
+      description: `Receta en ${APP_NAME}`,
       pageUrl,
       appPath,
     });

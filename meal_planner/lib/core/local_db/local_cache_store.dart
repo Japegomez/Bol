@@ -458,6 +458,7 @@ class LocalCacheStore {
             if (tempId != null) ids.add(tempId);
           }
         case PendingOp.remove:
+        case PendingOp.update:
           final slotId = payload['slotId'] as String?;
           if (slotId != null) ids.add(slotId);
       }

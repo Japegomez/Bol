@@ -70,9 +70,23 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     onException: (context, state, router) {
       final mapped = ShareUrls.appLocationForIncomingUri(state.uri);
-      if (mapped != null) {
-        router.go(mapped);
+      if (mapped == null) return;
+
+      final authState = ref.read(authStateProvider);
+      final isAuthenticated = authState.maybeWhen(
+        data: (value) => value is AuthAuthenticated,
+        orElse: () => false,
+      );
+      if (!isAuthenticated) {
+        final pending = ref.read(pendingShareLinkProvider);
+        if (pending != state.uri) {
+          ref.read(pendingShareLinkProvider.notifier).state = state.uri;
+          unawaited(PendingShareLinkStore.save(state.uri));
+        }
+        router.go('/auth/login');
+        return;
       }
+      router.go(mapped);
     },
     redirect: (context, state) {
       final authState = ref.read(authStateProvider);

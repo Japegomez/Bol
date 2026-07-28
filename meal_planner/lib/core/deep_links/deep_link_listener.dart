@@ -68,6 +68,9 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
     try {
       final initial = await _appLinks.getInitialLink();
       if (initial != null) {
+        // Fresh cold-start link supersedes any restored pending URI.
+        ref.read(pendingShareLinkProvider.notifier).state = null;
+        await PendingShareLinkStore.clear();
         await _onUri(initial);
       }
     } catch (e) {
