@@ -9,6 +9,7 @@
   "languageCatalan": "Catalán",
   "languageGalician": "Gallego",
   "languagePortuguese": "Portugués",
+  "languageItalian": "Italiano",
   "languageSystemDefault": "Idioma del sistema",
   "languageTitle": "Idioma",
 
@@ -177,6 +178,10 @@
   "translationFailed": "No se pudo traducir esta receta",
 
   "plannerTitle": "Planificador",
+  "sharePlannerTooltip": "Compartir planificador",
+  "copyPlannerTooltip": "Copiar planificador",
+  "plannerCopied": "Planificador copiado al portapapeles",
+  "plannerShareLeftoverLabel": "sobras",
   "thisWeek": "Esta semana",
   "today": "Hoy",
   "showRecipeBookTooltip": "Mostrar recetario",
@@ -208,7 +213,7 @@
   "shoppingListTitle": "Lista de la compra",
   "shareListTooltip": "Compartir lista",
   "shareRecipeTooltip": "Compartir receta",
-  "shareRecipeMessage": "{title}\n{url}",
+  "shareRecipeMessage": "{url}\n\nMira esta receta en Böl: {title}",
   "@shareRecipeMessage": {
     "placeholders": {
       "title": {"type": "String"},
@@ -272,6 +277,14 @@
   "leave": "Abandonar",
   "myHouseholdTitle": "Mi hogar",
   "inviteCode": "Código de invitación",
+  "inviteViaWhatsApp": "Invitar por WhatsApp",
+  "inviteWhatsAppHouseholdMessage": "¡Hola! Únete a mi hogar en {appName}. Usa este código: {code}",
+  "@inviteWhatsAppHouseholdMessage": {
+    "placeholders": {
+      "appName": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
   "copyTooltip": "Copiar",
   "members": "Miembros",
   "leaveHousehold": "Abandonar hogar",
@@ -485,6 +498,7 @@
   "recipeAssistantOffline": "Se requiere conexión a internet para usar el asistente.",
   "recipeAssistantNotConfigured": "El asistente de IA no está configurado todavía.",
   "recipeAssistantTimeout": "La solicitud tardó demasiado. Inténtalo de nuevo.",
+  "recipeAssistantPromptTooLong": "La descripción de la receta no puede superar los 3.000 caracteres.",
   "recipeAssistantDailyLimitReached": "Has alcanzado el límite diario del asistente. Vuelve mañana.",
   "recipeAssistantTooFast": "Espera un momento antes de volver a usar el asistente.",
   "recipeAssistantServiceAtCapacity": "El asistente está saturado en este momento. Inténtalo más tarde.",

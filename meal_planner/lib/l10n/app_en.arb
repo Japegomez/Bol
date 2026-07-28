@@ -9,6 +9,7 @@
   "languageCatalan": "Catalan",
   "languageGalician": "Galician",
   "languagePortuguese": "Portuguese",
+  "languageItalian": "Italian",
   "languageSystemDefault": "System default",
   "languageTitle": "Language",
 
@@ -243,6 +244,10 @@
   "translationFailed": "Could not translate this recipe",
 
   "plannerTitle": "Planner",
+  "sharePlannerTooltip": "Share planner",
+  "copyPlannerTooltip": "Copy planner",
+  "plannerCopied": "Planner copied to clipboard",
+  "plannerShareLeftoverLabel": "leftovers",
   "thisWeek": "This week",
   "today": "Today",
   "showRecipeBookTooltip": "Show recipe book",
@@ -279,7 +284,7 @@
   "shoppingListTitle": "Shopping list",
   "shareListTooltip": "Share list",
   "shareRecipeTooltip": "Share recipe",
-  "shareRecipeMessage": "{title}\n{url}",
+  "shareRecipeMessage": "{url}\n\nCheck out this recipe on Böl: {title}",
   "@shareRecipeMessage": {
     "placeholders": {
       "title": {"type": "String"},
@@ -368,6 +373,14 @@
   "leave": "Leave",
   "myHouseholdTitle": "My household",
   "inviteCode": "Invitation code",
+  "inviteViaWhatsApp": "Invite via WhatsApp",
+  "inviteWhatsAppHouseholdMessage": "Hi! Join my household on {appName}. Use this code: {code}",
+  "@inviteWhatsAppHouseholdMessage": {
+    "placeholders": {
+      "appName": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
   "copyTooltip": "Copy",
   "members": "Members",
   "leaveHousehold": "Leave household",
@@ -591,6 +604,7 @@
   "recipeAssistantOffline": "An internet connection is required to use the assistant.",
   "recipeAssistantNotConfigured": "The AI assistant is not configured yet.",
   "recipeAssistantTimeout": "The request took too long. Please try again.",
+  "recipeAssistantPromptTooLong": "The recipe description cannot exceed 3,000 characters.",
   "recipeAssistantDailyLimitReached": "You have reached your daily assistant limit. Come back tomorrow.",
   "recipeAssistantTooFast": "Please wait a moment before using the assistant again.",
   "recipeAssistantServiceAtCapacity": "The assistant is currently at capacity. Please try again later.",

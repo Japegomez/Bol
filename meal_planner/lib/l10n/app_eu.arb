@@ -9,6 +9,7 @@
   "languageCatalan": "Katalana",
   "languageGalician": "Galiziera",
   "languagePortuguese": "Portugesa",
+  "languageItalian": "Italiera",
   "languageSystemDefault": "Sistemaren hizkuntza",
   "languageTitle": "Hizkuntza",
 
@@ -172,6 +173,10 @@
   "translationFailed": "Ezin izan da errezeta hau itzuli",
 
   "plannerTitle": "Planifikatzailea",
+  "sharePlannerTooltip": "Partekatu planifikatzailea",
+  "copyPlannerTooltip": "Kopiatu planifikatzailea",
+  "plannerCopied": "Planifikatzailea arbelean kopiatu da",
+  "plannerShareLeftoverLabel": "sobrak",
   "thisWeek": "Aste honetan",
   "today": "Gaur",
   "showRecipeBookTooltip": "Erakutsi errezeta-liburua",
@@ -203,7 +208,7 @@
   "shoppingListTitle": "Erosketa-zerrenda",
   "shareListTooltip": "Partekatu zerrenda",
   "shareRecipeTooltip": "Partekatu errezeta",
-  "shareRecipeMessage": "{title}\n{url}",
+  "shareRecipeMessage": "{url}\n\nIkusi errezeta hau Bölen: {title}",
   "@shareRecipeMessage": {
     "placeholders": {
       "title": {"type": "String"},
@@ -267,6 +272,14 @@
   "leave": "Utzi",
   "myHouseholdTitle": "Nire etxea",
   "inviteCode": "Gonbidapen-kodea",
+  "inviteViaWhatsApp": "Gonbidatu WhatsApp bidez",
+  "inviteWhatsAppHouseholdMessage": "Kaixo! Etorri nire etxera {appName} aplikazioan. Erabili kode hau: {code}",
+  "@inviteWhatsAppHouseholdMessage": {
+    "placeholders": {
+      "appName": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
   "copyTooltip": "Kopiatu",
   "members": "Kideak",
   "leaveHousehold": "Utzi etxea",
@@ -480,6 +493,7 @@
   "recipeAssistantOffline": "Laguntzailea erabiltzeko internet konexioa behar da.",
   "recipeAssistantNotConfigured": "IA laguntzailea oraindik ez dago konfiguratuta.",
   "recipeAssistantTimeout": "Eskaerak denbora gehiegi hartu du. Saiatu berriro.",
+  "recipeAssistantPromptTooLong": "Errezetaren deskribapenak ezin ditu 3.000 karaktere baino gehiago izan.",
   "recipeAssistantDailyLimitReached": "Laguntzailearen eguneroko muga gainditu duzu. Itzuli bihar.",
   "recipeAssistantTooFast": "Itxoin une bat laguntzailea berriro erabili aurretik.",
   "recipeAssistantServiceAtCapacity": "Laguntzailea momentu honetan gainezka dago. Saiatu geroago.",

@@ -8,10 +8,11 @@ const supportedAppLocales = <Locale>[
   Locale('eu'),
   Locale('gl'),
   Locale('pt'),
+  Locale('it'),
 ];
 
 /// BCP-47 language codes used for recipe translation and source_lang.
-const supportedAppLanguageCodes = ['en', 'es', 'ca', 'eu', 'gl', 'pt'];
+const supportedAppLanguageCodes = ['en', 'es', 'ca', 'eu', 'gl', 'pt', 'it'];
 
 /// Native endonyms for the language picker (independent of the active UI locale).
 const languageEndonyms = <String, String>{
@@ -21,6 +22,7 @@ const languageEndonyms = <String, String>{
   'eu': 'Euskara',
   'gl': 'Galego',
   'pt': 'Português',
+  'it': 'Italiano',
 };
 
 String languageCodeFromLocale(Locale locale) => locale.languageCode;

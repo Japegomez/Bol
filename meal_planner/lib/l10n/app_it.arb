@@ -1,0 +1,653 @@
+{
+  "@@locale": "it",
+
+  "appName": "MealPlanner",
+
+  "languageEnglish": "Inglese",
+  "languageSpanish": "Spagnolo",
+  "languageBasque": "Basco",
+  "languageCatalan": "Catalano",
+  "languageGalician": "Galiziano",
+  "languagePortuguese": "Portoghese",
+  "languageItalian": "Italiano",
+  "languageSystemDefault": "Predefinita del sistema",
+  "languageTitle": "Lingua",
+
+  "cancel": "Annulla",
+  "save": "Salva",
+  "delete": "Elimina",
+  "confirm": "Conferma",
+  "add": "Aggiungi",
+  "edit": "Modifica",
+  "remove": "Rimuovi",
+  "clear": "Svuota",
+  "retry": "Riprova",
+  "understood": "Capito",
+  "optional": "Opzionale",
+  "requiredField": "Obbligatorio",
+  "errorWithMessage": "Errore: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "navExplore": "Esplora",
+  "navRecipeBook": "Ricettario",
+  "navPlanner": "Pianificatore",
+  "navShopping": "Spesa",
+  "navProfile": "Profilo",
+  "exploreUnavailableOffline": "Esplora non è disponibile offline",
+
+  "loginTagline": "Pianifica i tuoi pasti settimanali",
+  "sessionExpiredMessage": "La tua sessione è scaduta. Accedi di nuovo.",
+  "supabaseNotConfigured": "Supabase non configurato. Copia dart_defines.example.json in dart_defines.json e aggiungi SUPABASE_URL / SUPABASE_ANON_KEY.",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "enterEmail": "Inserisci la tua email",
+  "enterPassword": "Inserisci la tua password",
+  "signIn": "Accedi",
+  "continueWithGoogle": "Continua con Google",
+  "continueWithApple": "Continua con Apple",
+  "forgotPasswordLink": "Password dimenticata?",
+  "noAccountRegister": "Non hai un account? Registrati",
+  "createAccountTitle": "Crea account",
+  "registerInApp": "Iscriviti a {appName}",
+  "@registerInApp": {
+    "placeholders": {
+      "appName": {"type": "String"}
+    }
+  },
+  "usernameLabel": "Nome utente",
+  "enterUsername": "Inserisci il tuo nome utente",
+  "minTwoCharacters": "Minimo 2 caratteri",
+  "invalidEmail": "Email non valida",
+  "enterPasswordRegister": "Inserisci una password",
+  "minSixCharacters": "Minimo 6 caratteri",
+  "confirmPasswordLabel": "Conferma password",
+  "confirmYourPassword": "Conferma la tua password",
+  "passwordsDoNotMatch": "Le password non coincidono",
+  "mustAcceptTerms": "Devi accettare i Termini e la Privacy",
+  "acceptTermsPrefix": "Accetto i",
+  "termsLink": "Termini",
+  "andThe": "e la",
+  "privacyPolicyLink": "Privacy Policy",
+  "alreadyHaveAccount": "Hai già un account? Accedi",
+  "checkYourEmail": "Controlla la tua email",
+  "confirmationEmailSent": "Abbiamo inviato un link di conferma a {email}. Conferma il tuo account prima di accedere.",
+  "@confirmationEmailSent": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "goToSignIn": "Vai al login",
+  "recoverPasswordTitle": "Recupera password",
+  "forgotPasswordInstructions": "Inserisci la tua email e ti invieremo un link per reimpostare la password.",
+  "sendResetLink": "Invia link",
+  "backToSignIn": "Torna al login",
+  "emailSent": "Email inviata",
+  "resetEmailSentIfExists": "Se esiste un account con {email}, riceverai un link per reimpostare la password.",
+  "@resetEmailSentIfExists": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "showPassword": "Mostra password",
+  "hidePassword": "Nascondi password",
+
+  "recipeBookTitle": "Ricettario",
+  "cookingGlossaryTooltip": "Glossario culinario",
+  "newRecipeTooltip": "Nuova ricetta",
+  "searchByName": "Cerca per nome",
+  "noRecipesFoundForSearch": "Nessuna ricetta trovata. Creala tu stesso.",
+  "noRecipesYet": "Nessuna ricetta ancora",
+  "createFirstRecipe": "Crea la prima ricetta",
+  "servingsCount": "{count, plural, =1{1 porzione} other{{count} porzioni}}",
+  "@servingsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "servingsCountShort": "{count} pz.",
+  "@servingsCountShort": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "deleteRecipeTitle": "Elimina ricetta",
+  "deleteRecipeConfirm": "Eliminare davvero \"{title}\"?",
+  "@deleteRecipeConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "publishRecipeTitle": "Pubblica ricetta",
+  "publishRecipeMessage": "Questa ricetta sarà visibile a tutti gli utenti di {appName}. Puoi rimuoverla in qualsiasi momento.",
+  "@publishRecipeMessage": {
+    "placeholders": {
+      "appName": {"type": "String"}
+    }
+  },
+  "makeRecipePrivateTitle": "Rendi ricetta privata",
+  "makeRecipePrivateMessageDetail": "La ricetta non sarà più visibile in Esplora. Le valutazioni esistenti vengono conservate.",
+  "makeRecipePrivateMessageForm": "La ricetta non sarà più visibile in Esplora.",
+  "publish": "Pubblica",
+  "makePrivate": "Rendi privata",
+  "visibilityChangeError": "Errore nel cambio visibilità: {error}",
+  "@visibilityChangeError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "publicBadge": "Pubblica",
+  "prepTimeMin": "Prep: {minutes} min",
+  "@prepTimeMin": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "cookTimeMin": "Cottura: {minutes} min",
+  "@cookTimeMin": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "forkedRecipeTitle": "Ricetta salvata da un altro utente",
+  "forkedRecipeCannotPublish": "Le ricette salvate da altri non possono essere pubblicate in Esplora.",
+  "publicRecipeSwitch": "Ricetta pubblica",
+  "visibleInExplore": "Visibile in Esplora per tutti gli utenti",
+  "onlyInRecipeBook": "Visibile solo nel tuo ricettario",
+  "ingredientsSection": "Ingredienti",
+  "noIngredients": "Nessun ingrediente",
+  "preparationSection": "Preparazione",
+  "noSteps": "Nessun passaggio",
+  "tipsSection": "Consigli",
+  "nutritionPerServing": "Valori nutrizionali (per porzione)",
+  "calories": "Calorie",
+  "protein": "Proteine",
+  "carbohydrates": "Carboidrati",
+  "fat": "Grassi",
+  "fiber": "Fibre",
+  "nutritionChip": "{label}: {value}",
+  "@nutritionChip": {
+    "placeholders": {
+      "label": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "newRecipeTitle": "Nuova ricetta",
+  "editRecipeTitle": "Modifica ricetta",
+  "photoRequiresConnection": "Connessione necessaria per aggiungere o cambiare la foto della ricetta",
+  "householdEditRequiresConnection": "Offline: la modifica in modalità famiglia richiede connessione",
+  "nameLabel": "Nome",
+  "servingsLabel": "Porzioni",
+  "minOneServing": "Minimo 1",
+  "prepMinLabel": "Prep (min)",
+  "cookMinLabel": "Cottura (min)",
+  "tagsSection": "Tag",
+  "customTagLabel": "Tag personalizzato",
+  "stepsSection": "Passaggi",
+  "tipsLabel": "Consigli",
+  "tipsHint": "Trucchi, varianti o note utili",
+  "visibleInExploreShort": "Visibile a tutti gli utenti in Esplora",
+  "addIngredient": "Aggiungi ingrediente",
+  "addStep": "Aggiungi passaggio",
+  "stepLabel": "Passaggio {number}",
+  "@stepLabel": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "optionalStepPrefix": "Opzionale:",
+  "checkingImage": "Verifica immagine...",
+  "choosePhoto": "Scegli foto",
+  "caloriesKcal": "Calorie (kcal)",
+  "proteinG": "Proteine (g)",
+  "carbohydratesG": "Carboidrati (g)",
+  "fatG": "Grassi (g)",
+  "fiberG": "Fibre (g)",
+  "householdLoadError": "Impossibile caricare la famiglia. Riprova.",
+  "ingredientLabel": "Ingrediente",
+  "removeIngredientTooltip": "Rimuovi ingrediente",
+  "quantityLabel": "Quantità",
+  "enterValidNumber": "Inserisci un numero valido",
+  "unitLabel": "Unità",
+  "customUnitLabel": "Unità personalizzata",
+  "categoryLabel": "Categoria",
+  "toTaste": "Q.b.",
+  "toTasteShoppingHint": "Non aggiunto alla lista della spesa (es. sale, pepe)",
+  "optionalIngredientHint": "Puoi includerlo o escluderlo nella scheda ricetta",
+  "clearTags": "Svuota",
+  "cookingGlossaryTitle": "Glossario culinario",
+  "addTermTooltip": "Aggiungi termine",
+  "newGlossaryEntry": "Nuova voce",
+  "termLabel": "Termine",
+  "enterTerm": "Inserisci un termine",
+  "definitionLabel": "Definizione",
+  "enterDefinition": "Inserisci una definizione",
+  "duplicateGlossaryTerm": "Quel termine esiste già nel glossario",
+  "searchTermOrDefinition": "Cerca termine o definizione",
+  "noGlossaryEntries": "Nessuna voce nel glossario",
+  "noGlossaryTermsFound": "Nessun termine trovato",
+  "deleteEntryTooltip": "Elimina voce",
+  "deleteGlossaryEntryTitle": "Elimina voce",
+  "deleteGlossaryEntryConfirm": "Rimuovere \"{term}\" dal glossario?",
+  "@deleteGlossaryEntryConfirm": {
+    "placeholders": {
+      "term": {"type": "String"}
+    }
+  },
+  "autoTranslatedBadge": "Tradotto automaticamente",
+  "viewOriginal": "Vedi originale",
+  "viewTranslation": "Vedi traduzione",
+  "translatingRecipe": "Traduzione in corso...",
+  "translationFailed": "Impossibile tradurre questa ricetta",
+
+  "plannerTitle": "Pianificatore",
+  "sharePlannerTooltip": "Condividi pianificatore",
+  "copyPlannerTooltip": "Copia pianificatore",
+  "plannerCopied": "Pianificatore copiato negli appunti",
+  "plannerShareLeftoverLabel": "avanzo",
+  "thisWeek": "Questa settimana",
+  "today": "Oggi",
+  "showRecipeBookTooltip": "Mostra ricettario",
+  "removeMealTitle": "Rimuovi pasto",
+  "removeMealConfirm": "Rimuovere \"{title}\" dal pianificatore?",
+  "@removeMealConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "dropHere": "Trascina qui",
+  "dragOrTap": "Trascina o tocca",
+  "servingsTitle": "Porzioni",
+  "servingsCountLabel": "Numero di porzioni",
+  "addTextTitle": "Aggiungi testo",
+  "mealNameLabel": "Nome (es. Takeaway)",
+  "enterMealName": "Inserisci un nome per il pasto",
+  "fewerServingsTooltip": "Meno porzioni",
+  "moreServingsTooltip": "Più porzioni",
+  "leftovers": "Sono avanzi",
+  "leftoversShoppingHint": "Gli ingredienti non saranno aggiunti alla lista della spesa",
+  "recipeBookPanel": "Ricettario",
+  "closeTooltip": "Chiudi",
+  "searchHint": "Cerca...",
+  "noResults": "Nessun risultato",
+  "noRecipesCreateInBook": "Non hai ricette. Creale nel ricettario.",
+  "chooseRecipe": "Scegli ricetta",
+  "searchRecipeHint": "Cerca ricetta...",
+  "addFreeText": "Aggiungi testo libero",
+  "noRecipeExample": "Senza ricetta (es. takeaway, fuori casa, ecc.)",
+
+  "clearListTitle": "Svuota lista",
+  "clearListConfirm": "Eliminare tutti gli elementi dalla lista della spesa?",
+  "shoppingListTitle": "Lista della spesa",
+  "shareListTooltip": "Condividi lista",
+  "shareRecipeTooltip": "Condividi ricetta",
+  "shareRecipeMessage": "{url}\n\nGuarda questa ricetta su Böl: {title}",
+  "@shareRecipeMessage": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "url": {"type": "String"}
+    }
+  },
+  "shareLinkExpired": "Questo link è scaduto",
+  "shareLinkInvalid": "Questo link non è valido",
+  "clearListTooltip": "Svuota lista",
+  "shoppingListLoadError": "Impossibile caricare la lista: {error}",
+  "@shoppingListLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "shoppingListEmpty": "La tua lista è vuota",
+  "shoppingListEmptyHint": "Aggiungi ricette al pianificatore o elementi manualmente con il pulsante +.",
+  "addItemTooltip": "Aggiungi elemento",
+  "deleteItemTitle": "Elimina elemento",
+  "deleteItemConfirm": "Rimuovere \"{name}\" dalla lista?",
+  "@deleteItemConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "editItem": "Modifica elemento",
+  "addItem": "Aggiungi elemento",
+  "nameRequired": "Il nome è obbligatorio",
+  "othersCategory": "Altro",
+
+  "feedTitle": "Feed",
+  "mostRecent": "Più recente",
+  "sortedBy": "Ordinato per: {label}",
+  "@sortedBy": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "noRecipesWithTags": "Nessuna ricetta con questi tag",
+  "feedEmpty": "Il tuo feed è vuoto",
+  "tryOtherTags": "Prova altri tag o rimuovi il filtro.",
+  "followUsersHint": "Segui altri utenti dai loro profili per vedere le loro ricette pubbliche qui.",
+  "exploreTitle": "Esplora",
+  "feedTooltip": "Feed",
+  "searchPublicRecipes": "Cerca ricette pubbliche",
+  "recent": "Recenti",
+  "topRated": "Più votate",
+  "noPublicRecipesYet": "Nessuna ricetta pubblica ancora",
+  "publishToExploreHint": "Pubblica una ricetta dal tuo ricettario perché altri la scoprano.",
+  "publicProfileTitle": "Profilo pubblico",
+  "publicRecipesCount": "{count, plural, =1{1 ricetta pubblica} other{{count} ricette pubbliche}}",
+  "@publicRecipesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "unfollow": "Smetti di seguire",
+  "follow": "Segui",
+  "noPublicRecipes": "Nessuna ricetta pubblica",
+  "recipeSavedToBook": "Ricetta salvata nel tuo ricettario",
+  "saveToMyRecipeBookTooltip": "Salva nel mio ricettario",
+  "recipeCreatedBy": "Ricetta creata da",
+  "you": "te",
+  "yourRating": "La tua valutazione",
+  "optionalIngredientSuffix": "(opzionale)",
+  "saveToMyRecipeBook": "Salva nel mio ricettario",
+  "optionalIngredientsTitle": "Ingredienti opzionali",
+  "optionalIngredientsMessage": "Questa ricetta contiene ingredienti opzionali. Aggiungili o rimuovili nella tua ricetta.",
+  "editRecipe": "Modifica ricetta",
+
+  "inviteCodeCopied": "Codice copiato negli appunti",
+  "regenerateCodeTitle": "Rigenera codice",
+  "regenerateCodeMessage": "Il codice precedente smetterà di funzionare. Generarne uno nuovo?",
+  "regenerate": "Rigenera",
+  "codeRegenerated": "Codice rigenerato",
+  "kickMemberTitle": "Rimuovi membro",
+  "kickMemberConfirm": "Rimuovere {username} dalla famiglia?",
+  "@kickMemberConfirm": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "kick": "Rimuovi",
+  "leaveHouseholdTitle": "Abbandona famiglia",
+  "leaveHouseholdMessage": "Il pianificatore e la lista della famiglia verranno copiati nella tua modalità individuale (settimana corrente e future). Continuare?",
+  "leave": "Abbandona",
+  "myHouseholdTitle": "La mia famiglia",
+  "inviteCode": "Codice invito",
+  "copyTooltip": "Copia",
+  "members": "Membri",
+  "leaveHousehold": "Abbandona famiglia",
+  "noSharedHousehold": "Nessuna famiglia condivisa",
+  "individualModeDescription": "In modalità individuale usi il tuo pianificatore e lista della spesa. Crea una famiglia o unisciti con un codice per condividerli con altri.",
+  "createHousehold": "Crea famiglia",
+  "joinWithCode": "Unisciti con codice",
+  "currentUserSuffix": "{username} (tu)",
+  "@currentUserSuffix": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "admin": "Amministratore",
+  "member": "Membro",
+  "joinHouseholdTitle": "Unisciti a una famiglia",
+  "joinCodeInstructions": "Inserisci il codice di 6 caratteri condiviso da un membro della famiglia.",
+  "invalidInviteCode": "Codice invito non valido",
+  "alreadyMember": "Appartieni già a questa famiglia",
+  "codeMustBeSixChars": "Il codice deve avere 6 caratteri",
+  "join": "Unisciti",
+  "createHouseholdDescription": "Dai un nome alla tua famiglia condivisa. Potrai invitare altri membri con un codice.",
+  "householdNameLabel": "Nome famiglia",
+  "enterName": "Inserisci un nome",
+
+  "inviteViaWhatsApp": "Invita via WhatsApp",
+  "inviteWhatsAppHouseholdMessage": "Ciao! Unisciti alla mia famiglia su {appName}. Usa questo codice: {code}",
+  "@inviteWhatsAppHouseholdMessage": {
+    "placeholders": {
+      "appName": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
+
+  "signOutTitle": "Esci",
+  "signOutConfirm": "Sicuro di voler uscire?",
+  "profileTitle": "Profilo",
+  "defaultUsername": "Utente",
+  "individualModeNoHousehold": "Modalità individuale (senza famiglia)",
+  "darkMode": "Modalità scura",
+  "editProfile": "Modifica profilo",
+  "myHousehold": "La mia famiglia",
+  "createOrJoinHousehold": "Crea o unisciti a una famiglia",
+  "termsAndConditions": "Termini e Condizioni",
+  "privacyPolicy": "Privacy Policy",
+  "rateYourApp": "Valuta l'app",
+  "rateYourAppSubtitle": "Lascia una recensione sullo store",
+  "rateAppUnavailable": "La valutazione non è disponibile su questo dispositivo.",
+  "sendFeedback": "Invia feedback",
+  "adminControlPanel": "Pannello di controllo",
+  "adminFeedbackTitle": "Feedback",
+  "feedbackWhatAbout": "Cosa vuoi dirci?",
+  "feedbackCategoryIssue": "Problema o bug",
+  "feedbackCategoryFeature": "Suggerimento funzione",
+  "feedbackCategoryOther": "Altro",
+  "feedbackTypeLabel": "Tipo",
+  "feedbackYourMessage": "Il tuo messaggio",
+  "feedbackMessageHint": "Descrivi il problema o l'idea nel modo più dettagliato possibile…",
+  "feedbackMinCharsHint": "Minimo 10 caratteri",
+  "feedbackMessageTooShort": "Il messaggio deve contenere almeno 10 caratteri.",
+  "feedbackSentSuccess": "Grazie per il feedback. Lo esamineremo per migliorare l'app.",
+  "feedbackSendError": "Impossibile inviare il feedback. Riprova.",
+  "feedbackCategoryFilter": "Categoria",
+  "feedbackStatusFilter": "Stato",
+  "feedbackFilterAll": "Tutti",
+  "feedbackStatusPending": "In attesa",
+  "feedbackStatusResolved": "Risolto",
+  "feedbackStatusIgnored": "Ignorato",
+  "feedbackMarkResolved": "Segna come risolto",
+  "feedbackMarkIgnored": "Segna come ignorato",
+  "feedbackMarkedResolved": "Feedback segnato come risolto.",
+  "feedbackMarkedIgnored": "Feedback segnato come ignorato.",
+  "feedbackStatusUpdateError": "Impossibile aggiornare lo stato del feedback.",
+  "adminFeedbackEmpty": "Nessun feedback con questi filtri.",
+  "adminFeedbackLoadError": "Impossibile caricare il feedback.",
+  "back": "Indietro",
+  "send": "Invia",
+  "signOut": "Esci",
+  "deleteAccount": "Elimina account",
+  "deleteAccountConfirmTitle": "Eliminare l'account?",
+  "deleteAccountConfirmMessage": "Questa azione è permanente. Verranno eliminati il tuo profilo, le ricette, il pianificatore personale e le liste associate.",
+  "deletePermanently": "Elimina definitivamente",
+  "gdprRightToErasure": "Diritto alla cancellazione (GDPR)",
+  "deleteAccountBulletsIntro": "Eliminando il tuo account verranno eliminati definitivamente:",
+  "deleteBulletProfile": "Il tuo profilo e avatar",
+  "deleteBulletRecipes": "Tutte le tue ricette e immagini associate",
+  "deleteBulletPlans": "I tuoi piani e liste della spesa in modalità individuale",
+  "deleteBulletMembership": "La tua appartenenza alle famiglie condivise",
+  "soleAdminWarning": "Se sei l'unico amministratore di una famiglia con altri membri, trasferisci il ruolo di amministratore o chiedi ai membri di uscire prima di eliminare l'account.",
+  "deleteAcknowledgement": "Capisco che questa azione è irreversibile e voglio eliminare il mio account.",
+  "typeDeleteToConfirm": "Scrivi ELIMINA per confermare",
+  "accountEmail": "Account: {email}",
+  "@accountEmail": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "deleteMyAccount": "Elimina il mio account",
+  "gallery": "Galleria",
+  "camera": "Fotocamera",
+  "changePhoto": "Cambia foto",
+  "couldNotOpenDocument": "Impossibile aprire il documento",
+  "openInBrowser": "Apri nel browser",
+
+  "noConnection": "Nessuna connessione",
+  "offlineModeTitle": "Modalità offline",
+  "offlineHouseholdMessage": "Sei offline. Puoi consultare l'ultima versione salvata del ricettario, pianificatore e lista della spesa, ma la modifica non è disponibile in modalità famiglia offline (per evitare conflitti con altri membri). Esplora non è disponibile.",
+  "offlineIndividualMessage": "Sei offline. Puoi consultare e modificare il tuo ricettario, pianificatore e lista della spesa; le modifiche si sincronizzeranno al ripristino della connessione. Le foto delle ricette e la scheda Esplora non sono disponibili offline.",
+
+  "imageNotAllowedTitle": "Immagine non consentita",
+  "imageNotAllowedMessage": "L'immagine selezionata contiene contenuti per adulti o espliciti non consentiti. Scegli un'altra immagine.",
+  "imageCheckFailedTitle": "Impossibile verificare l'immagine",
+  "imageCheckFailedRetry": "Impossibile verificare l'immagine. Riprova.",
+
+  "mealBreakfast": "Colazione",
+  "mealLunch": "Pranzo",
+  "mealDinner": "Cena",
+  "dayMon": "Lun",
+  "dayTue": "Mar",
+  "dayWed": "Mer",
+  "dayThu": "Gio",
+  "dayFri": "Ven",
+  "daySat": "Sab",
+  "daySun": "Dom",
+
+  "categoryMeatFish": "Carne e pesce",
+  "categoryVegetables": "Verdure",
+  "categoryFruits": "Frutta",
+  "categoryDairy": "Latticini",
+  "categoryGrains": "Cereali",
+  "categoryLegumes": "Legumi",
+  "categorySpices": "Spezie",
+  "categoryOilsVinegars": "Oli e aceti",
+  "categoryCanned": "Conserve",
+  "categoryNuts": "Frutta secca",
+  "categoryBeverages": "Bevande",
+  "categoryBaking": "Pasticceria",
+  "categoryFrozen": "Surgelati",
+  "categorySauces": "Salse e condimenti",
+  "categoryOther": "Altro",
+
+  "unitCustomOption": "Altro",
+  "unitCount": "unità",
+  "unitPinch": "pizzico",
+  "unitTeaspoon": "cucchiaino",
+  "unitTablespoon": "cucchiaio",
+  "unitGlass": "bicchiere",
+  "unitCup": "tazza",
+  "unitHandful": "manciata",
+  "unitLeaf": "foglia",
+  "unitClove": "spicchio",
+  "unitSplash": "goccio",
+  "unitSlice": "fetta",
+  "unitSprig": "rametto",
+  "unitPiece": "pezzo",
+  "unitFillet": "filetto",
+  "unitRound": "rondella",
+  "unitCan": "lattina",
+  "unitJar": "vasetto",
+  "unitPackage": "confezione",
+  "unitSachet": "bustina",
+
+  "tagStarter": "antipasto",
+  "tagMainCourse": "piatto principale",
+  "tagDessert": "dolce",
+  "tagVegetarian": "vegetariana",
+  "tagVegan": "vegana",
+  "tagPescatarian": "pescetariana",
+  "tagGlutenFree": "senza glutine",
+  "tagLactoseFree": "senza lattosio",
+  "tagEggFree": "senza uova",
+  "tagNutFree": "senza frutta secca",
+  "tagSoyFree": "senza soia",
+  "tagShellfishFree": "senza crostacei",
+  "tagSugarFree": "senza zucchero",
+  "tagHighProtein": "ricca di proteine",
+  "tagLowCalorie": "poche calorie",
+  "tagLowCarb": "pochi carboidrati",
+  "tagHighFiber": "ricca di fibre",
+  "tagMediterranean": "mediterranea",
+  "tagQuick": "veloce",
+  "tagBudget": "economica",
+  "tagBatchCooking": "batch cooking",
+  "tagFreezerFriendly": "da congelare",
+  "tagSpicy": "piccante",
+  "tagKidFriendly": "per bambini",
+
+  "onboardingSkip": "Salta",
+  "onboardingNext": "Avanti",
+  "onboardingPrevious": "Indietro",
+  "onboardingFinish": "Fine",
+  "onboardingStep0Title": "Benvenuto in Böl!",
+  "onboardingStep0Body": "Ti mostriamo come funziona l'app in circa un minuto. Puoi saltare questo tutorial in qualsiasi momento.",
+  "onboardingStep1Title": "Pianificatore settimanale",
+  "onboardingStep1Body": "Vedi tutti i giorni con i loro pasti. Le frecce ‹ › cambiano settimana. Oggi è evidenziato in verde.",
+  "onboardingStep2Title": "Aggiungi pasti al piano",
+  "onboardingStep2Body": "Tocca uno slot vuoto per assegnare una ricetta. Puoi anche toccare l'icona del libro per aprire il pannello laterale e trascinare le ricette su un giorno.",
+  "onboardingStep3Title": "Il tuo ricettario",
+  "onboardingStep3Body": "Tutte le tue ricette a colpo d'occhio. La lente cerca per nome e l'icona del libro apre il glossario culinario.",
+  "onboardingStep4Title": "Crea una ricetta",
+  "onboardingStep4Body": "Il pulsante + apre il modulo: foto, ingredienti con quantità, passaggi, nutrizione e tag. Puoi pubblicarla perché altri la scoprano.",
+  "onboardingStep5Title": "Lista della spesa",
+  "onboardingStep5Body": "Quando pianifichi i pasti, gli ingredienti compaiono qui automaticamente raggruppati per categoria. Spunta gli elementi mentre fai la spesa.",
+  "onboardingStep6Title": "Aggiungi ingredienti",
+  "onboardingStep6Body": "Tocca il pulsante + per aggiungere ingredienti manualmente alla lista della spesa.",
+  "onboardingStep7Title": "Condividi la lista",
+  "onboardingStep7Body": "L'icona di condivisione crea un testo pronto da inviare via WhatsApp o altre app.",
+  "onboardingStep8Title": "Scopri la community",
+  "onboardingStep8Body": "Cerca ricette di altri utenti per nome o tag. Valutale e salvale nel tuo ricettario.",
+  "onboardingStep9Title": "Il tuo feed di cuochi",
+  "onboardingStep9Body": "Segui i tuoi cuochi preferiti dal loro profilo e vedi le loro ultime ricette toccando il pulsante feed.",
+  "onboardingStep10Title": "Il tuo profilo e famiglia",
+  "onboardingStep10Body": "Modifica nome e foto. Nella sezione La mia famiglia puoi pianificare con la tua famiglia in tempo reale. Da qui cambi anche lingua e modalità scura.",
+
+  "createRecipeOptionsTitle": "Crea ricetta",
+  "createRecipeManual": "Crea manualmente",
+  "createRecipeManualSubtitle": "Compila tu stesso tutti i campi della ricetta",
+  "createRecipeWithAssistant": "Crea con assistente IA",
+  "createRecipeWithAssistantSubtitle": "Descrivi il piatto e l'IA creerà la scheda ricetta",
+  "recipeAssistantTitle": "Assistente ricette",
+  "recipeAssistantDescription": "Dimmi cosa ti va, cosa hai in frigo, o descrivi una ricetta dettagliata con ingredienti e passaggi.",
+  "recipeAssistantPromptHint": "Es.: frittata di patate per 4 con cipolla...",
+  "recipeAssistantGenerate": "Genera ricetta",
+  "recipeAssistantGenerating": "Generazione in corso...",
+  "recipeAssistantBlockingRecipe": "L'assistente sta creando la tua ricetta…",
+  "recipeAssistantBlockingNutrition": "Calcolo dei valori nutrizionali…",
+  "recipeAssistantNotRecipeRequest": "Posso aiutarti solo a creare ricette. Descrivi un piatto o una ricetta.",
+  "recipeAssistantRateLimited": "Limite d'uso raggiunto. Riprova più tardi.",
+  "recipeAssistantFailed": "Impossibile generare la risposta. Riprova.",
+  "recipeAssistantOffline": "Connessione internet necessaria per usare l'assistente.",
+  "recipeAssistantNotConfigured": "L'assistente IA non è ancora configurato.",
+  "recipeAssistantTimeout": "La richiesta ha impiegato troppo tempo. Riprova.",
+  "recipeAssistantPromptTooLong": "La descrizione della ricetta non può superare i 3.000 caratteri.",
+  "recipeAssistantDailyLimitReached": "Hai raggiunto il limite giornaliero dell'assistente. Torna domani.",
+  "recipeAssistantTooFast": "Attendi un momento prima di usare di nuovo l'assistente.",
+  "recipeAssistantServiceAtCapacity": "L'assistente è al completo in questo momento. Riprova più tardi.",
+  "completeNutritionWithAssistant": "Completa con IA",
+  "recipeAssistantNutritionSaved": "Valori nutrizionali completati",
+
+  "cookRecipeButton": "Cucina la ricetta",
+  "continueCookingButton": "Continua a cucinare",
+  "checkIngredientsStep": "Controlla ingredienti",
+  "stepXofY": "Passaggio {current} di {total}",
+  "@stepXofY": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "completeStepButton": "Completa passaggio",
+  "finishCookingButton": "Finisci",
+  "cookingPausedLabel": "In pausa",
+  "cookingPauseTooltip": "Metti in pausa",
+  "cookingResumeTooltip": "Riprendi",
+  "finishCookingTitle": "Finire la ricetta?",
+  "finishCookingConfirm": "Vuoi finire di cucinare \"{title}\"?",
+  "@finishCookingConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingFinishedTitle": "Ricetta terminata!",
+  "cookingFinishedMessage": "Buon appetito!",
+  "cookingInProgressTitle": "Ricetta in corso",
+  "cookingInProgressMessage": "Stai già cucinando \"{title}\". Iniziare una nuova ricetta?",
+  "@cookingInProgressMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "cookingReplaceButton": "Nuova ricetta",
+  "previousStep": "Passaggio precedente",
+  "nextStep": "Passaggio successivo",
+  "minimize": "Minimizza",
+  "expandCookingSession": "Espandi",
+  "cookingNotificationChannelName": "Sessione di cucina",
+  "cookingNotificationChannelDescription": "Sessione di cucina in corso"
+}

@@ -30,6 +30,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get languagePortuguese => 'Portuguès';
 
   @override
+  String get languageItalian => 'Italià';
+
+  @override
   String get languageSystemDefault => 'Idioma del sistema';
 
   @override
@@ -551,6 +554,18 @@ class AppLocalizationsCa extends AppLocalizations {
   String get plannerTitle => 'Planificador';
 
   @override
+  String get sharePlannerTooltip => 'Compartir planificador';
+
+  @override
+  String get copyPlannerTooltip => 'Copiar planificador';
+
+  @override
+  String get plannerCopied => 'Planificador copiat al porta-retalls';
+
+  @override
+  String get plannerShareLeftoverLabel => 'sobrants';
+
+  @override
   String get thisWeek => 'Aquesta setmana';
 
   @override
@@ -647,7 +662,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String shareRecipeMessage(String title, String url) {
-    return '$title\n$url';
+    return '$url\n\nMira aquesta recepta a Böl: $title';
   }
 
   @override
@@ -836,6 +851,14 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get inviteCode => 'Codi d\'invitació';
+
+  @override
+  String get inviteViaWhatsApp => 'Convidar per WhatsApp';
+
+  @override
+  String inviteWhatsAppHouseholdMessage(String appName, String code) {
+    return 'Hola! Uneix-te a la meva llar a $appName. Usa aquest codi: $code';
+  }
 
   @override
   String get copyTooltip => 'Copiar';
@@ -1493,6 +1516,10 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get recipeAssistantTimeout =>
       'La sol·licitud ha trigat massa. Torna-ho a provar.';
+
+  @override
+  String get recipeAssistantPromptTooLong =>
+      'La descripció de la recepta no pot superar els 3.000 caràcters.';
 
   @override
   String get recipeAssistantDailyLimitReached =>
