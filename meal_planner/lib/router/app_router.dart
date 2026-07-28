@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,13 +36,38 @@ import 'package:meal_planner/router/home_shell.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Keeps a single [GoRouter] instance and only re-runs redirects when auth /
+/// admin profile access relevant state changes.
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final profileAsync = ref.watch(profileProvider);
+  final refresh = ValueNotifier<int>(0);
+  ref.onDispose(refresh.dispose);
+
+  ref.listen<AsyncValue<AuthState>>(authStateProvider, (prev, next) {
+    final prevAuth = prev?.valueOrNull is AuthAuthenticated;
+    final nextAuth = next.valueOrNull is AuthAuthenticated;
+    final prevExpired = prev?.valueOrNull is AuthUnauthenticated &&
+        (prev!.valueOrNull! as AuthUnauthenticated).sessionExpired;
+    final nextExpired = next.valueOrNull is AuthUnauthenticated &&
+        (next.valueOrNull! as AuthUnauthenticated).sessionExpired;
+    if (prevAuth != nextAuth || prevExpired != nextExpired) {
+      refresh.value++;
+    }
+  });
+
+  ref.listen(profileProvider, (prev, next) {
+    final prevAdmin = prev?.valueOrNull?.isAdmin ?? false;
+    final nextAdmin = next.valueOrNull?.isAdmin ?? false;
+    final prevLoading = prev?.isLoading == true && prev?.hasValue != true;
+    final nextLoading = next.isLoading && !next.hasValue;
+    if (prevAdmin != nextAdmin || prevLoading != nextLoading) {
+      refresh.value++;
+    }
+  });
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/',
+    refreshListenable: refresh,
     onException: (context, state, router) {
       final mapped = ShareUrls.appLocationForIncomingUri(state.uri);
       if (mapped != null) {
@@ -48,6 +75,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
     },
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
+      final profileAsync = ref.read(profileProvider);
+
       final isLoggingIn = state.matchedLocation.startsWith('/auth');
       final isLegal = state.matchedLocation.startsWith('/legal');
       final isShareResolve = state.matchedLocation.startsWith('/share/');
@@ -77,6 +107,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final pending = ref.read(pendingShareLinkProvider);
           if (pending != state.uri) {
             ref.read(pendingShareLinkProvider.notifier).state = state.uri;
+            unawaited(PendingShareLinkStore.save(state.uri));
           }
           return isLoggingIn ? null : '/auth/login';
         }
@@ -92,6 +123,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final mapped = ShareUrls.appLocationForIncomingUri(pending);
           if (mapped != null) {
             ref.read(pendingShareLinkProvider.notifier).state = null;
+            unawaited(PendingShareLinkStore.clear());
             return mapped;
           }
         }
