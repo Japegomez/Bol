@@ -167,7 +167,7 @@ workflows:
           flutter test
       - name: Set up code signing settings on Xcode project
         script: |
-          xcode-project use-profiles --custom-export-options='{"testFlightInternalTestingOnly": true}'
+          xcode-project use-profiles
       - name: Set build version
         script: |
           BUILD_NUMBER_OFFSET="${BUILD_NUMBER_OFFSET:-0}"
@@ -237,4 +237,4 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        submit_to_app_store: false
+        submit_to_app_store: true
