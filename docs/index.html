@@ -3,37 +3,51 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MealPlanner — Información legal</title>
+    <title data-i18n-title="indexTitle">Böl — Información legal</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header>
-      <a href="index.html">MealPlanner</a>
+      <div class="header-row">
+        <a href="index.html" data-i18n="brand">Böl</a>
+        <div id="lang-switcher" class="lang-switcher"></div>
+      </div>
       <nav>
-        <a href="terminos.html">Términos y Condiciones</a>
-        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html" data-i18n="navTerms">Términos y Condiciones</a>
+        <a href="privacidad.html" data-i18n="navPrivacy">Política de Privacidad</a>
       </nav>
     </header>
     <main>
-      <h1>Información legal</h1>
-      <p class="muted">Última actualización: junio de 2026</p>
-      <p>
-        MealPlanner es una aplicación para planificar comidas semanales y
-        generar listas de la compra. Aquí encontrarás los documentos legales
-        aplicables al uso del servicio.
+      <h1 data-i18n="indexH1">Información legal</h1>
+      <p class="muted" data-i18n="updated">Última actualización: junio de 2026</p>
+      <p data-i18n="indexIntro">
+        Böl es una aplicación para planificar comidas semanales y generar listas
+        de la compra. Aquí encontrarás los documentos legales aplicables al uso
+        del servicio.
       </p>
       <div class="card">
-        <p><a href="terminos.html">Términos y Condiciones</a></p>
-        <p>Condiciones de uso de la aplicación y del servicio.</p>
+        <p>
+          <a href="terminos.html" data-i18n="indexTermsCardTitle"
+            >Términos y Condiciones</a
+          >
+        </p>
+        <p data-i18n="indexTermsCardDesc">
+          Condiciones de uso de la aplicación y del servicio.
+        </p>
       </div>
       <div class="card">
-        <p><a href="privacidad.html">Política de Privacidad</a></p>
         <p>
+          <a href="privacidad.html" data-i18n="indexPrivacyCardTitle"
+            >Política de Privacidad</a
+          >
+        </p>
+        <p data-i18n="indexPrivacyCardDesc">
           Cómo tratamos tus datos personales conforme al RGPD y tus derechos,
           incluida la supresión de la cuenta.
         </p>
       </div>
     </main>
-    <footer>© 2026 MealPlanner</footer>
+    <footer data-i18n="footer">© 2026 Böl</footer>
+    <script src="i18n.js"></script>
   </body>
 </html>
