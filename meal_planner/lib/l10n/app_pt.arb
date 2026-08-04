@@ -362,6 +362,7 @@
   "gallery": "Galeria",
   "camera": "Câmara",
   "changePhoto": "Alterar foto",
+  "removeProfilePhoto": "Remover foto",
   "couldNotOpenDocument": "Não foi possível abrir o documento",
   "openInBrowser": "Abrir no navegador",
 

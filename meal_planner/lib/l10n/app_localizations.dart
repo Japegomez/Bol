@@ -2142,6 +2142,12 @@ abstract class AppLocalizations {
   /// **'Change photo'**
   String get changePhoto;
 
+  /// No description provided for @removeProfilePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get removeProfilePhoto;
+
   /// No description provided for @couldNotOpenDocument.
   ///
   /// In en, this message translates to:

@@ -52,6 +52,17 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
     });
   }
 
+  Future<void> removeAvatar() async {
+    final userId = _userId;
+    if (userId == null) return;
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await _repository.deleteAvatar(userId);
+      return _repository.fetchProfile(userId);
+    });
+  }
+
   Future<void> refresh() async {
     final userId = _userId;
     if (userId == null) {

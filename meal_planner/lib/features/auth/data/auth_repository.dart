@@ -96,11 +96,17 @@ class AuthRepository {
       }
 
       try {
-        return await supabase.auth.signInWithIdToken(
+        final response = await supabase.auth.signInWithIdToken(
           provider: OAuthProvider.google,
           idToken: idToken,
           accessToken: googleAuth.accessToken,
         );
+        final userId = response.user?.id;
+        final photoUrl = googleUser.photoUrl;
+        if (userId != null && photoUrl != null && photoUrl.isNotEmpty) {
+          await _maybeImportGoogleAvatar(userId, photoUrl);
+        }
+        return response;
       } on AuthException {
         rethrow;
       } catch (e) {
@@ -194,6 +200,37 @@ class AuthRepository {
       await supabase.storage.from('avatars').remove(['$userId/avatar.jpg']);
     } catch (_) {
       // Best-effort cleanup before account deletion.
+    }
+  }
+
+  /// Imports Google profile photo only when the user has no avatar yet.
+  Future<void> _maybeImportGoogleAvatar(String userId, String photoUrl) async {
+    try {
+      Map<String, dynamic>? data = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', userId)
+          .maybeSingle();
+
+      // New users: wait briefly for handle_new_user trigger.
+      if (data == null) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        data = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', userId)
+            .maybeSingle();
+      }
+
+      final existing = data?['avatar_url']?.toString();
+      if (existing != null && existing.isNotEmpty) return;
+
+      await supabase
+          .from('profiles')
+          .update({'avatar_url': photoUrl})
+          .eq('id', userId);
+    } catch (_) {
+      // Best-effort; login must not fail if avatar import fails.
     }
   }
 

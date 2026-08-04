@@ -37,6 +37,20 @@ class ProfileRepository {
         .eq(Profile.c_id, userId);
   }
 
+  /// Clears [avatar_url] and best-effort deletes the Storage object if present.
+  Future<void> deleteAvatar(String userId) async {
+    try {
+      await supabase.storage.from(_avatarBucket).remove(['$userId/avatar.jpg']);
+    } catch (_) {
+      // Best-effort; avatar may be an external URL (e.g. Google).
+    }
+
+    await supabase
+        .from(Profile.table_name)
+        .update({Profile.c_avatarUrl: null})
+        .eq(Profile.c_id, userId);
+  }
+
   Future<String> uploadAvatar(String userId, XFile file) async {
     final path = '$userId/avatar.jpg';
     final bytes = await file.readAsBytes();

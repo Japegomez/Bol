@@ -1122,6 +1122,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get changePhoto => 'Aldatu argazkia';
 
   @override
+  String get removeProfilePhoto => 'Kendu argazkia';
+
+  @override
   String get couldNotOpenDocument => 'Ezin izan da dokumentua ireki';
 
   @override

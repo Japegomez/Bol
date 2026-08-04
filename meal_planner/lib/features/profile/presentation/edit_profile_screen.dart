@@ -1,5 +1,6 @@
+import 'dart:typed_data';
+
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +24,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   XFile? _pickedImage;
   Uint8List? _pickedImageBytes;
+  bool _removeAvatar = false;
   bool _isSaving = false;
   bool _isModeratingImage = false;
   String? _errorMessage;
@@ -33,11 +35,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickFromGallery() async {
     if (_isModeratingImage) return;
 
     final image = await _picker.pickImage(
-      source: source,
+      source: ImageSource.gallery,
       imageQuality: 80,
       maxWidth: 512,
       maxHeight: 512,
@@ -64,38 +66,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (allowed) {
         _pickedImage = image;
         _pickedImageBytes = bytes;
+        _removeAvatar = false;
       }
     });
   }
 
-  Future<void> _showImageSourceSheet() async {
-    final l10n = context.l10n;
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.gallery),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-            if (!kIsWeb)
-              ListTile(
-                leading: const Icon(Icons.photo_camera_outlined),
-                title: Text(l10n.camera),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-          ],
-        ),
-      ),
-    );
+  void _clearPhoto() {
+    setState(() {
+      _pickedImage = null;
+      _pickedImageBytes = null;
+      _removeAvatar = true;
+      _errorMessage = null;
+    });
   }
 
   Future<void> _save() async {
@@ -111,7 +93,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final currentProfile = ref.read(profileProvider).valueOrNull;
       final newUsername = _usernameController.text.trim();
 
-      if (_pickedImage != null) {
+      if (_removeAvatar) {
+        await notifier.removeAvatar();
+      } else if (_pickedImage != null) {
         await notifier.updateAvatar(_pickedImage!);
       }
 
@@ -134,7 +118,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final theme = Theme.of(context);
     final profileAsync = ref.watch(profileProvider);
     final profile = profileAsync.valueOrNull;
-    final avatarUrl = profile?.avatarUrl;
+    final avatarUrl = _removeAvatar ? null : profile?.avatarUrl;
+    final hasPhoto = _pickedImageBytes != null || avatarUrl != null;
 
     if (profile != null && _usernameController.text.isEmpty) {
       _usernameController.text = profile.username;
@@ -178,8 +163,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       child: IconButton.filled(
                         onPressed: (_isSaving || _isModeratingImage)
                             ? null
-                            : _showImageSourceSheet,
-                        icon: const Icon(Icons.camera_alt),
+                            : _pickFromGallery,
+                        icon: const Icon(Icons.photo_library_outlined),
                       ),
                     ),
                   ],
@@ -194,10 +179,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       )
-                    : TextButton(
-                        onPressed: _isSaving ? null : _showImageSourceSheet,
-                        child: Text(l10n.changePhoto),
-                      ),
+                    : hasPhoto
+                        ? TextButton(
+                            onPressed: _isSaving ? null : _clearPhoto,
+                            child: Text(l10n.removeProfilePhoto),
+                          )
+                        : const SizedBox.shrink(),
               ),
               const SizedBox(height: 24),
               TextFormField(

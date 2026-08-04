@@ -1127,6 +1127,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get changePhoto => 'Alterar foto';
 
   @override
+  String get removeProfilePhoto => 'Remover foto';
+
+  @override
   String get couldNotOpenDocument => 'Não foi possível abrir o documento';
 
   @override
