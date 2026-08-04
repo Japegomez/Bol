@@ -1118,6 +1118,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePhoto => 'Change photo';
 
   @override
+  String get removeProfilePhoto => 'Remove photo';
+
+  @override
   String get couldNotOpenDocument => 'Could not open the document';
 
   @override

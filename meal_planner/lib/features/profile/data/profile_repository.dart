@@ -28,12 +28,34 @@ class ProfileRepository {
   }) async {
     final updates = <String, dynamic>{};
     if (username != null) updates[Profile.c_username] = username;
-    if (avatarPath != null) updates[Profile.c_avatarUrl] = avatarPath;
+    if (avatarPath != null) {
+      updates[Profile.c_avatarUrl] = avatarPath;
+      // Mark custom uploads so they won't be overwritten by Google sign-in
+      updates['avatar_source'] = 'uploaded';
+    }
     if (updates.isEmpty) return;
 
     await supabase
         .from(Profile.table_name)
         .update(updates)
+        .eq(Profile.c_id, userId);
+  }
+
+  /// Clears [avatar_url] and best-effort deletes the Storage object if present.
+  /// Sets avatar_source to 'deleted' to prevent re-import on future Google sign-ins.
+  Future<void> deleteAvatar(String userId) async {
+    try {
+      await supabase.storage.from(_avatarBucket).remove(['$userId/avatar.jpg']);
+    } catch (_) {
+      // Best-effort; avatar may be an external URL (e.g. Google).
+    }
+
+    await supabase
+        .from(Profile.table_name)
+        .update({
+          Profile.c_avatarUrl: null,
+          'avatar_source': 'deleted',
+        })
         .eq(Profile.c_id, userId);
   }
 

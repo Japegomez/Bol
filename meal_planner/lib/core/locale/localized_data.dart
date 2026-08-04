@@ -80,6 +80,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['unitate', 'unitate'],
     'gl': ['unidade', 'unidades'],
     'pt': ['unidade', 'unidades'],
+    'it': ['unità', 'unità'],
   },
   'pizca': {
     'es': ['pizca', 'pizcas'],
@@ -88,6 +89,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['atximur', 'atximur'],
     'gl': ['pitada', 'pitadas'],
     'pt': ['pitada', 'pitadas'],
+    'it': ['pizzico', 'pizzichi'],
   },
   'cucharadita': {
     'es': ['cucharadita', 'cucharaditas'],
@@ -96,6 +98,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['koilaratxo', 'koilaratxo'],
     'gl': ['culleradiña', 'culleradiñas'],
     'pt': ['colher de chá', 'colheres de chá'],
+    'it': ['cucchiaino', 'cucchiaini'],
   },
   'cucharada': {
     'es': ['cucharada', 'cucharadas'],
@@ -104,6 +107,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['koilarada', 'koilarada'],
     'gl': ['cullerada', 'culleradas'],
     'pt': ['colher de sopa', 'colheres de sopa'],
+    'it': ['cucchiaio', 'cucchiai'],
   },
   'vaso': {
     'es': ['vaso', 'vasos'],
@@ -112,6 +116,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['edalontzi', 'edalontzi'],
     'gl': ['vaso', 'vasos'],
     'pt': ['copo', 'copos'],
+    'it': ['bicchiere', 'bicchieri'],
   },
   'taza': {
     'es': ['taza', 'tazas'],
@@ -120,6 +125,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['katilu', 'katilu'],
     'gl': ['cunca', 'cuncas'],
     'pt': ['chávena', 'chávenas'],
+    'it': ['tazza', 'tazze'],
   },
   'puñado': {
     'es': ['puñado', 'puñados'],
@@ -128,6 +134,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['eskutada', 'eskutada'],
     'gl': ['puñado', 'puñados'],
     'pt': ['punhado', 'punhados'],
+    'it': ['manciata', 'manciate'],
   },
   'hoja': {
     'es': ['hoja', 'hojas'],
@@ -136,6 +143,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['orri', 'orri'],
     'gl': ['folla', 'follas'],
     'pt': ['folha', 'folhas'],
+    'it': ['foglia', 'foglie'],
   },
   'diente': {
     'es': ['diente', 'dientes'],
@@ -144,6 +152,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['ale', 'ale'],
     'gl': ['dente', 'dentes'],
     'pt': ['dente', 'dentes'],
+    'it': ['spicchio', 'spicchi'],
   },
   'chorrito': {
     'es': ['chorrito', 'chorritos'],
@@ -152,6 +161,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['txorrota', 'txorrota'],
     'gl': ['chorro', 'chorros'],
     'pt': ['fio', 'fios'],
+    'it': ['goccio', 'gocci'],
   },
   'rebanada': {
     'es': ['rebanada', 'rebanadas'],
@@ -160,6 +170,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['xerra', 'xerra'],
     'gl': ['rebanda', 'rebandas'],
     'pt': ['fatia', 'fatias'],
+    'it': ['fetta', 'fette'],
   },
   'rama': {
     'es': ['rama', 'ramas'],
@@ -168,6 +179,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['adar', 'adar'],
     'gl': ['rama', 'ramas'],
     'pt': ['ramo', 'ramos'],
+    'it': ['rametto', 'rametti'],
   },
   'trozo': {
     'es': ['trozo', 'trozos'],
@@ -176,6 +188,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['zati', 'zati'],
     'gl': ['anaco', 'anacos'],
     'pt': ['pedaço', 'pedaços'],
+    'it': ['pezzo', 'pezzi'],
   },
   'filete': {
     'es': ['filete', 'filetes'],
@@ -184,6 +197,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['xerra', 'xerra'],
     'gl': ['filete', 'filetes'],
     'pt': ['filete', 'filetes'],
+    'it': ['filetto', 'filetti'],
   },
   'rodaja': {
     'es': ['rodaja', 'rodajas'],
@@ -192,6 +206,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['xerra biribil', 'xerra biribil'],
     'gl': ['rolda', 'roldas'],
     'pt': ['rodela', 'rodelas'],
+    'it': ['rotella', 'rotelle'],
   },
   'lata': {
     'es': ['lata', 'latas'],
@@ -200,6 +215,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['lata', 'lata'],
     'gl': ['lata', 'latas'],
     'pt': ['lata', 'latas'],
+    'it': ['lattina', 'lattine'],
   },
   'bote': {
     'es': ['bote', 'botes'],
@@ -208,6 +224,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['potu', 'potu'],
     'gl': ['bote', 'botes'],
     'pt': ['frasco', 'frascos'],
+    'it': ['barattolo', 'barattoli'],
   },
   'paquete': {
     'es': ['paquete', 'paquetes'],
@@ -216,6 +233,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['pakete', 'pakete'],
     'gl': ['paquete', 'paquetes'],
     'pt': ['pacote', 'pacotes'],
+    'it': ['pacchetto', 'pacchetti'],
   },
   'sobre': {
     'es': ['sobre', 'sobres'],
@@ -224,6 +242,7 @@ const _unitWordForms = <String, Map<String, List<String>>>{
     'eu': ['zorro', 'zorro'],
     'gl': ['sobre', 'sobres'],
     'pt': ['saqueta', 'saquetas'],
+    'it': ['bustina', 'bustine'],
   },
 };
 
@@ -259,6 +278,7 @@ String ingredientNameConnector(String localeName) {
   return switch (localeName) {
     'en' => 'of',
     'eu' => '',
+    'it' => 'di',
     _ => 'de',
   };
 }
@@ -375,6 +395,7 @@ String deleteConfirmationWord(AppLocalizations l10n) {
   return switch (l10n.localeName) {
     'en' => 'DELETE',
     'eu' => 'EZABATU',
+    'it' => 'ELIMINA',
     'es' || 'ca' || 'gl' || 'pt' => 'ELIMINAR',
     _ => 'DELETE',
   };

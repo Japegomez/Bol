@@ -96,11 +96,17 @@ class AuthRepository {
       }
 
       try {
-        return await supabase.auth.signInWithIdToken(
+        final response = await supabase.auth.signInWithIdToken(
           provider: OAuthProvider.google,
           idToken: idToken,
           accessToken: googleAuth.accessToken,
         );
+        final userId = response.user?.id;
+        final photoUrl = googleUser.photoUrl;
+        if (userId != null && photoUrl != null && photoUrl.isNotEmpty) {
+          await _maybeImportGoogleAvatar(userId, photoUrl);
+        }
+        return response;
       } on AuthException {
         rethrow;
       } catch (e) {
@@ -194,6 +200,32 @@ class AuthRepository {
       await supabase.storage.from('avatars').remove(['$userId/avatar.jpg']);
     } catch (_) {
       // Best-effort cleanup before account deletion.
+    }
+  }
+
+  /// Imports Google profile photo using atomic RPC.
+  /// Only imports if user has no avatar, or their avatar source is 'google'.
+  /// Will NOT overwrite user-uploaded or explicitly deleted avatars.
+  Future<void> _maybeImportGoogleAvatar(String userId, String photoUrl) async {
+    try {
+      // For new users, wait briefly for handle_new_user trigger.
+      final data = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (data == null) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      }
+
+      // Use atomic RPC to conditionally import avatar
+      await supabase.rpc<void>(
+        'import_google_avatar',
+        params: {'user_id': userId, 'photo_url': photoUrl},
+      );
+    } catch (_) {
+      // Best-effort; login must not fail if avatar import fails.
     }
   }
 

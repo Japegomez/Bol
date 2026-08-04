@@ -1122,6 +1122,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get changePhoto => 'Canviar foto';
 
   @override
+  String get removeProfilePhoto => 'Eliminar foto';
+
+  @override
   String get couldNotOpenDocument => 'No s\'ha pogut obrir el document';
 
   @override

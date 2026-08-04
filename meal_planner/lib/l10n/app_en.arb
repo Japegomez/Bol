@@ -473,6 +473,7 @@
   "gallery": "Gallery",
   "camera": "Camera",
   "changePhoto": "Change photo",
+  "removeProfilePhoto": "Remove photo",
   "couldNotOpenDocument": "Could not open the document",
   "openInBrowser": "Open in browser",
 

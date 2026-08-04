@@ -33,40 +33,54 @@ class LanguageSelectorTile extends ConsumerWidget {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (sheetContext) {
         final l10n = sheetContext.l10n;
+        final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.85;
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text(l10n.languageSystemDefault),
-                trailing: currentLocale == null
-                    ? Icon(
-                        Icons.check,
-                        color: Theme.of(sheetContext).colorScheme.primary,
-                      )
-                    : null,
-                onTap: () async {
-                  await ref.read(localeProvider.notifier).setLocale(null);
-                  if (sheetContext.mounted) Navigator.pop(sheetContext);
-                },
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text(l10n.languageSystemDefault),
+                    trailing: currentLocale == null
+                        ? Icon(
+                            Icons.check,
+                            color: Theme.of(sheetContext).colorScheme.primary,
+                          )
+                        : null,
+                    onTap: () async {
+                      await ref.read(localeProvider.notifier).setLocale(null);
+                      if (sheetContext.mounted) Navigator.pop(sheetContext);
+                    },
+                  ),
+                  for (final locale in supportedAppLocales)
+                    ListTile(
+                      title:
+                          Text(displayNameForLanguageCode(locale.languageCode)),
+                      trailing:
+                          currentLocale?.languageCode == locale.languageCode
+                              ? Icon(
+                                  Icons.check,
+                                  color:
+                                      Theme.of(sheetContext).colorScheme.primary,
+                                )
+                              : null,
+                      onTap: () async {
+                        await ref
+                            .read(localeProvider.notifier)
+                            .setLocale(locale);
+                        if (sheetContext.mounted) {
+                          Navigator.pop(sheetContext);
+                        }
+                      },
+                    ),
+                ],
               ),
-              for (final locale in supportedAppLocales)
-                ListTile(
-                  title: Text(displayNameForLanguageCode(locale.languageCode)),
-                  trailing: currentLocale?.languageCode == locale.languageCode
-                      ? Icon(
-                          Icons.check,
-                          color: Theme.of(sheetContext).colorScheme.primary,
-                        )
-                      : null,
-                  onTap: () async {
-                    await ref.read(localeProvider.notifier).setLocale(locale);
-                    if (sheetContext.mounted) Navigator.pop(sheetContext);
-                  },
-                ),
-            ],
+            ),
           ),
         );
       },

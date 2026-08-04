@@ -3,7 +3,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
 
-const SUPPORTED_LANGS = ["en", "es", "ca", "eu", "gl", "pt"];
+const SUPPORTED_LANGS = ["en", "es", "ca", "eu", "gl", "pt", "it"];
 const MAX_RECIPE_IDS = 100;
 
 const corsHeaders = {

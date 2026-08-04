@@ -1123,6 +1123,9 @@ class AppLocalizationsGl extends AppLocalizations {
   String get changePhoto => 'Cambiar foto';
 
   @override
+  String get removeProfilePhoto => 'Eliminar foto';
+
+  @override
   String get couldNotOpenDocument => 'Non se puido abrir o documento';
 
   @override
