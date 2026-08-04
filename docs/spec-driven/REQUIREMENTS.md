@@ -69,10 +69,10 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-01** El usuario puede registrarse con email y contraseña.  
 **RF-AUTH-02** El usuario puede iniciar sesión con email y contraseña.  
 **RF-AUTH-03** El usuario puede solicitar restablecimiento de contraseña por email.  
-**RF-AUTH-04** El usuario puede iniciar sesión con **Google** (OAuth 2.0 vía Supabase, disponible en iOS y Android).  
+**RF-AUTH-04** El usuario puede iniciar sesión con **Google** (OAuth 2.0 vía Supabase, disponible en iOS y Android). Si el perfil aún no tiene avatar, se importa la foto de Google (best-effort; no sobrescribe un avatar ya elegido).  
 **RF-AUTH-05** El usuario puede iniciar sesión con **Apple** (*Sign in with Apple*, obligatorio en iOS cuando se ofrece cualquier otro proveedor OAuth, según las App Store Review Guidelines).  
 **RF-AUTH-06** Al autenticarse por primera vez (cualquier método) se crea automáticamente un perfil con nombre de usuario y avatar opcional.  
-**RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`). Al seleccionar una nueva foto, la app la valida con moderación de contenido antes de aceptarla.  
+**RF-AUTH-07** El usuario puede editar su nombre de usuario y avatar desde la pantalla de perfil (`/home/profile/edit`). La foto se elige **solo desde la galería** (sin cámara); al seleccionarla, la app la valida con moderación de contenido antes de aceptarla. El usuario puede **eliminar** la foto y volver al avatar por defecto.  
 **RF-AUTH-08** El usuario puede cerrar sesión manualmente desde el perfil.  
 **RF-AUTH-09** La sesión se mantiene al minimizar o cambiar de app; expira cuando caduca el refresh token de Supabase (~1 semana), tras **>10 minutos en background** (cierre automático al volver), o cuando el usuario cierra sesión manualmente.  
 **RF-AUTH-10** Si la sesión caduca, la pantalla de login muestra un aviso informativo («Tu sesión ha caducado. Inicia sesión de nuevo.»); no se muestra en el primer uso ni tras cierre manual.  
@@ -84,7 +84,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-UX-04** Desde Perfil, el usuario puede **enviar feedback** (categorías: problema, sugerencia, otro; mensaje ≥ 10 caracteres) a la tabla `user_feedback`.  
 **RF-UX-05** Un usuario con `profiles.is_admin = true` ve un **panel de control** en Perfil para listar feedback, filtrar por estado/categoría y marcar ítems como resueltos o ignorados. La ruta `/home/profile/admin/*` solo es accesible tras cargar el perfil y confirmar `is_admin`.  
 
-> **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path; la app resuelve URL firmada al cargar. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar, `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen.
+> **Nota de implementación — avatares (migración `007_storage_avatars`):** bucket privado `avatars` con path `{user_id}/avatar.jpg`. La columna `profiles.avatar_url` almacena el path (o una URL `http…` si proviene de Google); la app resuelve URL firmada al cargar paths de Storage. RLS permite a miembros del mismo hogar leer perfiles y avatares ajenos (lista de miembros). Al elegir avatar (galería), `PhotoModerationService` invoca la Edge Function `moderate-image` (JWT de usuario); si SafeSearch detecta contenido adulto/explícito, se muestra un diálogo y no se acepta la imagen. Eliminar foto limpia `avatar_url` y, si aplica, borra el objeto en Storage (`deleteAvatar`).
 
 > **Nota de implementación — feedback y admin (migraciones `028`–`032`):** `profiles.is_admin` (boolean, default false); `user_feedback` (category `issue|feature|other`, status `pending|resolved|ignored`, RLS insert propio / select propio o admin / update solo admin). Función `auth_is_admin()` + trigger de guardia en INSERT/UPDATE.
 

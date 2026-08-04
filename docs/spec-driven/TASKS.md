@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 28/07/2026 — Preview OG WhatsApp (Supabase share-landing); arrastrar comidas entre slots; compartir planificador; invitar hogar por WhatsApp; italiano; sesión tras background; fix deep links
+> Actualizado: 04/08/2026 — Avatar solo galería + eliminar (default); import foto Google al login; páginas legales i18n; glosario/unidades IT
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -247,7 +247,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `edit_profile_screen.dart` → `/home/profile/edit`
 - [x] Subida de avatar a Supabase Storage (bucket `avatars`; compresión antes de subir)
   - `ProfileRepository.uploadAvatar`; path `{userId}/avatar.jpg`; URL firmada al leer
-  - Paquete `image_picker` para seleccionar foto de galería o cámara
+  - Selección **solo desde galería** (`image_picker`; sin cámara); icono en el avatar (sin texto «Cambiar foto»)
+- [x] Eliminar foto de perfil → avatar por defecto (`Icons.person`); `ProfileRepository.deleteAvatar` + `ProfileNotifier.removeAvatar`
+- [x] Importar foto de Google al iniciar sesión si el perfil aún no tiene avatar (`AuthRepository._maybeImportGoogleAvatar`; no sobrescribe foto existente)
 - [x] Moderación de avatar al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`)
   - Validación inmediata en `edit_profile_screen`; diálogo si contenido adulto/explícito; fail-closed si falla el servicio (PR #37)
 
@@ -630,12 +632,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → login si hace falta → ficha → fork; enlace privado caducado.
-2. **Commit / merge del fix Live Activity** (`.foregroundStyle(.primary)` en `CookingActivityWidget.swift`) si aún no está en la rama de integración.
-3. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork; invitar por WhatsApp.
-4. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
-5. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura); mover slots offline.
-6. **Validar cierre de sesión tras background** (>10 min) y que no haya doble carga del planificador al volver.
-7. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
-8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+1. **Validar avatar en dispositivo**: galería → moderación → guardar; eliminar foto → default; login Google sin avatar → importa foto; login con avatar propio → no sobrescribe.
+2. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → login si hace falta → ficha → fork; enlace privado caducado.
+3. **Commit / merge del fix Live Activity** (`.foregroundStyle(.primary)` en `CookingActivityWidget.swift`) si aún no está en la rama de integración.
+4. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork; invitar por WhatsApp.
+5. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
+6. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura); mover slots offline.
+7. **Validar cierre de sesión tras background** (>10 min) y que no haya doble carga del planificador al volver.
+8. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
+9. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+10. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
