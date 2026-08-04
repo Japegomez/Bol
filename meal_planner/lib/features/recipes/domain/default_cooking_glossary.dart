@@ -6,6 +6,7 @@ const defaultCookingGlossaryByLocale =
     <String, List<CookingGlossaryEntry>>{
   'es': _defaultEs,
   'en': _defaultEn,
+  'it': _defaultIt,
 };
 
 List<CookingGlossaryEntry> defaultGlossaryForLocale(String languageCode) {
@@ -308,5 +309,154 @@ const _defaultEn = <CookingGlossaryEntry>[
     definition:
         'Hold food at a precise constant temperature, often with a water bath '
         'or circulator.',
+  ),
+];
+
+const _defaultIt = <CookingGlossaryEntry>[
+  CookingGlossaryEntry(
+    term: 'Affumicare',
+    definition:
+        'Esporre gli alimenti al fumo, di solito di legna, per conservarli e '
+        'conferire un sapore caratteristico.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Bagnomaria',
+    definition:
+        'Cuocere gli alimenti mettendo il recipiente dentro un altro con acqua '
+        'calda o bollente, per controllare la temperatura.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Al dente',
+    definition:
+        'Punto di cottura in cui pasta o riso sono cotti ma ancora sodi al morso.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Montare a neve',
+    definition:
+        'Montare gli albumi finché formano picchi fermi e mantengono la forma.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Scottare',
+    definition:
+        'Bollire brevemente gli alimenti e raffreddarli subito in acqua e ghiaccio '
+        'per conservare colore e texture.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Brasare',
+    definition:
+        'Cuocere lentamente con poco liquido in una pentola coperta fino a '
+        'tenerhezza.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Brunoise',
+    definition:
+        'Taglio a dadini molto piccoli e uniformi, tipico per le verdure.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Caramellare',
+    definition:
+        'Riscaldare zucchero o alimenti fino a ottenere un colore ambrato e un '
+        'sapore più intenso.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Chiarificare',
+    definition:
+        'Rendere un liquido (come brodo o burro) trasparente eliminando le '
+        'impurità.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Cuocere a vapore',
+    definition:
+        'Cuocere alimenti sospesi sopra acqua bollente senza contatto diretto '
+        'con il liquido.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Confit',
+    definition:
+        'Cuocere a bassa temperatura nel grasso o nell’olio per lungo tempo '
+        'per conservarli.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sfumare',
+    definition:
+        'Sciogliere i residui caramellati sul fondo della padella con un liquido '
+        'caldo (vino, brodo, ecc.).',
+  ),
+  CookingGlossaryEntry(
+    term: 'Emulsionare',
+    definition:
+        'Unire due liquidi che di solito non si mescolano (come olio e aceto) '
+        'in una miscela omogenea.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Lessare',
+    definition:
+        'Cuocere alimenti in un liquido appena sotto il punto di ebollizione.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Stufare',
+    definition:
+        'Cuocere lentamente con poco liquido, di solito in una pentola coperta.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Flambé',
+    definition:
+        'Versare alcol sul cibo e incendiarlo brevemente per aggiungere sapore '
+        'senza troppo liquido extra.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Glassare',
+    definition:
+        'Coprire gli alimenti con un rivestimento lucido, dolce o salato, '
+        'cucinando o spennellando.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Gratín',
+    definition:
+        'Cuocere in forno con calore intenso in superficie fino a formare uno '
+        'strato dorato e croccante.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Julienne',
+    definition: 'Tagliare a striscioline sottili come fiammiferi.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Marinare',
+    definition:
+        'Immergere gli alimenti in una miscela aromatizzata per intenerirli e '
+        'insaporirli.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sobollire',
+    definition:
+        'Cuocere in liquido a fuoco molto dolce, senza bollitura vivace.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Ridurre',
+    definition:
+        'Far bollire un liquido per evaporare l’acqua e concentrare i sapori.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Stufare (soffritto)',
+    definition:
+        'Cuocere a fuoco medio con un po’ di grasso, mescolando, fino a quando '
+        'l’alimento è dorato o tenero.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Saltare',
+    definition:
+        'Cuocere a fuoco alto con poco olio, mescolando continuamente.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Soffriggere',
+    definition:
+        'Cuocere a fuoco medio-basso con olio fino a quando gli ingredienti '
+        'sono teneri e aromatici.',
+  ),
+  CookingGlossaryEntry(
+    term: 'Sous-vide',
+    definition:
+        'Mantenere gli alimenti a una temperatura costante e precisa, spesso '
+        'con bagnomaria o circolatore.',
   ),
 ];

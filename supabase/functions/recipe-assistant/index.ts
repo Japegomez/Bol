@@ -651,7 +651,7 @@ When adapting a full recipe (mode 2):
 
 Shared rules (both modes):
 - If the user prompt is NOT a request to create, describe, or paste a recipe, respond with JSON containing only: {"error":"not_a_recipe_request"} and no other fields.
-- Write ALL recipe content (title, ingredient names, steps, tips) in the SAME language as the user's prompt. Set detectedLang to the ISO 639-1 code of that language (e.g. es, en, ca, eu, gl, pt).
+- Write ALL recipe content (title, ingredient names, steps, tips) in the SAME language as the user's prompt. Set detectedLang to the ISO 639-1 code of that language (e.g. es, en, ca, eu, gl, pt, it).
 - If the user does not specify servings, choose the most common serving count for that dish in its cuisine.
 - Use realistic quantities and appropriate units from the allowed enum. Use "unidad" for countable items, weight/volume units when appropriate, and relative units (cucharada, pizca, etc.) when fitting.
 - Assign each ingredient the best matching category key from the allowed enum.
