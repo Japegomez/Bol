@@ -203,32 +203,27 @@ class AuthRepository {
     }
   }
 
-  /// Imports Google profile photo only when the user has no avatar yet.
+  /// Imports Google profile photo using atomic RPC.
+  /// Only imports if user has no avatar, or their avatar source is 'google'.
+  /// Will NOT overwrite user-uploaded or explicitly deleted avatars.
   Future<void> _maybeImportGoogleAvatar(String userId, String photoUrl) async {
     try {
-      Map<String, dynamic>? data = await supabase
+      // For new users, wait briefly for handle_new_user trigger.
+      final data = await supabase
           .from('profiles')
-          .select('avatar_url')
+          .select('id')
           .eq('id', userId)
           .maybeSingle();
 
-      // New users: wait briefly for handle_new_user trigger.
       if (data == null) {
         await Future<void>.delayed(const Duration(milliseconds: 400));
-        data = await supabase
-            .from('profiles')
-            .select('avatar_url')
-            .eq('id', userId)
-            .maybeSingle();
       }
 
-      final existing = data?['avatar_url']?.toString();
-      if (existing != null && existing.isNotEmpty) return;
-
-      await supabase
-          .from('profiles')
-          .update({'avatar_url': photoUrl})
-          .eq('id', userId);
+      // Use atomic RPC to conditionally import avatar
+      await supabase.rpc<void>(
+        'import_google_avatar',
+        params: {'user_id': userId, 'photo_url': photoUrl},
+      );
     } catch (_) {
       // Best-effort; login must not fail if avatar import fails.
     }
