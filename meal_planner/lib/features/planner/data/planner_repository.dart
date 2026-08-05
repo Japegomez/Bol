@@ -479,18 +479,15 @@ class PlannerRepository {
     final shouldSyncShopping = moved.recipeId != null && !moved.isLeftover;
     if (!shouldSyncShopping) return;
 
-    List<Map<String, dynamic>>? removedItems;
-    List<String>? addedIds;
-
     try {
       if (destinationIsPast && !sourceIsPast) {
-        removedItems = await _syncShoppingListRemove(
+        await _syncShoppingListRemove(
           slot: moved,
           userId: userId,
           householdId: householdId,
         );
       } else if (!destinationIsPast && sourceIsPast) {
-        addedIds = await _syncShoppingListAdd(
+        await _syncShoppingListAdd(
           slot: moved,
           recipeId: moved.recipeId!,
           servings: moved.servings,
@@ -915,7 +912,7 @@ class PlannerRepository {
             await supabase
                 .from(ShoppingItem.table_name)
                 .update({ShoppingItem.c_quantity: itemData['quantity'].toString()})
-                .eq(ShoppingItem.c_id, itemData['id']);
+                .eq(ShoppingItem.c_id, itemData['id'] as Object);
           } else {
             // Restore deleted item.
             await supabase.from(ShoppingItem.table_name).insert({
