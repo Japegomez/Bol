@@ -255,7 +255,7 @@ abstract class AppLocalizations {
   /// No description provided for @navRecipeBook.
   ///
   /// In en, this message translates to:
-  /// **'Recipe book'**
+  /// **'Recipes'**
   String get navRecipeBook;
 
   /// No description provided for @navPlanner.
@@ -1223,6 +1223,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ingredients will not be added to the shopping list'**
   String get leftoversShoppingHint;
+
+  /// No description provided for @pastMealPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Past meal'**
+  String get pastMealPlanTitle;
+
+  /// No description provided for @pastMealPlanMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are planning a meal for a day that has already passed. Ingredients will not be added to the shopping list.'**
+  String get pastMealPlanMessage;
 
   /// No description provided for @recipeBookPanel.
   ///

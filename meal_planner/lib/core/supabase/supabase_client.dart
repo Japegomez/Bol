@@ -15,6 +15,11 @@ abstract final class SupabaseConfig {
         authFlowType: AuthFlowType.pkce,
         localStorage: SecureLocalStorage(),
         pkceAsyncStorage: SecureGotrueAsyncStorage(),
+        // Native Google/Apple use signInWithIdToken — not browser OAuth redirects.
+        // Leaving this true makes supabase treat Google's iOS/Android return URLs
+        // (often with `code=`) as auth callbacks, fail getSessionFromUrl, and
+        // notifyException → kills authStateChanges until cold start.
+        detectSessionInUri: false,
       ),
     );
   }

@@ -113,6 +113,7 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
     String? recipeTitle,
     bool isLeftover = false,
     String? notes,
+    bool skipShopping = false,
   }) async {
     final plan = await ref.read(weeklyPlanProvider.future);
     final household = ref.read(currentHouseholdProvider).valueOrNull;
@@ -157,9 +158,12 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
         isLeftover: isLeftover,
         notes: notes,
         recipeTitle: recipeTitle,
+        skipShopping: skipShopping,
       );
       state = AsyncData(await _repository.getSlotsForPlan(plan.id));
-      await ref.read(shoppingItemsProvider.notifier).reload();
+      if (!skipShopping) {
+        await ref.read(shoppingItemsProvider.notifier).reload();
+      }
     } catch (_) {
       state = AsyncData(previous);
     }
@@ -190,6 +194,8 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
     required String slotId,
     required int dayOfWeek,
     required String mealType,
+    bool sourceIsPast = false,
+    bool destinationIsPast = false,
   }) async {
     final plan = ref.read(weeklyPlanProvider).valueOrNull;
     if (plan == null) return;
@@ -227,6 +233,7 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
     ]);
 
     final household = ref.read(currentHouseholdProvider).valueOrNull;
+    final userId = _userId;
 
     try {
       await _repository.moveSlot(
@@ -234,8 +241,14 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
         dayOfWeek: dayOfWeek,
         mealType: mealType,
         householdId: household?.id,
+        userId: userId,
+        sourceIsPast: sourceIsPast,
+        destinationIsPast: destinationIsPast,
       );
       state = AsyncData(await _repository.getSlotsForPlan(plan.id));
+      if (sourceIsPast != destinationIsPast) {
+        await ref.read(shoppingItemsProvider.notifier).reload();
+      }
     } catch (_) {
       state = AsyncData(previous);
     }

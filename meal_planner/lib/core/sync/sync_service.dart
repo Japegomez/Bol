@@ -235,6 +235,7 @@ class SyncService {
           isLeftover: payload['isLeftover'] as bool? ?? false,
           notes: payload['notes'] as String?,
           slotId: tempId,
+          skipShopping: payload['skipShopping'] as bool? ?? false,
         );
         if (tempId != null) {
           await _recordTempIdMapping(tempId, slot.id);
@@ -250,6 +251,10 @@ class SyncService {
           slotId: slotId,
           dayOfWeek: payload['dayOfWeek'] as int,
           mealType: payload['mealType'] as String,
+          userId: payload['userId'] as String?,
+          householdId: payload['householdId'] as String?,
+          sourceIsPast: payload['sourceIsPast'] as bool? ?? false,
+          destinationIsPast: payload['destinationIsPast'] as bool? ?? false,
         );
       default:
         throw StateError('Unknown plan slot op type: $opType');

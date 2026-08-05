@@ -28,8 +28,8 @@
   "errorWithMessage": "Erro: {message}",
 
   "navExplore": "Explorar",
-  "navRecipeBook": "Livro de receitas",
-  "navPlanner": "Planificador",
+  "navRecipeBook": "Receitas",
+  "navPlanner": "Plano",
   "navShopping": "Compras",
   "navProfile": "Perfil",
   "exploreUnavailableOffline": "Explorar não está disponível offline",
@@ -193,6 +193,8 @@
   "moreServingsTooltip": "Mais doses",
   "leftovers": "São sobras",
   "leftoversShoppingHint": "Os ingredientes não serão adicionados à lista de compras",
+  "pastMealPlanTitle": "Refeição passada",
+  "pastMealPlanMessage": "Está a planear uma refeição para um dia já passado. Os ingredientes não serão adicionados à lista de compras.",
   "recipeBookPanel": "Livro de receitas",
   "closeTooltip": "Fechar",
   "searchHint": "Pesquisar...",
@@ -376,7 +378,7 @@
   "imageCheckFailedTitle": "Não foi possível verificar a imagem",
   "imageCheckFailedRetry": "Não foi possível verificar a imagem. Tente novamente.",
 
-  "mealBreakfast": "Pequeno-almoço",
+  "mealBreakfast": "Peq. almoço",
   "mealLunch": "Almoço",
   "mealDinner": "Jantar",
   "dayMon": "Seg",

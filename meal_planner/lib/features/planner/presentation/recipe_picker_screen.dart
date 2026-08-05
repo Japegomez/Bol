@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
+import 'package:meal_planner/core/utils/date_utils.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
+import 'package:meal_planner/features/planner/presentation/widgets/past_meal_dialog.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/servings_dialog.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
@@ -44,6 +46,11 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
     final notifier = ref.read(planSlotsProvider.notifier);
     final dayOfWeek = widget.dayOfWeek;
     final mealType = widget.mealType;
+    final weekStart = ref.read(currentWeekProvider);
+    final isPast = isPastPlannerDay(
+      weekStart: weekStart,
+      dayOfWeek: dayOfWeek,
+    );
 
     if (_leftoverMode) {
       if (!canEdit) return;
@@ -67,6 +74,11 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
 
     if (result == null || !mounted) return;
 
+    if (isPast) {
+      await showPastMealPlanDialog(context);
+      if (!mounted) return;
+    }
+
     Navigator.pop(context);
     await notifier.addSlot(
       dayOfWeek: dayOfWeek,
@@ -75,6 +87,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
       servings: result.servings,
       recipeTitle: recipe.title,
       isLeftover: false,
+      skipShopping: isPast,
     );
   }
 

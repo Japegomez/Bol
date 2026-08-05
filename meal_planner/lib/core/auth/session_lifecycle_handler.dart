@@ -58,6 +58,8 @@ class _SessionLifecycleHandlerState
     }
 
     if (state == AppLifecycleState.resumed) {
+      // Native OAuth sheets resume the app before login finally clears this flag.
+      if (ref.read(authOperationInProgressProvider)) return;
       unawaited(_expireOrRevalidate());
     }
   }

@@ -83,10 +83,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navExplore => 'Explorar';
 
   @override
-  String get navRecipeBook => 'Livro de receitas';
+  String get navRecipeBook => 'Receitas';
 
   @override
-  String get navPlanner => 'Planificador';
+  String get navPlanner => 'Plano';
 
   @override
   String get navShopping => 'Compras';
@@ -619,6 +619,13 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get leftoversShoppingHint =>
       'Os ingredientes não serão adicionados à lista de compras';
+
+  @override
+  String get pastMealPlanTitle => 'Refeição passada';
+
+  @override
+  String get pastMealPlanMessage =>
+      'Está a planear uma refeição para um dia já passado. Os ingredientes não serão adicionados à lista de compras.';
 
   @override
   String get recipeBookPanel => 'Livro de receitas';
@@ -1164,7 +1171,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível verificar a imagem. Tente novamente.';
 
   @override
-  String get mealBreakfast => 'Pequeno-almoço';
+  String get mealBreakfast => 'Peq. almoço';
 
   @override
   String get mealLunch => 'Almoço';
