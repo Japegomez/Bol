@@ -415,6 +415,8 @@ class PlannerRepository {
       slotId: slotId,
       dayOfWeek: dayOfWeek,
       mealType: mealType,
+      userId: userId,
+      householdId: householdId,
       sourceIsPast: sourceIsPast,
       destinationIsPast: destinationIsPast,
     );
@@ -468,23 +470,39 @@ class PlannerRepository {
 
     if (userId == null) return;
 
-    if (destinationIsPast && !sourceIsPast) {
-      await _syncShoppingListRemove(
-        slot: moved,
-        userId: userId,
-        householdId: householdId,
-      );
-    } else if (!destinationIsPast &&
-        sourceIsPast &&
-        moved.recipeId != null &&
-        !moved.isLeftover) {
-      await _syncShoppingListAdd(
-        slot: moved,
-        recipeId: moved.recipeId!,
-        servings: moved.servings,
-        userId: userId,
-        householdId: householdId,
-      );
+    final shouldSyncShopping = moved.recipeId != null && !moved.isLeftover;
+    if (!shouldSyncShopping) return;
+
+    try {
+      if (destinationIsPast && !sourceIsPast) {
+        await _syncShoppingListRemove(
+          slot: moved,
+          userId: userId,
+          householdId: householdId,
+        );
+      } else if (!destinationIsPast && sourceIsPast) {
+        await _syncShoppingListAdd(
+          slot: moved,
+          recipeId: moved.recipeId!,
+          servings: moved.servings,
+          userId: userId,
+          householdId: householdId,
+        );
+      }
+    } catch (_) {
+      // Roll back the position update so shopping and planner stay aligned
+      // (same compensatory pattern as addSlotRemote).
+      await supabase
+          .from(PlanSlot.table_name)
+          .update(
+            PlanSlot.update(
+              dayOfWeek: slot.dayOfWeek,
+              mealType: slot.mealType,
+              position: slot.position,
+            ),
+          )
+          .eq(PlanSlot.c_id, slotId);
+      rethrow;
     }
   }
 
@@ -492,6 +510,8 @@ class PlannerRepository {
     required String slotId,
     required int dayOfWeek,
     required String mealType,
+    String? userId,
+    String? householdId,
     bool sourceIsPast = false,
     bool destinationIsPast = false,
   }) async {
@@ -521,7 +541,9 @@ class PlannerRepository {
       recipeTitle: cached.recipeTitle,
     );
 
-    if (destinationIsPast && !sourceIsPast) {
+    final shouldSyncShopping =
+        cached.slot.recipeId != null && !cached.slot.isLeftover;
+    if (destinationIsPast && !sourceIsPast && shouldSyncShopping) {
       final linked = await _cache.getShoppingItemsByPlanSlot(slotId);
       for (final item in linked) {
         await _cache.deleteShoppingItem(item.id);
@@ -534,6 +556,8 @@ class PlannerRepository {
         'slotId': slotId,
         'dayOfWeek': dayOfWeek,
         'mealType': mealType,
+        'userId': userId,
+        'householdId': householdId,
         'sourceIsPast': sourceIsPast,
         'destinationIsPast': destinationIsPast,
       },

@@ -114,6 +114,9 @@ final recipeTagsProvider = FutureProvider<Set<String>>((ref) async {
   ref.watch(recipeListProvider);
   ref.watch(currentHouseholdProvider);
 
+  final authState = ref.read(authStateProvider).valueOrNull;
+  if (authState is! AuthAuthenticated) return <String>{};
+
   List<String>? memberIds;
   final household = ref.watch(currentHouseholdProvider).valueOrNull;
   if (household != null) {

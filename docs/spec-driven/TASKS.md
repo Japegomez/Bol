@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 04/08/2026 — Avatar solo galería + eliminar (default); import foto Google al login; páginas legales i18n; glosario/unidades IT
+> Actualizado: 05/08/2026 — v1.1.0: planner UI/past days, household recipe book, Google auth fix, iOS App Store locales (es)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -500,6 +500,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] App creada en App Store Connect
 - [x] Testing interno TestFlight: Sign in with Apple, Google OAuth, flujo completo de la app
 - [x] Completar ficha App Store Connect y **Submit for Review**
+- [x] Declarar localizaciones iOS en el binario (`developmentRegion = es`, `.lproj` + `CFBundleLocalizations`) para que la ficha muestre español y el resto de idiomas de la app (v1.1.0)
 
 ---
 
@@ -632,13 +633,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar avatar en dispositivo**: galería → moderación → guardar; eliminar foto → default; login Google sin avatar → importa foto; login con avatar propio → no sobrescribe.
-2. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → login si hace falta → ficha → fork; enlace privado caducado.
-3. **Commit / merge del fix Live Activity** (`.foregroundStyle(.primary)` en `CookingActivityWidget.swift`) si aún no está en la rama de integración.
-4. **Validar en dispositivo** el flujo hogar: crear/unirse con plan individual → merge aditivo; abandonar → snapshot; abrir receta ajena + fork; invitar por WhatsApp.
-5. **Validar modo cocina en dispositivo** (Android: notificación; iOS: Live Activity + contraste tipografía; restauración de sesión).
-6. **Validar acceso offline en móvil** (modo avión): individual (lectura + edición + sync) y hogar (solo lectura); mover slots offline.
-7. **Validar cierre de sesión tras background** (>10 min) y que no haya doble carga del planificador al volver.
-8. **Release TestFlight / Play** con modo cocina + onboarding + offline + asistente IA + migración hogar + share links + feedback.
-9. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-10. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+1. **Release 1.1.0** (TestFlight / Play): build con locales iOS ES + fixes planner/auth/hogar; verificar en ficha App Store la sección Idiomas.
+2. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+3. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra; mover futuro↔pasado.
+4. **Validar recetario de hogar**: dos miembros ven recetas de ambos; abandonar → solo propias.
+5. **Validar avatar en dispositivo**: galería → moderación → guardar; eliminar foto → default; login Google sin avatar → importa foto.
+6. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → ficha → fork.
+7. **Validar modo cocina / offline / background session** en dispositivo.
+8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
