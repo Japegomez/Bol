@@ -22,22 +22,45 @@ final recipesProvider =
 class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
   RecipesRepository get _repository => ref.read(recipesRepositoryProvider);
 
+  Future<List<String>?> _householdMemberIds() async {
+    final household = ref.read(currentHouseholdProvider).valueOrNull;
+    if (household == null) return null;
+    final members =
+        await ref.read(householdMembersByIdProvider(household.id).future);
+    return members.map((m) => m.userId).toList();
+  }
+
   @override
   Future<List<Recipe>> build() async {
     ref.watch(authStateProvider);
+    ref.watch(currentHouseholdProvider);
     final authState = ref.read(authStateProvider).valueOrNull;
     if (authState is! AuthAuthenticated) return [];
 
-    return _repository.fetchRecipes();
+    final household = ref.watch(currentHouseholdProvider).valueOrNull;
+    List<String>? memberIds;
+    if (household != null) {
+      final members =
+          await ref.watch(householdMembersByIdProvider(household.id).future);
+      memberIds = members.map((m) => m.userId).toList();
+    }
+    return _repository.fetchRecipes(memberUserIds: memberIds);
   }
 
   Future<List<Recipe>> search(String query) async {
-    return _repository.fetchRecipes(search: query);
+    final memberIds = await _householdMemberIds();
+    return _repository.fetchRecipes(
+      search: query,
+      memberUserIds: memberIds,
+    );
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _repository.fetchRecipes());
+    final memberIds = await _householdMemberIds();
+    state = await AsyncValue.guard(
+      () => _repository.fetchRecipes(memberUserIds: memberIds),
+    );
   }
 }
 
@@ -64,18 +87,44 @@ final recipeListFilterProvider =
 
 final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
   ref.watch(authStateProvider);
+  ref.watch(currentHouseholdProvider);
   final authState = ref.read(authStateProvider).valueOrNull;
   if (authState is! AuthAuthenticated) return [];
 
   final filter = ref.watch(recipeListFilterProvider);
   final repo = ref.watch(recipesRepositoryProvider);
-  return repo.fetchRecipes(search: filter.search, tags: filter.tags);
+
+  List<String>? memberIds;
+  final household = ref.watch(currentHouseholdProvider).valueOrNull;
+  if (household != null) {
+    final members =
+        await ref.watch(householdMembersByIdProvider(household.id).future);
+    memberIds = members.map((m) => m.userId).toList();
+  }
+
+  return repo.fetchRecipes(
+    search: filter.search,
+    tags: filter.tags,
+    memberUserIds: memberIds,
+  );
 });
 
 final recipeTagsProvider = FutureProvider<Set<String>>((ref) async {
   ref.watch(authStateProvider);
   ref.watch(recipeListProvider);
-  return ref.watch(recipesRepositoryProvider).fetchAllTags();
+  ref.watch(currentHouseholdProvider);
+
+  List<String>? memberIds;
+  final household = ref.watch(currentHouseholdProvider).valueOrNull;
+  if (household != null) {
+    final members =
+        await ref.watch(householdMembersByIdProvider(household.id).future);
+    memberIds = members.map((m) => m.userId).toList();
+  }
+
+  return ref
+      .watch(recipesRepositoryProvider)
+      .fetchAllTags(memberUserIds: memberIds);
 });
 
 final recipeDetailProvider =
