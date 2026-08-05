@@ -5,6 +5,23 @@ DateTime startOfIsoWeek(DateTime date) {
   return DateTime(date.year, date.month, date.day - (weekday - 1));
 }
 
+/// Calendar date for an ISO weekday (`1` = Monday … `7` = Sunday) in [weekStart].
+DateTime plannerDayDate(DateTime weekStart, int dayOfWeek) {
+  final start = DateTime(weekStart.year, weekStart.month, weekStart.day);
+  return start.add(Duration(days: dayOfWeek - 1));
+}
+
+/// True when the planner cell's calendar day is before local today.
+bool isPastPlannerDay({
+  required DateTime weekStart,
+  required int dayOfWeek,
+  DateTime? now,
+}) {
+  final current = now ?? DateTime.now();
+  final today = DateTime(current.year, current.month, current.day);
+  return plannerDayDate(weekStart, dayOfWeek).isBefore(today);
+}
+
 String formatWeekRange(DateTime weekStart, String localeName) {
   final weekEnd = weekStart.add(const Duration(days: 6));
   final dayFmt = DateFormat('d MMM', localeName);

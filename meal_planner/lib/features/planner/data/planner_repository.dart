@@ -123,6 +123,7 @@ class PlannerRepository {
     bool isLeftover = false,
     String? notes,
     String? recipeTitle,
+    bool skipShopping = false,
   }) async {
     final isOnline = await NetworkStatus.isOnline;
     await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
@@ -138,6 +139,7 @@ class PlannerRepository {
         householdId: householdId,
         isLeftover: isLeftover,
         notes: notes,
+        skipShopping: skipShopping,
       );
       // Update cache with the returned slot immediately
       await _cache.upsertSlot(
@@ -163,6 +165,7 @@ class PlannerRepository {
       isLeftover: isLeftover,
       notes: notes,
       recipeTitle: recipeTitle,
+      skipShopping: skipShopping,
     );
   }
 
@@ -177,6 +180,7 @@ class PlannerRepository {
     bool isLeftover = false,
     String? notes,
     String? slotId,
+    bool skipShopping = false,
   }) async {
     final existingSlots = await _fetchSlotsRemote(planId);
     final position = existingSlots
@@ -207,7 +211,7 @@ class PlannerRepository {
 
     final slot = PlanSlot.fromJson(data);
 
-    if (recipeId != null && !isLeftover) {
+    if (recipeId != null && !isLeftover && !skipShopping) {
       try {
         await _syncShoppingListAdd(
           slot: slot,
@@ -238,6 +242,7 @@ class PlannerRepository {
     bool isLeftover = false,
     String? notes,
     String? recipeTitle,
+    bool skipShopping = false,
   }) async {
     final existingSlots = await _cache.getSlotsForPlan(planId);
     final position = existingSlots
@@ -262,7 +267,7 @@ class PlannerRepository {
     );
 
     final shoppingItems = <ShoppingItem>[];
-    if (recipeId != null && !isLeftover) {
+    if (recipeId != null && !isLeftover && !skipShopping) {
       final list = await getOrCreateShoppingList(userId: userId);
       final recipe = await _cache.getRecipeById(recipeId);
       if (recipe != null && recipe.servings > 0) {
@@ -305,6 +310,7 @@ class PlannerRepository {
         'householdId': null,
         'isLeftover': isLeftover,
         'notes': notes,
+        'skipShopping': skipShopping,
       },
     );
 
@@ -376,6 +382,9 @@ class PlannerRepository {
     required int dayOfWeek,
     required String mealType,
     String? householdId,
+    String? userId,
+    bool sourceIsPast = false,
+    bool destinationIsPast = false,
   }) async {
     final isOnline = await NetworkStatus.isOnline;
     await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
@@ -386,6 +395,10 @@ class PlannerRepository {
         slotId: slotId,
         dayOfWeek: dayOfWeek,
         mealType: mealType,
+        userId: userId,
+        householdId: householdId,
+        sourceIsPast: sourceIsPast,
+        destinationIsPast: destinationIsPast,
       );
       if (cached != null) {
         try {
@@ -402,6 +415,8 @@ class PlannerRepository {
       slotId: slotId,
       dayOfWeek: dayOfWeek,
       mealType: mealType,
+      sourceIsPast: sourceIsPast,
+      destinationIsPast: destinationIsPast,
     );
   }
 
@@ -409,6 +424,10 @@ class PlannerRepository {
     required String slotId,
     required int dayOfWeek,
     required String mealType,
+    String? userId,
+    String? householdId,
+    bool sourceIsPast = false,
+    bool destinationIsPast = false,
   }) async {
     final slotRow = await supabase
         .from(PlanSlot.table_name)
@@ -440,12 +459,41 @@ class PlannerRepository {
           ),
         )
         .eq(PlanSlot.c_id, slotId);
+
+    final moved = slot.copyWith(
+      dayOfWeek: dayOfWeek,
+      mealType: mealType,
+      position: position,
+    );
+
+    if (userId == null) return;
+
+    if (destinationIsPast && !sourceIsPast) {
+      await _syncShoppingListRemove(
+        slot: moved,
+        userId: userId,
+        householdId: householdId,
+      );
+    } else if (!destinationIsPast &&
+        sourceIsPast &&
+        moved.recipeId != null &&
+        !moved.isLeftover) {
+      await _syncShoppingListAdd(
+        slot: moved,
+        recipeId: moved.recipeId!,
+        servings: moved.servings,
+        userId: userId,
+        householdId: householdId,
+      );
+    }
   }
 
   Future<void> _moveSlotOffline({
     required String slotId,
     required int dayOfWeek,
     required String mealType,
+    bool sourceIsPast = false,
+    bool destinationIsPast = false,
   }) async {
     final cached = await _cache.getSlotsForPlanBySlotId(slotId);
     if (cached == null) return;
@@ -473,12 +521,21 @@ class PlannerRepository {
       recipeTitle: cached.recipeTitle,
     );
 
+    if (destinationIsPast && !sourceIsPast) {
+      final linked = await _cache.getShoppingItemsByPlanSlot(slotId);
+      for (final item in linked) {
+        await _cache.deleteShoppingItem(item.id);
+      }
+    }
+
     await _cache.moveSlotWithPendingOp(
       slotItem: updated,
       payload: {
         'slotId': slotId,
         'dayOfWeek': dayOfWeek,
         'mealType': mealType,
+        'sourceIsPast': sourceIsPast,
+        'destinationIsPast': destinationIsPast,
       },
     );
   }
