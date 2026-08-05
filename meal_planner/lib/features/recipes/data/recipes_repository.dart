@@ -51,13 +51,23 @@ class RecipesRepository {
     }
   }
 
-  Future<List<Recipe>> fetchRecipes({String? search, Set<String>? tags}) async {
+  Future<List<Recipe>> fetchRecipes({
+    String? search,
+    Set<String>? tags,
+    List<String>? memberUserIds,
+  }) async {
+    final ownerIds = (memberUserIds != null && memberUserIds.isNotEmpty)
+        ? memberUserIds
+        : <String>[_userId];
+
     if (await NetworkStatus.isOnline) {
       try {
-        var query = supabase
-            .from(Recipe.table_name)
-            .select()
-            .eq(Recipe.c_userId, _userId);
+        var query = supabase.from(Recipe.table_name).select();
+        if (ownerIds.length == 1) {
+          query = query.eq(Recipe.c_userId, ownerIds.first);
+        } else {
+          query = query.inFilter(Recipe.c_userId, ownerIds);
+        }
 
         if (search != null && search.trim().isNotEmpty) {
           query = query.ilike(Recipe.c_title, '%${search.trim()}%');
@@ -81,6 +91,7 @@ class RecipesRepository {
       }
     }
 
+    // Offline: household shared list is not cached; show own recipes only.
     return _cache.getRecipes(
       userId: _userId,
       search: search,
@@ -88,8 +99,8 @@ class RecipesRepository {
     );
   }
 
-  Future<Set<String>> fetchAllTags() async {
-    final recipes = await fetchRecipes();
+  Future<Set<String>> fetchAllTags({List<String>? memberUserIds}) async {
+    final recipes = await fetchRecipes(memberUserIds: memberUserIds);
     final tags = <String>{};
     for (final recipe in recipes) {
       tags.addAll(recipe.tags);

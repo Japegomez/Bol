@@ -83,10 +83,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navExplore => 'Explorar';
 
   @override
-  String get navRecipeBook => 'Recetario';
+  String get navRecipeBook => 'Recetas';
 
   @override
-  String get navPlanner => 'Planificador';
+  String get navPlanner => 'Plan';
 
   @override
   String get navShopping => 'Compra';
@@ -617,6 +617,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get leftoversShoppingHint =>
       'No se añadirán ingredientes a la lista de la compra';
+
+  @override
+  String get pastMealPlanTitle => 'Comida pasada';
+
+  @override
+  String get pastMealPlanMessage =>
+      'Estás planificando una comida de un día ya pasado. Los ingredientes no se añadirán a la lista de la compra.';
 
   @override
   String get recipeBookPanel => 'Recetario';

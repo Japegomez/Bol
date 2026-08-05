@@ -46,8 +46,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(authOperationInProgressProvider.notifier).state = true;
     try {
       await action();
-      // Do not force navigation here: GoRouter redirect (and DeepLinkListener)
-      // consume any pending share link and route to the recipe or planner.
+      // Native Google/Apple can leave authStateProvider out of sync if Supabase's
+      // auth stream errored on a deeplink. Reconcile from the persisted session.
+      await _ensureAuthStateVisible();
     } on AuthCancelledException {
       // User dismissed the provider sheet — no error banner.
     } on AuthException catch (e) {
@@ -58,6 +59,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.read(authOperationInProgressProvider.notifier).state = false;
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// If Supabase has a session but [authStateProvider] is not authenticated,
+  /// rebuild the stream so GoRouter redirects into the app.
+  Future<void> _ensureAuthStateVisible() async {
+    final session = ref.read(authRepositoryProvider).currentSession;
+    if (session == null) return;
+
+    final auth = ref.read(authStateProvider).valueOrNull;
+    if (auth is AuthAuthenticated) return;
+
+    ref.invalidate(authStateProvider);
+    // Allow the new stream subscription to emit before GoRouter refreshes.
+    await Future<void>.delayed(Duration.zero);
   }
 
   Future<void> _signInWithEmail() async {

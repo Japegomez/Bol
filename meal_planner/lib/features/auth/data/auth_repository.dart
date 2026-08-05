@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -231,36 +232,68 @@ class AuthRepository {
 
   Session? get currentSession => supabase.auth.currentSession;
 
-  Stream<AuthState> get authStateChanges async* {
-    var wasAuthenticated = supabase.auth.currentSession != null;
-    String? lastUserId = supabase.auth.currentUser?.id;
+  /// Maps Supabase auth events into app [AuthState].
+  ///
+  /// Errors on [GoTrueClient.onAuthStateChange] (e.g. failed deeplink session
+  /// recovery) must not terminate this stream — otherwise the UI stays on login
+  /// while a valid session remains in secure storage until cold start.
+  Stream<AuthState> get authStateChanges {
+    return Stream.multi((multi) {
+      var wasAuthenticated = false;
+      String? lastUserId;
 
-    yield wasAuthenticated
-        ? AuthAuthenticated(supabase.auth.currentUser!)
-        : const AuthUnauthenticated();
-
-    await for (final event in supabase.auth.onAuthStateChange) {
-      final session = event.session;
-      if (session != null) {
-        final userId = session.user.id;
-        // Skip token-refresh emissions that would recreate the router / reload
-        // providers with an equivalent AuthAuthenticated state.
+      void emitAuthenticated(User user, {AuthChangeEvent? event}) {
+        final userId = user.id;
         if (wasAuthenticated &&
             lastUserId == userId &&
-            event.event == AuthChangeEvent.tokenRefreshed) {
-          continue;
+            event == AuthChangeEvent.tokenRefreshed) {
+          return;
         }
         wasAuthenticated = true;
         lastUserId = userId;
-        yield AuthAuthenticated(session.user);
-      } else {
+        multi.add(AuthAuthenticated(user));
+      }
+
+      void emitUnauthenticated() {
         final sessionExpired = wasAuthenticated && !_manualSignOut;
         wasAuthenticated = false;
         lastUserId = null;
         _manualSignOut = false;
-        yield AuthUnauthenticated(sessionExpired: sessionExpired);
+        multi.add(AuthUnauthenticated(sessionExpired: sessionExpired));
       }
-    }
+
+      final session = supabase.auth.currentSession;
+      if (session != null) {
+        wasAuthenticated = true;
+        lastUserId = session.user.id;
+        multi.add(AuthAuthenticated(session.user));
+      } else {
+        multi.add(const AuthUnauthenticated());
+      }
+
+      final subscription = supabase.auth.onAuthStateChange.listen(
+        (event) {
+          final nextSession = event.session;
+          if (nextSession != null) {
+            emitAuthenticated(nextSession.user, event: event.event);
+          } else {
+            emitUnauthenticated();
+          }
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          // Recover from current session instead of ending the provider stream.
+          // Do not treat deeplink failures as sign-out when no session exists.
+          final current = supabase.auth.currentSession;
+          final user = current?.user ?? supabase.auth.currentUser;
+          if (current != null && user != null) {
+            emitAuthenticated(user);
+          }
+        },
+        cancelOnError: false,
+      );
+
+      multi.onCancel = () => subscription.cancel();
+    });
   }
 
   String _generateNonce([int length = 32]) {
