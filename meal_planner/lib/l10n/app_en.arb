@@ -33,7 +33,7 @@
   },
 
   "navExplore": "Explore",
-  "navRecipeBook": "Recipe book",
+  "navRecipeBook": "Recipes",
   "navPlanner": "Planner",
   "navShopping": "Shopping",
   "navProfile": "Profile",
@@ -269,6 +269,8 @@
   "moreServingsTooltip": "More servings",
   "leftovers": "These are leftovers",
   "leftoversShoppingHint": "Ingredients will not be added to the shopping list",
+  "pastMealPlanTitle": "Past meal",
+  "pastMealPlanMessage": "You are planning a meal for a day that has already passed. Ingredients will not be added to the shopping list.",
   "recipeBookPanel": "Recipe book",
   "closeTooltip": "Close",
   "searchHint": "Search...",

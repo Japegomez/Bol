@@ -83,10 +83,10 @@ class AppLocalizationsEu extends AppLocalizations {
   String get navExplore => 'Arakatu';
 
   @override
-  String get navRecipeBook => 'Errezeta-liburua';
+  String get navRecipeBook => 'Errezetak';
 
   @override
-  String get navPlanner => 'Planifikatzailea';
+  String get navPlanner => 'Plana';
 
   @override
   String get navShopping => 'Erosketa';
@@ -617,6 +617,13 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get leftoversShoppingHint =>
       'Osagaiak ez dira erosketa-zerrendara gehituko';
+
+  @override
+  String get pastMealPlanTitle => 'Iraganeko otordua';
+
+  @override
+  String get pastMealPlanMessage =>
+      'Jadanik igaro den egun baterako otordu bat planifikatzen ari zara. Osagaiak ez dira erosketa-zerrendara gehituko.';
 
   @override
   String get recipeBookPanel => 'Errezeta-liburua';
