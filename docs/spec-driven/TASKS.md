@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 08/08/2026 — v1.2.1 hotfix: remediación de seguridad (share token-gated, RLS, SQLCipher, cuotas edge) + UI asistente (botones a la derecha, hint con foto)
+> Actualizado: 08/08/2026 — v1.2.2 hotfix: migración offline SQLCipher (VACUUM INTO + rekey) y reset de caché ilegible en TestFlight
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -533,7 +533,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Fase 7 — Acceso offline (móvil)
 
-> Integrado en `develop` y release. Caché local con **Drift** + SQLite nativo (`sqlite3_flutter_libs`). **Web:** sin base de datos local ni modo offline (`kIsWeb`); probar solo en dispositivo/emulador.
+> Integrado en `develop` y release. Caché local con **Drift** + SQLite cifrado (**SQLite3MultipleCiphers** vía `hooks.user_defines.sqlite3.source = sqlite3mc`). Migración de DBs plaintext previas: `VACUUM INTO` + `PRAGMA rekey`; si el fichero es ilegible se resetea la caché (se regenera desde el servidor). **Web:** sin base de datos local ni modo offline (`kIsWeb`); probar solo en dispositivo/emulador.
 
 ### Infraestructura local
 
@@ -642,14 +642,15 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.1 hotfix** (TestFlight / Play): remediación de seguridad + UI asistente (hint con foto, botones a la derecha).
-2. **Aplicar migraciones** `037`–`043` en remoto y redesplegar edge functions (`moderate-image`, `translate-recipe`, `share-landing`) + `config.toml` verify_jwt.
-3. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición.
-4. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
-5. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
-6. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
-7. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-8. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
-9. **Validar modo cocina / offline / DB cifrada** en dispositivo (migración plaintext→SQLCipher).
-10. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-11. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+1. **Release 1.2.2 hotfix** (TestFlight / Play): fix SqliteException 26 al abrir caché offline previa (migración rekey / reset).
+2. **Validar en dispositivo** upgrade TestFlight: Compra / Plan / Recetas sin error 26; caché se regenera si hace falta.
+3. **Aplicar migraciones** `037`–`043` en remoto y redesplegar edge functions (`moderate-image`, `translate-recipe`, `share-landing`) + `config.toml` verify_jwt.
+4. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición.
+5. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
+6. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
+7. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+8. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+9. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
+10. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
+11. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+12. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
