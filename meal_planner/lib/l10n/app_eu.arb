@@ -275,11 +275,11 @@
   "myHouseholdTitle": "Nire etxea",
   "inviteCode": "Gonbidapen-kodea",
   "inviteViaWhatsApp": "Gonbidatu WhatsApp bidez",
-  "inviteWhatsAppHouseholdMessage": "Kaixo! Etorri nire etxera {appName} aplikazioan. Erabili kode hau: {code}",
+  "inviteWhatsAppHouseholdMessage": "Kaixo! Etorri nire etxera {appName} aplikazioan:\n{url}",
   "@inviteWhatsAppHouseholdMessage": {
     "placeholders": {
       "appName": {"type": "String"},
-      "code": {"type": "String"}
+      "url": {"type": "String"}
     }
   },
   "copyTooltip": "Kopiatu",
@@ -484,8 +484,13 @@
   "createRecipeWithAssistant": "IA laguntzailearekin sortu",
   "createRecipeWithAssistantSubtitle": "Deskribatu platera eta IAk fitxa osatuko du",
   "recipeAssistantTitle": "Errezeta laguntzailea",
-  "recipeAssistantDescription": "Esan iezadazu zer jateko gogoa duzun, hozkailuan zer duzun edo deskribatu osagai eta urratsekin errezeta zehatza.",
+  "recipeAssistantDescription": "Esan iezadazu zer jateko gogoa duzun, hozkailuan zer duzun, itsatsi errezeta bat, erantsi argazki bat edo dikta mikrofonoarekin.",
   "recipeAssistantPromptHint": "Adib.: patata tortilla 4 pertsonentzat tipulaarekin...",
+  "recipeAssistantListening": "Entzuten…",
+  "recipeAssistantDictate": "Diktatu",
+  "recipeAssistantStopDictation": "Gelditu diktao",
+  "recipeAssistantSpeechUnavailable": "Ahots-ezagutza ez dago erabilgarri. Gaitu ezazu Ezarpenetan edo idatzi zure eskaera.",
+  "recipeAssistantSpeechFailed": "Ezin izan da ahotsa ezagutu. Saiatu berriro edo idatzi zure eskaera.",
   "recipeAssistantGenerate": "Errezeta sortu",
   "recipeAssistantGenerating": "Sortzen...",
   "recipeAssistantBlockingRecipe": "Laguntzailea zure errezeta prestatzen ari da…",
@@ -497,6 +502,9 @@
   "recipeAssistantNotConfigured": "IA laguntzailea oraindik ez dago konfiguratuta.",
   "recipeAssistantTimeout": "Eskaerak denbora gehiegi hartu du. Saiatu berriro.",
   "recipeAssistantPromptTooLong": "Errezetaren deskribapenak ezin ditu 3.000 karaktere baino gehiago izan.",
+  "recipeAssistantMissingInput": "Idatzi deskribapen bat edo erantsi errezetaren argazki bat.",
+  "recipeAssistantImageTooLarge": "Irudia handiegia da. Probatu beste argazki batekin edo egin berri bat.",
+  "recipeAssistantInvalidImage": "Ezin izan da irudi hori erabili. Probatu beste argazki batekin.",
   "recipeAssistantDailyLimitReached": "Laguntzailearen eguneroko muga gainditu duzu. Itzuli bihar.",
   "recipeAssistantTooFast": "Itxoin une bat laguntzailea berriro erabili aurretik.",
   "recipeAssistantServiceAtCapacity": "Laguntzailea momentu honetan gainezka dago. Saiatu geroago.",

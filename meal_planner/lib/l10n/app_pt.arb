@@ -275,11 +275,11 @@
   "myHouseholdTitle": "A minha casa",
   "inviteCode": "Código de convite",
   "inviteViaWhatsApp": "Convidar via WhatsApp",
-  "inviteWhatsAppHouseholdMessage": "Olá! Junta-te à minha casa no {appName}. Usa este código: {code}",
+  "inviteWhatsAppHouseholdMessage": "Olá! Junta-te à minha casa no {appName}:\n{url}",
   "@inviteWhatsAppHouseholdMessage": {
     "placeholders": {
       "appName": {"type": "String"},
-      "code": {"type": "String"}
+      "url": {"type": "String"}
     }
   },
   "copyTooltip": "Copiar",
@@ -484,8 +484,13 @@
   "createRecipeWithAssistant": "Criar com assistente de IA",
   "createRecipeWithAssistantSubtitle": "Descreva o prato e a IA elaborará a ficha",
   "recipeAssistantTitle": "Assistente de receitas",
-  "recipeAssistantDescription": "Diga-me o que lhe apetece, o que tem no frigorífico ou descreva uma receita detalhada com ingredientes e passos.",
+  "recipeAssistantDescription": "Diga-me o que lhe apetece, o que tem no frigorífico, cole uma receita, anexe uma foto ou dite com o microfone.",
   "recipeAssistantPromptHint": "Ex.: omelete de batata para 4 pessoas com cebola...",
+  "recipeAssistantListening": "A ouvir…",
+  "recipeAssistantDictate": "Ditar",
+  "recipeAssistantStopDictation": "Parar ditado",
+  "recipeAssistantSpeechUnavailable": "O reconhecimento de voz não está disponível. Ative-o nas Definições ou escreva o seu pedido.",
+  "recipeAssistantSpeechFailed": "Não foi possível reconhecer a voz. Tente novamente ou escreva o seu pedido.",
   "recipeAssistantGenerate": "Gerar receita",
   "recipeAssistantGenerating": "A gerar...",
   "recipeAssistantBlockingRecipe": "O assistente está a elaborar a sua receita…",
@@ -497,6 +502,9 @@
   "recipeAssistantNotConfigured": "O assistente de IA ainda não está configurado.",
   "recipeAssistantTimeout": "O pedido demorou demasiado. Tente novamente.",
   "recipeAssistantPromptTooLong": "A descrição da receita não pode exceder 3.000 caracteres.",
+  "recipeAssistantMissingInput": "Escreva uma descrição ou anexe uma foto da receita.",
+  "recipeAssistantImageTooLarge": "A imagem é demasiado grande. Experimente outra foto ou tire uma nova.",
+  "recipeAssistantInvalidImage": "Não foi possível usar essa imagem. Experimente outra foto.",
   "recipeAssistantDailyLimitReached": "Atingiu o limite diário do assistente. Volte amanhã.",
   "recipeAssistantTooFast": "Aguarde um momento antes de usar o assistente novamente.",
   "recipeAssistantServiceAtCapacity": "O assistente está sobrecarregado neste momento. Tente mais tarde.",

@@ -863,8 +863,8 @@ class AppLocalizationsCa extends AppLocalizations {
   String get inviteViaWhatsApp => 'Convidar per WhatsApp';
 
   @override
-  String inviteWhatsAppHouseholdMessage(String appName, String code) {
-    return 'Hola! Uneix-te a la meva llar a $appName. Usa aquest codi: $code';
+  String inviteWhatsAppHouseholdMessage(String appName, String url) {
+    return 'Hola! Uneix-te a la meva llar a $appName:\n$url';
   }
 
   @override
@@ -1483,11 +1483,28 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get recipeAssistantDescription =>
-      'Digues-me què et ve de gust, què tens a la nevera o descriu una recepta detallada amb ingredients i passos.';
+      'Digues-me què et ve de gust, què tens a la nevera, enganxa una recepta, afegeix-ne una foto o dicta amb el micròfon.';
 
   @override
   String get recipeAssistantPromptHint =>
       'Ex.: truita de patates per a 4 persones amb ceba...';
+
+  @override
+  String get recipeAssistantListening => 'Escoltant…';
+
+  @override
+  String get recipeAssistantDictate => 'Dictar';
+
+  @override
+  String get recipeAssistantStopDictation => 'Aturar el dictat';
+
+  @override
+  String get recipeAssistantSpeechUnavailable =>
+      'El reconeixement de veu no està disponible. Activa\'l a Configuració o escriu la teva petició.';
+
+  @override
+  String get recipeAssistantSpeechFailed =>
+      'No s\'ha pogut reconèixer la veu. Torna-ho a provar o escriu la teva petició.';
 
   @override
   String get recipeAssistantGenerate => 'Generar recepta';
@@ -1530,6 +1547,18 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get recipeAssistantPromptTooLong =>
       'La descripció de la recepta no pot superar els 3.000 caràcters.';
+
+  @override
+  String get recipeAssistantMissingInput =>
+      'Escriu una descripció o afegeix una foto de la recepta.';
+
+  @override
+  String get recipeAssistantImageTooLarge =>
+      'La imatge és massa gran. Prova amb una altra foto o fes-ne una de nova.';
+
+  @override
+  String get recipeAssistantInvalidImage =>
+      'No s\'ha pogut fer servir aquesta imatge. Prova amb una altra foto.';
 
   @override
   String get recipeAssistantDailyLimitReached =>

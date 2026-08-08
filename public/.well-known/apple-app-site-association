@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "BUT9B76X33.com.japegomez.mealPlanner",
-        "paths": ["/r/*", "/p/*"]
+        "paths": ["/r/*", "/p/*", "/h/*"]
       }
     ]
   }

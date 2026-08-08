@@ -861,8 +861,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get inviteViaWhatsApp => 'Invita via WhatsApp';
 
   @override
-  String inviteWhatsAppHouseholdMessage(String appName, String code) {
-    return 'Ciao! Unisciti alla mia famiglia su $appName. Usa questo codice: $code';
+  String inviteWhatsAppHouseholdMessage(String appName, String url) {
+    return 'Ciao! Unisciti alla mia famiglia su $appName:\n$url';
   }
 
   @override
@@ -1482,11 +1482,28 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get recipeAssistantDescription =>
-      'Dimmi cosa ti va, cosa hai in frigo, o descrivi una ricetta dettagliata con ingredienti e passaggi.';
+      'Dimmi cosa ti va, cosa hai in frigo, incolla una ricetta, allega una foto o detta con il microfono.';
 
   @override
   String get recipeAssistantPromptHint =>
       'Es.: frittata di patate per 4 con cipolla...';
+
+  @override
+  String get recipeAssistantListening => 'In ascolto…';
+
+  @override
+  String get recipeAssistantDictate => 'Detta';
+
+  @override
+  String get recipeAssistantStopDictation => 'Interrompi dettatura';
+
+  @override
+  String get recipeAssistantSpeechUnavailable =>
+      'Il riconoscimento vocale non è disponibile. Attivalo nelle Impostazioni oppure digita la richiesta.';
+
+  @override
+  String get recipeAssistantSpeechFailed =>
+      'Impossibile riconoscere la voce. Riprova oppure digita la richiesta.';
 
   @override
   String get recipeAssistantGenerate => 'Genera ricetta';
@@ -1529,6 +1546,18 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get recipeAssistantPromptTooLong =>
       'La descrizione della ricetta non può superare i 3.000 caratteri.';
+
+  @override
+  String get recipeAssistantMissingInput =>
+      'Scrivi una descrizione o allega una foto della ricetta.';
+
+  @override
+  String get recipeAssistantImageTooLarge =>
+      'L\'immagine è troppo grande. Prova un\'altra foto o scattane una nuova.';
+
+  @override
+  String get recipeAssistantInvalidImage =>
+      'Impossibile usare quell\'immagine. Prova un\'altra foto.';
 
   @override
   String get recipeAssistantDailyLimitReached =>

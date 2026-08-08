@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
+import 'package:meal_planner/core/config/share_urls.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -28,9 +29,10 @@ class HouseholdScreen extends ConsumerWidget {
     required String code,
   }) async {
     final l10n = context.l10n;
+    final url = ShareUrls.householdInviteLink(code);
     final text = l10n.inviteWhatsAppHouseholdMessage(
       AppBranding.displayName,
-      code,
+      url,
     );
     final renderObject = context.findRenderObject();
     final origin = renderObject is RenderBox

@@ -8,7 +8,10 @@ import 'package:meal_planner/features/household/presentation/household_provider.
 import 'package:meal_planner/l10n/app_localizations.dart';
 
 class JoinHouseholdScreen extends ConsumerStatefulWidget {
-  const JoinHouseholdScreen({super.key});
+  const JoinHouseholdScreen({super.key, this.initialCode});
+
+  /// Pre-filled invite code from a household deep link (`?code=` / `/h/:code`).
+  final String? initialCode;
 
   @override
   ConsumerState<JoinHouseholdScreen> createState() =>
@@ -17,9 +20,17 @@ class JoinHouseholdScreen extends ConsumerStatefulWidget {
 
 class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _codeController = TextEditingController();
+  late final TextEditingController _codeController;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    final seed = (widget.initialCode ?? '').trim().toUpperCase();
+    final initial = seed.length > 6 ? seed.substring(0, 6) : seed;
+    _codeController = TextEditingController(text: initial);
+  }
 
   @override
   void dispose() {
