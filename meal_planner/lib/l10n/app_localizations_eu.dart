@@ -700,6 +700,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get shareLinkRevoked => 'Esteka ezeztatuta';
 
   @override
+  String get noActiveShareLink => 'Ez dago ezeztatzeko esteka aktiborik';
+
+  @override
   String get clearListTooltip => 'Garbitu zerrenda';
 
   @override

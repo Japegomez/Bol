@@ -20,7 +20,7 @@ CREATE POLICY "recipe_ratings_select_visible"
     OR EXISTS (
       SELECT 1
       FROM public.recipes r
-      WHERE r.id = recipe_id
+      WHERE r.id = public.recipe_ratings.recipe_id
         AND (
           r.is_public = true
           OR r.user_id = auth.uid()

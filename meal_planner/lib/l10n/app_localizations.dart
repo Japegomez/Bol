@@ -1374,6 +1374,12 @@ abstract class AppLocalizations {
   /// **'Share link revoked'**
   String get shareLinkRevoked;
 
+  /// No description provided for @noActiveShareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'No active share link to revoke'**
+  String get noActiveShareLink;
+
   /// No description provided for @clearListTooltip.
   ///
   /// In en, this message translates to:

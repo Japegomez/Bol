@@ -12,6 +12,11 @@
 --   is_admin is still readable by service_role and through the SECURITY
 --   DEFINER auth_is_admin() RPC; clients read their own admin status via
 --   that RPC instead of the column.
+--
+-- Column-level SELECT on public.profiles: anon and authenticated may only
+-- read the explicitly granted columns (id, username, avatar_url, created_at).
+-- Every new profiles column must receive an explicit GRANT SELECT update;
+-- SECURITY DEFINER helpers (e.g. auth_is_admin) remain unaffected.
 
 -- 1) Household INSERT must go through create_household (SECURITY DEFINER).
 DROP POLICY IF EXISTS "households_insert_authenticated" ON public.households;
@@ -24,7 +29,7 @@ CREATE POLICY "households_update_admin"
   USING (
     EXISTS (
       SELECT 1 FROM public.household_members hm
-      WHERE hm.household_id = id
+      WHERE hm.household_id = public.households.id
         AND hm.user_id = auth.uid()
         AND hm.role = 'admin'
     )
@@ -32,7 +37,7 @@ CREATE POLICY "households_update_admin"
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.household_members hm
-      WHERE hm.household_id = id
+      WHERE hm.household_id = public.households.id
         AND hm.user_id = auth.uid()
         AND hm.role = 'admin'
     )

@@ -24,12 +24,29 @@ abstract final class PendingShareLinkStore {
   static const _legacyKey = 'meal_planner.pending_share_link';
   static const _storage = FlutterSecureStorage();
 
+  /// Serializes all store operations so migration and save cannot interleave.
+  static Future<void> _queue = Future<void>.value();
+
+  static Future<T> _serialized<T>(Future<T> Function() action) {
+    final result = _queue.then((_) => action());
+    _queue = result.then((_) {}, onError: (_) {});
+    return result;
+  }
+
   /// One-time migration of any pending link previously stored in plaintext
-  /// SharedPreferences into secure storage. Safe to call on every launch.
-  static Future<void> _migrateFromLegacy() async {
+  /// SharedPreferences into secure storage. Does not overwrite an existing
+  /// secure value; only clears the legacy key in that case.
+  static Future<void> _migrateFromLegacyUnlocked() async {
     try {
+      final existing = await _storage.read(key: _key);
       final prefs = await SharedPreferences.getInstance();
       final legacy = prefs.getString(_legacyKey);
+
+      if (existing != null && existing.isNotEmpty) {
+        if (legacy != null) await prefs.remove(_legacyKey);
+        return;
+      }
+
       if (legacy != null && legacy.isNotEmpty) {
         await _storage.write(key: _key, value: legacy);
         await prefs.remove(_legacyKey);
@@ -39,20 +56,20 @@ abstract final class PendingShareLinkStore {
     }
   }
 
-  static Future<void> save(Uri uri) async {
-    await _storage.write(key: _key, value: uri.toString());
-  }
+  static Future<void> save(Uri uri) => _serialized(() async {
+        await _storage.write(key: _key, value: uri.toString());
+      });
 
-  static Future<Uri?> load() async {
-    await _migrateFromLegacy();
-    final raw = await _storage.read(key: _key);
-    if (raw == null || raw.isEmpty) return null;
-    return Uri.tryParse(raw);
-  }
+  static Future<Uri?> load() => _serialized(() async {
+        await _migrateFromLegacyUnlocked();
+        final raw = await _storage.read(key: _key);
+        if (raw == null || raw.isEmpty) return null;
+        return Uri.tryParse(raw);
+      });
 
-  static Future<void> clear() async {
-    await _storage.delete(key: _key);
-  }
+  static Future<void> clear() => _serialized(() async {
+        await _storage.delete(key: _key);
+      });
 }
 
 class DeepLinkListener extends ConsumerStatefulWidget {

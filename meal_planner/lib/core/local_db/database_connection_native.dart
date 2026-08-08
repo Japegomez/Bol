@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:meal_planner/core/local_db/database_key.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
-
-import 'package:meal_planner/core/local_db/database_key.dart';
 
 /// Opens the local drift database encrypted with SQLCipher (via
 /// SQLite3MultipleCiphers). The encryption key is kept in the platform
@@ -63,7 +62,7 @@ Future<void> _migrateLegacyPlaintextToEncrypted(File file, String key) async {
     plain = sqlite3.open(file.path);
     plain.select('SELECT count(*) FROM sqlite_master');
   } catch (_) {
-    plain?.dispose();
+    plain?.close();
     return; // Already encrypted (or unreadable) — leave it as-is.
   }
 
@@ -79,21 +78,36 @@ Future<void> _migrateLegacyPlaintextToEncrypted(File file, String key) async {
     );
     plain.execute("SELECT sqlcipher_export('encrypted');");
     plain.execute('DETACH DATABASE encrypted;');
-    plain.dispose();
+    plain.close();
     plain = null;
 
     // Stamp the schema version onto the new encrypted file.
     final enc = sqlite3.open(tmpPath)
       ..execute("PRAGMA key = '${_escape(key)}';")
       ..execute('PRAGMA user_version = $userVersion;');
-    enc.dispose();
+    enc.close();
 
-    file.deleteSync();
-    tmpFile.renameSync(file.path);
+    // Promote via backup so a failed rename can restore the original DB.
+    final backupPath = '${file.path}.bak';
+    final backupFile = File(backupPath);
+    if (backupFile.existsSync()) backupFile.deleteSync();
+
+    try {
+      file.renameSync(backupPath);
+      tmpFile.renameSync(file.path);
+      backupFile.deleteSync();
+    } catch (_) {
+      // Restore original if promotion failed mid-way.
+      if (!file.existsSync() && backupFile.existsSync()) {
+        backupFile.renameSync(file.path);
+      }
+      if (tmpFile.existsSync()) tmpFile.deleteSync();
+      rethrow;
+    }
   } catch (e) {
     // Migration failed — fall back to opening the existing file (plain or
     // otherwise) and let drift surface a real error if it can't be read.
-    plain?.dispose();
+    plain?.close();
     if (tmpFile.existsSync()) tmpFile.deleteSync();
     // Intentionally swallow: the caller will open the DB and report issues.
   }

@@ -24,19 +24,21 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
   var _isLoading = true;
   String? _error;
 
-  /// Only hosts in this set may render inside the WebView. Anything else
-  /// (ads, redirects, OAuth, etc.) is blocked and handed to the external
-  /// browser so untrusted content can't run in-process.
-  static final _allowedHosts = {
-    Uri.parse(LegalUrls.base).host,
-  };
+  /// Only the LegalUrls.base origin (HTTPS + matching port + host/subdomain)
+  /// may render inside the WebView. Anything else is blocked and handed to
+  /// the external browser so untrusted content can't run in-process.
+  static final _allowedBase = Uri.parse(LegalUrls.base);
 
   bool _isAllowed(Uri uri) {
-    final host = uri.host;
-    for (final allowed in _allowedHosts) {
-      if (host == allowed || host.endsWith('.$allowed')) return true;
-    }
-    return false;
+    if (uri.scheme.toLowerCase() != 'https') return false;
+
+    final allowedPort = _allowedBase.hasPort ? _allowedBase.port : 443;
+    final uriPort = uri.hasPort ? uri.port : 443;
+    if (uriPort != allowedPort) return false;
+
+    final host = uri.host.toLowerCase();
+    final allowed = _allowedBase.host.toLowerCase();
+    return host == allowed || host.endsWith('.$allowed');
   }
 
   @override
@@ -93,7 +95,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
                   mode: LaunchMode.externalApplication);
               return NavigationDecision.prevent;
             }
-            return NavigationDecision.allow;
+            return NavigationDecision.navigate;
           },
         ),
       )

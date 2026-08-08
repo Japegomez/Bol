@@ -47,11 +47,17 @@ class RecipeShareRepository {
   /// Revokes (deletes) all active private share links for a recipe. Only the
   /// owner can call this (enforced by the recipe_share_links_delete_owner
   /// RLS policy). After this, existing share URLs stop resolving.
+  ///
+  /// Throws [StateError] when no link was deleted (none existed or RLS denied).
   Future<void> revokePrivateShareLinks(String recipeId) async {
-    await supabase
+    final deleted = await supabase
         .from('recipe_share_links')
         .delete()
-        .eq('recipe_id', recipeId);
+        .eq('recipe_id', recipeId)
+        .select('id');
+    if (deleted.isEmpty) {
+      throw StateError('no_active_share_link');
+    }
   }
 
   /// Fetches the full recipe payload for a private share token via the

@@ -9,6 +9,9 @@
 --  * Enforce a 1-second minimum interval between any attempts.
 --  * Lengthen newly generated invite codes from 6 to 8 characters
 --    (generate_invite_code default). Existing codes keep their length.
+--  * Invalid-code failures RETURN NULL (after persisting the attempt) so the
+--    counter is committed; lockout/throttle still RAISE (read-only checks on
+--    already-committed state). Callers treat NULL as an invalid invite code.
 
 CREATE TABLE IF NOT EXISTS public.household_join_attempts (
   user_id        uuid PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -21,7 +24,8 @@ ALTER TABLE public.household_join_attempts ENABLE ROW LEVEL SECURITY;
 -- SECURITY DEFINER join_household RPC (which bypasses RLS). Clients cannot
 -- read or write it directly.
 
-CREATE OR REPLACE FUNCTION public.generate_invite_code(code_length int DEFAULT 8)
+DROP FUNCTION IF EXISTS public.generate_invite_code(int);
+CREATE FUNCTION public.generate_invite_code(code_length int DEFAULT 8)
 RETURNS text
 LANGUAGE plpgsql
 AS $$
@@ -58,25 +62,24 @@ BEGIN
     RAISE EXCEPTION 'Invite code is required';
   END IF;
 
-  -- Load (or start) the user's attempt record.
-  SELECT * INTO attempt
-  FROM public.household_join_attempts a
-  WHERE a.user_id = current_user_id
-  FOR UPDATE;
+  -- Upsert + row lock in one statement. New rows start with last_attempt_at
+  -- one second in the past so the first attempt is not throttled.
+  INSERT INTO public.household_join_attempts (user_id, last_attempt_at, failed_count)
+  VALUES (current_user_id, now() - interval '1 second', 0)
+  ON CONFLICT (user_id) DO UPDATE
+    SET user_id = EXCLUDED.user_id
+  RETURNING * INTO attempt;
 
-  IF attempt.user_id IS NULL THEN
-    INSERT INTO public.household_join_attempts (user_id)
-    VALUES (current_user_id)
+  -- Reset the failure window once it has elapsed (persist to the table).
+  IF attempt.failed_count >= 5
+     AND attempt.last_attempt_at < now() - interval '5 minutes' THEN
+    UPDATE public.household_join_attempts
+    SET failed_count = 0
+    WHERE user_id = current_user_id
     RETURNING * INTO attempt;
   END IF;
 
-  -- Reset the failure window once it has elapsed.
-  IF attempt.failed_count >= 5
-     AND attempt.last_attempt_at < now() - interval '5 minutes' THEN
-    attempt.failed_count := 0;
-  END IF;
-
-  -- Lock out after 5 recent failures.
+  -- Lock out after 5 recent failures (read-only; prior failures already committed).
   IF attempt.failed_count >= 5 THEN
     locked_until := attempt.last_attempt_at + interval '5 minutes';
     RAISE EXCEPTION 'Too many attempts, try again after %',
@@ -94,12 +97,13 @@ BEGIN
   WHERE upper(h.invite_code) = upper(trim(code));
 
   IF target_household_id IS NULL THEN
-    -- Record the failed attempt.
+    -- Persist the failure, then return NULL so the update commits.
+    -- Callers treat NULL as an invalid invite code.
     UPDATE public.household_join_attempts
     SET last_attempt_at = now(),
         failed_count = attempt.failed_count + 1
     WHERE user_id = current_user_id;
-    RAISE EXCEPTION 'Invalid invite code';
+    RETURN NULL;
   END IF;
 
   IF EXISTS (
@@ -122,4 +126,5 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.join_household(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.join_household(text) TO authenticated;

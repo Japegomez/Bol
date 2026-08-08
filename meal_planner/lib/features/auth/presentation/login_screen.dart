@@ -53,10 +53,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on AuthCancelledException {
       // User dismissed the provider sheet — no error banner.
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      if (mounted) setState(() => _errorMessage = e.message);
     } catch (_) {
       // Don't surface raw exception details; show a generic message.
-      setState(() => _errorMessage = l10n.genericErrorMessage);
+      if (mounted) setState(() => _errorMessage = l10n.genericErrorMessage);
     } finally {
       ref.read(authOperationInProgressProvider.notifier).state = false;
       if (mounted) setState(() => _isLoading = false);

@@ -696,6 +696,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get shareLinkRevoked => 'Link revocato';
 
   @override
+  String get noActiveShareLink => 'Nessun link attivo da revocare';
+
+  @override
   String get clearListTooltip => 'Svuota lista';
 
   @override

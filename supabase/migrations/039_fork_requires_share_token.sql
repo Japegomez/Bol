@@ -146,4 +146,5 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.fork_recipe_into_my_book(uuid, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.fork_recipe_into_my_book(uuid, text) TO authenticated;

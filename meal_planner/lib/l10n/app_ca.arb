@@ -225,6 +225,7 @@
   "revokeShareLinkConfirm": "Això invalidarà l'enllaç privat actual. Qui tingui l'enllaç ja no podrà obrir aquesta recepta.",
   "revoke": "Revoca",
   "shareLinkRevoked": "Enllaç revocat",
+  "noActiveShareLink": "No hi ha cap enllaç actiu per revocar",
   "clearListTooltip": "Netejar llista",
   "shoppingListLoadError": "No s'ha pogut carregar la llista: {error}",
   "shoppingListEmpty": "La teva llista està buida",

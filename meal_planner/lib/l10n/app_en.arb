@@ -301,6 +301,7 @@
   "revokeShareLinkConfirm": "This will invalidate the current private share link. Anyone who has the link will no longer be able to open this recipe.",
   "revoke": "Revoke",
   "shareLinkRevoked": "Share link revoked",
+  "noActiveShareLink": "No active share link to revoke",
   "clearListTooltip": "Clear list",
   "shoppingListLoadError": "Could not load the list: {error}",
   "@shoppingListLoadError": {

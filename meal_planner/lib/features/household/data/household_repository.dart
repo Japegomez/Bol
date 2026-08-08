@@ -36,10 +36,14 @@ class HouseholdRepository {
   }
 
   Future<HouseholdMember> joinHousehold(String code) async {
-    final data = await supabase.rpc<Map<String, dynamic>>(
+    final data = await supabase.rpc<Map<String, dynamic>?>(
       'join_household',
       params: {'code': code.trim()},
     );
+    // Invalid invite codes return NULL so attempt tracking can commit.
+    if (data == null) {
+      throw Exception('Invalid invite code');
+    }
     return HouseholdMember.fromJson(data);
   }
 

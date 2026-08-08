@@ -85,8 +85,16 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             sharedToken: widget.sharedToken,
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Center(child: Text(l10n.errorWithMessage('$error'))),
+          error: (error, _) {
+            final raw = '$error';
+            final lower = raw.toLowerCase();
+            final message = lower.contains('expired')
+                ? l10n.shareLinkExpired
+                : lower.contains('invalid share')
+                    ? l10n.shareLinkInvalid
+                    : l10n.errorWithMessage(raw);
+            return Center(child: Text(message));
+          },
         ),
       );
     }
@@ -350,6 +358,14 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.shareLinkRevoked)),
+      );
+    } on StateError catch (e) {
+      if (!mounted) return;
+      final message = e.message.contains('no_active_share_link')
+          ? context.l10n.noActiveShareLink
+          : context.l10n.errorWithMessage('$e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
       );
     } catch (e) {
       if (!mounted) return;

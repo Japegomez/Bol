@@ -658,7 +658,7 @@ class RecipesRepository {
       'fork_recipe_into_my_book',
       params: {
         'p_source_recipe_id': sourceRecipeId,
-        if (shareToken != null) 'p_share_token': shareToken,
+        'p_share_token': ?shareToken,
       },
     );
     final id = newId.toString();

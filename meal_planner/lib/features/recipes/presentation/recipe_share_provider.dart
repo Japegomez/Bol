@@ -8,8 +8,8 @@ final recipeShareRepositoryProvider = Provider<RecipeShareRepository>((ref) {
 
 /// Full recipe payload for a private share token, fetched via the
 /// token-gated `get_shared_recipe` RPC. Used by the recipe detail screen
-/// when opened from a private share link (`?shared=<token>`).
+/// when opened from a private share link. Auto-disposes when no longer watched.
 final sharedRecipeDetailProvider =
-    FutureProvider.family<RecipeDetail, String>((ref, token) async {
+    FutureProvider.autoDispose.family<RecipeDetail, String>((ref, token) async {
   return ref.read(recipeShareRepositoryProvider).fetchSharedRecipe(token);
 });

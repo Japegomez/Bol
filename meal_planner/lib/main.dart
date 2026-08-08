@@ -66,6 +66,7 @@ const _sensitiveKeyFragments = [
   'cookie',
   'apikey',
   'api_key',
+  'api-key',
   'secret',
   'access_token',
   'refresh_token',
@@ -80,7 +81,7 @@ bool _isSensitiveKey(String key) {
 /// event (request headers and breadcrumb data) while preserving the rest
 /// of the report for diagnosis. Only mutates map values in place, so it
 /// doesn't depend on protocol field setters.
-SentryEvent? _scrubSentryEvent(SentryEvent event) {
+SentryEvent? _scrubSentryEvent(SentryEvent event, Hint hint) {
   final request = event.request;
   final headers = request?.headers;
   if (headers != null) {

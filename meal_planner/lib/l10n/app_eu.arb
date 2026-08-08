@@ -225,6 +225,7 @@
   "revokeShareLinkConfirm": "Uneko esteka pribatua baliogabetuko du. Esteka duenak ezin izango du errezeta hau ireki.",
   "revoke": "Ezeztatu",
   "shareLinkRevoked": "Esteka ezeztatuta",
+  "noActiveShareLink": "Ez dago ezeztatzeko esteka aktiborik",
   "clearListTooltip": "Garbitu zerrenda",
   "shoppingListLoadError": "Ezin izan da zerrenda kargatu: {error}",
   "shoppingListEmpty": "Zure zerrenda hutsik dago",

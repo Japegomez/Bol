@@ -698,6 +698,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get shareLinkRevoked => 'Enllaç revocat';
 
   @override
+  String get noActiveShareLink => 'No hi ha cap enllaç actiu per revocar';
+
+  @override
   String get clearListTooltip => 'Netejar llista';
 
   @override
