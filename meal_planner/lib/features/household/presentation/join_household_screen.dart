@@ -27,8 +27,7 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
   @override
   void initState() {
     super.initState();
-    final seed = (widget.initialCode ?? '').trim().toUpperCase();
-    final initial = seed.length > 6 ? seed.substring(0, 6) : seed;
+    final initial = (widget.initialCode ?? '').trim().toUpperCase();
     _codeController = TextEditingController(text: initial);
   }
 
