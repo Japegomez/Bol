@@ -402,6 +402,18 @@ abstract class AppLocalizations {
   /// **'Minimum 6 characters'**
   String get minSixCharacters;
 
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordTooShort;
+
+  /// No description provided for @passwordTooWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must include both letters and numbers'**
+  String get passwordTooWeak;
+
   /// No description provided for @confirmPasswordLabel.
   ///
   /// In en, this message translates to:
@@ -1338,6 +1350,30 @@ abstract class AppLocalizations {
   /// **'This share link is invalid'**
   String get shareLinkInvalid;
 
+  /// No description provided for @revokeShareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke share link'**
+  String get revokeShareLink;
+
+  /// No description provided for @revokeShareLinkConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will invalidate the current private share link. Anyone who has the link will no longer be able to open this recipe.'**
+  String get revokeShareLinkConfirm;
+
+  /// No description provided for @revoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke'**
+  String get revoke;
+
+  /// No description provided for @shareLinkRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Share link revoked'**
+  String get shareLinkRevoked;
+
   /// No description provided for @clearListTooltip.
   ///
   /// In en, this message translates to:
@@ -1751,6 +1787,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You already belong to this household'**
   String get alreadyMember;
+
+  /// No description provided for @tooManyAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please try again in a few minutes.'**
+  String get tooManyAttempts;
+
+  /// No description provided for @pleaseWaitMoment.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait a moment before trying again.'**
+  String get pleaseWaitMoment;
+
+  /// No description provided for @genericErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get genericErrorMessage;
 
   /// No description provided for @codeMustBeSixChars.
   ///

@@ -163,6 +163,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get minSixCharacters => 'Mínimo 6 caracteres';
 
   @override
+  String get passwordTooShort => 'La contraseña debe tener al menos 8 caracteres';
+
+  @override
+  String get passwordTooWeak => 'La contraseña debe incluir letras y números';
+
+  @override
   String get confirmPasswordLabel => 'Confirmar contraseña';
 
   @override
@@ -681,6 +687,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shareLinkInvalid => 'Este enlace no es válido';
 
   @override
+  String get revokeShareLink => 'Revocar enlace de compartir';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'Esto invalidará el enlace privado actual. Quien tenga el enlace ya no podrá abrir esta receta.';
+
+  @override
+  String get revoke => 'Revocar';
+
+  @override
+  String get shareLinkRevoked => 'Enlace revocado';
+
+  @override
   String get clearListTooltip => 'Limpiar lista';
 
   @override
@@ -914,6 +933,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get alreadyMember => 'Ya perteneces a este hogar';
+
+  @override
+  String get tooManyAttempts => 'Demasiados intentos. Inténtalo de nuevo en unos minutos.';
+
+  @override
+  String get pleaseWaitMoment => 'Espera un momento antes de volver a intentarlo.';
+
+  @override
+  String get genericErrorMessage => 'Algo salió mal. Inténtalo de nuevo.';
 
   @override
   String get codeMustBeSixChars => 'El código debe tener 6 caracteres';

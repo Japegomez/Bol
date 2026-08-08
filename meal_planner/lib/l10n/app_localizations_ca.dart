@@ -162,6 +162,12 @@ class AppLocalizationsCa extends AppLocalizations {
   String get minSixCharacters => 'Mínim 6 caràcters';
 
   @override
+  String get passwordTooShort => 'La contrasenya ha de tenir almenys 8 caràcters';
+
+  @override
+  String get passwordTooWeak => 'La contrasenya ha d\'incloure lletres i números';
+
+  @override
   String get confirmPasswordLabel => 'Confirmar contrasenya';
 
   @override
@@ -679,6 +685,19 @@ class AppLocalizationsCa extends AppLocalizations {
   String get shareLinkInvalid => 'Aquest enllaç no és vàlid';
 
   @override
+  String get revokeShareLink => 'Revoca l\'enllaç de compartir';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'Això invalidarà l\'enllaç privat actual. Qui tingui l\'enllaç ja no podrà obrir aquesta recepta.';
+
+  @override
+  String get revoke => 'Revoca';
+
+  @override
+  String get shareLinkRevoked => 'Enllaç revocat';
+
+  @override
   String get clearListTooltip => 'Netejar llista';
 
   @override
@@ -912,6 +931,15 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get alreadyMember => 'Ja pertanyes a aquesta llar';
+
+  @override
+  String get tooManyAttempts => 'Massa intents. Torna-ho a provar d\'aquí a uns minuts.';
+
+  @override
+  String get pleaseWaitMoment => 'Espera un moment abans de tornar-ho a provar.';
+
+  @override
+  String get genericErrorMessage => 'Alguna cosa ha fallat. Torna-ho a provar.';
 
   @override
   String get codeMustBeSixChars => 'El codi ha de tenir 6 caràcters';
