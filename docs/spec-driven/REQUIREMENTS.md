@@ -614,7 +614,7 @@ Migraciones `013_social` y `014_recipe_forked_from`. Feature en `lib/features/so
   - **Compartir:** enlace HTTPS + texto (sin adjuntar foto). Landing `share-landing` publica HTML de título en Storage (solo CTA **Instalar la app**; sin “Abrir en Böl”). Firebase Hosting redirige `/r/*`, `/p/*` y `/h/*`. Migraciones `025`, `032`, `034`, `036` (OG de invitación al hogar).
   - En app: `ShareUrls` (base Firebase Hosting; también `householdInviteLink`); pending link en memoria + `SharedPreferences`; tests `share_urls_test.dart`.
 
-```
+```text
 /share/r/:token           → Resolver enlace privado → /home/recipes/:id
 /p/:id                    → Redirect → /home/explore/:id
 /r/:token                 → Redirect → /share/r/:token
