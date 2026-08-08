@@ -49,7 +49,7 @@
 - [x] Instalar dependencias base (`supabase_flutter`, `flutter_riverpod`, `go_router`)
   - También instaladas: Sentry, Firebase Analytics, logger, secure storage, connectivity, upgrader, in_app_review, google_sign_in, sign_in_with_apple
 - [x] Crear repositorio en GitHub y primer commit
-  - Remote `origin` → `https://github.com/Japegomez/meal_planner.git`
+  - Remote `origin` → `https://github.com/Japegomez/Bol.git`
 - [x] Configurar GitHub Actions básico (análisis estático + `flutter test` en cada PR)
   - Comando: `flutter analyze --fatal-infos lib test` (solo código de la app, no `build/`)
 - [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`)
@@ -172,7 +172,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Firma Android en Gradle (`CM_KEYSTORE_*` + ref `meal_planner_keystore`)
 - [x] Firebase commiteado (sin grupo env)
 - [x] Fix `flutter analyze` en CI/CD: `lib test` + `--fatal-infos` + `flutter clean` (Android e iOS)
-- [x] Merge PR [#4](https://github.com/Japegomez/meal_planner/pull/4) (`develop` → `main`)
+- [x] Merge PR [#4](https://github.com/Japegomez/Bol/pull/4) (`develop` → `main`)
 
 #### Codemagic y consolas (manual)
 
