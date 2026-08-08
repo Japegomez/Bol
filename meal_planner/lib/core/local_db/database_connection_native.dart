@@ -125,17 +125,25 @@ Future<void> _migratePlaintextToEncrypted(File file, String key) async {
   final backupFile = File(backupPath);
   if (await backupFile.exists()) await backupFile.delete();
 
+  // Promote the encrypted database. If this fails, roll back.
   try {
     await file.rename(backupPath);
     await tmpFile.rename(file.path);
-    await backupFile.delete();
-    await _deleteSidecars(File(backupPath));
   } catch (_) {
     if (!await file.exists() && await backupFile.exists()) {
       await backupFile.rename(file.path);
     }
     if (await tmpFile.exists()) await tmpFile.delete();
     rethrow;
+  }
+
+  // Migration successful. Clean up the old backup and stale sidecars.
+  // If cleanup fails, just log a warning — don't fail the migration.
+  try {
+    await backupFile.delete();
+    await _deleteSidecars(file);
+  } catch (e, st) {
+    log.w('Failed to clean up after DB migration: $e', error: e, stackTrace: st);
   }
 }
 
