@@ -2,7 +2,7 @@
 
 <img src="meal_planner/web/icons/Icon-512.png" alt="Böl logo" width="180"/>
 
-# 🍲 Böl
+# Böl
 
 ### Planifica tu semana. Comparte tu recetario. Cocina mejor.
 
