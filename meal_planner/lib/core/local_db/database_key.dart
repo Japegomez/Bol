@@ -13,6 +13,9 @@ abstract final class DatabaseKey {
   static const _key = 'meal_planner.db_key';
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
   );
 
   static String? _cached;
