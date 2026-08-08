@@ -518,7 +518,6 @@ async function callLlm(
 
     const body: Record<string, unknown> = {
       model,
-      temperature: 0.4,
       max_tokens: effectiveMax,
       messages: [
         { role: "system", content: systemPrompt },
@@ -728,7 +727,23 @@ function parseRecipeImage(
     return "invalid";
   }
 
-  return { mimeType: mimeRaw, base64: rawBase64.replace(/\s+/g, "") };
+  const cleaned = rawBase64.replace(/\s+/g, "");
+  // Validate base64 structure: length must be a multiple of 4, padding must be
+  // well-formed (0–2 '=' only at the end), and the payload must be non-empty.
+  if (cleaned.length === 0 || cleaned.length % 4 !== 0) {
+    return "invalid";
+  }
+  const paddingMatch = cleaned.match(/=+$/);
+  const padding = paddingMatch ? paddingMatch[0].length : 0;
+  if (padding > 2) {
+    return "invalid";
+  }
+  // Padding chars may only appear at the very end; reject interior '='.
+  if (padding > 0 && cleaned.slice(0, cleaned.length - padding).includes("=")) {
+    return "invalid";
+  }
+
+  return { mimeType: mimeRaw, base64: cleaned };
 }
 
 const NUTRITION_SYSTEM_PROMPT = `You are a nutrition assistant for a meal planning app. Given a recipe title, servings count, and ingredient list, estimate the nutritional information PER SERVING.
