@@ -26,8 +26,6 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>$(PRODUCT_COPYRIGHT)</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Böl needs camera access to photograph recipes for the AI assistant and recipe photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Böl needs photo library access to attach recipe images to the AI assistant and recipe photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
