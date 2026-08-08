@@ -104,12 +104,97 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ── Target language allowlist (ISO 639-1 codes we support) ───────────────
+    const ALLOWED_TARGET_LANGS = new Set([
+      "es", "en", "ca", "eu", "gl", "pt", "it", "fr", "de",
+    ]);
+    if (typeof targetLang !== "string" || !ALLOWED_TARGET_LANGS.has(targetLang)) {
+      return new Response(
+        JSON.stringify({ error: "Unsupported target language" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const adminClient = createClient(supabaseUrl, serviceKey);
+
+    // ── Authenticate the caller and enforce per-user/global quota ───────────
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userData.user.id;
+
+    const dailyLimit = Number(Deno.env.get("AI_ASSISTANT_DAILY_LIMIT") ?? "20");
+    const minInterval = Number(
+      Deno.env.get("AI_ASSISTANT_MIN_INTERVAL_SECONDS") ?? "3",
+    );
+    const globalLimitRaw = Deno.env.get("AI_ASSISTANT_GLOBAL_DAILY_LIMIT");
+    const globalLimit = globalLimitRaw ? Number(globalLimitRaw) : null;
+
+    if (!Number.isFinite(dailyLimit) || dailyLimit <= 0) {
+      console.error("Invalid AI_ASSISTANT_DAILY_LIMIT:", dailyLimit);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!Number.isFinite(minInterval) || minInterval < 0) {
+      console.error("Invalid AI_ASSISTANT_MIN_INTERVAL_SECONDS:", minInterval);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (globalLimit !== null && (!Number.isFinite(globalLimit) || globalLimit <= 0)) {
+      console.error("Invalid AI_ASSISTANT_GLOBAL_DAILY_LIMIT:", globalLimit);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const { data: quotaRows, error: quotaError } = await adminClient
+      .rpc("check_and_increment_ai_usage", {
+        p_user_id: userId,
+        p_daily_limit: dailyLimit,
+        p_min_interval_seconds: minInterval,
+        p_global_daily_limit: globalLimit,
+      });
+
+    type QuotaRow = {
+      allowed: boolean;
+      reason: string | null;
+      remaining: number;
+      retry_after_seconds: number;
+    };
+
+    if (quotaError || !quotaRows || (quotaRows as QuotaRow[]).length === 0) {
+      console.error("quota check error:", quotaError);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const quota = (quotaRows as QuotaRow[])[0];
+    if (!quota.allowed) {
+      const status = quota.reason === "service_at_capacity" ? 503 : 429;
+      return new Response(
+        JSON.stringify({ error: quota.reason }),
+        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const { data: recipe, error: recipeError } = await userClient
       .from("recipes")
@@ -181,6 +266,16 @@ Deno.serve(async (req) => {
       ...ingredientNames,
       ...stepDescriptions,
     ];
+
+    // ── Size cap: reject payloads that would cost too much in one call ──────
+    const MAX_TRANSLATE_CHARS = 10_000;
+    const totalChars = textsToTranslate.reduce((n, t) => n + t.length, 0);
+    if (totalChars > MAX_TRANSLATE_CHARS) {
+      return new Response(
+        JSON.stringify({ error: "Recipe too large to translate" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const translated = await translateTexts(
       apiKey,

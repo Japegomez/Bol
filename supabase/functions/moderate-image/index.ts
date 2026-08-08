@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const VISION_URL = "https://vision.googleapis.com/v1/images:annotate";
 
@@ -38,12 +39,101 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// ── Quota result shape returned by check_and_increment_ai_usage ──────────────
+type QuotaRow = {
+  allowed: boolean;
+  reason: string | null;
+  remaining: number;
+  retry_after_seconds: number;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // ── Authenticate the caller and enforce per-user/global quota ────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const userId = userData.user.id;
+
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
+    const dailyLimit = Number(Deno.env.get("AI_ASSISTANT_DAILY_LIMIT") ?? "20");
+    const minInterval = Number(
+      Deno.env.get("AI_ASSISTANT_MIN_INTERVAL_SECONDS") ?? "3",
+    );
+    const globalLimitRaw = Deno.env.get("AI_ASSISTANT_GLOBAL_DAILY_LIMIT");
+    const globalLimit = globalLimitRaw ? Number(globalLimitRaw) : null;
+
+    if (!Number.isFinite(dailyLimit) || dailyLimit <= 0) {
+      console.error("Invalid AI_ASSISTANT_DAILY_LIMIT:", dailyLimit);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!Number.isFinite(minInterval) || minInterval < 0) {
+      console.error("Invalid AI_ASSISTANT_MIN_INTERVAL_SECONDS:", minInterval);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (globalLimit !== null && (!Number.isFinite(globalLimit) || globalLimit <= 0)) {
+      console.error("Invalid AI_ASSISTANT_GLOBAL_DAILY_LIMIT:", globalLimit);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const { data: quotaRows, error: quotaError } = await adminClient
+      .rpc("check_and_increment_ai_usage", {
+        p_user_id: userId,
+        p_daily_limit: dailyLimit,
+        p_min_interval_seconds: minInterval,
+        p_global_daily_limit: globalLimit,
+      });
+
+    if (quotaError || !quotaRows || (quotaRows as QuotaRow[]).length === 0) {
+      console.error("quota check error:", quotaError);
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const quota = (quotaRows as QuotaRow[])[0];
+    if (!quota.allowed) {
+      const status = quota.reason === "service_at_capacity" ? 503 : 429;
+      return new Response(
+        JSON.stringify({ error: quota.reason }),
+        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const apiKey = Deno.env.get("GOOGLE_API_KEY");
     if (!apiKey) {
       return new Response(
@@ -103,19 +193,9 @@ Deno.serve(async (req) => {
     if (!visionRes.ok) {
       const errText = await visionRes.text();
       console.error("Vision API HTTP error:", visionRes.status, errText);
-      let detail: string | undefined;
-      try {
-        const parsed = JSON.parse(errText);
-        detail = parsed?.error?.message;
-      } catch {
-        detail = errText.slice(0, 200);
-      }
+      // Don't reflect upstream error details to the client.
       return new Response(
-        JSON.stringify({
-          error: "Vision API failed",
-          status: visionRes.status,
-          detail,
-        }),
+        JSON.stringify({ error: "Vision API failed" }),
         {
           status: 502,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -134,11 +214,7 @@ Deno.serve(async (req) => {
         visionError.message,
       );
       return new Response(
-        JSON.stringify({
-          error: "Vision API failed",
-          code: visionError.code,
-          detail: visionError.message,
-        }),
+        JSON.stringify({ error: "Vision API failed" }),
         {
           status: 502,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

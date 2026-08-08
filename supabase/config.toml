@@ -1,0 +1,23 @@
+# Supabase project configuration.
+#
+# This file makes the `verify_jwt` posture of every edge function explicit so
+# it can be reviewed at a glance. By default Supabase requires a valid JWT for
+# function invocations; only `share-landing` is intentionally public because
+# it renders OG preview HTML for link unfurlers (crawlers have no JWT). It
+# uses the service role key internally and exposes no user data beyond the
+# recipe title.
+
+[functions.moderate-image]
+verify_jwt = true
+
+[functions.recipe-assistant]
+verify_jwt = true
+
+[functions.translate-recipe]
+verify_jwt = true
+
+[functions.translate-titles]
+verify_jwt = true
+
+[functions.share-landing]
+verify_jwt = false
