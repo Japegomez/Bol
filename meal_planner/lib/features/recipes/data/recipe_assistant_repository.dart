@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
@@ -17,13 +19,38 @@ const recipeAssistantOfflineKey = 'recipeAssistantOffline';
 const recipeAssistantNotConfiguredKey = 'recipeAssistantNotConfigured';
 const recipeAssistantTimeoutKey = 'recipeAssistantTimeout';
 const recipeAssistantPromptTooLongKey = 'recipeAssistantPromptTooLong';
+const recipeAssistantMissingInputKey = 'recipeAssistantMissingInput';
+const recipeAssistantImageTooLargeKey = 'recipeAssistantImageTooLarge';
+const recipeAssistantInvalidImageKey = 'recipeAssistantInvalidImage';
 
 /// Maximum characters allowed in the recipe assistant prompt.
 const maxRecipeAssistantPromptLength = 3000;
 
+/// Max raw image bytes after client-side pick/compress (~1 MB).
+const maxRecipeAssistantImageBytes = 1024 * 1024;
+
+const _allowedImageMimeTypes = {'image/jpeg', 'image/png', 'image/webp'};
+
 /// Client timeouts aligned with the Edge Function budget (~240s total).
 const _recipeGenerationTimeout = Duration(seconds: 210);
 const _nutritionGenerationTimeout = Duration(seconds: 200);
+
+/// Input from the recipe assistant prompt sheet (text and/or one image).
+class RecipeAssistantPromptInput {
+  const RecipeAssistantPromptInput({
+    this.prompt = '',
+    this.imageBytes,
+    this.imageMimeType,
+  });
+
+  final String prompt;
+  final Uint8List? imageBytes;
+  final String? imageMimeType;
+
+  bool get hasText => prompt.trim().isNotEmpty;
+  bool get hasImage => imageBytes != null && imageBytes!.isNotEmpty;
+  bool get hasContent => hasText || hasImage;
+}
 
 class GeneratedRecipeResult {
   const GeneratedRecipeResult({
@@ -35,20 +62,54 @@ class GeneratedRecipeResult {
   final String sourceLang;
 }
 
+/// Validates prompt/image before calling the edge function.
+/// Returns an error localization key, or `null` if valid.
+String? validateRecipeAssistantInput(RecipeAssistantPromptInput input) {
+  final trimmed = input.prompt.trim();
+  if (trimmed.isEmpty && !input.hasImage) {
+    return recipeAssistantMissingInputKey;
+  }
+  if (trimmed.length > maxRecipeAssistantPromptLength) {
+    return recipeAssistantPromptTooLongKey;
+  }
+  if (!input.hasImage) return null;
+
+  final mime = (input.imageMimeType ?? '').toLowerCase().trim();
+  if (!_allowedImageMimeTypes.contains(mime)) {
+    return recipeAssistantInvalidImageKey;
+  }
+  if (input.imageBytes!.length > maxRecipeAssistantImageBytes) {
+    return recipeAssistantImageTooLargeKey;
+  }
+  return null;
+}
+
+/// Builds the JSON body for `generate_recipe` (testable without network).
+Map<String, dynamic> buildGenerateRecipeBody(RecipeAssistantPromptInput input) {
+  final body = <String, dynamic>{
+    'mode': 'generate_recipe',
+    'prompt': input.prompt.trim(),
+  };
+  if (input.hasImage) {
+    body['imageBase64'] = base64Encode(input.imageBytes!);
+    body['imageMimeType'] = input.imageMimeType!.toLowerCase().trim();
+  }
+  return body;
+}
+
 class RecipeAssistantRepository {
-  Future<GeneratedRecipeResult> generateRecipe(String prompt) async {
+  Future<GeneratedRecipeResult> generateRecipe(
+    RecipeAssistantPromptInput input,
+  ) async {
     await _ensureOnline();
 
-    final trimmed = prompt.trim();
-    if (trimmed.length > maxRecipeAssistantPromptLength) {
-      throw Exception(recipeAssistantPromptTooLongKey);
+    final validationError = validateRecipeAssistantInput(input);
+    if (validationError != null) {
+      throw Exception(validationError);
     }
 
     final data = await _invoke(
-      body: {
-        'mode': 'generate_recipe',
-        'prompt': trimmed,
-      },
+      body: buildGenerateRecipeBody(input),
       timeout: _recipeGenerationTimeout,
     );
 
@@ -156,6 +217,15 @@ String mapRecipeAssistantFunctionError(int status, dynamic details) {
   }
   if (errorCode == 'prompt_too_long') {
     return recipeAssistantPromptTooLongKey;
+  }
+  if (errorCode == 'missing_input' || errorCode == 'missing_prompt') {
+    return recipeAssistantMissingInputKey;
+  }
+  if (errorCode == 'image_too_large') {
+    return recipeAssistantImageTooLargeKey;
+  }
+  if (errorCode == 'invalid_image') {
+    return recipeAssistantInvalidImageKey;
   }
   if (errorCode == 'too_fast') {
     return recipeAssistantTooFastKey;

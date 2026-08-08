@@ -35,6 +35,11 @@
         "source": "/p/:recipeId",
         "destination": "https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/p/:recipeId",
         "type": 302
+      },
+      {
+        "source": "/h/:code",
+        "destination": "https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/h/:code",
+        "type": 302
       }
     ],
     "rewrites": [

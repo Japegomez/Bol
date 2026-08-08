@@ -67,6 +67,48 @@ void main() {
         ShareUrls.appLocationForIncomingUri(Uri.parse('bol://r/tok')),
         '/share/r/tok',
       );
+      expect(
+        ShareUrls.appLocationForIncomingUri(Uri.parse('bol://h/ABC123')),
+        '/home/profile/household/join?code=ABC123',
+      );
+    });
+
+    test('maps household invite Hosting URL', () {
+      final uri = Uri.parse('https://mealplanner-a818e.web.app/h/ABC123');
+      expect(
+        ShareUrls.appLocationForIncomingUri(uri),
+        '/home/profile/household/join?code=ABC123',
+      );
+    });
+
+    test('maps household invite path-only and storage OG URLs', () {
+      expect(
+        ShareUrls.appLocationForIncomingUri(Uri.parse('/h/ABC123')),
+        '/home/profile/household/join?code=ABC123',
+      );
+      expect(
+        ShareUrls.appLocationForIncomingUri(
+          Uri.parse(
+            'https://hxtynisikjpwlvpdgdbt.supabase.co/storage/v1/object/public/share-og/h/ABC123.html',
+          ),
+        ),
+        '/home/profile/household/join?code=ABC123',
+      );
+      expect(
+        ShareUrls.appLocationForIncomingUri(
+          Uri.parse(
+            'https://hxtynisikjpwlvpdgdbt.supabase.co/functions/v1/share-landing/h/ABC123',
+          ),
+        ),
+        '/home/profile/household/join?code=ABC123',
+      );
+    });
+
+    test('builds household invite link', () {
+      expect(
+        ShareUrls.householdInviteLink('ABC123'),
+        'https://mealplanner-a818e.web.app/h/ABC123',
+      );
     });
 
     test('ignores unrelated hosts and paths', () {

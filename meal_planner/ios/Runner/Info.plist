@@ -57,6 +57,14 @@
 	<string>864663285485-fo1tb729sp0h976bqm4ftot7mashkks6.apps.googleusercontent.com</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Böl needs camera access to photograph recipes for the AI assistant and recipe photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Böl needs photo library access to attach recipe images to the AI assistant and recipe photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Böl needs microphone access so you can dictate recipes to the AI assistant.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Böl uses speech recognition to turn your dictation into text for the AI recipe assistant.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

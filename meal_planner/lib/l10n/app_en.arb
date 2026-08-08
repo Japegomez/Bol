@@ -376,11 +376,11 @@
   "myHouseholdTitle": "My household",
   "inviteCode": "Invitation code",
   "inviteViaWhatsApp": "Invite via WhatsApp",
-  "inviteWhatsAppHouseholdMessage": "Hi! Join my household on {appName}. Use this code: {code}",
+  "inviteWhatsAppHouseholdMessage": "Hi! Join my household on {appName}:\n{url}",
   "@inviteWhatsAppHouseholdMessage": {
     "placeholders": {
       "appName": {"type": "String"},
-      "code": {"type": "String"}
+      "url": {"type": "String"}
     }
   },
   "copyTooltip": "Copy",
@@ -595,8 +595,13 @@
   "createRecipeWithAssistant": "Create with AI assistant",
   "createRecipeWithAssistantSubtitle": "Describe the dish and AI will build the recipe card",
   "recipeAssistantTitle": "Recipe assistant",
-  "recipeAssistantDescription": "Tell me what you're craving, what's in your fridge, or describe a detailed recipe with ingredients and steps.",
+  "recipeAssistantDescription": "Tell me what you're craving, what's in your fridge, paste a recipe, attach a photo, or dictate with the microphone.",
   "recipeAssistantPromptHint": "E.g.: Spanish potato omelette for 4 with onion...",
+  "recipeAssistantListening": "Listening…",
+  "recipeAssistantDictate": "Dictate",
+  "recipeAssistantStopDictation": "Stop dictation",
+  "recipeAssistantSpeechUnavailable": "Speech recognition is not available. Enable it in Settings or type your request.",
+  "recipeAssistantSpeechFailed": "Could not recognize speech. Please try again or type your request.",
   "recipeAssistantGenerate": "Generate recipe",
   "recipeAssistantGenerating": "Generating...",
   "recipeAssistantBlockingRecipe": "The assistant is creating your recipe…",
@@ -608,6 +613,9 @@
   "recipeAssistantNotConfigured": "The AI assistant is not configured yet.",
   "recipeAssistantTimeout": "The request took too long. Please try again.",
   "recipeAssistantPromptTooLong": "The recipe description cannot exceed 3,000 characters.",
+  "recipeAssistantMissingInput": "Write a description or attach a recipe photo.",
+  "recipeAssistantImageTooLarge": "The image is too large. Try another photo or take a new one.",
+  "recipeAssistantInvalidImage": "Could not use that image. Try another photo.",
   "recipeAssistantDailyLimitReached": "You have reached your daily assistant limit. Come back tomorrow.",
   "recipeAssistantTooFast": "Please wait a moment before using the assistant again.",
   "recipeAssistantServiceAtCapacity": "The assistant is currently at capacity. Please try again later.",

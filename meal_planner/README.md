@@ -67,6 +67,7 @@ lib/
 
 - **GitHub Actions**: análisis + tests en PRs a `main` / `develop`
 - **Codemagic**: builds Android (AAB) e iOS (IPA) en push a `main` — guía completa en [`docs/CODEMAGIC.md`](../docs/CODEMAGIC.md)
+- **CodeRabbit**: revisión automática de PRs y commits (comentarios, bugs y sugerencias)
 
 ## Supabase
 

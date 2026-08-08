@@ -865,8 +865,8 @@ class AppLocalizationsEu extends AppLocalizations {
   String get inviteViaWhatsApp => 'Gonbidatu WhatsApp bidez';
 
   @override
-  String inviteWhatsAppHouseholdMessage(String appName, String code) {
-    return 'Kaixo! Etorri nire etxera $appName aplikazioan. Erabili kode hau: $code';
+  String inviteWhatsAppHouseholdMessage(String appName, String url) {
+    return 'Kaixo! Etorri nire etxera $appName aplikazioan:\n$url';
   }
 
   @override
@@ -1482,11 +1482,28 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get recipeAssistantDescription =>
-      'Esan iezadazu zer jateko gogoa duzun, hozkailuan zer duzun edo deskribatu osagai eta urratsekin errezeta zehatza.';
+      'Esan iezadazu zer jateko gogoa duzun, hozkailuan zer duzun, itsatsi errezeta bat, erantsi argazki bat edo dikta mikrofonoarekin.';
 
   @override
   String get recipeAssistantPromptHint =>
       'Adib.: patata tortilla 4 pertsonentzat tipulaarekin...';
+
+  @override
+  String get recipeAssistantListening => 'Entzuten…';
+
+  @override
+  String get recipeAssistantDictate => 'Diktatu';
+
+  @override
+  String get recipeAssistantStopDictation => 'Gelditu diktaketa';
+
+  @override
+  String get recipeAssistantSpeechUnavailable =>
+      'Ahots-ezagutza ez dago erabilgarri. Gaitu ezazu Ezarpenetan edo idatzi zure eskaera.';
+
+  @override
+  String get recipeAssistantSpeechFailed =>
+      'Ezin izan da ahotsa ezagutu. Saiatu berriro edo idatzi zure eskaera.';
 
   @override
   String get recipeAssistantGenerate => 'Errezeta sortu';
@@ -1529,6 +1546,18 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get recipeAssistantPromptTooLong =>
       'Errezetaren deskribapenak ezin ditu 3.000 karaktere baino gehiago izan.';
+
+  @override
+  String get recipeAssistantMissingInput =>
+      'Idatzi deskribapen bat edo erantsi errezetaren argazki bat.';
+
+  @override
+  String get recipeAssistantImageTooLarge =>
+      'Irudia handiegia da. Probatu beste argazki batekin edo egin berri bat.';
+
+  @override
+  String get recipeAssistantInvalidImage =>
+      'Ezin izan da irudi hori erabili. Probatu beste argazki batekin.';
 
   @override
   String get recipeAssistantDailyLimitReached =>

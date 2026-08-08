@@ -113,6 +113,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final shareLocation = ShareUrls.appLocationForIncomingUri(state.uri);
       final isIncomingSharePath = state.uri.path.startsWith('/p/') ||
           state.uri.path.startsWith('/r/') ||
+          state.uri.path.startsWith('/h/') ||
           ShareUrls.isShareHost(state.uri.host);
 
       if (shareLocation != null && (isIncomingSharePath || isShareResolve)) {
@@ -165,6 +166,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/r/:token',
         redirect: (_, state) =>
             '/share/r/${state.pathParameters['token']}',
+      ),
+      GoRoute(
+        path: '/h/:code',
+        redirect: (_, state) {
+          final code = state.pathParameters['code']!;
+          return '/home/profile/household/join?code=${Uri.encodeComponent(code)}';
+        },
       ),
       GoRoute(
         path: '/auth/login',
@@ -290,7 +298,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                       ),
                       GoRoute(
                         path: 'join',
-                        builder: (_, _) => const JoinHouseholdScreen(),
+                        builder: (_, state) => JoinHouseholdScreen(
+                          initialCode: state.uri.queryParameters['code'],
+                        ),
                       ),
                     ],
                   ),

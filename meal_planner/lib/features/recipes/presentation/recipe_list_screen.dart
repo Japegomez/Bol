@@ -51,8 +51,8 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
       return;
     }
 
-    final prompt = await showRecipeAssistantPromptSheet(context);
-    if (!mounted || prompt == null) return;
+    final input = await showRecipeAssistantPromptSheet(context);
+    if (!mounted || input == null) return;
 
     try {
       final result = await runWithRecipeAssistantBlockingOverlay(
@@ -60,7 +60,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
         message: context.l10n.recipeAssistantBlockingRecipe,
         task: () => ref
             .read(recipeAssistantRepositoryProvider)
-            .generateRecipe(prompt),
+            .generateRecipe(input),
       );
       ref.read(recipeAssistantDraftProvider.notifier).state =
           RecipeAssistantDraft(

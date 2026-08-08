@@ -4,6 +4,11 @@
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
     <!-- Required for flutter_local_notifications on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Camera for recipe photos and AI assistant image capture -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Native speech-to-text for the recipe assistant -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Böl"
         android:name="${applicationName}"
@@ -46,12 +51,20 @@
                     android:pathPrefix="/p"/>
                 <data
                     android:scheme="https"
+                    android:host="mealplanner-a818e.web.app"
+                    android:pathPrefix="/h/"/>
+                <data
+                    android:scheme="https"
                     android:host="mealplanner-a818e.firebaseapp.com"
                     android:pathPrefix="/r"/>
                 <data
                     android:scheme="https"
                     android:host="mealplanner-a818e.firebaseapp.com"
                     android:pathPrefix="/p"/>
+                <data
+                    android:scheme="https"
+                    android:host="mealplanner-a818e.firebaseapp.com"
+                    android:pathPrefix="/h/"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -79,6 +92,9 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

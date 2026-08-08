@@ -1665,8 +1665,8 @@ abstract class AppLocalizations {
   /// No description provided for @inviteWhatsAppHouseholdMessage.
   ///
   /// In en, this message translates to:
-  /// **'Hi! Join my household on {appName}. Use this code: {code}'**
-  String inviteWhatsAppHouseholdMessage(String appName, String code);
+  /// **'Hi! Join my household on {appName}:\n{url}'**
+  String inviteWhatsAppHouseholdMessage(String appName, String url);
 
   /// No description provided for @copyTooltip.
   ///
@@ -2829,7 +2829,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeAssistantDescription.
   ///
   /// In en, this message translates to:
-  /// **'Tell me what you\'re craving, what\'s in your fridge, or describe a detailed recipe with ingredients and steps.'**
+  /// **'Tell me what you\'re craving, what\'s in your fridge, paste a recipe, attach a photo, or dictate with the microphone.'**
   String get recipeAssistantDescription;
 
   /// No description provided for @recipeAssistantPromptHint.
@@ -2837,6 +2837,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'E.g.: Spanish potato omelette for 4 with onion...'**
   String get recipeAssistantPromptHint;
+
+  /// No description provided for @recipeAssistantListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening…'**
+  String get recipeAssistantListening;
+
+  /// No description provided for @recipeAssistantDictate.
+  ///
+  /// In en, this message translates to:
+  /// **'Dictate'**
+  String get recipeAssistantDictate;
+
+  /// No description provided for @recipeAssistantStopDictation.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop dictation'**
+  String get recipeAssistantStopDictation;
+
+  /// No description provided for @recipeAssistantSpeechUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition is not available. Enable it in Settings or type your request.'**
+  String get recipeAssistantSpeechUnavailable;
+
+  /// No description provided for @recipeAssistantSpeechFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not recognize speech. Please try again or type your request.'**
+  String get recipeAssistantSpeechFailed;
 
   /// No description provided for @recipeAssistantGenerate.
   ///
@@ -2903,6 +2933,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The recipe description cannot exceed 3,000 characters.'**
   String get recipeAssistantPromptTooLong;
+
+  /// No description provided for @recipeAssistantMissingInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a description or attach a recipe photo.'**
+  String get recipeAssistantMissingInput;
+
+  /// No description provided for @recipeAssistantImageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The image is too large. Try another photo or take a new one.'**
+  String get recipeAssistantImageTooLarge;
+
+  /// No description provided for @recipeAssistantInvalidImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not use that image. Try another photo.'**
+  String get recipeAssistantInvalidImage;
 
   /// No description provided for @recipeAssistantDailyLimitReached.
   ///

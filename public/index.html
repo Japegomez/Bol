@@ -48,6 +48,9 @@
         border-radius: 12px;
         font-weight: 600;
       }
+      a.button + a.button {
+        margin-left: 8px;
+      }
       .hint {
         margin-top: 18px;
         font-size: 0.9rem;
@@ -57,8 +60,17 @@
   <body>
     <main>
       <h1>Böl</h1>
-      <p id="message">Abriendo la receta en la app…</p>
-      <a class="button" id="open" href="#">Abrir en Böl</a>
+      <p id="message">Instala Böl para abrir este enlace.</p>
+      <a
+        class="button"
+        id="install-google"
+        href="https://play.google.com/store/apps/details?id=com.japegomez.meal_planner"
+      >Google Play</a>
+      <a
+        class="button"
+        id="install-apple"
+        href="https://apps.apple.com/es/app/b%C3%B6l/id6785110375"
+      >App Store</a>
       <p class="hint">
         Si no tienes la app instalada, instálala y vuelve a abrir este enlace.
       </p>
@@ -66,13 +78,12 @@
     <script>
       (function () {
         var path = window.location.pathname || "/";
-        var appUrl = "bol://" + path.replace(/^\//, "");
-        var open = document.getElementById("open");
         var message = document.getElementById("message");
-        open.href = appUrl;
 
-        if (/^\/(r|p)\//.test(path)) {
-          message.textContent = "Abriendo la receta en Böl…";
+        if (/^\/h\//.test(path)) {
+          message.textContent = "Únete a un hogar en Böl. Instala la app y vuelve a abrir este enlace.";
+        } else if (/^\/(r|p)\//.test(path)) {
+          message.textContent = "Abre esta receta en Böl. Instala la app y vuelve a abrir este enlace.";
         } else {
           message.textContent = "Comparte y abre recetas en Böl.";
         }

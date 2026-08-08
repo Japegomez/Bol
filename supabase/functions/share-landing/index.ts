@@ -2,11 +2,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const APP_NAME = "Böl";
-const APP_SCHEME = "bol://";
 const FIREBASE_HOST = "https://mealplanner-a818e.web.app";
 const OG_BUCKET = "share-og";
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.japegomez.meal_planner";
+const APP_STORE_URL = "https://apps.apple.com/es/app/b%C3%B6l/id6785110375";
 
 function escapeHtml(s: string): string {
   return s
@@ -21,18 +21,16 @@ function html({
   title,
   description,
   pageUrl,
-  appPath,
 }: {
   title: string;
   description: string;
   pageUrl: string;
-  appPath: string;
 }): string {
   const t = escapeHtml(title);
   const d = escapeHtml(description);
   const u = escapeHtml(pageUrl);
-  const appUrl = escapeHtml(`${APP_SCHEME}${appPath.replace(/^\//, "")}`);
   const playUrl = escapeHtml(PLAY_STORE_URL);
+  const appUrl = escapeHtml(APP_STORE_URL);
 
   return `<!DOCTYPE html>
 <html lang="es" prefix="og: https://ogp.me/ns#">
@@ -58,7 +56,6 @@ function html({
       p{margin:0 0 24px;color:#6b635c;line-height:1.5}
       .actions{display:flex;flex-direction:column;gap:12px;align-items:center}
       a.btn{display:inline-block;background:#2f6f5e;color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
-      a.btn-secondary{background:transparent;color:#2f6f5e;border:1.5px solid #2f6f5e}
       .hint{margin-top:8px;font-size:0.9rem;color:#6b635c}
     </style>
   </head>
@@ -67,8 +64,8 @@ function html({
       <h1>${t}</h1>
       <p>${d}</p>
       <div class="actions">
-        <a class="btn" href="${appUrl}">Abrir en ${APP_NAME}</a>
-        <a class="btn btn-secondary" href="${playUrl}">Instalar la app</a>
+        <a class="btn" href="${appUrl}">App Store</a>
+        <a class="btn" href="${playUrl}">Google Play</a>
       </div>
       <p class="hint">Si no tienes la app, instálala y vuelve a abrir este enlace.</p>
     </main>
@@ -80,7 +77,7 @@ function parsePath(pathname: string): { kind: string; id: string } | null {
   const parts = pathname.split("/").filter(Boolean);
   const idx = parts.indexOf("share-landing");
   const seg = idx >= 0 ? parts.slice(idx + 1) : parts;
-  if (seg.length >= 2 && (seg[0] === "r" || seg[0] === "p")) {
+  if (seg.length >= 2 && (seg[0] === "r" || seg[0] === "p" || seg[0] === "h")) {
     return { kind: seg[0], id: seg[1] };
   }
   return null;
@@ -101,6 +98,13 @@ async function getOgTitle(
   if (kind === "p") {
     const { data, error } = await supabase.rpc("get_public_recipe_og", {
       p_recipe_id: id,
+    });
+    if (error || !data?.valid) return null;
+    return data.title as string;
+  }
+  if (kind === "h") {
+    const { data, error } = await supabase.rpc("get_household_invite_og", {
+      p_code: id,
     });
     if (error || !data?.valid) return null;
     return data.title as string;
@@ -130,7 +134,7 @@ async function publishAndRedirect(
   if (error) {
     console.error("share-og upload failed", error);
     return new Response(
-      `Preview temporarily unavailable (${error.message}). Open the link in Böl.`,
+      `Preview temporarily unavailable (${error.message}). Install Böl and open the link again.`,
       { status: 502, headers: { "Content-Type": "text/plain; charset=utf-8" } },
     );
   }
@@ -161,7 +165,6 @@ Deno.serve(async (req) => {
     return new Response("Not found", { status: 404 });
   }
 
-  const appPath = `/${parsed.kind}/${parsed.id}`;
   const pageUrl = `${FIREBASE_HOST}/${parsed.kind}/${parsed.id}`;
 
   try {
@@ -171,11 +174,14 @@ Deno.serve(async (req) => {
       return new Response("Not found", { status: 404 });
     }
 
+    const description = parsed.kind === "h"
+      ? `Invitación a un hogar en ${APP_NAME}`
+      : `Receta en ${APP_NAME}`;
+
     const body = html({
       title,
-      description: `Receta en ${APP_NAME}`,
+      description,
       pageUrl,
-      appPath,
     });
 
     return await publishAndRedirect(

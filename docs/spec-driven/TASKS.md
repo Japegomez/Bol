@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 05/08/2026 — v1.1.0: planner UI/past days, household recipe book, Google auth fix, iOS App Store locales (es)
+> Actualizado: 08/08/2026 — v1.2.0: assistant multimodal (foto + dictado), Gemini 3.5 Flash-Lite, deep link hogar `/h`, scroll recetario, legal URLs Bol
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -25,10 +25,10 @@
 - [x] Spec + plan: `docs/superpowers/specs/2026-07-21-recipe-whatsapp-share-links-design.md`, `docs/superpowers/plans/2026-07-21-recipe-whatsapp-share-links-plan.md`
 - [x] Migración `025_recipe_share_links.sql` (tabla, RLS lectura con enlace activo, RPCs `get_or_create_recipe_share_link` / `resolve_recipe_share`) aplicada en remoto
 - [x] Firebase Hosting en `mealplanner-a818e.web.app` (landing + `.well-known` AASA / assetlinks; SHA-256 = Play **app signing**)
-  - Landing: mensaje + CTA; **sin** `window.location.replace` automático al esquema `bol://`
+  - Landing: mensaje + CTA **Instalar la app** (sin “Abrir en Böl”); paths AASA `/r/*`, `/p/*`, `/h/*`
 - [x] UI compartir en ficha propia y detalle público (Explore); `share_plus` (enlace + texto; **sin** adjuntar foto)
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
-  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id` y `/r/<token>` → `/share/r/:token` (también URI completa HTTPS, Supabase landing y esquema `bol://`); `onException` de respaldo
+  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id`, `/r/<token>` → `/share/r/:token`, `/h/<code>` → join con `?code=` (también URI completa HTTPS, Supabase landing y esquema `bol://`); `onException` de respaldo
   - Pending link persistido en `SharedPreferences` (cold start / proceso muerto); `GoRouter` estable entre refresh de token
   - Resolver privado `SharePrivateLinkScreen`; detalle sin filtrar por owner (RLS share/hogar/público); no cachear fichas ajenas en Drift
   - URLs de share vía Firebase Hosting; mensaje WhatsApp con URL + título
@@ -49,7 +49,7 @@
 - [x] Instalar dependencias base (`supabase_flutter`, `flutter_riverpod`, `go_router`)
   - También instaladas: Sentry, Firebase Analytics, logger, secure storage, connectivity, upgrader, in_app_review, google_sign_in, sign_in_with_apple
 - [x] Crear repositorio en GitHub y primer commit
-  - Remote `origin` → `https://github.com/Japegomez/meal_planner.git`
+  - Remote `origin` → `https://github.com/Japegomez/Bol.git`
 - [x] Configurar GitHub Actions básico (análisis estático + `flutter test` en cada PR)
   - Comando: `flutter analyze --fatal-infos lib test` (solo código de la app, no `build/`)
 - [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`)
@@ -121,12 +121,14 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Edge Function `recipe-assistant`: generación/adaptación de recetas y estimación nutricional (PR #47)
   - Modos: `generate_recipe`, `generate_nutrition`; JWT de usuario validado (`auth.getUser`)
   - Cuota por usuario + cooldown + tope global opcional (migraciones `022_ai_assistant_usage.sql` y `023_ai_assistant_usage_gate_order.sql`, RPC `check_and_increment_ai_usage`)
-  - Límite de prompt **3.000 caracteres** (cliente + Edge Function)
-  - Cliente OpenAI-compatible vía secrets `LLM_*` (recomendado Gemini `gemini-3.1-flash-lite` en proyecto GCP **sin** billing; Translation/Vision en proyecto con billing)
+  - Límite de prompt **3.000 caracteres** (cliente + Edge Function); imagen opcional (jpeg/png/webp, ~1 MB cliente / ~1.5 MB servidor)
+  - Multimodal: foto sola → extracción; foto + texto → ambos; dictado nativo (`speech_to_text`) rellena el prompt en cliente
+  - Cliente OpenAI-compatible vía secrets `LLM_*` (recomendado Gemini `gemini-3.5-flash-lite` en proyecto GCP **sin** billing; Translation/Vision en proyecto con billing)
   - Documentado en `supabase/README.md`
 - [x] Edge Function **`share-landing`**: landing HTML con meta Open Graph (título; **sin** imagen de receta)
-  - Migraciones `032_share_og_metadata.sql` / `034_share_og_no_photo.sql`; `verify_jwt: false`
+  - Migraciones `032_share_og_metadata.sql` / `034_share_og_no_photo.sql` / `036_household_invite_og.sql`; `verify_jwt: false`
   - HTML en Storage (`share-og`) porque Edge Functions en `*.supabase.co` fuerzan `text/plain`
+  - Landing **sin** botón “Abrir en Böl” (solo “Instalar la app”); también aplica a `/h/<code>` (invitación hogar)
   - Firebase Hosting redirige `/r/*` y `/p/*` → Supabase landing (plan Spark, sin Cloud Functions)
 
 ### Servicios externos (observabilidad y UX)
@@ -170,7 +172,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Firma Android en Gradle (`CM_KEYSTORE_*` + ref `meal_planner_keystore`)
 - [x] Firebase commiteado (sin grupo env)
 - [x] Fix `flutter analyze` en CI/CD: `lib test` + `--fatal-infos` + `flutter clean` (Android e iOS)
-- [x] Merge PR [#4](https://github.com/Japegomez/meal_planner/pull/4) (`develop` → `main`)
+- [x] Merge PR [#4](https://github.com/Japegomez/Bol/pull/4) (`develop` → `main`)
 
 #### Codemagic y consolas (manual)
 
@@ -260,9 +262,12 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Crear hogar: formulario con nombre → llamada a RPC `create_household`
   - `create_household_screen.dart`
 - [x] Mostrar código de invitación del hogar (copiable al portapapeles)
-- [x] **Invitar por WhatsApp** (compartir código de invitación vía `share_plus`)
+- [x] **Invitar por WhatsApp** — enlace HTTPS `/h/<codigo>` (App Links) + mensaje vía `share_plus`
+  - Abrir enlace con app → `/home/profile/household/join?code=` con código pre-rellenado
+  - Sin app → landing OG con nombre del hogar + CTA instalar (`036` + `share-landing`)
+  - Hosting redirect `/h/:code`; AASA `/h/*`; Android `pathPrefix="/h"`
 - [x] Unirse a hogar: input de código de 6 caracteres → RPC `join_household`
-  - `join_household_screen.dart`
+  - `join_household_screen.dart` (`initialCode` desde deep link)
 - [x] Regenerar código de invitación (solo admin del hogar)
 - [x] Lista de miembros del hogar con rol (admin / miembro)
 - [x] Expulsar miembro del hogar (solo admin, con confirmación modal)
@@ -355,12 +360,14 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] FAB «+» del recetario → bottom sheet: crear manualmente / crear con asistente IA
 - [x] Sheet de prompt + overlay bloqueante mientras genera; navega a `/home/recipes/new` con formulario pre-rellenado (no guarda directo)
-  - Copy de ayuda: invita a decir qué apetece, qué hay en la nevera o pegar una receta detallada (`recipeAssistantDescription`)
+  - Copy de ayuda: texto, nevera, pegar receta, **adjuntar foto** o **dictar** (`recipeAssistantDescription`)
+  - Máx. 1 imagen (galería/cámara); Generar habilitado con texto y/o foto; dictado nativo (`speech_to_text`) rellena el TextField
+  - Payload `imageBase64` / `imageMimeType`; tests `recipe_assistant_image_input_test.dart`
 - [x] Adaptar recetas pegadas: conservar todos los ingredientes; dividir el método en pasos accionables
 - [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
 - [x] Completar ficha nutricional con IA desde detalle de receta y desde el formulario de edición (`RecipesRepository.saveNutrition`)
   - Al regenerar, se envía `existingNutrition` y el prompt pide conservar valores coherentes; `NutritionFormData` usa `int?` + `normalizeNutritionValue` (redondeo, rechaza negativos/NaN/Infinity); formulario solo dígitos
-- [x] L10n (es, en, ca, eu, gl, pt, **it**) y errores localizados (offline, rate limit, no configurado, no es receta, prompt demasiado largo)
+- [x] L10n (es, en, ca, eu, gl, pt, **it**) y errores localizados (offline, rate limit, no configurado, no es receta, prompt demasiado largo, imagen inválida/grande, speech no disponible)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 - [x] Título en AppBar de detalle (propia y pública): margen, scrim blanco semitransparente al expandir, ellipsis al colapsar (`RecipeAppBarTitle`)
 
@@ -396,7 +403,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Pantalla del planificador: **layout vertical móvil** (lista de días con desayuno/comida/cena apilados; sustituye el grid 7×3 del diseño inicial)
 - [x] Panel lateral deslizable con recetario (buscador + tarjetas arrastrables)
   - Lista vía `recipesProvider`; se invalida al crear/borrar receta para no mostrar recetas eliminadas
-  - **Overlay**: al abrirse **no** reduce el ancho de los días (se superpone); scrollbar siempre visible a la **izquierda**
+  - **Overlay**: al abrirse **no** reduce el ancho de los días (se superpone); scrollbar siempre visible a la **derecha**, thumb grueso (8 px) e interactivo (`ScrollbarTheme` + `RecipePalette`)
 - [x] Drag-and-drop de recetas desde el panel al planificador; autoscroll al acercarse a los bordes
 - [x] **Arrastrar comidas ya asignadas** entre slots (mismo chip draggable; `moveSlot` online/offline)
 - [x] **Copiar / compartir planificador** semanal como texto plano (iconos en AppBar; `planner_share.dart`)
@@ -566,7 +573,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] **GitHub Pages** — documentos legales (`docs/index.html`, `terminos.html`, `privacidad.html`, `style.css`)
   - Despliegue **clásico** en el repositorio: **Settings → Pages → Deploy from a branch → `/docs`**
   - Sin workflow de GitHub Actions (eliminado `.github/workflows/pages.yml`)
-  - URL base: `https://japegomez.github.io/meal_planner/` (override opcional: `--dart-define=LEGAL_BASE_URL=...`)
+  - URL base: `https://japegomez.github.io/Bol/` (override opcional: `--dart-define=LEGAL_BASE_URL=...`; repo renombrado)
 - [x] Flujo de eliminación de cuenta (derecho de supresión RGPD)
   - RPC `delete_user_account` (migración `010`); pantalla Perfil → Eliminar cuenta
   - Pendiente: aplicar migración `010` en Supabase remoto
@@ -633,12 +640,13 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.1.0** (TestFlight / Play): build con locales iOS ES + fixes planner/auth/hogar; verificar en ficha App Store la sección Idiomas.
-2. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-3. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra; mover futuro↔pasado.
-4. **Validar recetario de hogar**: dos miembros ven recetas de ambos; abandonar → solo propias.
-5. **Validar avatar en dispositivo**: galería → moderación → guardar; eliminar foto → default; login Google sin avatar → importa foto.
-6. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → ficha → fork.
-7. **Validar modo cocina / offline / background session** en dispositivo.
-8. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-9. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+1. **Release 1.2.0** (TestFlight / Play): assistant con foto + dictado, Gemini 3.5 Flash-Lite, deep link hogar `/h`, scroll recetario, legal URLs Bol.
+2. **Validar en dispositivo** assistant: dictado nativo; foto sola / foto+texto → ficha; nutrición con el mismo modelo.
+3. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse con código pre-rellenado; sin app → landing instalar.
+4. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → ficha → fork; landing sin “Abrir en Böl”.
+5. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+6. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+7. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra; mover futuro↔pasado.
+8. **Validar modo cocina / offline / background session** en dispositivo.
+9. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+10. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).

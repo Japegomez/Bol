@@ -27,6 +27,8 @@ abstract final class ShareUrls {
 
   static String publicLink(String recipeId) => '$base/p/$recipeId';
 
+  static String householdInviteLink(String code) => '$base/h/$code';
+
   static bool isShareHost(String host) {
     final h = host.toLowerCase();
     return h == ShareUrls.host ||
@@ -34,26 +36,30 @@ abstract final class ShareUrls {
         h == supabaseHost;
   }
 
+  static bool _isShareKind(String kind) =>
+      kind == 'p' || kind == 'r' || kind == 'h';
+
   static String? _locationFromKindAndId(String kind, String id) {
     final cleanId = id.endsWith('.html') ? id.substring(0, id.length - 5) : id;
     return switch (kind) {
       'p' => '/home/explore/$cleanId',
       'r' => '/share/r/$cleanId',
+      'h' => '/home/profile/household/join?code=${Uri.encodeComponent(cleanId)}',
       _ => null,
     };
   }
 
   /// Maps an incoming platform/share URI to an in-app go_router location.
   ///
-  /// Returns null when [uri] is not a recipe share link.
+  /// Returns null when [uri] is not a recipe or household invite share link.
   static String? appLocationForIncomingUri(Uri uri) {
     if (uri.scheme == AppBranding.urlScheme) {
       final host = uri.host;
       final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
-      if ((host == 'r' || host == 'p') && segments.isNotEmpty) {
+      if (_isShareKind(host) && segments.isNotEmpty) {
         return _locationFromKindAndId(host, segments.first);
       }
-      if (segments.length >= 2 && (segments[0] == 'r' || segments[0] == 'p')) {
+      if (segments.length >= 2 && _isShareKind(segments[0])) {
         return _locationFromKindAndId(segments[0], segments[1]);
       }
       return null;
@@ -80,9 +86,9 @@ abstract final class ShareUrls {
     }
 
     if (segments.length < 2) return null;
-    if (segments[0] != 'p' && segments[0] != 'r') return null;
+    if (!_isShareKind(segments[0])) return null;
 
-    // Firebase Hosting (/p/…, /r/…) and path-only links.
+    // Firebase Hosting (/p/…, /r/…, /h/…) and path-only links.
     if (uri.host.isNotEmpty && !isShareHost(uri.host)) return null;
 
     return _locationFromKindAndId(segments[0], segments[1]);

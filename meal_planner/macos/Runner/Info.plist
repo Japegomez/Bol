@@ -26,6 +26,12 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>$(PRODUCT_COPYRIGHT)</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Böl needs photo library access to attach recipe images to the AI assistant and recipe photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Böl needs microphone access so you can dictate recipes to the AI assistant.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Böl uses speech recognition to turn your dictation into text for the AI recipe assistant.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

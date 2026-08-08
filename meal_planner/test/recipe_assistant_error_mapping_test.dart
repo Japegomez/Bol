@@ -14,6 +14,9 @@ void main() {
         recipeAssistantOfflineKey,
         recipeAssistantNotConfiguredKey,
         recipeAssistantTimeoutKey,
+        recipeAssistantMissingInputKey,
+        recipeAssistantImageTooLargeKey,
+        recipeAssistantInvalidImageKey,
       ];
 
       for (final key in keys) {

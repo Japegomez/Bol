@@ -275,11 +275,11 @@
   "myHouseholdTitle": "La meva llar",
   "inviteCode": "Codi d'invitació",
   "inviteViaWhatsApp": "Convidar per WhatsApp",
-  "inviteWhatsAppHouseholdMessage": "Hola! Uneix-te a la meva llar a {appName}. Usa aquest codi: {code}",
+  "inviteWhatsAppHouseholdMessage": "Hola! Uneix-te a la meva llar a {appName}:\n{url}",
   "@inviteWhatsAppHouseholdMessage": {
     "placeholders": {
       "appName": {"type": "String"},
-      "code": {"type": "String"}
+      "url": {"type": "String"}
     }
   },
   "copyTooltip": "Copiar",
@@ -484,8 +484,13 @@
   "createRecipeWithAssistant": "Crear amb assistent d'IA",
   "createRecipeWithAssistantSubtitle": "Descriu el plat i la IA elaborarà la fitxa",
   "recipeAssistantTitle": "Assistent de receptes",
-  "recipeAssistantDescription": "Digues-me què et ve de gust, què tens a la nevera o descriu una recepta detallada amb ingredients i passos.",
+  "recipeAssistantDescription": "Digues-me què et ve de gust, què tens a la nevera, enganxa una recepta, afegeix-ne una foto o dicta amb el micròfon.",
   "recipeAssistantPromptHint": "Ex.: truita de patates per a 4 persones amb ceba...",
+  "recipeAssistantListening": "Escoltant…",
+  "recipeAssistantDictate": "Dictar",
+  "recipeAssistantStopDictation": "Aturar el dictat",
+  "recipeAssistantSpeechUnavailable": "El reconeixement de veu no està disponible. Activa'l a Configuració o escriu la teva petició.",
+  "recipeAssistantSpeechFailed": "No s'ha pogut reconèixer la veu. Torna-ho a provar o escriu la teva petició.",
   "recipeAssistantGenerate": "Generar recepta",
   "recipeAssistantGenerating": "Generant...",
   "recipeAssistantBlockingRecipe": "L'assistent està elaborant la teva recepta…",
@@ -497,6 +502,9 @@
   "recipeAssistantNotConfigured": "L'assistent d'IA encara no està configurat.",
   "recipeAssistantTimeout": "La sol·licitud ha trigat massa. Torna-ho a provar.",
   "recipeAssistantPromptTooLong": "La descripció de la recepta no pot superar els 3.000 caràcters.",
+  "recipeAssistantMissingInput": "Escriu una descripció o afegeix una foto de la recepta.",
+  "recipeAssistantImageTooLarge": "La imatge és massa gran. Prova amb una altra foto o fes-ne una de nova.",
+  "recipeAssistantInvalidImage": "No s'ha pogut fer servir aquesta imatge. Prova amb una altra foto.",
   "recipeAssistantDailyLimitReached": "Has assolit el límit diari de l'assistent. Torna demà.",
   "recipeAssistantTooFast": "Espera un moment abans de tornar a usar l'assistent.",
   "recipeAssistantServiceAtCapacity": "L'assistent està saturat en aquest moment. Torna-ho a provar més tard.",
