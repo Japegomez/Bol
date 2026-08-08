@@ -496,6 +496,7 @@
   "recipeAssistantTitle": "Errezeta laguntzailea",
   "recipeAssistantDescription": "Esan iezadazu zer jateko gogoa duzun, hozkailuan zer duzun, itsatsi errezeta bat, erantsi argazki bat edo dikta mikrofonoarekin.",
   "recipeAssistantPromptHint": "Adib.: patata tortilla 4 pertsonentzat tipulaarekin...",
+  "recipeAssistantImagePromptHint": "Esan laguntzaileari zer egin argazkiarekin (adib.: plater hau birsortu, errezeta atera...)",
   "recipeAssistantListening": "Entzuten…",
   "recipeAssistantDictate": "Diktatu",
   "recipeAssistantStopDictation": "Gelditu diktaketa",

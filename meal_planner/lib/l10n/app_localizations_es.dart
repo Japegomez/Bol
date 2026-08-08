@@ -163,7 +163,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get minSixCharacters => 'Mínimo 6 caracteres';
 
   @override
-  String get passwordTooShort => 'La contraseña debe tener al menos 8 caracteres';
+  String get passwordTooShort =>
+      'La contraseña debe tener al menos 8 caracteres';
 
   @override
   String get passwordTooWeak => 'La contraseña debe incluir letras y números';
@@ -938,10 +939,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get alreadyMember => 'Ya perteneces a este hogar';
 
   @override
-  String get tooManyAttempts => 'Demasiados intentos. Inténtalo de nuevo en unos minutos.';
+  String get tooManyAttempts =>
+      'Demasiados intentos. Inténtalo de nuevo en unos minutos.';
 
   @override
-  String get pleaseWaitMoment => 'Espera un momento antes de volver a intentarlo.';
+  String get pleaseWaitMoment =>
+      'Espera un momento antes de volver a intentarlo.';
 
   @override
   String get genericErrorMessage => 'Algo salió mal. Inténtalo de nuevo.';
@@ -1521,6 +1524,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Ej.: tortilla de patatas para 4 personas con cebolla...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Indica al asistente qué hacer con la foto (ej.: recrear este plato, extraer la receta...)';
 
   @override
   String get recipeAssistantListening => 'Escuchando…';

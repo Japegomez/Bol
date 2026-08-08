@@ -165,7 +165,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordTooShort => 'Password must be at least 8 characters';
 
   @override
-  String get passwordTooWeak => 'Password must include both letters and numbers';
+  String get passwordTooWeak =>
+      'Password must include both letters and numbers';
 
   @override
   String get confirmPasswordLabel => 'Confirm password';
@@ -934,7 +935,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyMember => 'You already belong to this household';
 
   @override
-  String get tooManyAttempts => 'Too many attempts. Please try again in a few minutes.';
+  String get tooManyAttempts =>
+      'Too many attempts. Please try again in a few minutes.';
 
   @override
   String get pleaseWaitMoment => 'Please wait a moment before trying again.';
@@ -1514,6 +1516,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'E.g.: Spanish potato omelette for 4 with onion...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Tell the assistant what to do with the photo (e.g. recreate this dish, extract the recipe...)';
 
   @override
   String get recipeAssistantListening => 'Listening…';

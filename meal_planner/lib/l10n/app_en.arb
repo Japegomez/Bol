@@ -607,6 +607,7 @@
   "recipeAssistantTitle": "Recipe assistant",
   "recipeAssistantDescription": "Tell me what you're craving, what's in your fridge, paste a recipe, attach a photo, or dictate with the microphone.",
   "recipeAssistantPromptHint": "E.g.: Spanish potato omelette for 4 with onion...",
+  "recipeAssistantImagePromptHint": "Tell the assistant what to do with the photo (e.g. recreate this dish, extract the recipe...)",
   "recipeAssistantListening": "Listening…",
   "recipeAssistantDictate": "Dictate",
   "recipeAssistantStopDictation": "Stop dictation",

@@ -162,10 +162,12 @@ class AppLocalizationsEu extends AppLocalizations {
   String get minSixCharacters => 'Gutxienez 6 karaktere';
 
   @override
-  String get passwordTooShort => 'Pasahitzak gutxienez 8 karaktere izan behar ditu';
+  String get passwordTooShort =>
+      'Pasahitzak gutxienez 8 karaktere izan behar ditu';
 
   @override
-  String get passwordTooWeak => 'Pasahitzak letrak eta zenbakiak izan behar ditu';
+  String get passwordTooWeak =>
+      'Pasahitzak letrak eta zenbakiak izan behar ditu';
 
   @override
   String get confirmPasswordLabel => 'Berretsi pasahitza';
@@ -938,10 +940,12 @@ class AppLocalizationsEu extends AppLocalizations {
   String get alreadyMember => 'Dagoeneko etxe honetakoa zara';
 
   @override
-  String get tooManyAttempts => 'Saiakera gehiegi. Saiatu berriro minutu batzuetan.';
+  String get tooManyAttempts =>
+      'Saiakera gehiegi. Saiatu berriro minutu batzuetan.';
 
   @override
-  String get pleaseWaitMoment => 'Itxaron une batez berriro saiatu baino lehen.';
+  String get pleaseWaitMoment =>
+      'Itxaron une batez berriro saiatu baino lehen.';
 
   @override
   String get genericErrorMessage => 'Zerbait gaizki joan da. Saiatu berriro.';
@@ -1518,6 +1522,10 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Adib.: patata tortilla 4 pertsonentzat tipulaarekin...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Esan laguntzaileari zer egin argazkiarekin (adib.: plater hau birsortu, errezeta atera...)';
 
   @override
   String get recipeAssistantListening => 'Entzuten…';

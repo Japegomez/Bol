@@ -1520,6 +1520,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Es.: frittata di patate per 4 con cipolla...';
 
   @override
+  String get recipeAssistantImagePromptHint =>
+      'Indica all\'assistente cosa fare con la foto (es.: ricreare questo piatto, estrarre la ricetta...)';
+
+  @override
   String get recipeAssistantListening => 'In ascolto…';
 
   @override

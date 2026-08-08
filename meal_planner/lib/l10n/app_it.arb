@@ -608,6 +608,7 @@
   "recipeAssistantTitle": "Assistente ricette",
   "recipeAssistantDescription": "Dimmi cosa ti va, cosa hai in frigo, incolla una ricetta, allega una foto o detta con il microfono.",
   "recipeAssistantPromptHint": "Es.: frittata di patate per 4 con cipolla...",
+  "recipeAssistantImagePromptHint": "Indica all'assistente cosa fare con la foto (es.: ricreare questo piatto, estrarre la ricetta...)",
   "recipeAssistantListening": "In ascolto…",
   "recipeAssistantDictate": "Detta",
   "recipeAssistantStopDictation": "Interrompi dettatura",

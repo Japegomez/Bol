@@ -163,7 +163,8 @@ class AppLocalizationsGl extends AppLocalizations {
   String get minSixCharacters => 'Mínimo 6 caracteres';
 
   @override
-  String get passwordTooShort => 'O contrasinal debe ter polo menos 8 caracteres';
+  String get passwordTooShort =>
+      'O contrasinal debe ter polo menos 8 caracteres';
 
   @override
   String get passwordTooWeak => 'O contrasinal debe incluír letras e números';
@@ -937,7 +938,8 @@ class AppLocalizationsGl extends AppLocalizations {
   String get alreadyMember => 'Xa pertences a este fogar';
 
   @override
-  String get tooManyAttempts => 'Demasiados intentos. Téntao de novo nuns minutos.';
+  String get tooManyAttempts =>
+      'Demasiados intentos. Téntao de novo nuns minutos.';
 
   @override
   String get pleaseWaitMoment => 'Espera un momento antes de tentar de novo.';
@@ -1520,6 +1522,10 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Ex.: tortilla de patacas para 4 persoas con cebola...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Indica ao asistente que facer coa foto (ex.: recrear este prato, extraer a receita...)';
 
   @override
   String get recipeAssistantListening => 'Escoitando…';

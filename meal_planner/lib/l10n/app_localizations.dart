@@ -2898,6 +2898,12 @@ abstract class AppLocalizations {
   /// **'E.g.: Spanish potato omelette for 4 with onion...'**
   String get recipeAssistantPromptHint;
 
+  /// No description provided for @recipeAssistantImagePromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell the assistant what to do with the photo (e.g. recreate this dish, extract the recipe...)'**
+  String get recipeAssistantImagePromptHint;
+
   /// No description provided for @recipeAssistantListening.
   ///
   /// In en, this message translates to:

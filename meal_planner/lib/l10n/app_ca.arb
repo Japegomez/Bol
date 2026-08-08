@@ -496,6 +496,7 @@
   "recipeAssistantTitle": "Assistent de receptes",
   "recipeAssistantDescription": "Digues-me què et ve de gust, què tens a la nevera, enganxa una recepta, afegeix-ne una foto o dicta amb el micròfon.",
   "recipeAssistantPromptHint": "Ex.: truita de patates per a 4 persones amb ceba...",
+  "recipeAssistantImagePromptHint": "Indica a l'assistent què fer amb la foto (ex.: recrear aquest plat, extreure la recepta...)",
   "recipeAssistantListening": "Escoltant…",
   "recipeAssistantDictate": "Dictar",
   "recipeAssistantStopDictation": "Aturar el dictat",

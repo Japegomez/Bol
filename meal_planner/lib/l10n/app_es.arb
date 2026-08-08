@@ -501,6 +501,7 @@
   "recipeAssistantTitle": "Asistente de recetas",
   "recipeAssistantDescription": "Dime lo que te apetece, lo que tienes en la nevera, pega una receta, adjunta una foto o dicta con el micrófono.",
   "recipeAssistantPromptHint": "Ej.: tortilla de patatas para 4 personas con cebolla...",
+  "recipeAssistantImagePromptHint": "Indica al asistente qué hacer con la foto (ej.: recrear este plato, extraer la receta...)",
   "recipeAssistantListening": "Escuchando…",
   "recipeAssistantDictate": "Dictar",
   "recipeAssistantStopDictation": "Parar dictado",
