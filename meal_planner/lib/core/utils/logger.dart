@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -33,7 +34,9 @@ final log = Logger(
     printEmojis: true,
   ),
   output: MultiOutput([
-    ConsoleOutput(),
+    // Console output is debug-only: release builds must not write potentially
+    // sensitive log lines to the system log (logcat / Console.app).
+    if (kDebugMode) ConsoleOutput(),
     SentryLogOutput(),
   ]),
 );

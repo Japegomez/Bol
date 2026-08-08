@@ -31,7 +31,7 @@ class _SharePrivateLinkScreenState
           .read(recipeShareRepositoryProvider)
           .resolvePrivateShareToken(widget.token);
       if (!mounted) return;
-      context.go('/home/recipes/$recipeId');
+      context.go('/home/recipes/$recipeId', extra: widget.token);
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);

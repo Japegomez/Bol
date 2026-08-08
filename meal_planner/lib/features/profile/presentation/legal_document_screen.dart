@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/config/legal_urls.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -23,10 +24,32 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
   var _isLoading = true;
   String? _error;
 
+  /// Only the LegalUrls.base origin (HTTPS + matching port + host/subdomain)
+  /// may render inside the WebView. Anything else is blocked and handed to
+  /// the external browser so untrusted content can't run in-process.
+  static final _allowedBase = Uri.parse(LegalUrls.base);
+
+  bool _isAllowed(Uri uri) {
+    if (uri.scheme.toLowerCase() != 'https') return false;
+
+    final allowedPort = _allowedBase.hasPort ? _allowedBase.port : 443;
+    final uriPort = uri.hasPort ? uri.port : 443;
+    if (uriPort != allowedPort) return false;
+
+    final host = uri.host.toLowerCase();
+    final allowed = _allowedBase.host.toLowerCase();
+    return host == allowed || host.endsWith('.$allowed');
+  }
+
   @override
   void initState() {
     super.initState();
     if (kIsWeb) {
+      _openExternally();
+      return;
+    }
+    // Never load an untrusted URL into the WebView even on startup.
+    if (!_isAllowed(Uri.parse(widget.url))) {
       _openExternally();
       return;
     }
@@ -49,7 +72,8 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
 
   void _initWebView() {
     final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // Legal docs are static HTML; no JavaScript needed.
+      ..setJavaScriptMode(JavaScriptMode.disabled)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
@@ -62,6 +86,16 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
                 _error = error.description;
               });
             }
+          },
+          onNavigationRequest: (request) {
+            final uri = Uri.tryParse(request.url);
+            if (uri == null || !_isAllowed(uri)) {
+              // Redirect disallowed navigations to the system browser.
+              launchUrl(Uri.parse(request.url),
+                  mode: LaunchMode.externalApplication);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
           },
         ),
       )

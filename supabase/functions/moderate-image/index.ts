@@ -1,4 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import { enforceAiQuota } from "../_shared/ai_quota.ts";
 
 const VISION_URL = "https://vision.googleapis.com/v1/images:annotate";
 
@@ -44,6 +46,35 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ── Authenticate the caller and enforce per-user/global quota ────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const userId = userData.user.id;
+
+    const adminClient = createClient(supabaseUrl, serviceKey);
+    const quotaResult = await enforceAiQuota(adminClient, userId, corsHeaders);
+    if (!quotaResult.ok) return quotaResult.response;
+
     const apiKey = Deno.env.get("GOOGLE_API_KEY");
     if (!apiKey) {
       return new Response(
@@ -103,19 +134,9 @@ Deno.serve(async (req) => {
     if (!visionRes.ok) {
       const errText = await visionRes.text();
       console.error("Vision API HTTP error:", visionRes.status, errText);
-      let detail: string | undefined;
-      try {
-        const parsed = JSON.parse(errText);
-        detail = parsed?.error?.message;
-      } catch {
-        detail = errText.slice(0, 200);
-      }
+      // Don't reflect upstream error details to the client.
       return new Response(
-        JSON.stringify({
-          error: "Vision API failed",
-          status: visionRes.status,
-          detail,
-        }),
+        JSON.stringify({ error: "Vision API failed" }),
         {
           status: 502,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -134,11 +155,7 @@ Deno.serve(async (req) => {
         visionError.message,
       );
       return new Response(
-        JSON.stringify({
-          error: "Vision API failed",
-          code: visionError.code,
-          detail: visionError.message,
-        }),
+        JSON.stringify({ error: "Vision API failed" }),
         {
           status: 502,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -162,6 +162,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get minSixCharacters => 'Minimo 6 caratteri';
 
   @override
+  String get passwordTooShort => 'La password deve avere almeno 8 caratteri';
+
+  @override
+  String get passwordTooWeak => 'La password deve includere lettere e numeri';
+
+  @override
   String get confirmPasswordLabel => 'Conferma password';
 
   @override
@@ -677,6 +683,22 @@ class AppLocalizationsIt extends AppLocalizations {
   String get shareLinkInvalid => 'Questo link non è valido';
 
   @override
+  String get revokeShareLink => 'Revoca link di condivisione';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'Questo invaliderà il link privato attuale. Chiunque abbia il link non potrà più aprire questa ricetta.';
+
+  @override
+  String get revoke => 'Revoca';
+
+  @override
+  String get shareLinkRevoked => 'Link revocato';
+
+  @override
+  String get noActiveShareLink => 'Nessun link attivo da revocare';
+
+  @override
   String get clearListTooltip => 'Svuota lista';
 
   @override
@@ -910,6 +932,15 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get alreadyMember => 'Appartieni già a questa famiglia';
+
+  @override
+  String get tooManyAttempts => 'Troppi tentativi. Riprova tra qualche minuto.';
+
+  @override
+  String get pleaseWaitMoment => 'Attendi un momento prima di riprovare.';
+
+  @override
+  String get genericErrorMessage => 'Qualcosa è andato storto. Riprova.';
 
   @override
   String get codeMustBeSixChars => 'Il codice deve avere 6 caratteri';
@@ -1487,6 +1518,10 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Es.: frittata di patate per 4 con cipolla...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Indica all\'assistente cosa fare con la foto (es.: ricreare questo piatto, estrarre la ricetta...)';
 
   @override
   String get recipeAssistantListening => 'In ascolto…';

@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 08/08/2026 — v1.2.0: assistant multimodal (foto + dictado), Gemini 3.5 Flash-Lite, deep link hogar `/h`, scroll recetario, legal URLs Bol
+> Actualizado: 08/08/2026 — v1.2.1 hotfix: remediación de seguridad (share token-gated, RLS, SQLCipher, cuotas edge) + UI asistente (botones a la derecha, hint con foto)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -28,13 +28,14 @@
   - Landing: mensaje + CTA **Instalar la app** (sin “Abrir en Böl”); paths AASA `/r/*`, `/p/*`, `/h/*`
 - [x] UI compartir en ficha propia y detalle público (Explore); `share_plus` (enlace + texto; **sin** adjuntar foto)
 - [x] Deep links (`app_links`) + pending link tras login; Android App Links + iOS Associated Domains
-  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id`, `/r/<token>` → `/share/r/:token`, `/h/<code>` → join con `?code=` (también URI completa HTTPS, Supabase landing y esquema `bol://`); `onException` de respaldo
-  - Pending link persistido en `SharedPreferences` (cold start / proceso muerto); `GoRouter` estable entre refresh de token
-  - Resolver privado `SharePrivateLinkScreen`; detalle sin filtrar por owner (RLS share/hogar/público); no cachear fichas ajenas en Drift
+  - `go_router`: mapeo de URLs Hosting `/p/<id>` → `/home/explore/:id`, `/r/<token>` → `/share/r/:token`, `/h/<code>` → join con `?code=` (también URI completa HTTPS y Supabase landing); `onException` de respaldo
+  - Pending link en `FlutterSecureStorage` (migración desde SharedPreferences); `GoRouter` estable entre refresh de token
+  - Resolver privado `SharePrivateLinkScreen`; detalle vía `get_shared_recipe` (token en `extra`, no query); no cachear fichas ajenas en Drift
   - URLs de share vía Firebase Hosting; mensaje WhatsApp con URL + título
   - Tests: `test/share_urls_test.dart`
-- [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`)
-- [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado
+- [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`; token obligatorio en enlace privado, `039`)
+- [x] Remediación seguridad share/hogar (`037`–`043`): token-gate lecturas, revoke de enlaces, rate-limit invite, ratings visibles, endurecimiento RLS/privilegios
+- [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado / revocado
 
 ---
 
@@ -362,6 +363,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Sheet de prompt + overlay bloqueante mientras genera; navega a `/home/recipes/new` con formulario pre-rellenado (no guarda directo)
   - Copy de ayuda: texto, nevera, pegar receta, **adjuntar foto** o **dictar** (`recipeAssistantDescription`)
   - Máx. 1 imagen (galería/cámara); Generar habilitado con texto y/o foto; dictado nativo (`speech_to_text`) rellena el TextField
+  - Acciones a la **derecha** (cámara, galería, mic); con foto adjunta el hint pide indicaciones para procesarla (`recipeAssistantImagePromptHint`)
   - Payload `imageBase64` / `imageMimeType`; tests `recipe_assistant_image_input_test.dart`
 - [x] Adaptar recetas pegadas: conservar todos los ingredientes; dividir el método en pasos accionables
 - [x] Normalización en cliente: nombres en singular + mayúscula inicial; excluir agua solo de cocción
@@ -640,13 +642,14 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.0** (TestFlight / Play): assistant con foto + dictado, Gemini 3.5 Flash-Lite, deep link hogar `/h`, scroll recetario, legal URLs Bol.
-2. **Validar en dispositivo** assistant: dictado nativo; foto sola / foto+texto → ficha; nutrición con el mismo modelo.
-3. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse con código pre-rellenado; sin app → landing instalar.
-4. **Validar compartir recetas en dispositivo** (prueba cerrada): WhatsApp enlace → App Links → ficha → fork; landing sin “Abrir en Böl”.
-5. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
-6. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-7. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra; mover futuro↔pasado.
-8. **Validar modo cocina / offline / background session** en dispositivo.
-9. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-10. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+1. **Release 1.2.1 hotfix** (TestFlight / Play): remediación de seguridad + UI asistente (hint con foto, botones a la derecha).
+2. **Aplicar migraciones** `037`–`043` en remoto y redesplegar edge functions (`moderate-image`, `translate-recipe`, `share-landing`) + `config.toml` verify_jwt.
+3. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición.
+4. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
+5. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
+6. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+7. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+8. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
+9. **Validar modo cocina / offline / DB cifrada** en dispositivo (migración plaintext→SQLCipher).
+10. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+11. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).

@@ -134,7 +134,7 @@ async function publishAndRedirect(
   if (error) {
     console.error("share-og upload failed", error);
     return new Response(
-      `Preview temporarily unavailable (${error.message}). Install Böl and open the link again.`,
+      "Preview temporarily unavailable. Install Böl and open the link again.",
       { status: 502, headers: { "Content-Type": "text/plain; charset=utf-8" } },
     );
   }

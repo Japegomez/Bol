@@ -163,6 +163,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get minSixCharacters => 'Mínimo 6 caracteres';
 
   @override
+  String get passwordTooShort =>
+      'A palavra-passe deve ter pelo menos 8 caracteres';
+
+  @override
+  String get passwordTooWeak => 'A palavra-passe deve incluir letras e números';
+
+  @override
   String get confirmPasswordLabel => 'Confirmar palavra-passe';
 
   @override
@@ -682,6 +689,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get shareLinkInvalid => 'Esta hiperligação não é válida';
 
   @override
+  String get revokeShareLink => 'Revogar link de partilha';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'Isto invalidará o link privado atual. Quem tiver o link deixará de poder abrir esta receita.';
+
+  @override
+  String get revoke => 'Revogar';
+
+  @override
+  String get shareLinkRevoked => 'Link revogado';
+
+  @override
+  String get noActiveShareLink => 'Não há nenhum link ativo para revogar';
+
+  @override
   String get clearListTooltip => 'Limpar lista';
 
   @override
@@ -915,6 +938,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get alreadyMember => 'Já pertence a esta casa';
+
+  @override
+  String get tooManyAttempts =>
+      'Muitas tentativas. Tente novamente em alguns minutos.';
+
+  @override
+  String get pleaseWaitMoment =>
+      'Aguarde um momento antes de tentar novamente.';
+
+  @override
+  String get genericErrorMessage => 'Algo correu mal. Tente novamente.';
 
   @override
   String get codeMustBeSixChars => 'O código deve ter 6 caracteres';
@@ -1493,6 +1527,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Ex.: omelete de batata para 4 pessoas com cebola...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Indique ao assistente o que fazer com a foto (ex.: recriar este prato, extrair a receita...)';
 
   @override
   String get recipeAssistantListening => 'A ouvir…';

@@ -246,9 +246,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: ':id',
-                    builder: (_, state) => RecipeDetailScreen(
-                      recipeId: state.pathParameters['id']!,
-                    ),
+                    builder: (_, state) {
+                      final extra = state.extra;
+                      final sharedToken = extra is String
+                          ? extra
+                          : (extra is Map && extra['sharedToken'] is String)
+                              ? extra['sharedToken'] as String
+                              : null;
+                      return RecipeDetailScreen(
+                        recipeId: state.pathParameters['id']!,
+                        sharedToken: sharedToken,
+                      );
+                    },
                     routes: [
                       GoRoute(
                         path: 'edit',

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { enforceAiQuota } from "../_shared/ai_quota.ts";
 
 const TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
 
@@ -8,6 +9,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+/** ISO 639-1 codes accepted as source or target for translation. */
+const ALLOWED_LANGS = new Set([
+  "es", "en", "ca", "eu", "gl", "pt", "it", "fr", "de",
+]);
 
 type IngredientRow = {
   id: string;
@@ -93,6 +99,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
+    // Authenticate before validating request body / language.
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userData.user.id;
+
     const { recipe_id: recipeId, target_lang: targetLang } = await req.json();
     if (!recipeId || !targetLang) {
       return new Response(
@@ -104,12 +127,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const adminClient = createClient(supabaseUrl, serviceKey);
+    if (typeof targetLang !== "string" || !ALLOWED_LANGS.has(targetLang)) {
+      return new Response(
+        JSON.stringify({ error: "Unsupported target language" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const quotaResult = await enforceAiQuota(adminClient, userId, corsHeaders);
+    if (!quotaResult.ok) return quotaResult.response;
 
     const { data: recipe, error: recipeError } = await userClient
       .from("recipes")
@@ -125,6 +154,15 @@ Deno.serve(async (req) => {
     }
 
     const sourceLang = (recipe.source_lang as string) || "es";
+    if (typeof sourceLang !== "string" || !ALLOWED_LANGS.has(sourceLang)) {
+      return new Response(
+        JSON.stringify({ error: "Unsupported source language" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
     if (sourceLang === targetLang) {
       return new Response(JSON.stringify({ error: "Same language" }), {
         status: 400,
@@ -181,6 +219,16 @@ Deno.serve(async (req) => {
       ...ingredientNames,
       ...stepDescriptions,
     ];
+
+    // ── Size cap: reject payloads that would cost too much in one call ──────
+    const MAX_TRANSLATE_CHARS = 10_000;
+    const totalChars = textsToTranslate.reduce((n, t) => n + t.length, 0);
+    if (totalChars > MAX_TRANSLATE_CHARS) {
+      return new Response(
+        JSON.stringify({ error: "Recipe too large to translate" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const translated = await translateTexts(
       apiKey,

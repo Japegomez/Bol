@@ -162,6 +162,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get minSixCharacters => 'Minimum 6 characters';
 
   @override
+  String get passwordTooShort => 'Password must be at least 8 characters';
+
+  @override
+  String get passwordTooWeak =>
+      'Password must include both letters and numbers';
+
+  @override
   String get confirmPasswordLabel => 'Confirm password';
 
   @override
@@ -677,6 +684,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareLinkInvalid => 'This share link is invalid';
 
   @override
+  String get revokeShareLink => 'Revoke share link';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'This will invalidate the current private share link. Anyone who has the link will no longer be able to open this recipe.';
+
+  @override
+  String get revoke => 'Revoke';
+
+  @override
+  String get shareLinkRevoked => 'Share link revoked';
+
+  @override
+  String get noActiveShareLink => 'No active share link to revoke';
+
+  @override
   String get clearListTooltip => 'Clear list';
 
   @override
@@ -910,6 +933,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alreadyMember => 'You already belong to this household';
+
+  @override
+  String get tooManyAttempts =>
+      'Too many attempts. Please try again in a few minutes.';
+
+  @override
+  String get pleaseWaitMoment => 'Please wait a moment before trying again.';
+
+  @override
+  String get genericErrorMessage => 'Something went wrong. Please try again.';
 
   @override
   String get codeMustBeSixChars => 'The code must be 6 characters';
@@ -1483,6 +1516,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'E.g.: Spanish potato omelette for 4 with onion...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Tell the assistant what to do with the photo (e.g. recreate this dish, extract the recipe...)';
 
   @override
   String get recipeAssistantListening => 'Listening…';

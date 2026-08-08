@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meal_planner/core/config/share_urls.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
@@ -14,25 +15,61 @@ import 'package:shared_preferences/shared_preferences.dart';
 final pendingShareLinkProvider = StateProvider<Uri?>((ref) => null);
 
 /// Persists pending share links across cold starts / process death.
+///
+/// Stored in the platform keystore/keychain via flutter_secure_storage
+/// because the link carries a private share token that grants read access
+/// to someone else's recipe. SharedPreferences is plaintext on disk.
 abstract final class PendingShareLinkStore {
   static const _key = 'meal_planner.pending_share_link';
+  static const _legacyKey = 'meal_planner.pending_share_link';
+  static const _storage = FlutterSecureStorage();
 
-  static Future<void> save(Uri uri) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, uri.toString());
+  /// Serializes all store operations so migration and save cannot interleave.
+  static Future<void> _queue = Future<void>.value();
+
+  static Future<T> _serialized<T>(Future<T> Function() action) {
+    final result = _queue.then((_) => action());
+    _queue = result.then((_) {}, onError: (_) {});
+    return result;
   }
 
-  static Future<Uri?> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null || raw.isEmpty) return null;
-    return Uri.tryParse(raw);
+  /// One-time migration of any pending link previously stored in plaintext
+  /// SharedPreferences into secure storage. Does not overwrite an existing
+  /// secure value; only clears the legacy key in that case.
+  static Future<void> _migrateFromLegacyUnlocked() async {
+    try {
+      final existing = await _storage.read(key: _key);
+      final prefs = await SharedPreferences.getInstance();
+      final legacy = prefs.getString(_legacyKey);
+
+      if (existing != null && existing.isNotEmpty) {
+        if (legacy != null) await prefs.remove(_legacyKey);
+        return;
+      }
+
+      if (legacy != null && legacy.isNotEmpty) {
+        await _storage.write(key: _key, value: legacy);
+        await prefs.remove(_legacyKey);
+      }
+    } catch (e) {
+      log.w('Pending share link legacy migration failed: $e');
+    }
   }
 
-  static Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
-  }
+  static Future<void> save(Uri uri) => _serialized(() async {
+        await _storage.write(key: _key, value: uri.toString());
+      });
+
+  static Future<Uri?> load() => _serialized(() async {
+        await _migrateFromLegacyUnlocked();
+        final raw = await _storage.read(key: _key);
+        if (raw == null || raw.isEmpty) return null;
+        return Uri.tryParse(raw);
+      });
+
+  static Future<void> clear() => _serialized(() async {
+        await _storage.delete(key: _key);
+      });
 }
 
 class DeepLinkListener extends ConsumerStatefulWidget {

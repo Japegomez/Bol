@@ -38,6 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           defaultTargetPlatform == TargetPlatform.macOS);
 
   Future<void> _runAuth(Future<void> Function() action) async {
+    final l10n = context.l10n;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -52,9 +53,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on AuthCancelledException {
       // User dismissed the provider sheet — no error banner.
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      if (mounted) setState(() => _errorMessage = e.message);
+    } catch (_) {
+      // Don't surface raw exception details; show a generic message.
+      if (mounted) setState(() => _errorMessage = l10n.genericErrorMessage);
     } finally {
       ref.read(authOperationInProgressProvider.notifier).state = false;
       if (mounted) setState(() => _isLoading = false);

@@ -163,6 +163,13 @@ class AppLocalizationsGl extends AppLocalizations {
   String get minSixCharacters => 'Mínimo 6 caracteres';
 
   @override
+  String get passwordTooShort =>
+      'O contrasinal debe ter polo menos 8 caracteres';
+
+  @override
+  String get passwordTooWeak => 'O contrasinal debe incluír letras e números';
+
+  @override
   String get confirmPasswordLabel => 'Confirmar contrasinal';
 
   @override
@@ -680,6 +687,22 @@ class AppLocalizationsGl extends AppLocalizations {
   String get shareLinkInvalid => 'Esta ligazón non é válida';
 
   @override
+  String get revokeShareLink => 'Revogar enlace de compartir';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'Isto invalidará o enlace privado actual. Quen teña o enlace xa non poderá abrir esta receita.';
+
+  @override
+  String get revoke => 'Revogar';
+
+  @override
+  String get shareLinkRevoked => 'Enlace revogado';
+
+  @override
+  String get noActiveShareLink => 'Non hai ningún enlace activo para revogar';
+
+  @override
   String get clearListTooltip => 'Limpar lista';
 
   @override
@@ -913,6 +936,16 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get alreadyMember => 'Xa pertences a este fogar';
+
+  @override
+  String get tooManyAttempts =>
+      'Demasiados intentos. Téntao de novo nuns minutos.';
+
+  @override
+  String get pleaseWaitMoment => 'Espera un momento antes de tentar de novo.';
+
+  @override
+  String get genericErrorMessage => 'Algo saíu mal. Téntao de novo.';
 
   @override
   String get codeMustBeSixChars => 'O código debe ter 6 caracteres';
@@ -1489,6 +1522,10 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Ex.: tortilla de patacas para 4 persoas con cebola...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Indica ao asistente que facer coa foto (ex.: recrear este prato, extraer a receita...)';
 
   @override
   String get recipeAssistantListening => 'Escoitando…';

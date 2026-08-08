@@ -1,7 +1,7 @@
 name: meal_planner
 description: MealPlanner — plan your weekly meals and generate shopping lists.
 publish_to: "none"
-version: 1.2.0+5
+version: 1.2.1+6
 
 environment:
   sdk: ^3.12.2
@@ -38,7 +38,7 @@ dependencies:
   url_launcher: ^6.3.1
   shared_preferences: ^2.5.5
   drift: ^2.26.0
-  sqlite3_flutter_libs: ^0.5.32
+  sqlite3: ^3.0.0
   path_provider: ^2.1.5
   path: ^1.9.1
   uuid: ^4.5.1
@@ -64,3 +64,11 @@ flutter_launcher_icons:
 flutter:
   generate: true
   uses-material-design: true
+
+# Bundle SQLite3MultipleCiphers (SQLCipher-compatible) so the local drift
+# database can be encrypted with PRAGMA key. Replaces the legacy
+# sqlite3_flutter_libs dependency.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc

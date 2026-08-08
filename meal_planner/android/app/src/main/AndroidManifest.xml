@@ -12,7 +12,10 @@
     <application
         android:label="Böl"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <meta-data
             android:name="google_analytics_adid_collection_enabled"
             android:value="true" />
@@ -65,12 +68,6 @@
                     android:scheme="https"
                     android:host="mealplanner-a818e.firebaseapp.com"
                     android:pathPrefix="/h/"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="bol"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

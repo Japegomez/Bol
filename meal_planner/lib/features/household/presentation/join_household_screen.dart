@@ -66,7 +66,14 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
     if (message.contains('Already a member')) {
       return l10n.alreadyMember;
     }
-    return message;
+    if (message.contains('Too many attempts')) {
+      return l10n.tooManyAttempts;
+    }
+    if (message.contains('Please wait a moment')) {
+      return l10n.pleaseWaitMoment;
+    }
+    // Don't surface raw backend exception strings to the user.
+    return l10n.genericErrorMessage;
   }
 
   @override

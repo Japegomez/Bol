@@ -162,6 +162,14 @@ class AppLocalizationsEu extends AppLocalizations {
   String get minSixCharacters => 'Gutxienez 6 karaktere';
 
   @override
+  String get passwordTooShort =>
+      'Pasahitzak gutxienez 8 karaktere izan behar ditu';
+
+  @override
+  String get passwordTooWeak =>
+      'Pasahitzak letrak eta zenbakiak izan behar ditu';
+
+  @override
   String get confirmPasswordLabel => 'Berretsi pasahitza';
 
   @override
@@ -681,6 +689,22 @@ class AppLocalizationsEu extends AppLocalizations {
   String get shareLinkInvalid => 'Esteka hau ez da baliozkoa';
 
   @override
+  String get revokeShareLink => 'Ezeztatu partekatzeko esteka';
+
+  @override
+  String get revokeShareLinkConfirm =>
+      'Uneko esteka pribatua baliogabetuko du. Esteka duenak ezin izango du errezeta hau ireki.';
+
+  @override
+  String get revoke => 'Ezeztatu';
+
+  @override
+  String get shareLinkRevoked => 'Esteka ezeztatuta';
+
+  @override
+  String get noActiveShareLink => 'Ez dago ezeztatzeko esteka aktiborik';
+
+  @override
   String get clearListTooltip => 'Garbitu zerrenda';
 
   @override
@@ -914,6 +938,17 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get alreadyMember => 'Dagoeneko etxe honetakoa zara';
+
+  @override
+  String get tooManyAttempts =>
+      'Saiakera gehiegi. Saiatu berriro minutu batzuetan.';
+
+  @override
+  String get pleaseWaitMoment =>
+      'Itxaron une batez berriro saiatu baino lehen.';
+
+  @override
+  String get genericErrorMessage => 'Zerbait gaizki joan da. Saiatu berriro.';
 
   @override
   String get codeMustBeSixChars => 'Kodeak 6 karaktere izan behar ditu';
@@ -1487,6 +1522,10 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get recipeAssistantPromptHint =>
       'Adib.: patata tortilla 4 pertsonentzat tipulaarekin...';
+
+  @override
+  String get recipeAssistantImagePromptHint =>
+      'Esan laguntzaileari zer egin argazkiarekin (adib.: plater hau birsortu, errezeta atera...)';
 
   @override
   String get recipeAssistantListening => 'Entzuten…';

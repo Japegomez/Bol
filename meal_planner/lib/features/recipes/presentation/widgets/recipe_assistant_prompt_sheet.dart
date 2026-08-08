@@ -404,7 +404,9 @@ class _RecipeAssistantPromptSheetState
             decoration: InputDecoration(
               hintText: _listening
                   ? l10n.recipeAssistantListening
-                  : l10n.recipeAssistantPromptHint,
+                  : _imageBytes != null
+                      ? l10n.recipeAssistantImagePromptHint
+                      : l10n.recipeAssistantPromptHint,
               border: const OutlineInputBorder(),
               errorText: _error,
             ),
@@ -414,7 +416,32 @@ class _RecipeAssistantPromptSheetState
           ),
           const SizedBox(height: 8),
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              if (_pickingImage) ...[
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 12),
+              ],
+              IconButton.filledTonal(
+                onPressed: isOffline || _pickingImage || _listening
+                    ? null
+                    : () => _pickImage(ImageSource.camera),
+                tooltip: l10n.camera,
+                icon: const Icon(Icons.photo_camera_outlined),
+              ),
+              const SizedBox(width: 4),
+              IconButton.filledTonal(
+                onPressed: isOffline || _pickingImage || _listening
+                    ? null
+                    : () => _pickImage(ImageSource.gallery),
+                tooltip: l10n.choosePhoto,
+                icon: const Icon(Icons.photo_library_outlined),
+              ),
+              const SizedBox(width: 4),
               IconButton.filledTonal(
                 onPressed: isOffline ||
                         _pickingImage ||
@@ -433,30 +460,6 @@ class _RecipeAssistantPromptSheetState
                     : null,
                 icon: Icon(_listening ? Icons.mic : Icons.mic_none),
               ),
-              const SizedBox(width: 4),
-              IconButton.filledTonal(
-                onPressed: isOffline || _pickingImage || _listening
-                    ? null
-                    : () => _pickImage(ImageSource.gallery),
-                tooltip: l10n.choosePhoto,
-                icon: const Icon(Icons.photo_library_outlined),
-              ),
-              const SizedBox(width: 4),
-              IconButton.filledTonal(
-                onPressed: isOffline || _pickingImage || _listening
-                    ? null
-                    : () => _pickImage(ImageSource.camera),
-                tooltip: l10n.camera,
-                icon: const Icon(Icons.photo_camera_outlined),
-              ),
-              if (_pickingImage) ...[
-                const SizedBox(width: 12),
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ],
             ],
           ),
           if (_imageBytes != null) ...[
