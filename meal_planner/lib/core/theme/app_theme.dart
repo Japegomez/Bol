@@ -17,6 +17,13 @@ abstract final class AppTheme {
       border: OutlineInputBorder(),
       filled: true,
     ),
+    scrollbarTheme: const ScrollbarThemeData(
+      thumbVisibility: WidgetStatePropertyAll(true),
+      trackVisibility: WidgetStatePropertyAll(true),
+      thickness: WidgetStatePropertyAll(8),
+      radius: Radius.circular(8),
+      interactive: true,
+    ),
   );
 
   static final ThemeData dark = ThemeData(
@@ -29,6 +36,13 @@ abstract final class AppTheme {
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(),
       filled: true,
+    ),
+    scrollbarTheme: const ScrollbarThemeData(
+      thumbVisibility: WidgetStatePropertyAll(true),
+      trackVisibility: WidgetStatePropertyAll(true),
+      thickness: WidgetStatePropertyAll(8),
+      radius: Radius.circular(8),
+      interactive: true,
     ),
   );
 }

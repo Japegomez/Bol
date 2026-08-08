@@ -133,29 +133,27 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                     );
                   }
 
-                  return Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Scrollbar(
+                  return Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    interactive: true,
+                    thickness: 8,
+                    radius: const Radius.circular(8),
+                    child: ListView.separated(
                       controller: _scrollController,
-                      thumbVisibility: true,
-                      trackVisibility: true,
-                      child: Directionality(
-                        textDirection: TextDirection.ltr,
-                        child: ListView.separated(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            return _DraggableRecipeCard(
-                              recipe: filtered[index],
-                              onDragUpdate: widget.onDragUpdate,
-                              onDragEnd: widget.onDragEnd,
-                            );
-                          },
-                        ),
-                      ),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(12, 0, 16, 12),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        return _DraggableRecipeCard(
+                          recipe: filtered[index],
+                          onDragUpdate: widget.onDragUpdate,
+                          onDragEnd: widget.onDragEnd,
+                        );
+                      },
                     ),
                   );
                 },
