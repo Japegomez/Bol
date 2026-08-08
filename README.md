@@ -20,7 +20,7 @@ _Aplicación móvil multiplataforma para organizar comidas, listas de la compra 
 **Disponible en las principales tiendas**
 
 [![Google Play](https://img.shields.io/badge/Google_Play-Böl-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.japegomez.meal_planner)
-[![App Store](https://img.shields.io/badge/App_Store-Böl-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/)
+[![App Store](https://img.shields.io/badge/App_Store-Böl-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/es/app/b%C3%B6l/id6785110375)
 
 ---
 
@@ -212,7 +212,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 | Plataforma | Enlace | Estado |
 | ------------------ | ------------------------------------------------------------------------------------------ | ----------------------------------- |
 | 🤖 **Google Play** | [Böl](https://play.google.com/store/apps/details?id=com.japegomez.meal_planner) | Prueba cerrada / publicación |
-| 🍎 **App Store** | TestFlight / App Store | Publicación |
+| 🍎 **App Store** | [Böl](https://apps.apple.com/es/app/b%C3%B6l/id6785110375) | Publicación |
 | 🌐 **Web** | Firebase Hosting | Landing de compartición / soporte |
 
 Los builds se generan con **Codemagic** en push a `main`; QA y checks en **GitHub Actions**.
