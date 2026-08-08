@@ -159,8 +159,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               if (value == null || value.isEmpty) {
                                 return l10n.enterPasswordRegister;
                               }
-                              if (value.length < 6) {
-                                return l10n.minSixCharacters;
+                              if (value.length < 8) {
+                                return l10n.passwordTooShort;
+                              }
+                              final hasLetter = RegExp(r'[A-Za-z]').hasMatch(value);
+                              final hasDigit = RegExp(r'[0-9]').hasMatch(value);
+                              if (!hasLetter || !hasDigit) {
+                                return l10n.passwordTooWeak;
                               }
                               return null;
                             },

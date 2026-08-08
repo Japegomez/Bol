@@ -10,7 +10,7 @@ class ProfileRepository {
   Future<Profile?> fetchProfile(String userId) async {
     final data = await supabase
         .from(Profile.table_name)
-        .select()
+        .select('id, username, avatar_url, created_at')
         .eq(Profile.c_id, userId)
         .maybeSingle();
 
@@ -18,7 +18,21 @@ class ProfileRepository {
 
     final profile = Profile.fromJson(data);
     final avatarUrl = await _resolveAvatarUrl(profile.avatarUrl);
-    return profile.copyWith(avatarUrl: avatarUrl);
+
+    // is_admin is not exposed at the column level to peers (see migration
+    // 043). For the current user's own profile, read the admin flag via
+    // the SECURITY DEFINER auth_is_admin() RPC instead.
+    var isAdmin = profile.isAdmin;
+    if (userId == supabase.auth.currentUser?.id) {
+      try {
+        final result = await supabase.rpc<dynamic>('auth_is_admin');
+        isAdmin = result == true;
+      } catch (_) {
+        // Best-effort: leave isAdmin as parsed (false) if the RPC fails.
+      }
+    }
+
+    return profile.copyWith(avatarUrl: avatarUrl, isAdmin: isAdmin);
   }
 
   Future<void> updateProfile({
