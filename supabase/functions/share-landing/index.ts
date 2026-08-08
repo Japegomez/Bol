@@ -6,6 +6,7 @@ const FIREBASE_HOST = "https://mealplanner-a818e.web.app";
 const OG_BUCKET = "share-og";
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.japegomez.meal_planner";
+const APP_STORE_URL = "https://apps.apple.com/es/app/b%C3%B6l/id6785110375";
 
 function escapeHtml(s: string): string {
   return s
@@ -29,6 +30,7 @@ function html({
   const d = escapeHtml(description);
   const u = escapeHtml(pageUrl);
   const playUrl = escapeHtml(PLAY_STORE_URL);
+  const appUrl = escapeHtml(APP_STORE_URL);
 
   return `<!DOCTYPE html>
 <html lang="es" prefix="og: https://ogp.me/ns#">
@@ -62,7 +64,8 @@ function html({
       <h1>${t}</h1>
       <p>${d}</p>
       <div class="actions">
-        <a class="btn" href="${playUrl}">Instalar la app</a>
+        <a class="btn" href="${appUrl}">App Store</a>
+        <a class="btn" href="${playUrl}">Google Play</a>
       </div>
       <p class="hint">Si no tienes la app, instálala y vuelve a abrir este enlace.</p>
     </main>

@@ -48,6 +48,9 @@
         border-radius: 12px;
         font-weight: 600;
       }
+      a.button + a.button {
+        margin-left: 8px;
+      }
       .hint {
         margin-top: 18px;
         font-size: 0.9rem;
@@ -60,9 +63,14 @@
       <p id="message">Instala Böl para abrir este enlace.</p>
       <a
         class="button"
-        id="install"
+        id="install-google"
         href="https://play.google.com/store/apps/details?id=com.japegomez.meal_planner"
-      >Instalar la app</a>
+      >Google Play</a>
+      <a
+        class="button"
+        id="install-apple"
+        href="https://apps.apple.com/es/app/b%C3%B6l/id6785110375"
+      >App Store</a>
       <p class="hint">
         Si no tienes la app instalada, instálala y vuelve a abrir este enlace.
       </p>

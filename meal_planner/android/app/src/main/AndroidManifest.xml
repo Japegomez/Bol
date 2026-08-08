@@ -52,7 +52,7 @@
                 <data
                     android:scheme="https"
                     android:host="mealplanner-a818e.web.app"
-                    android:pathPrefix="/h"/>
+                    android:pathPrefix="/h/"/>
                 <data
                     android:scheme="https"
                     android:host="mealplanner-a818e.firebaseapp.com"
@@ -64,7 +64,7 @@
                 <data
                     android:scheme="https"
                     android:host="mealplanner-a818e.firebaseapp.com"
-                    android:pathPrefix="/h"/>
+                    android:pathPrefix="/h/"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
