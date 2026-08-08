@@ -242,8 +242,8 @@ function getLlmConfig() {
   const baseUrl = Deno.env.get("LLM_BASE_URL") ??
     "https://generativelanguage.googleapis.com/v1beta/openai/";
   // gemini-2.5-flash is blocked for new Google AI projects (404 NOT_FOUND).
-  // Prefer gemini-3.1-flash-lite (cheap) or gemini-3.5-flash (higher quality).
-  const model = Deno.env.get("LLM_MODEL") ?? "gemini-3.1-flash-lite";
+  // Prefer gemini-3.5-flash-lite (cheap multimodal) or gemini-3.5-flash (higher quality).
+  const model = Deno.env.get("LLM_MODEL") ?? "gemini-3.5-flash-lite";
   return { apiKey, baseUrl: baseUrl.replace(/\/?$/, "/"), model };
 }
 
@@ -254,7 +254,25 @@ function sleep(ms: number): Promise<void> {
 type CallLlmOptions = {
   preferJsonObject?: boolean;
   minMaxTokens?: number;
+  /** Optional image as data URL payload for multimodal chat completions. */
+  image?: { mimeType: string; base64: string };
 };
+
+function buildUserContent(
+  userPrompt: string,
+  image?: { mimeType: string; base64: string },
+): string | Array<Record<string, unknown>> {
+  if (!image) return userPrompt;
+  return [
+    { type: "text", text: userPrompt },
+    {
+      type: "image_url",
+      image_url: {
+        url: `data:${image.mimeType};base64,${image.base64}`,
+      },
+    },
+  ];
+}
 
 function extractJsonPayload(content: string): Record<string, unknown> | null {
   const trimmed = content.trim();
@@ -496,13 +514,15 @@ async function callLlm(
       throw new Error("rate_limited");
     }
 
+    const userContent = buildUserContent(userPrompt, options.image);
+
     const body: Record<string, unknown> = {
       model,
       temperature: 0.4,
       max_tokens: effectiveMax,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+        { role: "user", content: userContent },
       ],
     };
 
@@ -518,7 +538,7 @@ async function callLlm(
           content:
             `${systemPrompt}\n\nRespond with a single valid JSON object only. No markdown, no commentary.`,
         },
-        { role: "user", content: userPrompt },
+        { role: "user", content: userContent },
       ];
     } else {
       body.response_format = {
@@ -636,11 +656,16 @@ async function callLlm(
 
 const RECIPE_SYSTEM_PROMPT = `You are a recipe assistant for a meal planning app. You ONLY help users create or adapt recipes into the app's structured format.
 
-Two modes of input (detect automatically):
+Three modes of input (detect automatically):
 1) SHORT DESCRIPTION — the user names or briefly describes a dish (e.g. "tortilla de patatas para 4"). Invent a complete, realistic recipe.
 2) FULL RECIPE — the user pastes an existing recipe (ingredients list, method/steps, servings, tips, etc.). ADAPT it to the app schema; do NOT invent a different dish.
+3) IMAGE — the user attaches a photo of a recipe (book, screen, handwritten card, packaging) and/or a photo of ingredients/food. Extract or adapt using the image. If there is also text, follow the text as instructions (adapt, scale servings, dietary change, "what can I cook with this", etc.) while using the image as context.
 
-When adapting a full recipe (mode 2):
+When the input is image-only (no user text):
+- Treat it as FULL RECIPE extraction from the image. Transcribe ingredients, quantities, steps, servings, and tips from the photo as faithfully as possible.
+- If the image shows a finished dish or ingredients without a written recipe, invent a realistic recipe that matches what you see and set a clear title.
+
+When adapting a full recipe (mode 2 or readable recipe text in an image):
 - Preserve the dish: keep the same title meaning, servings (if given), and cooking intent.
 - Include EVERY edible ingredient from the input. Do not omit ingredients. Map each to name, quantity, unit, and category.
 - Parse quantities and units from the text (e.g. "2 cebollas" → quantity 2, unit "unidad"; "200 g de queso" → 200, "g"). Use isToTaste=true when the source says "al gusto" / "to taste" / similar.
@@ -649,9 +674,9 @@ When adapting a full recipe (mode 2):
 - Keep any tips/notes from the source in tips (or weave them into steps if they are pure instructions).
 - Still apply the naming, water, and tag rules below.
 
-Shared rules (both modes):
-- If the user prompt is NOT a request to create, describe, or paste a recipe, respond with JSON containing only: {"error":"not_a_recipe_request"} and no other fields.
-- Write ALL recipe content (title, ingredient names, steps, tips) in the SAME language as the user's prompt. Set detectedLang to the ISO 639-1 code of that language (e.g. es, en, ca, eu, gl, pt, it).
+Shared rules (all modes):
+- If the user prompt is NOT a request to create, describe, paste, or extract a recipe (and there is no recipe-related image), respond with JSON containing only: {"error":"not_a_recipe_request"} and no other fields.
+- Write ALL recipe content (title, ingredient names, steps, tips) in the SAME language as the user's prompt. If there is no prompt text, use the language of the recipe text in the image; if that is unclear, use Spanish (es). Set detectedLang to the ISO 639-1 code of that language (e.g. es, en, ca, eu, gl, pt, it).
 - If the user does not specify servings, choose the most common serving count for that dish in its cuisine.
 - Use realistic quantities and appropriate units from the allowed enum. Use "unidad" for countable items, weight/volume units when appropriate, and relative units (cucharada, pizca, etc.) when fitting.
 - Assign each ingredient the best matching category key from the allowed enum.
@@ -666,6 +691,45 @@ Shared rules (both modes):
 - Estimate nutritional values PER SERVING as whole integers only (no decimals): calories in kcal, macros and fiber in grams. Provide your best reasonable estimates.
 - prepTime and cookTime are in minutes; use null if unknown.
 - Do not include photo references.`;
+
+const IMAGE_ONLY_USER_PROMPT =
+  "Extract the recipe from this image and fill the structured recipe fields. Prefer faithful transcription of any visible ingredients, quantities, and steps.";
+
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+/** Max base64 character length (~1.5 MB binary). */
+const MAX_IMAGE_BASE64_LENGTH = Math.floor(1.5 * 1024 * 1024 * 4 / 3);
+
+function parseRecipeImage(
+  body: Record<string, unknown> | null | undefined,
+): { mimeType: string; base64: string } | null | "invalid" | "too_large" {
+  const rawBase64 = typeof body?.imageBase64 === "string"
+    ? body.imageBase64.trim()
+    : "";
+  if (!rawBase64) return null;
+
+  if (rawBase64.length > MAX_IMAGE_BASE64_LENGTH) {
+    return "too_large";
+  }
+
+  const mimeRaw = typeof body?.imageMimeType === "string"
+    ? body.imageMimeType.trim().toLowerCase()
+    : "";
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(mimeRaw)) {
+    return "invalid";
+  }
+
+  // Reject obvious non-base64 payloads early.
+  if (!/^[A-Za-z0-9+/=\s]+$/.test(rawBase64)) {
+    return "invalid";
+  }
+
+  return { mimeType: mimeRaw, base64: rawBase64.replace(/\s+/g, "") };
+}
 
 const NUTRITION_SYSTEM_PROMPT = `You are a nutrition assistant for a meal planning app. Given a recipe title, servings count, and ingredient list, estimate the nutritional information PER SERVING.
 
@@ -781,19 +845,39 @@ Deno.serve(async (req) => {
 
     if (mode === "generate_recipe") {
       const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
-      if (!prompt) {
-        return jsonResponse({ error: "missing_prompt" }, 400);
+      const imageResult = parseRecipeImage(body as Record<string, unknown>);
+
+      if (imageResult === "too_large") {
+        return jsonResponse({ error: "image_too_large" }, 400);
+      }
+      if (imageResult === "invalid") {
+        return jsonResponse({ error: "invalid_image" }, 400);
+      }
+
+      const image = imageResult;
+      if (!prompt && !image) {
+        return jsonResponse({ error: "missing_input" }, 400);
       }
 
       if (prompt.length > 3000) {
         return jsonResponse({ error: "prompt_too_long" }, 400);
       }
 
+      let userPrompt = prompt;
+      if (image && !prompt) {
+        userPrompt = IMAGE_ONLY_USER_PROMPT;
+      } else if (image && prompt) {
+        userPrompt =
+          `${prompt}\n\nUse the attached image as additional context for this recipe request.`;
+      }
+
       const result = await callLlm(
         RECIPE_SYSTEM_PROMPT,
-        prompt,
+        userPrompt,
         "generated_recipe",
         recipeSchema,
+        8192,
+        image ? { image } : {},
       );
 
       if (result.error === "not_a_recipe_request") {

@@ -3,11 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 String resolveRecipeAssistantError(String error, AppLocalizations l10n) {
   return switch (error) {
@@ -20,6 +24,9 @@ String resolveRecipeAssistantError(String error, AppLocalizations l10n) {
     recipeAssistantNotConfiguredKey => l10n.recipeAssistantNotConfigured,
     recipeAssistantTimeoutKey => l10n.recipeAssistantTimeout,
     recipeAssistantPromptTooLongKey => l10n.recipeAssistantPromptTooLong,
+    recipeAssistantMissingInputKey => l10n.recipeAssistantMissingInput,
+    recipeAssistantImageTooLargeKey => l10n.recipeAssistantImageTooLarge,
+    recipeAssistantInvalidImageKey => l10n.recipeAssistantInvalidImage,
     _ => l10n.recipeAssistantFailed,
   };
 }
@@ -71,9 +78,11 @@ Future<T> runWithRecipeAssistantBlockingOverlay<T>({
   }
 }
 
-/// Returns the user's prompt, or `null` if the sheet was dismissed.
-Future<String?> showRecipeAssistantPromptSheet(BuildContext context) {
-  return showModalBottomSheet<String>(
+/// Returns the user's prompt input, or `null` if the sheet was dismissed.
+Future<RecipeAssistantPromptInput?> showRecipeAssistantPromptSheet(
+  BuildContext context,
+) {
+  return showModalBottomSheet<RecipeAssistantPromptInput>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -93,7 +102,19 @@ class _RecipeAssistantPromptSheetState
     extends ConsumerState<_RecipeAssistantPromptSheet> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
+  final _picker = ImagePicker();
+  final _speech = SpeechToText();
+
+  Uint8List? _imageBytes;
+  String? _imageMimeType;
   String? _error;
+  bool _pickingImage = false;
+
+  bool _speechReady = false;
+  bool _speechUnavailable = false;
+  bool _listening = false;
+  bool _speechInitInFlight = false;
+  String _dictationPrefix = '';
 
   @override
   void initState() {
@@ -105,15 +126,234 @@ class _RecipeAssistantPromptSheetState
 
   @override
   void dispose() {
+    unawaited(_speech.stop());
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    final prompt = _controller.text.trim();
-    if (prompt.isEmpty) return;
-    Navigator.pop(context, prompt);
+  bool get _canSubmit {
+    final hasText = _controller.text.trim().isNotEmpty;
+    final hasImage = _imageBytes != null;
+    return hasText || hasImage;
+  }
+
+  Future<bool> _ensureSpeechReady() async {
+    if (_speechReady) return true;
+    if (_speechUnavailable) return false;
+    if (_speechInitInFlight) return false;
+
+    _speechInitInFlight = true;
+    try {
+      final available = await _speech.initialize(
+        onError: _onSpeechError,
+        onStatus: _onSpeechStatus,
+      );
+      if (!mounted) return false;
+      setState(() {
+        _speechReady = available;
+        _speechUnavailable = !available;
+        if (!available) {
+          _error = context.l10n.recipeAssistantSpeechUnavailable;
+        }
+      });
+      return available;
+    } catch (_) {
+      if (!mounted) return false;
+      setState(() {
+        _speechReady = false;
+        _speechUnavailable = true;
+        _error = context.l10n.recipeAssistantSpeechUnavailable;
+      });
+      return false;
+    } finally {
+      _speechInitInFlight = false;
+    }
+  }
+
+  void _onSpeechStatus(String status) {
+    if (!mounted) return;
+    final listening = status == SpeechToText.listeningStatus;
+    if (_listening != listening) {
+      setState(() => _listening = listening);
+    }
+  }
+
+  void _onSpeechError(SpeechRecognitionError error) {
+    if (!mounted) return;
+    setState(() {
+      _listening = false;
+      if (error.permanent) {
+        _speechUnavailable = true;
+        _error = context.l10n.recipeAssistantSpeechUnavailable;
+      } else {
+        _error = context.l10n.recipeAssistantSpeechFailed;
+      }
+    });
+  }
+
+  Future<String?> _speechLocaleId() async {
+    final appLocale = Localizations.localeOf(context);
+    final locales = await _speech.locales();
+    if (locales.isEmpty) return null;
+
+    final language = appLocale.languageCode.toLowerCase();
+    final country = appLocale.countryCode?.toLowerCase();
+
+    if (country != null && country.isNotEmpty) {
+      final exact = '$language-$country';
+      for (final locale in locales) {
+        if (locale.localeId.toLowerCase() == exact) {
+          return locale.localeId;
+        }
+      }
+    }
+
+    for (final locale in locales) {
+      final id = locale.localeId.toLowerCase();
+      if (id == language || id.startsWith('$language-') || id.startsWith('${language}_')) {
+        return locale.localeId;
+      }
+    }
+
+    return (await _speech.systemLocale())?.localeId;
+  }
+
+  void _applyDictationText(String spoken, {required bool isFinal}) {
+    final spokenTrimmed = spoken.trim();
+    String combined;
+    if (_dictationPrefix.isEmpty) {
+      combined = spokenTrimmed;
+    } else if (spokenTrimmed.isEmpty) {
+      combined = _dictationPrefix;
+    } else {
+      combined = '$_dictationPrefix $spokenTrimmed';
+    }
+
+    if (combined.length > maxRecipeAssistantPromptLength) {
+      combined = combined.substring(0, maxRecipeAssistantPromptLength);
+    }
+
+    _controller.value = TextEditingValue(
+      text: combined,
+      selection: TextSelection.collapsed(offset: combined.length),
+    );
+
+    if (isFinal) {
+      _dictationPrefix = combined.trimRight();
+    }
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    if (!mounted) return;
+    _applyDictationText(result.recognizedWords, isFinal: result.finalResult);
+  }
+
+  Future<void> _toggleDictation() async {
+    if (_pickingImage) return;
+
+    if (_listening) {
+      await _speech.stop();
+      if (mounted) setState(() => _listening = false);
+      return;
+    }
+
+    setState(() => _error = null);
+    final ready = await _ensureSpeechReady();
+    if (!ready || !mounted) return;
+
+    _dictationPrefix = _controller.text.trimRight();
+    final localeId = await _speechLocaleId();
+    if (!mounted) return;
+
+    try {
+      await _speech.listen(
+        onResult: _onSpeechResult,
+        listenOptions: SpeechListenOptions(
+          partialResults: true,
+          cancelOnError: true,
+          listenMode: ListenMode.confirmation,
+          localeId: localeId,
+        ),
+      );
+      if (mounted) setState(() => _listening = true);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _listening = false;
+        _error = context.l10n.recipeAssistantSpeechFailed;
+      });
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    if (_pickingImage) return;
+    if (_listening) {
+      await _speech.stop();
+      if (mounted) setState(() => _listening = false);
+    }
+
+    setState(() {
+      _pickingImage = true;
+      _error = null;
+    });
+
+    try {
+      final file = await _picker.pickImage(
+        source: source,
+        maxWidth: 1280,
+        imageQuality: 70,
+      );
+      if (file == null || !mounted) return;
+
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+
+      if (bytes.isEmpty) {
+        setState(() => _error = context.l10n.recipeAssistantInvalidImage);
+        return;
+      }
+      if (bytes.length > maxRecipeAssistantImageBytes) {
+        setState(() => _error = context.l10n.recipeAssistantImageTooLarge);
+        return;
+      }
+
+      final mime = _mimeTypeForPath(file.path) ?? 'image/jpeg';
+      setState(() {
+        _imageBytes = bytes;
+        _imageMimeType = mime;
+        _error = null;
+      });
+    } on PlatformException {
+      if (!mounted) return;
+      setState(() => _error = context.l10n.recipeAssistantInvalidImage);
+    } finally {
+      if (mounted) setState(() => _pickingImage = false);
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _imageBytes = null;
+      _imageMimeType = null;
+      _error = null;
+    });
+  }
+
+  Future<void> _submit() async {
+    if (!_canSubmit) return;
+    if (_listening) {
+      await _speech.stop();
+    }
+    if (!mounted) return;
+    Navigator.pop(
+      context,
+      RecipeAssistantPromptInput(
+        prompt: _controller.text.trim(),
+        imageBytes: _imageBytes,
+        imageMimeType: _imageMimeType,
+      ),
+    );
   }
 
   @override
@@ -121,6 +361,9 @@ class _RecipeAssistantPromptSheetState
     final l10n = context.l10n;
     final isOffline = ref.watch(isOfflineProvider);
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final canGenerate =
+        !isOffline && _canSubmit && !_pickingImage && !_listening;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomInset),
@@ -141,7 +384,7 @@ class _RecipeAssistantPromptSheetState
           TextField(
             controller: _controller,
             focusNode: _focusNode,
-            enabled: !isOffline,
+            enabled: !isOffline && !_listening,
             maxLines: 5,
             minLines: 3,
             maxLength: maxRecipeAssistantPromptLength,
@@ -151,12 +394,82 @@ class _RecipeAssistantPromptSheetState
             ],
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
-              hintText: l10n.recipeAssistantPromptHint,
+              hintText: _listening
+                  ? l10n.recipeAssistantListening
+                  : l10n.recipeAssistantPromptHint,
               border: const OutlineInputBorder(),
               errorText: _error,
             ),
-            onSubmitted: (_) => _submit(),
+            onSubmitted: (_) {
+              if (!_listening) unawaited(_submit());
+            },
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              IconButton.filledTonal(
+                onPressed: isOffline || _pickingImage || _speechUnavailable
+                    ? null
+                    : () => unawaited(_toggleDictation()),
+                tooltip: _listening
+                    ? l10n.recipeAssistantStopDictation
+                    : l10n.recipeAssistantDictate,
+                style: _listening
+                    ? IconButton.styleFrom(
+                        backgroundColor: colorScheme.errorContainer,
+                        foregroundColor: colorScheme.onErrorContainer,
+                      )
+                    : null,
+                icon: Icon(_listening ? Icons.mic : Icons.mic_none),
+              ),
+              const SizedBox(width: 4),
+              IconButton.filledTonal(
+                onPressed: isOffline || _pickingImage || _listening
+                    ? null
+                    : () => _pickImage(ImageSource.gallery),
+                tooltip: l10n.choosePhoto,
+                icon: const Icon(Icons.photo_library_outlined),
+              ),
+              const SizedBox(width: 4),
+              IconButton.filledTonal(
+                onPressed: isOffline || _pickingImage || _listening
+                    ? null
+                    : () => _pickImage(ImageSource.camera),
+                tooltip: l10n.camera,
+                icon: const Icon(Icons.photo_camera_outlined),
+              ),
+              if (_pickingImage) ...[
+                const SizedBox(width: 12),
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ],
+          ),
+          if (_imageBytes != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.memory(
+                    _imageBytes!,
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: isOffline || _listening ? null : _removeImage,
+                  child: Text(l10n.remove),
+                ),
+              ],
+            ),
+          ],
           if (isOffline) ...[
             const SizedBox(height: 8),
             Text(
@@ -168,9 +481,7 @@ class _RecipeAssistantPromptSheetState
           ],
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: isOffline || _controller.text.trim().isEmpty
-                ? null
-                : _submit,
+            onPressed: canGenerate ? () => unawaited(_submit()) : null,
             icon: const Icon(Icons.auto_awesome),
             label: Text(l10n.recipeAssistantGenerate),
           ),
@@ -178,6 +489,15 @@ class _RecipeAssistantPromptSheetState
       ),
     );
   }
+}
+
+String? _mimeTypeForPath(String path) {
+  final lower = path.toLowerCase();
+  if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.webp')) return 'image/webp';
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+  // image_picker usually returns JPEG from camera; gallery may omit extension.
+  return 'image/jpeg';
 }
 
 Future<void> generateNutritionWithAssistant({

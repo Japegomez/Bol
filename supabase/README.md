@@ -106,11 +106,30 @@ La función `recipe-assistant` genera fichas de receta completas o estima la inf
 
 La función valida el JWT de Supabase, extrae el `user_id` real y aplica cuota por usuario y tope global antes de llamar al proveedor LLM.
 
-### Proveedor recomendado: Google Gemini 3.1 Flash-Lite (Opción A)
+### Modo `generate_recipe` (texto y/o imagen)
 
-**Mejor calidad-precio para es/en/ca/eu/gl/pt** en free tier. El endpoint es compatible con la API de OpenAI, así que solo cambian los secrets.
+El cliente puede enviar solo texto, solo una imagen, o ambos:
 
-> **Importante (julio 2026):** `gemini-2.5-flash` devuelve `404 NOT_FOUND` en proyectos/cuentas nuevas ("no longer available to new users"). Usa `gemini-3.1-flash-lite` (barato) o `gemini-3.5-flash` (más calidad).
+```json
+{
+  "mode": "generate_recipe",
+  "prompt": "versión vegana para 2",
+  "imageBase64": "<base64>",
+  "imageMimeType": "image/jpeg"
+}
+```
+
+- `prompt` y `imageBase64` son opcionales por separado, pero hace falta **al menos uno**.
+- MIME permitidos: `image/jpeg`, `image/png`, `image/webp`. Límite ~1.5 MB decodificados (base64).
+- Sin texto + imagen → el modelo extrae la receta de la foto.
+- Texto + imagen → usa ambos (adaptar, nevera, etc.).
+- El modelo debe soportar visión (Gemini Flash / Flash-Lite vía endpoint OpenAI-compatible).
+
+### Proveedor recomendado: Google Gemini 3.5 Flash-Lite
+
+**Mejor calidad-precio para es/en/ca/eu/gl/pt** en free tier (visión + texto). El endpoint es compatible con la API de OpenAI, así que solo cambian los secrets.
+
+> **Importante (julio 2026):** `gemini-2.5-flash` devuelve `404 NOT_FOUND` en proyectos/cuentas nuevas ("no longer available to new users"). Usa `gemini-3.5-flash-lite` (recomendado) o `gemini-3.5-flash` (más calidad).
 
 > **Trampa de facturación — IMPORTANTE:** Si habilitaste la facturación de Google Cloud para Translation API o Vision API, ese proyecto pasa al tier de pago de Gemini automáticamente. Para mantener el free tier de Gemini (sin billing), **usa dos proyectos GCP distintos**:
 >
@@ -127,7 +146,7 @@ echo "LLM_API_KEY=tu_clave_proyecto_gemini_sin_billing" > .env.local
 npx supabase secrets set \
   --env-file .env.local \
   LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/ \
-  LLM_MODEL=gemini-3.1-flash-lite \
+  LLM_MODEL=gemini-3.5-flash-lite \
   --project-ref hxtynisikjpwlvpdgdbt
 ```
 
@@ -143,7 +162,7 @@ npx supabase secrets set LLM_MODEL=gemini-3.5-flash --project-ref hxtynisikjpwlv
 |---|---|---|
 | `LLM_API_KEY` | — | API key del proveedor (obligatorio) |
 | `LLM_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai/` | Endpoint OpenAI-compatible |
-| `LLM_MODEL` | `gemini-3.1-flash-lite` | Modelo a invocar (`gemini-3.5-flash` si quieres más calidad) |
+| `LLM_MODEL` | `gemini-3.5-flash-lite` | Modelo a invocar (`gemini-3.5-flash` si quieres más calidad) |
 | `LLM_MAX_TOKENS` | `8192` (receta) / `4096` (nutrición) | Opcional; límite de tokens de salida |
 
 Para cambiar de proveedor, solo actualiza estos secrets; el código de la función y la app no cambian.
