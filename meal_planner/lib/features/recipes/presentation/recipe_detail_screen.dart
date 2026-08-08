@@ -30,9 +30,10 @@ import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
-  const RecipeDetailScreen({required this.recipeId, super.key});
+  const RecipeDetailScreen({required this.recipeId, this.sharedToken, super.key});
 
   final String recipeId;
+  final String? sharedToken;
 
   @override
   ConsumerState<RecipeDetailScreen> createState() =>
@@ -60,6 +61,36 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    if (widget.sharedToken != null) {
+      final sharedAsync =
+          ref.watch(sharedRecipeDetailProvider(widget.sharedToken!));
+      return Scaffold(
+        body: sharedAsync.when(
+          data: (detail) => _RecipeDetailBody(
+            recipeId: widget.recipeId,
+            ownerUserId: detail.recipe.userId,
+            photoUrl: detail.photoDisplayUrl,
+            title: detail.recipe.title,
+            servings: detail.recipe.servings,
+            prepTime: detail.recipe.prepTime,
+            cookTime: detail.recipe.cookTime,
+            tags: detail.recipe.tags,
+            isPublic: detail.recipe.isPublic,
+            isForked: detail.isForked,
+            ingredients: detail.ingredients,
+            steps: detail.steps,
+            nutrition: detail.nutrition,
+            tips: detail.recipe.tips,
+            sourceLang: detail.sourceLang,
+            sharedToken: widget.sharedToken,
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) =>
+              Center(child: Text(l10n.errorWithMessage('$error'))),
+        ),
+      );
+    }
+
     final displayAsync = ref.watch(recipeDisplayProvider(widget.recipeId));
 
     return Scaffold(
@@ -121,6 +152,7 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
     this.translationFailed = false,
     this.showingOriginal = false,
     this.onToggleOriginal,
+    this.sharedToken,
   });
 
   final String recipeId;
@@ -135,6 +167,7 @@ class _RecipeDetailBody extends ConsumerStatefulWidget {
   final bool isForked;
   final List<Ingredient> ingredients;
   final List<RecipeStep> steps;
+  final String? sharedToken;
   final NutritionInfo? nutrition;
   final String? tips;
   final String sourceLang;
@@ -266,7 +299,10 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     setState(() => _isForking = true);
     try {
       final newId =
-          await ref.read(recipesRepositoryProvider).forkIntoMyBook(widget.recipeId);
+          await ref.read(recipesRepositoryProvider).forkIntoMyBook(
+        widget.recipeId,
+        shareToken: widget.sharedToken,
+      );
       ref.invalidate(recipesProvider);
       ref.invalidate(recipeListProvider);
       if (!mounted) return;
@@ -281,6 +317,45 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
       );
     } finally {
       if (mounted) setState(() => _isForking = false);
+    }
+  }
+
+  Future<void> _revokeShareLink() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final dialogL10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(dialogL10n.revokeShareLink),
+          content: Text(dialogL10n.revokeShareLinkConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(dialogL10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(dialogL10n.revoke),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await ref
+          .read(recipeShareRepositoryProvider)
+          .revokePrivateShareLinks(widget.recipeId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.shareLinkRevoked)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorWithMessage('$e'))),
+      );
     }
   }
 
@@ -512,6 +587,12 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                       onPressed: _shareRecipe,
                     ),
             if (_isOwned) ...[
+              if (!_isPublic)
+                IconButton(
+                  icon: const Icon(Icons.link_off),
+                  tooltip: l10n.revokeShareLink,
+                  onPressed: _revokeShareLink,
+                ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: () =>

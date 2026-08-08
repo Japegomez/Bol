@@ -650,10 +650,16 @@ class RecipesRepository {
   }
 
   /// Copies another member's (or public/shared) recipe into the current user's book.
-  Future<String> forkIntoMyBook(String sourceRecipeId) async {
+  Future<String> forkIntoMyBook(
+    String sourceRecipeId, {
+    String? shareToken,
+  }) async {
     final newId = await supabase.rpc<dynamic>(
       'fork_recipe_into_my_book',
-      params: {'p_source_recipe_id': sourceRecipeId},
+      params: {
+        'p_source_recipe_id': sourceRecipeId,
+        if (shareToken != null) 'p_share_token': shareToken,
+      },
     );
     final id = newId.toString();
     await _cacheRecipeDetailBestEffort(id);

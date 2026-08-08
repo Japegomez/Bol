@@ -248,6 +248,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: ':id',
                     builder: (_, state) => RecipeDetailScreen(
                       recipeId: state.pathParameters['id']!,
+                      sharedToken: state.uri.queryParameters['shared'],
                     ),
                     routes: [
                       GoRoute(
