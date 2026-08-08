@@ -114,6 +114,7 @@ class _RecipeAssistantPromptSheetState
   bool _speechUnavailable = false;
   bool _listening = false;
   bool _speechInitInFlight = false;
+  bool _dictationStarting = false;
   String _dictationPrefix = '';
 
   @override
@@ -250,7 +251,7 @@ class _RecipeAssistantPromptSheetState
   }
 
   Future<void> _toggleDictation() async {
-    if (_pickingImage) return;
+    if (_pickingImage || _dictationStarting) return;
 
     if (_listening) {
       await _speech.stop();
@@ -258,31 +259,38 @@ class _RecipeAssistantPromptSheetState
       return;
     }
 
-    setState(() => _error = null);
-    final ready = await _ensureSpeechReady();
-    if (!ready || !mounted) return;
-
-    _dictationPrefix = _controller.text.trimRight();
-    final localeId = await _speechLocaleId();
-    if (!mounted) return;
-
+    setState(() {
+      _dictationStarting = true;
+      _error = null;
+    });
     try {
-      await _speech.listen(
-        onResult: _onSpeechResult,
-        listenOptions: SpeechListenOptions(
-          partialResults: true,
-          cancelOnError: true,
-          listenMode: ListenMode.confirmation,
-          localeId: localeId,
-        ),
-      );
-      if (mounted) setState(() => _listening = true);
-    } catch (_) {
+      final ready = await _ensureSpeechReady();
+      if (!ready || !mounted) return;
+
+      _dictationPrefix = _controller.text.trimRight();
+      final localeId = await _speechLocaleId();
       if (!mounted) return;
-      setState(() {
-        _listening = false;
-        _error = context.l10n.recipeAssistantSpeechFailed;
-      });
+
+      try {
+        await _speech.listen(
+          onResult: _onSpeechResult,
+          listenOptions: SpeechListenOptions(
+            partialResults: true,
+            cancelOnError: true,
+            listenMode: ListenMode.confirmation,
+            localeId: localeId,
+          ),
+        );
+        if (mounted) setState(() => _listening = true);
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _listening = false;
+          _error = context.l10n.recipeAssistantSpeechFailed;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _dictationStarting = false);
     }
   }
 
@@ -318,13 +326,13 @@ class _RecipeAssistantPromptSheetState
         return;
       }
 
-      final mime = _mimeTypeForPath(file.path) ?? 'image/jpeg';
+      final mime = _mimeTypeForBytes(bytes);
       setState(() {
         _imageBytes = bytes;
         _imageMimeType = mime;
         _error = null;
       });
-    } on PlatformException {
+    } on Object {
       if (!mounted) return;
       setState(() => _error = context.l10n.recipeAssistantInvalidImage);
     } finally {
@@ -408,7 +416,10 @@ class _RecipeAssistantPromptSheetState
           Row(
             children: [
               IconButton.filledTonal(
-                onPressed: isOffline || _pickingImage || _speechUnavailable
+                onPressed: isOffline ||
+                        _pickingImage ||
+                        _speechUnavailable ||
+                        _dictationStarting
                     ? null
                     : () => unawaited(_toggleDictation()),
                 tooltip: _listening
@@ -491,12 +502,33 @@ class _RecipeAssistantPromptSheetState
   }
 }
 
-String? _mimeTypeForPath(String path) {
-  final lower = path.toLowerCase();
-  if (lower.endsWith('.png')) return 'image/png';
-  if (lower.endsWith('.webp')) return 'image/webp';
-  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-  // image_picker usually returns JPEG from camera; gallery may omit extension.
+String _mimeTypeForBytes(Uint8List bytes) {
+  if (bytes.length >= 8 &&
+      bytes[0] == 0x89 &&
+      bytes[1] == 0x50 &&
+      bytes[2] == 0x4E &&
+      bytes[3] == 0x47 &&
+      bytes[4] == 0x0D &&
+      bytes[5] == 0x0A &&
+      bytes[6] == 0x1A &&
+      bytes[7] == 0x0A) {
+    return 'image/png';
+  }
+  if (bytes.length >= 12 &&
+      bytes[0] == 0x52 &&
+      bytes[1] == 0x49 &&
+      bytes[2] == 0x46 &&
+      bytes[3] == 0x46 &&
+      bytes[7] == 0x57 &&
+      bytes[8] == 0x45 &&
+      bytes[9] == 0x42 &&
+      bytes[10] == 0x50) {
+    return 'image/webp';
+  }
+  if (bytes.length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8) {
+    return 'image/jpeg';
+  }
+  // image_picker recompresses to JPEG by default; safe fallback.
   return 'image/jpeg';
 }
 
