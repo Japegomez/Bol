@@ -2,7 +2,7 @@
 abstract final class LegalUrls {
   static const base = String.fromEnvironment(
     'LEGAL_BASE_URL',
-    defaultValue: 'https://japegomez.github.io/meal_planner',
+    defaultValue: 'https://japegomez.github.io/Bol',
   );
 
   static String get terms => '$base/terminos.html';
