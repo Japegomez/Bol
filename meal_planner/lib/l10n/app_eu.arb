@@ -488,7 +488,7 @@
   "recipeAssistantPromptHint": "Adib.: patata tortilla 4 pertsonentzat tipulaarekin...",
   "recipeAssistantListening": "Entzuten…",
   "recipeAssistantDictate": "Diktatu",
-  "recipeAssistantStopDictation": "Gelditu diktao",
+  "recipeAssistantStopDictation": "Gelditu diktaketa",
   "recipeAssistantSpeechUnavailable": "Ahots-ezagutza ez dago erabilgarri. Gaitu ezazu Ezarpenetan edo idatzi zure eskaera.",
   "recipeAssistantSpeechFailed": "Ezin izan da ahotsa ezagutu. Saiatu berriro edo idatzi zure eskaera.",
   "recipeAssistantGenerate": "Errezeta sortu",

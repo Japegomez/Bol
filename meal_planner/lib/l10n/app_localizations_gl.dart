@@ -1494,7 +1494,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get recipeAssistantListening => 'Escoitando…';
 
   @override
-  String get recipeAssistantDictate => 'Dictar';
+  String get recipeAssistantDictate => 'Ditar';
 
   @override
   String get recipeAssistantStopDictation => 'Parar o ditado';

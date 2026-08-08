@@ -487,7 +487,7 @@
   "recipeAssistantDescription": "Dime o que che apetece, o que tes na neveira, pega unha receita, anexa unha foto ou dicta co micrófono.",
   "recipeAssistantPromptHint": "Ex.: tortilla de patacas para 4 persoas con cebola...",
   "recipeAssistantListening": "Escoitando…",
-  "recipeAssistantDictate": "Dictar",
+  "recipeAssistantDictate": "Ditar",
   "recipeAssistantStopDictation": "Parar o ditado",
   "recipeAssistantSpeechUnavailable": "O recoñecemento de voz non está dispoñible. Actívao en Axustes ou escribe a túa petición.",
   "recipeAssistantSpeechFailed": "Non se puido recoñecer a voz. Téntao de novo ou escribe a túa petición.",

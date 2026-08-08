@@ -1495,7 +1495,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get recipeAssistantDictate => 'Diktatu';
 
   @override
-  String get recipeAssistantStopDictation => 'Gelditu diktao';
+  String get recipeAssistantStopDictation => 'Gelditu diktaketa';
 
   @override
   String get recipeAssistantSpeechUnavailable =>
