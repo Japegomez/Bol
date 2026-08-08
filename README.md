@@ -1,3 +1,7 @@
+<div align="center">
+
+<img src="meal_planner/web/icons/Icon-512.png" alt="Böl logo" width="180"/>
+
 # 🍲 Böl
 
 ### Planifica tu semana. Comparte tu recetario. Cocina mejor.
@@ -19,6 +23,8 @@ _Aplicación móvil multiplataforma para organizar comidas, listas de la compra 
 [![App Store](https://img.shields.io/badge/App_Store-Böl-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/)
 
 ---
+
+</div>
 
 ## 📋 Visión del proyecto
 
