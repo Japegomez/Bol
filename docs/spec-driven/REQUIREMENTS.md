@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Julio 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Böl**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift (DB cifrada SQLCipher), filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025 + token-gate `038`/`039`), **fork atómico + rebuild compra con `is_checked`** (026), **remediación seguridad** (`037`–`043`). Hotfix **v1.2.1**.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Böl**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift (DB cifrada SQLCipher; migración plaintext con `VACUUM INTO` + `rekey` y reset si es ilegible), filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025 + token-gate `038`/`039`), **fork atómico + rebuild compra con `is_checked`** (026), **remediación seguridad** (`037`–`043`). Hotfix **v1.2.2**.
 
 ---
 
@@ -57,7 +57,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Actualizaciones forzadas | **`upgrader`** | Diálogo nativo cuando existe una versión mínima requerida en la store |
 | Valoración en tienda | **`in_app_review`** | Prompt nativo semanal (cooldown 7 días) al entrar en el home tras onboarding; CTA manual «Valorar la app» en Perfil abre la ficha de la store |
 | Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase (solo iOS/Android) |
-| Caché offline (móvil) | **Drift** + **sqlite3_flutter_libs** | SQLite local en iOS/Android: espejo de recetario, planificador y lista de compra; cola de operaciones pendientes |
+| Caché offline (móvil) | **Drift** + **sqlite3** (SQLite3MultipleCiphers) | SQLite local cifrado en iOS/Android: espejo de recetario, planificador y lista de compra; cola de operaciones pendientes |
 | Almacenamiento seguro | **`flutter_secure_storage`** | Token de sesión en Keychain (iOS) / Keystore (Android) en lugar de SharedPreferences |
 
 ---
@@ -242,7 +242,7 @@ La lista de la compra está asociada al hogar (o al usuario individual) y **no e
 **RF-OFF-06** Un banner persistente «Sin conexión» se muestra en la parte superior de la app mientras no hay red (solo móvil).  
 **RF-OFF-07** Al recuperar la conexión, `SyncService` reproduce las operaciones pendientes en orden y resuelve IDs temporales locales.
 
-> **Nota de implementación — caché local:** `lib/core/local_db/` (`AppDatabase` Drift, `LocalCacheStore`, conexión nativa SQLite). Cola en tabla local `pending_operations`. Providers: `isOfflineProvider`, `canEditOfflineProvider`. UI: `OfflineEntryListener`, `ConnectivityBanner`, gating en formularios y `home_shell.dart`. **No** se usa Drift/WASM en web.
+> **Nota de implementación — caché local:** `lib/core/local_db/` (`AppDatabase` Drift, `LocalCacheStore`, conexión nativa SQLite cifrada con sqlite3mc + clave en Keychain/Keystore). Migración de ficheros plaintext previos vía `VACUUM INTO` + `PRAGMA rekey`; si el fichero no abre, se borra la caché y se regenera desde el servidor. Cola en tabla local `pending_operations`. Providers: `isOfflineProvider`, `canEditOfflineProvider`. UI: `OfflineEntryListener`, `ConnectivityBanner`, gating en formularios y `home_shell.dart`. **No** se usa Drift/WASM en web.
 
 ---
 
@@ -512,7 +512,7 @@ lib/
 | `upgrader` | Diálogo de actualización forzada desde la store |
 | `in_app_review` | Prompt nativo semanal + apertura de ficha en store desde Perfil |
 | `connectivity_plus` | Detección de estado de red (móvil) |
-| `drift` + `sqlite3_flutter_libs` | Caché SQLite offline en iOS/Android |
+| `drift` + `sqlite3` (sqlite3mc) | Caché SQLite cifrada offline en iOS/Android |
 | `flutter_secure_storage` | Almacenamiento seguro de tokens (Keychain / Keystore) |
 
 > **Web:** `supabase_flutter` arrastra `passkeys_web` (WebAuthn). Incluir `web/passkeys_bundle.js` en `index.html` antes de `flutter_bootstrap.js`.
