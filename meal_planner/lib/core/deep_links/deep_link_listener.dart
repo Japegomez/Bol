@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meal_planner/core/config/share_urls.dart';
 import 'package:meal_planner/core/utils/logger.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
@@ -14,24 +15,43 @@ import 'package:shared_preferences/shared_preferences.dart';
 final pendingShareLinkProvider = StateProvider<Uri?>((ref) => null);
 
 /// Persists pending share links across cold starts / process death.
+///
+/// Stored in the platform keystore/keychain via flutter_secure_storage
+/// because the link carries a private share token that grants read access
+/// to someone else's recipe. SharedPreferences is plaintext on disk.
 abstract final class PendingShareLinkStore {
   static const _key = 'meal_planner.pending_share_link';
+  static const _legacyKey = 'meal_planner.pending_share_link';
+  static const _storage = FlutterSecureStorage();
+
+  /// One-time migration of any pending link previously stored in plaintext
+  /// SharedPreferences into secure storage. Safe to call on every launch.
+  static Future<void> _migrateFromLegacy() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final legacy = prefs.getString(_legacyKey);
+      if (legacy != null && legacy.isNotEmpty) {
+        await _storage.write(key: _key, value: legacy);
+        await prefs.remove(_legacyKey);
+      }
+    } catch (e) {
+      log.w('Pending share link legacy migration failed: $e');
+    }
+  }
 
   static Future<void> save(Uri uri) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, uri.toString());
+    await _storage.write(key: _key, value: uri.toString());
   }
 
   static Future<Uri?> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
+    await _migrateFromLegacy();
+    final raw = await _storage.read(key: _key);
     if (raw == null || raw.isEmpty) return null;
     return Uri.tryParse(raw);
   }
 
   static Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
+    await _storage.delete(key: _key);
   }
 }
 
