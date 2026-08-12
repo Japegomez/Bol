@@ -30,7 +30,7 @@ _Aplicación móvil multiplataforma para organizar comidas, listas de la compra 
 
 **Böl** es una app de planificación de comidas centrada en tres ideas: un **recetario propio** claro, un **planificador semanal** visual y una **lista de la compra** siempre sincronizada. Encima de esa base añade hogar compartido en tiempo real, modo cocina paso a paso, comunidad ligera y un **asistente de IA** que entiende texto, fotos de recetas y dictado por voz.
 
-El producto está pensado para uso real en casa: offline en modo individual, invitaciones al hogar por enlace, compartir recetas por WhatsApp/App Links y privacidad cuidada (RLS en Supabase, moderación de imágenes, consentimientos y eliminación de cuenta).
+El producto está pensado para uso real en casa: offline en modo individual, invitaciones al hogar por enlace, compartir recetas por WhatsApp/App Links y privacidad cuidada (RLS en Supabase, enlaces privados con token, moderación de imágenes, consentimientos y eliminación de cuenta).
 
 ---
 
@@ -85,8 +85,8 @@ El desarrollo de **Böl** se ha llevado a cabo bajo la filosofía de **Spec-Driv
 
 - **Offline-first** en modo individual con **Drift** (SQLite) y cola de sincronización.
 - **Tiempo real** en hogar compartido con Supabase Realtime.
-- **Seguridad**: RLS por fila, funciones `SECURITY DEFINER` controladas, secretos en Supabase, no en la app.
-- **Deep links universales**: `https://…/r|/p|/h` + esquema `bol://`.
+- **Seguridad**: RLS por fila, RPCs privilegiadas sin `EXECUTE` para `anon`, secretos en Supabase (nunca en la app). Los informes de vulnerabilidades van por [`SECURITY.md`](SECURITY.md), no por issues públicos.
+- **Deep links universales**: HTTPS App Links / Associated Domains (`/r`, `/p`, `/h`). El esquema custom `bol://` está retirado.
 
 ---
 
@@ -98,8 +98,8 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 
 **Cliente**
 - Bottom sheet en el recetario (`recipe_assistant_prompt_sheet.dart`).
-- Entrada: texto, **una imagen** (galería/cámara) o **dictado nativo** (`speech_to_text` en el dispositivo).
-- El dictado rellena el campo de texto; la imagen se comprime y se envía como base64.
+- Entrada: texto, **hasta 4 fotos** (galería/cámara) o **dictado nativo** (`speech_to_text` en el dispositivo).
+- El dictado rellena el campo de texto; las imágenes se comprimen y se envían como base64.
 
 **Backend: Edge Function `recipe-assistant`**
 - Endpoint OpenAI-compatible hacia **Google Gemini** (por defecto `gemini-3.5-flash-lite`, configurable con secrets `LLM_*`).
@@ -109,8 +109,8 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 - Regla de intención:
   - Solo imagen → **extrae** la receta de la foto.
   - Imagen + texto → usa ambos (adaptar, escalar, etc.).
-- **Cuotas y límites** (servidor, `check_and_increment_ai_usage`): 20/usuario/día, cooldown 5 s, 500 global/día, 50/IP/día. Gemini solo desde la Edge Function.
-- Errores localizados: offline, rate limit, imagen inválida/grande, speech no disponible, etc.
+- **Cuotas y límites** (servidor, `check_and_increment_ai_usage`; el mismo contador cubre receta, nutrición, `translate-recipe` y `moderate-image`): **20**/usuario/día, cooldown **5 s**, **500** global/día, **50**/IP/día (hash SHA-256). Agotar global o IP → `service_at_capacity`. Gemini solo desde la Edge Function.
+- Errores localizados: offline, rate limit, cuota, imagen inválida/grande, speech no disponible, etc.
 
 ### 2) Moderación de imágenes
 
@@ -120,6 +120,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 ### 3) Traducción de recetas
 
 - Edge Functions `translate-recipe` / `translate-titles` con Google Translate, cacheadas en PostgreSQL.
+- `translate-recipe` entra en la cuota de IA; `translate-titles` no.
 
 ### Gestión de costes
 
@@ -140,7 +141,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 | 🧭 **go_router** | Navegación + deep links |
 | 💾 **Drift** | SQLite local, caché y modo offline |
 | 🗣️ **speech_to_text** | Dictado nativo en el asistente |
-| 📷 **image_picker** | Foto de receta para la IA |
+| 📷 **image_picker** | Hasta 4 fotos de receta para la IA |
 | 🔐 **flutter_secure_storage** | Sesión segura |
 | 🌐 **app_links / share_plus** | Deep links y compartir |
 
@@ -159,7 +160,8 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 
 | Tecnología | Rol |
 | ------------------------------ | ---------------------------------------------------------------- |
-| 🧪 **GitHub Actions** | Lint, analyze, tests en PRs |
+| 🧪 **GitHub Actions** | Job `quality` en PRs/`push` a `develop` y `main`: format, analyze, tests + umbral de coverage |
+| 🤖 **Dependabot** | PRs semanales de `pub` y GitHub Actions hacia `develop` |
 | 🐰 **CodeRabbit** | Revisión automática de PRs y commits |
 | 📦 **Codemagic** | Builds Android (AAB) e iOS (IPA), submit a stores |
 | 🛡️ **Sentry** | Errores y rendimiento |
@@ -173,7 +175,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 ### 🍽️ Recetario
 
 - CRUD completo: foto moderada, ingredientes, pasos, nutrición y etiquetas
-- Creación manual o con **asistente IA**
+- Creación manual o con **asistente IA** (texto, dictado o hasta 4 fotos)
 - Traducción de títulos y fichas según idioma
 - Glosario culinario local
 
@@ -192,9 +194,10 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 
 ### 👨‍👩‍👧 Hogar y social
 
-- Hogar con invitación por **enlace `/h/<codigo>`** (App Links)
-- Compartir recetas por enlace (`/r` token, `/p` pública)
-- Explorar, feed, perfiles públicos y valoraciones
+- Hogar con invitación por **enlace `/h/<codigo>`** (App Links); códigos **nuevos de 8 caracteres** (los de 6 siguen válidos) y tope de intentos al unirse
+- Compartir recetas por enlace: `/r/<token>` (privado, caduca, **revocable**; lectura y fork exigen el token) y `/p/<id>` (pública)
+- Explorar y feed: tarjetas alineadas con el recetario (foto cuadrada, raciones, valoración y autor)
+- Perfiles públicos y valoraciones (las de recetas privadas no se listan a cualquiera)
 
 ### 🔥 Modo cocina
 
@@ -216,7 +219,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 | 🍎 **App Store** | [Böl](https://apps.apple.com/es/app/b%C3%B6l/id6785110375) | Publicación |
 | 🌐 **Web** | Firebase Hosting | Landing de compartición / soporte |
 
-Los builds se generan con **Codemagic** en push a `main`; QA y checks en **GitHub Actions**.
+Los builds se generan con **Codemagic** en push a `main`. En GitHub, el check **`quality`** (format + analyze + tests/coverage) corre en PRs y pushes a `develop`/`main`.
 
 ---
 
