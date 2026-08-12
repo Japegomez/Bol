@@ -99,8 +99,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         await notifier.updateAvatar(_pickedImage!);
       }
 
-      if (currentProfile == null ||
-          newUsername != currentProfile.username) {
+      if (currentProfile == null || newUsername != currentProfile.username) {
         await notifier.updateUsername(newUsername);
       }
 
@@ -126,9 +125,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.editProfile),
-      ),
+      appBar: AppBar(title: Text(l10n.editProfile)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -145,17 +142,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       backgroundImage: _pickedImageBytes != null
                           ? MemoryImage(_pickedImageBytes!)
                           : avatarUrl != null
-                              ? CachedNetworkImageProvider(avatarUrl)
-                              : null,
+                          ? CachedNetworkImageProvider(avatarUrl)
+                          : null,
                       child: _isModeratingImage
                           ? const CircularProgressIndicator()
                           : _pickedImageBytes == null && avatarUrl == null
-                              ? Icon(
-                                  Icons.person,
-                                  size: 56,
-                                  color: theme.colorScheme.onPrimaryContainer,
-                                )
-                              : null,
+                          ? Icon(
+                              Icons.person,
+                              size: 56,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            )
+                          : null,
                     ),
                     Positioned(
                       bottom: 0,
@@ -180,11 +177,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         ),
                       )
                     : hasPhoto
-                        ? TextButton(
-                            onPressed: _isSaving ? null : _clearPhoto,
-                            child: Text(l10n.removeProfilePhoto),
-                          )
-                        : const SizedBox.shrink(),
+                    ? TextButton(
+                        onPressed: _isSaving ? null : _clearPhoto,
+                        child: Text(l10n.removeProfilePhoto),
+                      )
+                    : const SizedBox.shrink(),
               ),
               const SizedBox(height: 24),
               TextFormField(

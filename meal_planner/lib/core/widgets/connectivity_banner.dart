@@ -15,7 +15,8 @@ class ConnectivityBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final connectivity = ref.watch(connectivityProvider);
-    final isOffline = !kIsWeb &&
+    final isOffline =
+        !kIsWeb &&
         connectivity.maybeWhen(
           data: (results) =>
               results.isEmpty || results.contains(ConnectivityResult.none),
@@ -27,10 +28,7 @@ class ConnectivityBanner extends ConsumerWidget {
 }
 
 class _OfflineBannerListener extends StatefulWidget {
-  const _OfflineBannerListener({
-    required this.isOffline,
-    required this.child,
-  });
+  const _OfflineBannerListener({required this.isOffline, required this.child});
 
   final bool isOffline;
   final Widget child;
@@ -66,10 +64,9 @@ class _OfflineBannerListenerState extends State<_OfflineBannerListener> {
           backgroundColor: Theme.of(context).colorScheme.error,
           content: Text(
             context.l10n.noConnection,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: Colors.white),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.white),
           ),
           actions: const [SizedBox.shrink()],
         ),

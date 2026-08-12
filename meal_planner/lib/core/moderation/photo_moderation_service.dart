@@ -7,10 +7,7 @@ import 'package:meal_planner/core/utils/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ModerationResult {
-  const ModerationResult({
-    required this.allowed,
-    this.reasons = const [],
-  });
+  const ModerationResult({required this.allowed, this.reasons = const []});
 
   final bool allowed;
   final List<String> reasons;
@@ -32,18 +29,13 @@ class PhotoModerationService {
   Future<ModerationResult> check(Uint8List bytes) async {
     try {
       final response = await supabase.functions
-          .invoke(
-            'moderate-image',
-            body: {'image': base64Encode(bytes)},
-          )
+          .invoke('moderate-image', body: {'image': base64Encode(bytes)})
           .timeout(const Duration(seconds: 30));
 
       if (response.status != 200) {
         final detail = _extractErrorDetail(response.data);
         log.w('Photo moderation HTTP ${response.status}: $detail');
-        throw PhotoModerationException(
-          _userFacingModerationMessage(detail),
-        );
+        throw PhotoModerationException(_userFacingModerationMessage(detail));
       }
 
       final data = response.data;
@@ -55,9 +47,7 @@ class PhotoModerationService {
       if (error != null) {
         final detail = _extractErrorDetail(data);
         log.w('Photo moderation error response: $detail');
-        throw PhotoModerationException(
-          _userFacingModerationMessage(detail),
-        );
+        throw PhotoModerationException(_userFacingModerationMessage(detail));
       }
 
       return ModerationResult(
@@ -70,9 +60,7 @@ class PhotoModerationService {
         'Photo moderation function exception (${error.status})',
         error: error,
       );
-      throw PhotoModerationException(
-        _userFacingModerationMessage(detail),
-      );
+      throw PhotoModerationException(_userFacingModerationMessage(detail));
     } catch (error) {
       log.w('Photo moderation unexpected error', error: error);
       throw PhotoModerationException(_genericModerationFailure);

@@ -47,10 +47,7 @@ void main() {
 
   test('maps Google sign_in_failed code 10 to configuration message', () {
     final error = mapAuthError(
-      PlatformException(
-        code: 'sign_in_failed',
-        message: 'pc2.c: 10: ',
-      ),
+      PlatformException(code: 'sign_in_failed', message: 'pc2.c: 10: '),
     );
 
     expect(error, isA<AuthGoogleSignInConfigurationException>());

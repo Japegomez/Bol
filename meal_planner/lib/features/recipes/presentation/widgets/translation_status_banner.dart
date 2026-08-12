@@ -36,10 +36,8 @@ class TranslationStatusBanner extends StatelessWidget {
                 child: Text(
                   l10n.autoTranslatedBadge,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryContainer,
-                      ),
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ),
               TextButton(

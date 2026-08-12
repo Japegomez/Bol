@@ -48,7 +48,9 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
               ? () => setState(() => _obscure = !_obscure)
               : null,
           icon: Icon(
-            _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            _obscure
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
           tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
         ),

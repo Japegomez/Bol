@@ -51,10 +51,7 @@ class RecipeAssistantImageInput {
 
 /// Input from the recipe assistant prompt sheet (text and/or up to 4 images).
 class RecipeAssistantPromptInput {
-  const RecipeAssistantPromptInput({
-    this.prompt = '',
-    this.images = const [],
-  });
+  const RecipeAssistantPromptInput({this.prompt = '', this.images = const []});
 
   final String prompt;
   final List<RecipeAssistantImageInput> images;
@@ -192,9 +189,7 @@ class RecipeAssistantRepository {
       throw Exception(recipeAssistantFailedKey);
     }
 
-    return nutritionFromAssistantJson(
-      Map<String, dynamic>.from(nutritionMap),
-    );
+    return nutritionFromAssistantJson(Map<String, dynamic>.from(nutritionMap));
   }
 
   /// Invokes the edge function and normalizes both transport and application
@@ -268,8 +263,9 @@ String mapRecipeAssistantFunctionError(int status, dynamic details) {
   return recipeAssistantFailedKey;
 }
 
-final recipeAssistantRepositoryProvider =
-    Provider<RecipeAssistantRepository>((ref) {
+final recipeAssistantRepositoryProvider = Provider<RecipeAssistantRepository>((
+  ref,
+) {
   return RecipeAssistantRepository();
 });
 
@@ -283,5 +279,6 @@ class RecipeAssistantDraft {
   final String sourceLang;
 }
 
-final recipeAssistantDraftProvider =
-    StateProvider<RecipeAssistantDraft?>((ref) => null);
+final recipeAssistantDraftProvider = StateProvider<RecipeAssistantDraft?>(
+  (ref) => null,
+);

@@ -77,26 +77,17 @@ class RecipesRepository {
         }
 
         final data = await query.order(Recipe.c_createdAt, ascending: false);
-        final recipes =
-            Recipe.converter(List<Map<String, dynamic>>.from(data));
+        final recipes = Recipe.converter(List<Map<String, dynamic>>.from(data));
         await _cache.cacheRecipes(recipes);
         return recipes;
       } catch (error) {
         if (!shouldFallbackToCache(error)) rethrow;
-        return _cache.getRecipes(
-          userId: _userId,
-          search: search,
-          tags: tags,
-        );
+        return _cache.getRecipes(userId: _userId, search: search, tags: tags);
       }
     }
 
     // Offline: household shared list is not cached; show own recipes only.
-    return _cache.getRecipes(
-      userId: _userId,
-      search: search,
-      tags: tags,
-    );
+    return _cache.getRecipes(userId: _userId, search: search, tags: tags);
   }
 
   Future<Set<String>> fetchAllTags({List<String>? memberUserIds}) async {
@@ -183,9 +174,7 @@ class RecipesRepository {
       ingredients: Ingredient.converter(
         List<Map<String, dynamic>>.from(ingredientsData),
       ),
-      steps: RecipeStep.converter(
-        List<Map<String, dynamic>>.from(stepsData),
-      ),
+      steps: RecipeStep.converter(List<Map<String, dynamic>>.from(stepsData)),
       nutrition: nutritionData != null
           ? NutritionInfo.converterSingle(
               Map<String, dynamic>.from(nutritionData),
@@ -315,10 +304,7 @@ class RecipesRepository {
     await _cache.enqueueOperation(
       entityType: PendingEntity.recipe,
       opType: PendingOp.create,
-      payload: {
-        'tempId': tempId,
-        'form': RecipeFormDataCodec.toJson(form),
-      },
+      payload: {'tempId': tempId, 'form': RecipeFormDataCodec.toJson(form)},
     );
 
     return tempId;
@@ -578,10 +564,7 @@ class RecipesRepository {
     await _cache.enqueueOperation(
       entityType: PendingEntity.recipe,
       opType: PendingOp.update,
-      payload: {
-        'recipeId': id,
-        'form': RecipeFormDataCodec.toJson(form),
-      },
+      payload: {'recipeId': id, 'form': RecipeFormDataCodec.toJson(form)},
     );
   }
 
@@ -634,7 +617,9 @@ class RecipesRepository {
       throw Exception(recipeAssistantOfflineKey);
     }
 
-    await supabase.from(NutritionInfo.table_name).upsert(
+    await supabase
+        .from(NutritionInfo.table_name)
+        .upsert(
           NutritionInfo.insert(
             recipeId: recipeId,
             calories: nutrition.calories,
@@ -716,8 +701,7 @@ class RecipesRepository {
             category: normalizeCategoryKey(entry.value.category),
             position: entry.key,
             isOptional: entry.value.isOptional,
-            isIncluded:
-                entry.value.isOptional ? entry.value.isIncluded : true,
+            isIncluded: entry.value.isOptional ? entry.value.isIncluded : true,
             isToTaste: entry.value.isToTaste,
           ),
         )
@@ -774,7 +758,9 @@ class RecipesRepository {
 
     final ingredients = form.validIngredients;
     if (ingredients.isNotEmpty) {
-      await supabase.from(Ingredient.table_name).insert(
+      await supabase
+          .from(Ingredient.table_name)
+          .insert(
             ingredients
                 .asMap()
                 .entries
@@ -782,8 +768,9 @@ class RecipesRepository {
                   (entry) => Ingredient.insert(
                     recipeId: recipeId,
                     name: entry.value.name.trim(),
-                    quantity:
-                        entry.value.isToTaste ? null : entry.value.quantity,
+                    quantity: entry.value.isToTaste
+                        ? null
+                        : entry.value.quantity,
                     unit: entry.value.isToTaste
                         ? null
                         : normalizeUnit(entry.value.effectiveUnit),
@@ -802,7 +789,9 @@ class RecipesRepository {
 
     final steps = form.validSteps;
     if (steps.isNotEmpty) {
-      await supabase.from(RecipeStep.table_name).insert(
+      await supabase
+          .from(RecipeStep.table_name)
+          .insert(
             steps
                 .asMap()
                 .entries
@@ -819,7 +808,9 @@ class RecipesRepository {
     }
 
     if (form.nutrition.hasAnyValue) {
-      await supabase.from(NutritionInfo.table_name).insert(
+      await supabase
+          .from(NutritionInfo.table_name)
+          .insert(
             NutritionInfo.insert(
               recipeId: recipeId,
               calories: form.nutrition.calories,
@@ -867,7 +858,9 @@ class RecipesRepository {
       if (existing != null) await _deletePhotoFile(existing);
     }
 
-    await supabase.storage.from(_photoBucket).uploadBinary(
+    await supabase.storage
+        .from(_photoBucket)
+        .uploadBinary(
           path,
           bytes,
           fileOptions: FileOptions(
@@ -926,37 +919,33 @@ class RecipesRepository {
       tips: recipe.tips ?? '',
       ingredients: detail.ingredients.isEmpty
           ? [IngredientFormItem()]
-          : detail.ingredients
-              .map(
-                (ingredient) {
-                  final normalizedUnit = normalizeUnit(ingredient.unit);
-                  final isPredefined = normalizedUnit != null &&
-                      predefinedUnits.contains(normalizedUnit);
-                  return IngredientFormItem(
-                    name: ingredient.name,
-                    quantity:
-                        ingredient.isToTaste ? null : ingredient.quantity,
-                    unit: isPredefined ? normalizedUnit : null,
-                    category: normalizeCategoryKey(ingredient.category),
-                    customUnit: isPredefined ? '' : (normalizedUnit ?? ''),
-                    useCustomUnit: normalizedUnit != null && !isPredefined,
-                    isOptional: ingredient.isOptional,
-                    isIncluded: ingredient.isIncluded,
-                    isToTaste: ingredient.isToTaste,
-                  );
-                },
-              )
-              .toList(),
+          : detail.ingredients.map((ingredient) {
+              final normalizedUnit = normalizeUnit(ingredient.unit);
+              final isPredefined =
+                  normalizedUnit != null &&
+                  predefinedUnits.contains(normalizedUnit);
+              return IngredientFormItem(
+                name: ingredient.name,
+                quantity: ingredient.isToTaste ? null : ingredient.quantity,
+                unit: isPredefined ? normalizedUnit : null,
+                category: normalizeCategoryKey(ingredient.category),
+                customUnit: isPredefined ? '' : (normalizedUnit ?? ''),
+                useCustomUnit: normalizedUnit != null && !isPredefined,
+                isOptional: ingredient.isOptional,
+                isIncluded: ingredient.isIncluded,
+                isToTaste: ingredient.isToTaste,
+              );
+            }).toList(),
       steps: detail.steps.isEmpty
           ? [StepFormItem()]
           : detail.steps
-              .map(
-                (step) => StepFormItem(
-                  description: step.description,
-                  isOptional: step.isOptional,
-                ),
-              )
-              .toList(),
+                .map(
+                  (step) => StepFormItem(
+                    description: step.description,
+                    isOptional: step.isOptional,
+                  ),
+                )
+                .toList(),
       nutrition: NutritionFormData(
         calories: NutritionFormData.normalizeNutritionValue(
           detail.nutrition?.calories,

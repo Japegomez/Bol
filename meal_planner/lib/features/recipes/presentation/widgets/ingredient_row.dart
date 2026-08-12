@@ -43,8 +43,8 @@ class _IngredientRowState extends State<IngredientRow> {
     _ingredient.category = normalizeCategoryKey(_ingredient.category);
     if (!_ingredient.useCustomUnit && !_ingredient.isToTaste) {
       final normalized = normalizeUnit(_ingredient.unit);
-      _ingredient.unit = normalized != null &&
-              predefinedUnits.contains(normalized)
+      _ingredient.unit =
+          normalized != null && predefinedUnits.contains(normalized)
           ? normalized
           : defaultIngredientUnit;
     }
@@ -70,7 +70,10 @@ class _IngredientRowState extends State<IngredientRow> {
       decoration: InputDecoration(
         labelText: l10n.quantityLabel,
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 12,
+        ),
       ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
@@ -90,9 +93,7 @@ class _IngredientRowState extends State<IngredientRow> {
     );
   }
 
-  Widget _buildUnitDropdown(
-    List<DropdownMenuItem<String>> unitDropdownItems,
-  ) {
+  Widget _buildUnitDropdown(List<DropdownMenuItem<String>> unitDropdownItems) {
     return DropdownButtonFormField<String>(
       key: ValueKey(
         'unit-${widget.ingredient.key}-${_ingredient.useCustomUnit}',
@@ -101,8 +102,8 @@ class _IngredientRowState extends State<IngredientRow> {
       initialValue: _ingredient.useCustomUnit
           ? customUnitOption
           : (predefinedUnits.contains(_ingredient.unit)
-              ? _ingredient.unit
-              : defaultIngredientUnit),
+                ? _ingredient.unit
+                : defaultIngredientUnit),
       decoration: InputDecoration(
         labelText: context.l10n.unitLabel,
         isDense: true,
@@ -156,8 +157,7 @@ class _IngredientRowState extends State<IngredientRow> {
       return categoryField;
     }
 
-    final compact =
-        MediaQuery.sizeOf(context).width < _compactFieldsBreakpoint;
+    final compact = MediaQuery.sizeOf(context).width < _compactFieldsBreakpoint;
     final quantityField = _buildQuantityField(context);
     final unitField = _buildUnitDropdown(unitDropdownItems);
 
@@ -223,115 +223,115 @@ class _IngredientRowState extends State<IngredientRow> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            Row(
-              children: [
-                ReorderableDragStartListener(
-                  index: widget.index,
-                  child: Icon(
-                    Icons.drag_handle,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.ingredientLabel,
-                      isDense: true,
+              Row(
+                children: [
+                  ReorderableDragStartListener(
+                    index: widget.index,
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Theme.of(context).colorScheme.outline,
                     ),
-                    onChanged: (value) => _ingredient.name = value,
                   ),
-                ),
-                if (widget.canRemove)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: widget.onRemove,
-                    tooltip: l10n.removeIngredientTooltip,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.ingredientLabel,
+                        isDense: true,
+                      ),
+                      onChanged: (value) => _ingredient.name = value,
+                    ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _buildQuantityUnitCategorySection(
-              context,
-              unitDropdownItems,
-              categoryDropdownItems,
-            ),
-            if (_ingredient.useCustomUnit && !_ingredient.isToTaste) ...[
+                  if (widget.canRemove)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: widget.onRemove,
+                      tooltip: l10n.removeIngredientTooltip,
+                    ),
+                ],
+              ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _customUnitController,
-                decoration: InputDecoration(
-                  labelText: l10n.customUnitLabel,
-                  isDense: true,
+              _buildQuantityUnitCategorySection(
+                context,
+                unitDropdownItems,
+                categoryDropdownItems,
+              ),
+              if (_ingredient.useCustomUnit && !_ingredient.isToTaste) ...[
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _customUnitController,
+                  decoration: InputDecoration(
+                    labelText: l10n.customUnitLabel,
+                    isDense: true,
+                  ),
+                  onChanged: (value) => _ingredient.customUnit = value,
                 ),
-                onChanged: (value) => _ingredient.customUnit = value,
+              ],
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(l10n.toTaste),
+                      subtitle: _ingredient.isToTaste
+                          ? Text(
+                              l10n.toTasteShoppingHint,
+                              style: const TextStyle(fontSize: 12),
+                            )
+                          : null,
+                      value: _ingredient.isToTaste,
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _ingredient.isToTaste = value;
+                          if (value) {
+                            _ingredient.quantity = null;
+                            _ingredient.unit = null;
+                            _ingredient.useCustomUnit = false;
+                            _ingredient.customUnit = '';
+                            _quantityController.clear();
+                            _customUnitController.clear();
+                          } else if (_ingredient.unit == null &&
+                              !_ingredient.useCustomUnit) {
+                            _ingredient.unit = defaultIngredientUnit;
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(l10n.optional),
+                      subtitle: _ingredient.isOptional
+                          ? Text(
+                              l10n.optionalIngredientHint,
+                              style: const TextStyle(fontSize: 12),
+                            )
+                          : null,
+                      value: _ingredient.isOptional,
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _ingredient.isOptional = value;
+                          if (!value) _ingredient.isIncluded = true;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
-            const SizedBox(height: 4),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    title: Text(l10n.toTaste),
-                    subtitle: _ingredient.isToTaste
-                        ? Text(
-                            l10n.toTasteShoppingHint,
-                            style: const TextStyle(fontSize: 12),
-                          )
-                        : null,
-                    value: _ingredient.isToTaste,
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() {
-                        _ingredient.isToTaste = value;
-                        if (value) {
-                          _ingredient.quantity = null;
-                          _ingredient.unit = null;
-                          _ingredient.useCustomUnit = false;
-                          _ingredient.customUnit = '';
-                          _quantityController.clear();
-                          _customUnitController.clear();
-                        } else if (_ingredient.unit == null &&
-                            !_ingredient.useCustomUnit) {
-                          _ingredient.unit = defaultIngredientUnit;
-                        }
-                      });
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    title: Text(l10n.optional),
-                    subtitle: _ingredient.isOptional
-                        ? Text(
-                            l10n.optionalIngredientHint,
-                            style: const TextStyle(fontSize: 12),
-                          )
-                        : null,
-                    value: _ingredient.isOptional,
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() {
-                        _ingredient.isOptional = value;
-                        if (!value) _ingredient.isIncluded = true;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

@@ -2,8 +2,7 @@ import 'package:meal_planner/features/recipes/domain/cooking_glossary_entry.dart
 
 /// Default glossary entries keyed by locale language code.
 /// Spanish is the canonical set; other locales provide translated defaults.
-const defaultCookingGlossaryByLocale =
-    <String, List<CookingGlossaryEntry>>{
+const defaultCookingGlossaryByLocale = <String, List<CookingGlossaryEntry>>{
   'es': _defaultEs,
   'en': _defaultEn,
   'it': _defaultIt,
@@ -55,8 +54,7 @@ const _defaultEs = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Brunoise',
-    definition:
-        'Corte en dados muy pequeños y uniformes, típico en verduras.',
+    definition: 'Corte en dados muy pequeños y uniformes, típico en verduras.',
   ),
   CookingGlossaryEntry(
     term: 'Caramelizar',
@@ -88,10 +86,7 @@ const _defaultEs = <CookingGlossaryEntry>[
         'Disolver los restos caramelizados del fondo de una sartén con líquido '
         'caliente (vino, caldo, etc.).',
   ),
-  CookingGlossaryEntry(
-    term: 'Desglasar',
-    definition: 'Sinónimo de deglasar.',
-  ),
+  CookingGlossaryEntry(term: 'Desglasar', definition: 'Sinónimo de deglasar.'),
   CookingGlossaryEntry(
     term: 'Emulsionar',
     definition:
@@ -130,8 +125,7 @@ const _defaultEs = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Juliana',
-    definition:
-        'Corte en tiras finas y alargadas, como palitos.',
+    definition: 'Corte en tiras finas y alargadas, como palitos.',
   ),
   CookingGlossaryEntry(
     term: 'Marinar',
@@ -146,8 +140,7 @@ const _defaultEs = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Reducir',
-    definition:
-        'Hervir un líquido para evaporar agua y concentrar sabores.',
+    definition: 'Hervir un líquido para evaporar agua y concentrar sabores.',
   ),
   CookingGlossaryEntry(
     term: 'Rehogar',
@@ -247,13 +240,11 @@ const _defaultEn = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Poach',
-    definition:
-        'Cook food in liquid just below boiling point.',
+    definition: 'Cook food in liquid just below boiling point.',
   ),
   CookingGlossaryEntry(
     term: 'Stew',
-    definition:
-        'Cook slowly in a little liquid, usually in a covered pot.',
+    definition: 'Cook slowly in a little liquid, usually in a covered pot.',
   ),
   CookingGlossaryEntry(
     term: 'Flambé',
@@ -268,8 +259,7 @@ const _defaultEn = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Gratin',
-    definition:
-        'Bake with intense top heat until a golden, crisp layer forms.',
+    definition: 'Bake with intense top heat until a golden, crisp layer forms.',
   ),
   CookingGlossaryEntry(
     term: 'Julienne',
@@ -277,8 +267,7 @@ const _defaultEn = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Marinate',
-    definition:
-        'Soak food in a seasoned mixture to tenderize and flavor it.',
+    definition: 'Soak food in a seasoned mixture to tenderize and flavor it.',
   ),
   CookingGlossaryEntry(
     term: 'Simmer',
@@ -444,8 +433,7 @@ const _defaultIt = <CookingGlossaryEntry>[
   ),
   CookingGlossaryEntry(
     term: 'Saltare',
-    definition:
-        'Cuocere a fuoco alto con poco olio, mescolando continuamente.',
+    definition: 'Cuocere a fuoco alto con poco olio, mescolando continuamente.',
   ),
   CookingGlossaryEntry(
     term: 'Soffriggere',

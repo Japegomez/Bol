@@ -74,11 +74,7 @@ class PlannerRepository {
     );
     await _cache.cacheWeeklyPlanWithPendingCreate(
       plan: tempPlan,
-      payload: {
-        'tempId': tempPlan.id,
-        'userId': userId,
-        'weekStart': dateStr,
-      },
+      payload: {'tempId': tempPlan.id, 'userId': userId, 'weekStart': dateStr},
     );
     return tempPlan;
   }
@@ -142,9 +138,7 @@ class PlannerRepository {
         skipShopping: skipShopping,
       );
       // Update cache with the returned slot immediately
-      await _cache.upsertSlot(
-        SlotItem(slot: slot, recipeTitle: recipeTitle),
-      );
+      await _cache.upsertSlot(SlotItem(slot: slot, recipeTitle: recipeTitle));
       // Best-effort full refresh
       try {
         final slots = await _fetchSlotsRemote(planId);
@@ -348,7 +342,8 @@ class PlannerRepository {
       final slot = PlanSlot.fromJson(slotRow);
       final planData = slotRow['weekly_plans'] as Map<String, dynamic>?;
       final householdId = planData?[WeeklyPlan.c_householdId]?.toString();
-      final userId = planData?[WeeklyPlan.c_userId]?.toString() ??
+      final userId =
+          planData?[WeeklyPlan.c_userId]?.toString() ??
           supabase.auth.currentUser?.id;
 
       if (slot.recipeId != null && !slot.isLeftover && userId != null) {
@@ -368,10 +363,7 @@ class PlannerRepository {
     await supabase.from(PlanSlot.table_name).delete().eq(PlanSlot.c_id, slotId);
   }
 
-  Future<void> _removeSlotOffline(
-    String slotId, {
-    String? householdId,
-  }) async {
+  Future<void> _removeSlotOffline(String slotId, {String? householdId}) async {
     final linked = await _cache.getShoppingItemsByPlanSlot(slotId);
     final itemIds = linked.map((item) => item.id).toList();
 
@@ -689,7 +681,9 @@ class PlannerRepository {
           .eq(Recipe.c_id, recipeId)
           .single();
 
-      final recipeServings = int.parse(recipeData[Recipe.c_servings].toString());
+      final recipeServings = int.parse(
+        recipeData[Recipe.c_servings].toString(),
+      );
       if (recipeServings <= 0) return addedIds;
 
       final scale = servings / recipeServings;
@@ -808,7 +802,9 @@ class PlannerRepository {
           .eq(Recipe.c_id, recipeId)
           .single();
 
-      final recipeServings = int.parse(recipeData[Recipe.c_servings].toString());
+      final recipeServings = int.parse(
+        recipeData[Recipe.c_servings].toString(),
+      );
       if (recipeServings <= 0) return removedItems;
 
       final scale = slot.servings / recipeServings;
@@ -911,7 +907,9 @@ class PlannerRepository {
             // Revert quantity update.
             await supabase
                 .from(ShoppingItem.table_name)
-                .update({ShoppingItem.c_quantity: itemData['quantity'].toString()})
+                .update({
+                  ShoppingItem.c_quantity: itemData['quantity'].toString(),
+                })
                 .eq(ShoppingItem.c_id, itemData['id'] as Object);
           } else {
             // Restore deleted item.

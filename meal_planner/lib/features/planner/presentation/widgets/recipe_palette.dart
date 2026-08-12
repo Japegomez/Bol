@@ -102,7 +102,8 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
             RecipeTagFilterBar(
               selectedTags: _selectedTags,
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              onSelectionChanged: (tags) => setState(() => _selectedTags = tags),
+              onSelectionChanged: (tags) =>
+                  setState(() => _selectedTags = tags),
             ),
             const SizedBox(height: 8),
             Expanded(
@@ -152,8 +153,7 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(12, 0, 16, 12),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         return _DraggableRecipeCard(
                           recipe: filtered[index],
@@ -243,9 +243,8 @@ class _RecipeCardContent extends ConsumerWidget {
                     return CachedNetworkImage(
                       imageUrl: url,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) => const ColoredBox(
-                        color: Color(0xFFE0E0E0),
-                      ),
+                      placeholder: (_, _) =>
+                          const ColoredBox(color: Color(0xFFE0E0E0)),
                       errorWidget: (_, _, _) => const Icon(Icons.broken_image),
                     );
                   },
@@ -306,7 +305,11 @@ class _DragFeedback extends StatelessWidget {
           color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(8),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
           ],
         ),
         child: Row(

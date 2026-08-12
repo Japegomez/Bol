@@ -14,10 +14,7 @@ abstract final class OnboardingTabIndex {
 }
 
 class OnboardingTourStep {
-  const OnboardingTourStep({
-    required this.tabIndex,
-    this.targets = const [],
-  });
+  const OnboardingTourStep({required this.tabIndex, this.targets = const []});
 
   final int tabIndex;
 

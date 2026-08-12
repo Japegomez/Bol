@@ -61,7 +61,11 @@ Future<void> _prepareDatabaseFile(File file, String key) async {
       await _migratePlaintextToEncrypted(file, key);
       if (_canOpenEncrypted(file, key)) return;
     } catch (e, st) {
-      log.w('Offline DB encryption migration failed: $e', error: e, stackTrace: st);
+      log.w(
+        'Offline DB encryption migration failed: $e',
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 
@@ -143,7 +147,11 @@ Future<void> _migratePlaintextToEncrypted(File file, String key) async {
     await backupFile.delete();
     await _deleteSidecars(file);
   } catch (e, st) {
-    log.w('Failed to clean up after DB migration: $e', error: e, stackTrace: st);
+    log.w(
+      'Failed to clean up after DB migration: $e',
+      error: e,
+      stackTrace: st,
+    );
   }
 }
 
@@ -153,7 +161,14 @@ Future<void> _deleteDatabaseFiles(File file) async {
 }
 
 Future<void> _deleteSidecars(File file) async {
-  for (final suffix in ['-wal', '-shm', '-journal', '.enc.tmp', '.bak', '.enc']) {
+  for (final suffix in [
+    '-wal',
+    '-shm',
+    '-journal',
+    '.enc.tmp',
+    '.bak',
+    '.enc',
+  ]) {
     final side = File('${file.path}$suffix');
     if (await side.exists()) {
       try {

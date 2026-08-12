@@ -19,9 +19,9 @@ class HouseholdScreen extends ConsumerWidget {
   Future<void> _copyInviteCode(BuildContext context, String code) async {
     await Clipboard.setData(ClipboardData(text: code));
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.inviteCodeCopied)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.inviteCodeCopied)));
     }
   }
 
@@ -70,15 +70,15 @@ class HouseholdScreen extends ConsumerWidget {
     try {
       await ref.read(currentHouseholdProvider.notifier).regenerateCode();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.codeRegenerated)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.codeRegenerated)));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -119,9 +119,9 @@ class HouseholdScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -156,9 +156,9 @@ class HouseholdScreen extends ConsumerWidget {
       if (context.mounted) context.pop();
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -195,9 +195,7 @@ class HouseholdScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.myHouseholdTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.myHouseholdTitle)),
       body: RefreshIndicator(
         onRefresh: () async {
           await ref.read(currentHouseholdProvider.notifier).refresh();
@@ -208,15 +206,9 @@ class HouseholdScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            Text(
-              household.name,
-              style: theme.textTheme.headlineSmall,
-            ),
+            Text(household.name, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 24),
-            Text(
-              l10n.inviteCode,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l10n.inviteCode, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Card(
               child: Padding(
@@ -241,8 +233,7 @@ class HouseholdScreen extends ConsumerWidget {
                     if (isAdmin)
                       IconButton(
                         tooltip: l10n.regenerate,
-                        onPressed: () =>
-                            _confirmRegenerateCode(context, ref),
+                        onPressed: () => _confirmRegenerateCode(context, ref),
                         icon: const Icon(Icons.refresh),
                       ),
                   ],
@@ -261,10 +252,7 @@ class HouseholdScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              l10n.members,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l10n.members, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             membersAsync.when(
               loading: () => const ExcludeSemantics(
@@ -288,11 +276,11 @@ class HouseholdScreen extends ConsumerWidget {
                       (member) => _MemberTile(
                         member: member,
                         isCurrentUser: member.userId == currentUserId,
-                        canKick: isAdmin &&
+                        canKick:
+                            isAdmin &&
                             member.userId != currentUserId &&
                             !member.isAdmin,
-                        onKick: () =>
-                            _confirmKickMember(context, ref, member),
+                        onKick: () => _confirmKickMember(context, ref, member),
                       ),
                     )
                     .toList(),
@@ -312,10 +300,7 @@ class HouseholdScreen extends ConsumerWidget {
 }
 
 class _NoHouseholdView extends StatelessWidget {
-  const _NoHouseholdView({
-    required this.onCreate,
-    required this.onJoin,
-  });
+  const _NoHouseholdView({required this.onCreate, required this.onJoin});
 
   final VoidCallback onCreate;
   final VoidCallback onJoin;
@@ -326,9 +311,7 @@ class _NoHouseholdView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.myHouseholdTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.myHouseholdTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

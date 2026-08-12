@@ -46,7 +46,11 @@ void main() {
     test('accepts image-only with allowed mime', () {
       expect(
         validateRecipeAssistantInput(
-          RecipeAssistantPromptInput(images: [_jpeg([1, 2, 3])]),
+          RecipeAssistantPromptInput(
+            images: [
+              _jpeg([1, 2, 3]),
+            ],
+          ),
         ),
         isNull,
       );
@@ -144,14 +148,8 @@ void main() {
       );
       expect(body['prompt'], equals('versión vegana'));
       expect(body['images'], [
-        {
-          'imageBase64': base64Encode(first),
-          'imageMimeType': 'image/jpeg',
-        },
-        {
-          'imageBase64': base64Encode(second),
-          'imageMimeType': 'image/png',
-        },
+        {'imageBase64': base64Encode(first), 'imageMimeType': 'image/jpeg'},
+        {'imageBase64': base64Encode(second), 'imageMimeType': 'image/png'},
       ]);
     });
   });

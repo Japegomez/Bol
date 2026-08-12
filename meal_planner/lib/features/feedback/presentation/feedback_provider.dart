@@ -10,11 +10,10 @@ final feedbackRepositoryProvider = Provider<FeedbackRepository>((ref) {
 
 final adminFeedbackListProvider = FutureProvider.autoDispose
     .family<List<UserFeedback>, AdminFeedbackFilters>((ref, filters) async {
-  return ref.read(feedbackRepositoryProvider).listForAdmin(
-        category: filters.category,
-        status: filters.status,
-      );
-});
+      return ref
+          .read(feedbackRepositoryProvider)
+          .listForAdmin(category: filters.category, status: filters.status);
+    });
 
 class SubmitFeedbackNotifier extends AutoDisposeAsyncNotifier<void> {
   @override
@@ -31,7 +30,9 @@ class SubmitFeedbackNotifier extends AutoDisposeAsyncNotifier<void> {
 
     state = const AsyncLoading();
     state = await AsyncValue.guard(() {
-      return ref.read(feedbackRepositoryProvider).submit(
+      return ref
+          .read(feedbackRepositoryProvider)
+          .submit(
             userId: authState.user.id,
             category: category,
             message: message,
@@ -46,8 +47,8 @@ class SubmitFeedbackNotifier extends AutoDisposeAsyncNotifier<void> {
 
 final submitFeedbackProvider =
     AutoDisposeAsyncNotifierProvider<SubmitFeedbackNotifier, void>(
-  SubmitFeedbackNotifier.new,
-);
+      SubmitFeedbackNotifier.new,
+    );
 
 class UpdateFeedbackStatusNotifier extends AutoDisposeAsyncNotifier<void> {
   @override
@@ -59,10 +60,9 @@ class UpdateFeedbackStatusNotifier extends AutoDisposeAsyncNotifier<void> {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() {
-      return ref.read(feedbackRepositoryProvider).updateStatus(
-            feedbackId: feedbackId,
-            status: status,
-          );
+      return ref
+          .read(feedbackRepositoryProvider)
+          .updateStatus(feedbackId: feedbackId, status: status);
     });
 
     if (state.hasError) {
@@ -73,5 +73,5 @@ class UpdateFeedbackStatusNotifier extends AutoDisposeAsyncNotifier<void> {
 
 final updateFeedbackStatusProvider =
     AutoDisposeAsyncNotifierProvider<UpdateFeedbackStatusNotifier, void>(
-  UpdateFeedbackStatusNotifier.new,
-);
+      UpdateFeedbackStatusNotifier.new,
+    );

@@ -57,19 +57,19 @@ abstract final class PendingShareLinkStore {
   }
 
   static Future<void> save(Uri uri) => _serialized(() async {
-        await _storage.write(key: _key, value: uri.toString());
-      });
+    await _storage.write(key: _key, value: uri.toString());
+  });
 
   static Future<Uri?> load() => _serialized(() async {
-        await _migrateFromLegacyUnlocked();
-        final raw = await _storage.read(key: _key);
-        if (raw == null || raw.isEmpty) return null;
-        return Uri.tryParse(raw);
-      });
+    await _migrateFromLegacyUnlocked();
+    final raw = await _storage.read(key: _key);
+    if (raw == null || raw.isEmpty) return null;
+    return Uri.tryParse(raw);
+  });
 
   static Future<void> clear() => _serialized(() async {
-        await _storage.delete(key: _key);
-      });
+    await _storage.delete(key: _key);
+  });
 }
 
 class DeepLinkListener extends ConsumerStatefulWidget {
@@ -95,7 +95,8 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
   Future<void> _init() async {
     try {
       final stored = await PendingShareLinkStore.load();
-      if (stored != null && ShareUrls.appLocationForIncomingUri(stored) != null) {
+      if (stored != null &&
+          ShareUrls.appLocationForIncomingUri(stored) != null) {
         ref.read(pendingShareLinkProvider.notifier).state = stored;
       }
     } catch (e) {

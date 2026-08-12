@@ -4,8 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _storageKey = 'app.theme_mode';
 
-final themeModeProvider =
-    NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
 
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   var _hasLocalChange = false;

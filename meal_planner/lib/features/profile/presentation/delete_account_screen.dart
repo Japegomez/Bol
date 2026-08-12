@@ -12,7 +12,8 @@ class DeleteAccountScreen extends ConsumerStatefulWidget {
   const DeleteAccountScreen({super.key});
 
   @override
-  ConsumerState<DeleteAccountScreen> createState() => _DeleteAccountScreenState();
+  ConsumerState<DeleteAccountScreen> createState() =>
+      _DeleteAccountScreenState();
 }
 
 class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
@@ -108,9 +109,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.deleteAccount),
-      ),
+      appBar: AppBar(title: Text(l10n.deleteAccount)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -120,10 +119,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             color: theme.colorScheme.error,
           ),
           const SizedBox(height: 16),
-          Text(
-            l10n.gdprRightToErasure,
-            style: theme.textTheme.titleLarge,
-          ),
+          Text(l10n.gdprRightToErasure, style: theme.textTheme.titleLarge),
           const SizedBox(height: 12),
           Text(
             l10n.deleteAccountBulletsIntro,
@@ -173,10 +169,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
           ],
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
+            Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
           ],
           const SizedBox(height: 24),
           FilledButton(

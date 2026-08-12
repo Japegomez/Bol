@@ -167,13 +167,14 @@ npx supabase secrets set LLM_MODEL=gemini-3.5-flash --project-ref hxtynisikjpwlv
 
 Para cambiar de proveedor, solo actualiza estos secrets; el código de la función y la app no cambian.
 
-### Secrets de cuota (opcionales)
+### Secrets de cuota
 
 | Secret | Default en código | Descripción |
 |---|---|---|
 | `AI_ASSISTANT_DAILY_LIMIT` | `20` | Llamadas máximas por usuario y día (genera receta + nutrición cuentan juntas) |
-| `AI_ASSISTANT_MIN_INTERVAL_SECONDS` | `3` | Cooldown mínimo entre llamadas del mismo usuario (anti-bucle) |
-| `AI_ASSISTANT_GLOBAL_DAILY_LIMIT` | desactivado (no configurado) | Tope global diario de todas las llamadas de todos los usuarios; protege ante picos que agoten el RPM/tokens-día del proveedor. Si no se configura, no aplica. |
+| `AI_ASSISTANT_MIN_INTERVAL_SECONDS` | `5` | Cooldown mínimo entre llamadas del mismo usuario (anti-bucle) |
+| `AI_ASSISTANT_GLOBAL_DAILY_LIMIT` | `500` | Tope global diario de todas las llamadas de todos los usuarios; protege ante picos que agoten el RPM/tokens-día del proveedor. |
+| `AI_ASSISTANT_IP_DAILY_LIMIT` | `50` | Tope diario por IP (hash SHA-256; no se guarda la IP en claro). Holgado para Wi‑Fi compartido / CGNAT. Al agotarse responde `service_at_capacity`, igual que el tope global. |
 
 ```bash
 # Ejemplo activando el tope global (ajusta el número a tu cuota del proveedor)
@@ -181,8 +182,9 @@ Para cambiar de proveedor, solo actualiza estos secrets; el código de la funci�
 # pasar directamente (no son tan sensibles como claves API):
 npx supabase secrets set \
   AI_ASSISTANT_DAILY_LIMIT=20 \
-  AI_ASSISTANT_MIN_INTERVAL_SECONDS=3 \
+  AI_ASSISTANT_MIN_INTERVAL_SECONDS=5 \
   AI_ASSISTANT_GLOBAL_DAILY_LIMIT=500 \
+  AI_ASSISTANT_IP_DAILY_LIMIT=50 \
   --project-ref hxtynisikjpwlvpdgdbt
 ```
 
@@ -192,7 +194,7 @@ Nuevos códigos de error de cuota (distintos de `rate_limited`, que sigue siendo
 |---|---|---|
 | `too_fast` | 429 | Cooldown: otra petición del mismo usuario hace menos de `AI_ASSISTANT_MIN_INTERVAL_SECONDS` |
 | `daily_limit_reached` | 429 | El usuario agotó su cuota diaria |
-| `service_at_capacity` | 503 | Se alcanzó el tope global diario (no es culpa del usuario) |
+| `service_at_capacity` | 503 | Se alcanzó el tope global diario o el tope por IP |
 | `quota_check_failed` | 503 | Error interno al consultar la cuota; rechazado fail-closed |
 
 ### Migraciones de base de datos requeridas (022 y 023)

@@ -19,7 +19,8 @@ String resolveRecipeAssistantError(String error, AppLocalizations l10n) {
     recipeAssistantRateLimitedKey => l10n.recipeAssistantRateLimited,
     recipeAssistantDailyLimitKey => l10n.recipeAssistantDailyLimitReached,
     recipeAssistantTooFastKey => l10n.recipeAssistantTooFast,
-    recipeAssistantServiceAtCapacityKey => l10n.recipeAssistantServiceAtCapacity,
+    recipeAssistantServiceAtCapacityKey =>
+      l10n.recipeAssistantServiceAtCapacity,
     recipeAssistantOfflineKey => l10n.recipeAssistantOffline,
     recipeAssistantNotConfiguredKey => l10n.recipeAssistantNotConfigured,
     recipeAssistantTimeoutKey => l10n.recipeAssistantTimeout,
@@ -212,7 +213,9 @@ class _RecipeAssistantPromptSheetState
 
     for (final locale in locales) {
       final id = locale.localeId.toLowerCase();
-      if (id == language || id.startsWith('$language-') || id.startsWith('${language}_')) {
+      if (id == language ||
+          id.startsWith('$language-') ||
+          id.startsWith('${language}_')) {
         return locale.localeId;
       }
     }
@@ -433,8 +436,8 @@ class _RecipeAssistantPromptSheetState
               hintText: _listening
                   ? l10n.recipeAssistantListening
                   : _images.isNotEmpty
-                      ? l10n.recipeAssistantImagePromptHint
-                      : l10n.recipeAssistantPromptHint,
+                  ? l10n.recipeAssistantImagePromptHint
+                  : l10n.recipeAssistantPromptHint,
               border: const OutlineInputBorder(),
               errorText: _error,
             ),
@@ -455,10 +458,8 @@ class _RecipeAssistantPromptSheetState
                 const SizedBox(width: 12),
               ],
               IconButton.filledTonal(
-                onPressed: isOffline ||
-                        _pickingImage ||
-                        _listening ||
-                        !_canAddImage
+                onPressed:
+                    isOffline || _pickingImage || _listening || !_canAddImage
                     ? null
                     : () => _pickImage(ImageSource.camera),
                 tooltip: l10n.camera,
@@ -466,10 +467,8 @@ class _RecipeAssistantPromptSheetState
               ),
               const SizedBox(width: 4),
               IconButton.filledTonal(
-                onPressed: isOffline ||
-                        _pickingImage ||
-                        _listening ||
-                        !_canAddImage
+                onPressed:
+                    isOffline || _pickingImage || _listening || !_canAddImage
                     ? null
                     : () => _pickImage(ImageSource.gallery),
                 tooltip: l10n.choosePhoto,
@@ -477,7 +476,8 @@ class _RecipeAssistantPromptSheetState
               ),
               const SizedBox(width: 4),
               IconButton.filledTonal(
-                onPressed: isOffline ||
+                onPressed:
+                    isOffline ||
                         _pickingImage ||
                         _speechUnavailable ||
                         _dictationStarting
@@ -519,8 +519,8 @@ class _RecipeAssistantPromptSheetState
             Text(
               l10n.recipeAssistantSameRecipePhotosHint,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
           if (isOffline) ...[
@@ -528,8 +528,8 @@ class _RecipeAssistantPromptSheetState
             Text(
               l10n.recipeAssistantOffline,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ],
           const SizedBox(height: 16),
@@ -649,7 +649,9 @@ Future<void> generateNutritionWithAssistant({
     nutrition = await runWithRecipeAssistantBlockingOverlay(
       context: context,
       message: l10n.recipeAssistantBlockingNutrition,
-      task: () => ref.read(recipeAssistantRepositoryProvider).generateNutrition(
+      task: () => ref
+          .read(recipeAssistantRepositoryProvider)
+          .generateNutrition(
             title: title,
             servings: servings,
             ingredients: ingredients,

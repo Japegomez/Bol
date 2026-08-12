@@ -85,7 +85,10 @@ class _OnboardingOverlayState extends ConsumerState<OnboardingOverlay> {
       7 => (title: l10n.onboardingStep7Title, body: l10n.onboardingStep7Body),
       8 => (title: l10n.onboardingStep8Title, body: l10n.onboardingStep8Body),
       9 => (title: l10n.onboardingStep9Title, body: l10n.onboardingStep9Body),
-      10 => (title: l10n.onboardingStep10Title, body: l10n.onboardingStep10Body),
+      10 => (
+        title: l10n.onboardingStep10Title,
+        body: l10n.onboardingStep10Body,
+      ),
       _ => (title: l10n.onboardingStep0Title, body: l10n.onboardingStep0Body),
     };
   }
@@ -325,10 +328,7 @@ class _OnboardingCard extends StatelessWidget {
                 const SizedBox(height: 18),
                 Row(
                   children: [
-                    TextButton(
-                      onPressed: onSkip,
-                      child: Text(skipLabel),
-                    ),
+                    TextButton(onPressed: onSkip, child: Text(skipLabel)),
                     const Spacer(),
                     if (showPrevious) ...[
                       Semantics(
@@ -398,10 +398,7 @@ class _CardPointer extends StatelessWidget {
         alignment: Alignment(-1 + (2 * offset / cardWidth), 0),
         child: CustomPaint(
           size: const Size(18, 12),
-          painter: _CardPointerPainter(
-            color: color,
-            pointingUp: pointingUp,
-          ),
+          painter: _CardPointerPainter(color: color, pointingUp: pointingUp),
         ),
       ),
     );
@@ -409,10 +406,7 @@ class _CardPointer extends StatelessWidget {
 }
 
 class _CardPointerPainter extends CustomPainter {
-  const _CardPointerPainter({
-    required this.color,
-    required this.pointingUp,
-  });
+  const _CardPointerPainter({required this.color, required this.pointingUp});
 
   final Color color;
   final bool pointingUp;
@@ -439,8 +433,7 @@ class _CardPointerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _CardPointerPainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.pointingUp != pointingUp;
+    return oldDelegate.color != color || oldDelegate.pointingUp != pointingUp;
   }
 }
 
@@ -480,11 +473,7 @@ class _OnboardingScrimPainter extends CustomPainter {
 
     if (isCompact) {
       final side = math.max(target.width, target.height) + padding * 2;
-      return Rect.fromCenter(
-        center: target.center,
-        width: side,
-        height: side,
-      );
+      return Rect.fromCenter(center: target.center, width: side, height: side);
     }
 
     return target.inflate(padding);

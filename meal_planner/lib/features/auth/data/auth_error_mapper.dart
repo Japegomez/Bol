@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
-import 'package:meal_planner/features/auth/domain/auth_exception.dart' as app_auth;
+import 'package:meal_planner/features/auth/domain/auth_exception.dart'
+    as app_auth;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 app_auth.AuthException mapAuthError(Object error) {

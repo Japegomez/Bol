@@ -27,9 +27,7 @@ class HomeShell extends ConsumerWidget {
     final isOffline = ref.read(isOfflineProvider);
     if (index == 0 && isOffline) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.exploreUnavailableOffline),
-        ),
+        SnackBar(content: Text(context.l10n.exploreUnavailableOffline)),
       );
       return;
     }
@@ -49,8 +47,9 @@ class HomeShell extends ConsumerWidget {
     final isOffline = ref.watch(isOfflineProvider);
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final navDisabledColor =
-        theme.colorScheme.onSurface.withValues(alpha: 0.38);
+    final navDisabledColor = theme.colorScheme.onSurface.withValues(
+      alpha: 0.38,
+    );
 
     final onboardingPending = ref.watch(onboardingCompletedProvider) == false;
     final cookingSession = ref.watch(cookingSessionProvider);
@@ -62,12 +61,8 @@ class HomeShell extends ConsumerWidget {
 
     final navigationBar = NavigationBar(
       selectedIndex: navigationShell.currentIndex,
-      onDestinationSelected: (index) => _onTap(
-        index,
-        ref,
-        context,
-        onboardingActive: onboardingPending,
-      ),
+      onDestinationSelected: (index) =>
+          _onTap(index, ref, context, onboardingActive: onboardingPending),
       destinations: [
         NavigationDestination(
           icon: Icon(Icons.explore_outlined, color: navIconColor(0)),

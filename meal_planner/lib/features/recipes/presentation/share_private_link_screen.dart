@@ -67,8 +67,6 @@ class _SharePrivateLinkScreenState
       );
     }
 
-    return const Scaffold(
-      body: RecipeDetailSkeleton(),
-    );
+    return const Scaffold(body: RecipeDetailSkeleton());
   }
 }

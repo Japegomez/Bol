@@ -18,18 +18,16 @@ String formatWeeklyPlanForShare({
     ..writeln();
 
   for (var day = 1; day <= 7; day++) {
-    final daySlots =
-        slots.where((item) => item.slot.dayOfWeek == day).toList();
+    final daySlots = slots.where((item) => item.slot.dayOfWeek == day).toList();
     if (daySlots.isEmpty) continue;
 
     final date = weekStart.add(Duration(days: day - 1));
     buffer.writeln(formatDayHeader(date, localeName));
 
     for (final mealType in MealType.all) {
-      final cellSlots = daySlots
-          .where((item) => item.slot.mealType == mealType)
-          .toList()
-        ..sort((a, b) => a.slot.position.compareTo(b.slot.position));
+      final cellSlots =
+          daySlots.where((item) => item.slot.mealType == mealType).toList()
+            ..sort((a, b) => a.slot.position.compareTo(b.slot.position));
       if (cellSlots.isEmpty) continue;
 
       buffer.writeln('${MealType.label(l10n, mealType)}:');

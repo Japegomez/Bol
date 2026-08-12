@@ -34,7 +34,9 @@ final weeklyPlanProvider = FutureProvider.autoDispose<WeeklyPlan>((ref) async {
     throw StateError('User not authenticated');
   }
 
-  return ref.read(plannerRepositoryProvider).getOrCreateWeeklyPlan(
+  return ref
+      .read(plannerRepositoryProvider)
+      .getOrCreateWeeklyPlan(
         weekStart: weekStart,
         userId: authState.user.id,
         householdId: household?.id,
@@ -43,8 +45,8 @@ final weeklyPlanProvider = FutureProvider.autoDispose<WeeklyPlan>((ref) async {
 
 final planSlotsProvider =
     AsyncNotifierProvider<PlanSlotsNotifier, List<SlotItem>>(
-  PlanSlotsNotifier.new,
-);
+      PlanSlotsNotifier.new,
+    );
 
 class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
   RealtimeChannel? _channel;
@@ -100,9 +102,7 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
     final plan = ref.read(weeklyPlanProvider).valueOrNull;
     if (plan == null) return;
 
-    state = await AsyncValue.guard(
-      () => _repository.getSlotsForPlan(plan.id),
-    );
+    state = await AsyncValue.guard(() => _repository.getSlotsForPlan(plan.id));
   }
 
   Future<void> addSlot({
@@ -125,7 +125,8 @@ class PlanSlotsNotifier extends AsyncNotifier<List<SlotItem>> {
     final position = previous
         .where(
           (item) =>
-              item.slot.dayOfWeek == dayOfWeek && item.slot.mealType == mealType,
+              item.slot.dayOfWeek == dayOfWeek &&
+              item.slot.mealType == mealType,
         )
         .length;
 

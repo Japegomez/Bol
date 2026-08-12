@@ -32,10 +32,7 @@ void main() {
           },
         ],
         'steps': [
-          {
-            'description': 'Freír las patatas',
-            'isOptional': false,
-          },
+          {'description': 'Freír las patatas', 'isOptional': false},
         ],
         'nutrition': {
           'calories': 320,
@@ -179,10 +176,7 @@ void main() {
           },
         ],
         'steps': [
-          {
-            'description': 'Mezclar',
-            'isOptional': false,
-          },
+          {'description': 'Mezclar', 'isOptional': false},
         ],
         'nutrition': <String, dynamic>{},
       });
@@ -214,10 +208,7 @@ void main() {
           },
         ],
         'steps': [
-          {
-            'description': 'Mix everything',
-            'isOptional': false,
-          },
+          {'description': 'Mix everything', 'isOptional': false},
         ],
         'nutrition': {
           'calories': null,
