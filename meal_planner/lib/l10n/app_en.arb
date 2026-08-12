@@ -356,6 +356,7 @@
   "recipeSavedToBook": "Recipe saved to your recipe book",
   "saveToMyRecipeBookTooltip": "Save to my recipe book",
   "recipeCreatedBy": "Recipe created by",
+  "recipeCreatedByName": "Created by",
   "you": "you",
   "yourRating": "Your rating",
   "optionalIngredientSuffix": "(optional)",
