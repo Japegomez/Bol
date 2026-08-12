@@ -1,0 +1,50 @@
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/meal_planner"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    target-branch: "develop"
+    open-pull-requests-limit: 8
+    labels:
+      - "dependencies"
+    assignees:
+      - "Japegomez"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    cooldown:
+      default-days: 3
+      semver-major-days: 14
+      semver-minor-days: 5
+      semver-patch-days: 3
+    groups:
+      pub-minor-patch:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+      security-patches:
+        applies-to: security-updates
+        patterns: ["*"]
+        update-types: ["patch", "minor"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+    assignees:
+      - "Japegomez"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns: ["*"]
