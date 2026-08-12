@@ -108,7 +108,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 - Regla de intención:
   - Solo imagen → **extrae** la receta de la foto.
   - Imagen + texto → usa ambos (adaptar, escalar, etc.).
-- **Cuotas y límites**: cuota diaria por usuario, cooldown anti-bucle y tope global opcional (`check_and_increment_ai_usage`).
+- **Cuotas y límites** (servidor, `check_and_increment_ai_usage`): 20/usuario/día, cooldown 5 s, 500 global/día, 50/IP/día. Gemini solo desde la Edge Function.
 - Errores localizados: offline, rate limit, imagen inválida/grande, speech no disponible, etc.
 
 ### 2) Moderación de imágenes

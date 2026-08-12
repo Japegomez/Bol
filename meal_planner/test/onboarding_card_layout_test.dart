@@ -4,28 +4,25 @@ import 'package:meal_planner/features/onboarding/presentation/onboarding_card_la
 
 void main() {
   group('resolveOnboardingCardLayout', () {
-    test(
-      'placeAbove with insufficient space clamps top to safeTop',
-      () {
-        const screenSize = Size(390, 844);
-        const viewPadding = EdgeInsets.only(top: 47, bottom: 34);
-        const cardWidth = 358.0;
-        // Tall target collapses to an 88px top band; spaceAbove barely beats
-        // spaceBelow so placeAbove wins even though the full card does not fit.
-        const targetRect = Rect.fromLTWH(20, 350, 350, 400);
+    test('placeAbove with insufficient space clamps top to safeTop', () {
+      const screenSize = Size(390, 844);
+      const viewPadding = EdgeInsets.only(top: 47, bottom: 34);
+      const cardWidth = 358.0;
+      // Tall target collapses to an 88px top band; spaceAbove barely beats
+      // spaceBelow so placeAbove wins even though the full card does not fit.
+      const targetRect = Rect.fromLTWH(20, 350, 350, 400);
 
-        final layout = resolveOnboardingCardLayout(
-          screenSize: screenSize,
-          viewPadding: viewPadding,
-          cardWidth: cardWidth,
-          targetRect: targetRect,
-        );
+      final layout = resolveOnboardingCardLayout(
+        screenSize: screenSize,
+        viewPadding: viewPadding,
+        cardWidth: cardWidth,
+        targetRect: targetRect,
+      );
 
-        final safeTop = viewPadding.top + 12;
-        expect(layout.pointerOnTop, isFalse);
-        expect(layout.top, safeTop);
-      },
-    );
+      final safeTop = viewPadding.top + 12;
+      expect(layout.pointerOnTop, isFalse);
+      expect(layout.top, safeTop);
+    });
 
     test('horizontal clamp respects left and right view padding', () {
       const screenSize = Size(390, 844);

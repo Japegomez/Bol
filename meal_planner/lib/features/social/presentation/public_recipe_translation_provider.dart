@@ -4,53 +4,58 @@ import 'package:meal_planner/features/recipes/domain/recipe_translation_payload.
 import 'package:meal_planner/features/social/domain/public_recipe_detail.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
 
-final publicRecipeDisplayProvider = FutureProvider.family<
-    PublicRecipeDisplayState, String>((ref, recipeId) async {
-  final detail = await ref.watch(publicRecipeDetailProvider(recipeId).future);
-  final targetLang = ref.watch(currentLanguageCodeProvider);
-  final sourceLang = detail.sourceLang;
-
-  if (sourceLang == targetLang) {
-    return PublicRecipeDisplayState(
-      detail: detail,
-      isTranslated: false,
-      showTranslation: false,
-    );
-  }
-
-  try {
-    final translation = await ref
-        .read(recipeTranslationRepositoryProvider)
-        .fetchTranslation(
-          recipeId: detail.recipe.id,
-          targetLang: targetLang,
-          sourceLang: sourceLang,
-        );
-
-    if (translation == null) {
-      return PublicRecipeDisplayState(
-        detail: detail,
-        isTranslated: false,
-        showTranslation: false,
+final publicRecipeDisplayProvider =
+    FutureProvider.family<PublicRecipeDisplayState, String>((
+      ref,
+      recipeId,
+    ) async {
+      final detail = await ref.watch(
+        publicRecipeDetailProvider(recipeId).future,
       );
-    }
+      final targetLang = ref.watch(currentLanguageCodeProvider);
+      final sourceLang = detail.sourceLang;
 
-    return PublicRecipeDisplayState(
-      detail: _applyTranslation(detail, translation),
-      isTranslated: true,
-      showTranslation: true,
-      translation: translation,
-      originalDetail: detail,
-    );
-  } catch (_) {
-    return PublicRecipeDisplayState(
-      detail: detail,
-      isTranslated: false,
-      showTranslation: false,
-      translationFailed: true,
-    );
-  }
-});
+      if (sourceLang == targetLang) {
+        return PublicRecipeDisplayState(
+          detail: detail,
+          isTranslated: false,
+          showTranslation: false,
+        );
+      }
+
+      try {
+        final translation = await ref
+            .read(recipeTranslationRepositoryProvider)
+            .fetchTranslation(
+              recipeId: detail.recipe.id,
+              targetLang: targetLang,
+              sourceLang: sourceLang,
+            );
+
+        if (translation == null) {
+          return PublicRecipeDisplayState(
+            detail: detail,
+            isTranslated: false,
+            showTranslation: false,
+          );
+        }
+
+        return PublicRecipeDisplayState(
+          detail: _applyTranslation(detail, translation),
+          isTranslated: true,
+          showTranslation: true,
+          translation: translation,
+          originalDetail: detail,
+        );
+      } catch (_) {
+        return PublicRecipeDisplayState(
+          detail: detail,
+          isTranslated: false,
+          showTranslation: false,
+          translationFailed: true,
+        );
+      }
+    });
 
 class PublicRecipeDisplayState {
   const PublicRecipeDisplayState({

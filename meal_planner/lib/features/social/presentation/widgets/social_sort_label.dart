@@ -25,8 +25,8 @@ class SocialSortLabel extends StatelessWidget {
             Text(
               context.l10n.sortedBy(label),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

@@ -292,15 +292,15 @@ class ShoppingRepository {
     await _guardOfflineMutation(householdId: householdId, isOnline: isOnline);
 
     if (isOnline) {
-      await supabase.from(ShoppingItem.table_name).delete().eq(ShoppingItem.c_id, id);
+      await supabase
+          .from(ShoppingItem.table_name)
+          .delete()
+          .eq(ShoppingItem.c_id, id);
       await _cache.deleteShoppingItem(id);
       return;
     }
 
-    await _cache.deleteShoppingItemWithPendingOp(
-      id: id,
-      payload: {'id': id},
-    );
+    await _cache.deleteShoppingItemWithPendingOp(id: id, payload: {'id': id});
   }
 
   Future<void> clearList(String listId, {String? householdId}) async {

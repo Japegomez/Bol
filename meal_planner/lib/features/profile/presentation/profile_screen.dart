@@ -22,9 +22,9 @@ class ProfileScreen extends ConsumerWidget {
     final opened = await ReviewPromptService.openRateApp();
     if (!context.mounted || opened) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.rateAppUnavailable)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.rateAppUnavailable)));
   }
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
@@ -79,7 +79,8 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     final profile = profileAsync.valueOrNull;
-    final username = profile?.username ??
+    final username =
+        profile?.username ??
         user?.userMetadata?['username'] as String? ??
         l10n.defaultUsername;
     final email = user?.email;
@@ -87,9 +88,7 @@ class ProfileScreen extends ConsumerWidget {
     final household = householdAsync.valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.profileTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: profileAsync.isLoading && profile == null
           ? const ProfileSkeleton()
           : ListView(

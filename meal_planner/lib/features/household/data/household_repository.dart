@@ -6,7 +6,7 @@ import 'package:meal_planner/features/profile/data/profile_repository.dart';
 
 class HouseholdRepository {
   HouseholdRepository({ProfileRepository? profileRepository})
-      : _profileRepository = profileRepository ?? ProfileRepository();
+    : _profileRepository = profileRepository ?? ProfileRepository();
 
   final ProfileRepository _profileRepository;
 
@@ -58,9 +58,7 @@ class HouseholdRepository {
   Future<List<HouseholdMemberInfo>> getMembers(String householdId) async {
     final data = await supabase
         .from(HouseholdMember.table_name)
-        .select(
-          'user_id, role, joined_at, profiles(username, avatar_url)',
-        )
+        .select('user_id, role, joined_at, profiles(username, avatar_url)')
         .eq(HouseholdMember.c_householdId, householdId)
         .order(HouseholdMember.c_joinedAt);
 
@@ -70,8 +68,7 @@ class HouseholdRepository {
       rows.map((row) async {
         final profile = row['profiles'] as Map<String, dynamic>?;
         final avatarPath = profile?['avatar_url'] as String?;
-        final avatarUrl =
-            await _profileRepository.resolveAvatarUrl(avatarPath);
+        final avatarUrl = await _profileRepository.resolveAvatarUrl(avatarPath);
 
         return HouseholdMemberInfo(
           userId: row['user_id'] as String,
@@ -95,9 +92,7 @@ class HouseholdRepository {
         .eq(HouseholdMember.c_userId, userId);
   }
 
-  Future<void> leaveHousehold({
-    required String householdId,
-  }) async {
+  Future<void> leaveHousehold({required String householdId}) async {
     await supabase.rpc<void>(
       'leave_household',
       params: {'p_household_id': householdId},

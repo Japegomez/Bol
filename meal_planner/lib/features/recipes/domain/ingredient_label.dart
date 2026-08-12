@@ -21,6 +21,7 @@ String recipeContentLocaleName({
 String _toTasteForLocale(String localeName) {
   return lookupAppLocalizations(Locale(localeName)).toTaste.toLowerCase();
 }
+
 String _formatQuantity(num quantity, {bool round = false}) {
   final value = round ? quantity.round() : quantity;
   if (value == value.roundToDouble()) {
@@ -82,6 +83,7 @@ String formatIngredientLabel(
     contentLocaleName: contentLocaleName,
   );
 }
+
 String formatShoppingItemLabel(
   AppLocalizations l10n, {
   required String name,

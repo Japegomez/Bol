@@ -3,8 +3,12 @@ abstract final class Env {
   static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   static const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
   static const sentryDsn = String.fromEnvironment('SENTRY_DSN');
-  static const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
-  static const googleIosClientId = String.fromEnvironment('GOOGLE_IOS_CLIENT_ID');
+  static const googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+  );
+  static const googleIosClientId = String.fromEnvironment(
+    'GOOGLE_IOS_CLIENT_ID',
+  );
 
   static bool get hasSupabase =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
@@ -13,6 +17,5 @@ abstract final class Env {
 
   static bool get hasGoogleSignIn => googleWebClientId.isNotEmpty;
 
-  static bool get isProduction =>
-      const bool.fromEnvironment('dart.vm.product');
+  static bool get isProduction => const bool.fromEnvironment('dart.vm.product');
 }

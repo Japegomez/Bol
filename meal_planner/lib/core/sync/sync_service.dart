@@ -39,8 +39,11 @@ class SyncService {
   bool _syncing = false;
 
   Future<bool> _remoteRowExists(String table, String id) async {
-    final row =
-        await supabase.from(table).select('id').eq('id', id).maybeSingle();
+    final row = await supabase
+        .from(table)
+        .select('id')
+        .eq('id', id)
+        .maybeSingle();
     return row != null;
   }
 
@@ -171,34 +174,41 @@ class SyncService {
         final form = RecipeFormDataCodec.fromJson(
           Map<String, dynamic>.from(payload['form'] as Map),
         );
-        final realId =
-            await recipesRepository.createRecipeRemote(form, id: tempId);
+        final realId = await recipesRepository.createRecipeRemote(
+          form,
+          id: tempId,
+        );
         if (tempId != null) {
           await _recordTempIdMapping(tempId, realId);
         }
       case PendingOp.update:
-        final recipeId =
-            await cache.resolveIdOrSelf(payload['recipeId'] as String);
+        final recipeId = await cache.resolveIdOrSelf(
+          payload['recipeId'] as String,
+        );
         final form = RecipeFormDataCodec.fromJson(
           Map<String, dynamic>.from(payload['form'] as Map),
         );
         await recipesRepository.updateRecipeRemote(recipeId, form);
       case PendingOp.delete:
-        final recipeId =
-            await cache.resolveIdOrSelf(payload['recipeId'] as String);
+        final recipeId = await cache.resolveIdOrSelf(
+          payload['recipeId'] as String,
+        );
         await recipesRepository.deleteRecipeRemote(recipeId);
       case PendingOp.setVisibility:
-        final recipeId =
-            await cache.resolveIdOrSelf(payload['recipeId'] as String);
+        final recipeId = await cache.resolveIdOrSelf(
+          payload['recipeId'] as String,
+        );
         await recipesRepository.setRecipeVisibilityRemote(
           recipeId,
           payload['isPublic'] as bool,
         );
       case PendingOp.setIngredientIncluded:
-        final recipeId =
-            await cache.resolveIdOrSelf(payload['recipeId'] as String);
-        final ingredientId =
-            await cache.resolveIdOrSelf(payload['ingredientId'] as String);
+        final recipeId = await cache.resolveIdOrSelf(
+          payload['recipeId'] as String,
+        );
+        final ingredientId = await cache.resolveIdOrSelf(
+          payload['ingredientId'] as String,
+        );
         await recipesRepository.updateIngredientIncludedRemote(
           ingredientId: ingredientId,
           recipeId: recipeId,
@@ -219,11 +229,11 @@ class SyncService {
         if (await _skipIfCreateAlreadyApplied(tempId, PlanSlot.table_name)) {
           return;
         }
-        final planId =
-            await cache.resolveIdOrSelf(payload['planId'] as String);
+        final planId = await cache.resolveIdOrSelf(payload['planId'] as String);
         final recipeId = payload['recipeId'] as String?;
-        final resolvedRecipeId =
-            recipeId != null ? await cache.resolveIdOrSelf(recipeId) : null;
+        final resolvedRecipeId = recipeId != null
+            ? await cache.resolveIdOrSelf(recipeId)
+            : null;
         final slot = await plannerRepository.addSlotRemote(
           planId: planId,
           dayOfWeek: payload['dayOfWeek'] as int,
@@ -241,12 +251,10 @@ class SyncService {
           await _recordTempIdMapping(tempId, slot.id);
         }
       case PendingOp.remove:
-        final slotId =
-            await cache.resolveIdOrSelf(payload['slotId'] as String);
+        final slotId = await cache.resolveIdOrSelf(payload['slotId'] as String);
         await plannerRepository.removeSlotRemote(slotId);
       case PendingOp.update:
-        final slotId =
-            await cache.resolveIdOrSelf(payload['slotId'] as String);
+        final slotId = await cache.resolveIdOrSelf(payload['slotId'] as String);
         await plannerRepository.moveSlotRemote(
           slotId: slotId,
           dayOfWeek: payload['dayOfWeek'] as int,
@@ -297,7 +305,10 @@ class SyncService {
     switch (opType) {
       case PendingOp.create:
         final tempId = payload['tempId'] as String?;
-        if (await _skipIfCreateAlreadyApplied(tempId, ShoppingList.table_name)) {
+        if (await _skipIfCreateAlreadyApplied(
+          tempId,
+          ShoppingList.table_name,
+        )) {
           return;
         }
         final data = await supabase
@@ -331,11 +342,13 @@ class SyncService {
             .eq(ShoppingItem.c_id, id);
       case PendingOp.create:
         final tempId = payload['tempId'] as String?;
-        if (await _skipIfCreateAlreadyApplied(tempId, ShoppingItem.table_name)) {
+        if (await _skipIfCreateAlreadyApplied(
+          tempId,
+          ShoppingItem.table_name,
+        )) {
           return;
         }
-        final listId =
-            await cache.resolveIdOrSelf(payload['listId'] as String);
+        final listId = await cache.resolveIdOrSelf(payload['listId'] as String);
         final data = await supabase
             .from(ShoppingItem.table_name)
             .insert(
@@ -374,8 +387,7 @@ class SyncService {
             .delete()
             .eq(ShoppingItem.c_id, id);
       case PendingOp.clear:
-        final listId =
-            await cache.resolveIdOrSelf(payload['listId'] as String);
+        final listId = await cache.resolveIdOrSelf(payload['listId'] as String);
         await supabase
             .from(ShoppingItem.table_name)
             .delete()
@@ -400,7 +412,8 @@ final syncOnReconnectProvider = Provider<void>((ref) {
   if (kIsWeb) return;
 
   ref.listen(connectivityProvider, (previous, next) {
-    final wasOffline = previous?.maybeWhen(
+    final wasOffline =
+        previous?.maybeWhen(
           data: isOfflineFromConnectivity,
           orElse: () => false,
         ) ??

@@ -51,9 +51,7 @@ class _CreateHouseholdScreenState extends ConsumerState<CreateHouseholdScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.createHousehold),
-      ),
+      appBar: AppBar(title: Text(l10n.createHousehold)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(

@@ -36,10 +36,7 @@ abstract final class RecipeFormDataCodec {
           .toList(),
       'steps': form.steps
           .map(
-            (s) => {
-              'description': s.description,
-              'isOptional': s.isOptional,
-            },
+            (s) => {'description': s.description, 'isOptional': s.isOptional},
           )
           .toList(),
       'nutrition': {
@@ -106,55 +103,47 @@ abstract final class RecipeFormDataCodec {
       removePhoto: json['removePhoto'] as bool? ?? false,
       isPublic: json['isPublic'] as bool? ?? false,
       forkedFromId: json['forkedFromId'] as String?,
-      ingredients: ingredientsJson
-          .map(
-            (raw) {
-              if (raw is! Map) {
-                throw const FormatException('Each ingredient must be a map');
-              }
-              final i = Map<String, dynamic>.from(raw);
-              final name = i['name'];
-              if (name == null || name is! String || name.trim().isEmpty) {
-                throw const FormatException('Ingredient name is required');
-              }
-              final isToTaste = i['isToTaste'] as bool? ?? false;
-              final useCustomUnit = i['useCustomUnit'] as bool? ?? false;
-              return IngredientFormItem(
-                name: name,
-                quantity: i['quantity'] as num?,
-                unit: isToTaste || useCustomUnit
-                    ? i['unit'] as String?
-                    : (i['unit'] as String?) ?? defaultIngredientUnit,
-                category: normalizeCategoryKey(i['category'] as String?),
-                customUnit: i['customUnit'] as String? ?? '',
-                useCustomUnit: useCustomUnit,
-                isOptional: i['isOptional'] as bool? ?? false,
-                isIncluded: i['isIncluded'] as bool? ?? true,
-                isToTaste: isToTaste,
-              );
-            },
-          )
-          .toList(),
-      steps: stepsJson
-          .map(
-            (raw) {
-              if (raw is! Map) {
-                throw const FormatException('Each step must be a map');
-              }
-              final s = Map<String, dynamic>.from(raw);
-              final description = s['description'];
-              if (description == null ||
-                  description is! String ||
-                  description.trim().isEmpty) {
-                throw const FormatException('Step description is required');
-              }
-              return StepFormItem(
-                description: description,
-                isOptional: s['isOptional'] as bool? ?? false,
-              );
-            },
-          )
-          .toList(),
+      ingredients: ingredientsJson.map((raw) {
+        if (raw is! Map) {
+          throw const FormatException('Each ingredient must be a map');
+        }
+        final i = Map<String, dynamic>.from(raw);
+        final name = i['name'];
+        if (name == null || name is! String || name.trim().isEmpty) {
+          throw const FormatException('Ingredient name is required');
+        }
+        final isToTaste = i['isToTaste'] as bool? ?? false;
+        final useCustomUnit = i['useCustomUnit'] as bool? ?? false;
+        return IngredientFormItem(
+          name: name,
+          quantity: i['quantity'] as num?,
+          unit: isToTaste || useCustomUnit
+              ? i['unit'] as String?
+              : (i['unit'] as String?) ?? defaultIngredientUnit,
+          category: normalizeCategoryKey(i['category'] as String?),
+          customUnit: i['customUnit'] as String? ?? '',
+          useCustomUnit: useCustomUnit,
+          isOptional: i['isOptional'] as bool? ?? false,
+          isIncluded: i['isIncluded'] as bool? ?? true,
+          isToTaste: isToTaste,
+        );
+      }).toList(),
+      steps: stepsJson.map((raw) {
+        if (raw is! Map) {
+          throw const FormatException('Each step must be a map');
+        }
+        final s = Map<String, dynamic>.from(raw);
+        final description = s['description'];
+        if (description == null ||
+            description is! String ||
+            description.trim().isEmpty) {
+          throw const FormatException('Step description is required');
+        }
+        return StepFormItem(
+          description: description,
+          isOptional: s['isOptional'] as bool? ?? false,
+        );
+      }).toList(),
       nutrition: NutritionFormData(
         calories: nutritionMap['calories'] as num?,
         protein: nutritionMap['protein'] as num?,

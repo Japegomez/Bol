@@ -48,10 +48,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
     final dayOfWeek = widget.dayOfWeek;
     final mealType = widget.mealType;
     final weekStart = ref.read(currentWeekProvider);
-    final isPast = isPastPlannerDay(
-      weekStart: weekStart,
-      dayOfWeek: dayOfWeek,
-    );
+    final isPast = isPastPlannerDay(weekStart: weekStart, dayOfWeek: dayOfWeek);
 
     if (_leftoverMode) {
       if (!canEdit) return;
@@ -178,8 +175,9 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                 ),
                 ListTile(
                   selected: _leftoverMode,
-                  selectedTileColor:
-                      colorScheme.tertiaryContainer.withValues(alpha: 0.45),
+                  selectedTileColor: colorScheme.tertiaryContainer.withValues(
+                    alpha: 0.45,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -192,13 +190,9 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
                   title: Text(l10n.leftovers),
                   subtitle: Text(l10n.leftoversShoppingHint),
                   trailing: _leftoverMode
-                      ? Icon(
-                          Icons.check_circle,
-                          color: colorScheme.tertiary,
-                        )
+                      ? Icon(Icons.check_circle, color: colorScheme.tertiary)
                       : null,
-                  onTap: () =>
-                      setState(() => _leftoverMode = !_leftoverMode),
+                  onTap: () => setState(() => _leftoverMode = !_leftoverMode),
                 ),
               ],
             ),
@@ -206,9 +200,7 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
           const Divider(height: 1),
           Expanded(
             child: recipesAsync.when(
-              loading: () => const SkeletonList(
-                item: ListTileSkeleton(),
-              ),
+              loading: () => const SkeletonList(item: ListTileSkeleton()),
               error: (error, _) =>
                   Center(child: Text(l10n.errorWithMessage('$error'))),
               data: (recipes) {

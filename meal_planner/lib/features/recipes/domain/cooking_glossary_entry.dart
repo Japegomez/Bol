@@ -26,10 +26,10 @@ class CookingGlossaryEntry {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'term': term,
-        'definition': definition,
-      };
+    'id': id,
+    'term': term,
+    'definition': definition,
+  };
 
   factory CookingGlossaryEntry.fromJson(Map<String, dynamic> json) {
     return CookingGlossaryEntry(

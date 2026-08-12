@@ -37,23 +37,22 @@ class _SendFeedbackScreenState extends ConsumerState<SendFeedbackScreen> {
 
     final l10n = context.l10n;
     try {
-      await ref.read(submitFeedbackProvider.notifier).submit(
-            category: category,
-            message: _messageController.text,
-          );
+      await ref
+          .read(submitFeedbackProvider.notifier)
+          .submit(category: category, message: _messageController.text);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.feedbackSentSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.feedbackSentSuccess)));
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
       final message = error is ArgumentError
           ? l10n.feedbackMessageTooShort
           : l10n.feedbackSendError;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -66,17 +65,12 @@ class _SendFeedbackScreenState extends ConsumerState<SendFeedbackScreen> {
     final canSubmit = messageLength >= 10 && !submitting;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.sendFeedback),
-      ),
+      appBar: AppBar(title: Text(l10n.sendFeedback)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
           if (_step == 1) ...[
-            Text(
-              l10n.feedbackWhatAbout,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l10n.feedbackWhatAbout, style: theme.textTheme.titleMedium),
             const SizedBox(height: 16),
             for (final category in FeedbackCategory.values) ...[
               Card(
@@ -86,9 +80,9 @@ class _SendFeedbackScreenState extends ConsumerState<SendFeedbackScreen> {
                   onTap: submitting
                       ? null
                       : () => setState(() {
-                            _category = category;
-                            _step = 2;
-                          }),
+                          _category = category;
+                          _step = 2;
+                        }),
                 ),
               ),
               const SizedBox(height: 8),
@@ -106,10 +100,7 @@ class _SendFeedbackScreenState extends ConsumerState<SendFeedbackScreen> {
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 20),
-            Text(
-              l10n.feedbackYourMessage,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l10n.feedbackYourMessage, style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
             TextField(
               controller: _messageController,
@@ -139,9 +130,9 @@ class _SendFeedbackScreenState extends ConsumerState<SendFeedbackScreen> {
                     onPressed: submitting
                         ? null
                         : () => setState(() {
-                              _step = 1;
-                              _category = null;
-                            }),
+                            _step = 1;
+                            _category = null;
+                          }),
                     child: Text(l10n.back),
                   ),
                 ),

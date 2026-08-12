@@ -53,8 +53,7 @@ class HouseholdNotifier extends AsyncNotifier<Household?> {
       throw StateError('No household loaded');
     }
 
-    final newCode =
-        await _repository.regenerateInviteCode(household.id);
+    final newCode = await _repository.regenerateInviteCode(household.id);
     state = AsyncData(household.copyWith(inviteCode: newCode));
     return newCode;
   }
@@ -63,10 +62,7 @@ class HouseholdNotifier extends AsyncNotifier<Household?> {
     final household = state.valueOrNull;
     if (household == null) return;
 
-    await _repository.kickMember(
-      householdId: household.id,
-      userId: userId,
-    );
+    await _repository.kickMember(householdId: household.id, userId: userId);
   }
 
   Future<void> leave() async {
@@ -74,9 +70,7 @@ class HouseholdNotifier extends AsyncNotifier<Household?> {
     final userId = _userId;
     if (household == null || userId == null) return;
 
-    await _repository.leaveHousehold(
-      householdId: household.id,
-    );
+    await _repository.leaveHousehold(householdId: household.id);
     state = const AsyncData(null);
   }
 
@@ -94,17 +88,17 @@ class HouseholdNotifier extends AsyncNotifier<Household?> {
 
 final householdMembersByIdProvider = FutureProvider.autoDispose
     .family<List<HouseholdMemberInfo>, String>((ref, householdId) async {
-  return ref.read(householdRepositoryProvider).getMembers(householdId);
-});
+      return ref.read(householdRepositoryProvider).getMembers(householdId);
+    });
 
-final currentUserHouseholdRoleProvider =
-    FutureProvider.autoDispose<String?>((ref) async {
+final currentUserHouseholdRoleProvider = FutureProvider.autoDispose<String?>((
+  ref,
+) async {
   final household = ref.watch(currentHouseholdProvider).valueOrNull;
   final authState = ref.watch(authStateProvider).valueOrNull;
   if (household == null || authState is! AuthAuthenticated) return null;
 
-  return ref.read(householdRepositoryProvider).getMemberRole(
-        householdId: household.id,
-        userId: authState.user.id,
-      );
+  return ref
+      .read(householdRepositoryProvider)
+      .getMemberRole(householdId: household.id, userId: authState.user.id);
 });

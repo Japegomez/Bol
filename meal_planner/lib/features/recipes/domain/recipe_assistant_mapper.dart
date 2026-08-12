@@ -26,9 +26,7 @@ RecipeFormData recipeFromAssistantJson(Map<String, dynamic> json) {
     ingredients: ingredients.isEmpty ? [IngredientFormItem()] : ingredients,
     steps: steps.isEmpty ? [StepFormItem()] : steps,
     nutrition: nutritionFromAssistantJson(
-      Map<String, dynamic>.from(
-        json['nutrition'] as Map? ?? const {},
-      ),
+      Map<String, dynamic>.from(json['nutrition'] as Map? ?? const {}),
     ),
     tips: (json['tips'] as String? ?? '').trim(),
   );
@@ -52,8 +50,8 @@ List<IngredientFormItem> _mapIngredients(dynamic raw) {
         final isToTaste = map['isToTaste'] == true;
         final rawUnit = map['unit'] as String?;
         final normalizedUnit = normalizeUnit(rawUnit);
-        final useCustomUnit = normalizedUnit != null &&
-            !predefinedUnits.contains(normalizedUnit);
+        final useCustomUnit =
+            normalizedUnit != null && !predefinedUnits.contains(normalizedUnit);
 
         return IngredientFormItem(
           name: name,
@@ -81,7 +79,9 @@ bool _isCookingWaterIngredient(String name) {
   if (normalized.isEmpty) return false;
 
   final cookingWaterPatterns = <RegExp>[
-    RegExp(r'^agua\s+(para|de)\s+(cocer|hervir|ebullir|coccion|cocción|bano|baño|vapor)'),
+    RegExp(
+      r'^agua\s+(para|de)\s+(cocer|hervir|ebullir|coccion|cocción|bano|baño|vapor)',
+    ),
     RegExp(r'^aigua\s+(per|de)\s+(coure|bullir|vapor)'),
     RegExp(r'^auga\s+(para|de)\s+(cocer|fervir|vapor)'),
     RegExp(r'^ura\s+(egiteko|fermintzeko)'),

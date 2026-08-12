@@ -15,8 +15,8 @@ String? _userIdFromAuth(AsyncValue<AuthState> authAsync) {
 /// `null` = loading or signed out, `false` = tour pending, `true` = completed.
 final onboardingCompletedProvider =
     NotifierProvider<OnboardingCompletedNotifier, bool?>(
-  OnboardingCompletedNotifier.new,
-);
+      OnboardingCompletedNotifier.new,
+    );
 
 class OnboardingCompletedNotifier extends Notifier<bool?> {
   String? _activeUserId;

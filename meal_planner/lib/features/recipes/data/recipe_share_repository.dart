@@ -102,7 +102,9 @@ class RecipeShareRepository {
       // fix; display without a photo. Restore later via a token-gated
       // signing endpoint.
       photoDisplayUrl: null,
-      forkedFromId: (forkedFromId == null || forkedFromId.isEmpty) ? null : forkedFromId,
+      forkedFromId: (forkedFromId == null || forkedFromId.isEmpty)
+          ? null
+          : forkedFromId,
       sourceLang: sourceLang,
     );
   }

@@ -29,9 +29,9 @@ class FeedbackRepository {
     FeedbackCategory? category,
     FeedbackStatus? status,
   }) async {
-    var query = supabase.from(_table).select(
-          '*, user:profiles!user_feedback_user_id_fkey(username)',
-        );
+    var query = supabase
+        .from(_table)
+        .select('*, user:profiles!user_feedback_user_id_fkey(username)');
 
     if (category != null) {
       query = query.eq('category', category.dbValue);
@@ -43,8 +43,7 @@ class FeedbackRepository {
     final data = await query.order('created_at', ascending: false);
     return (data as List<dynamic>)
         .map(
-          (row) =>
-              UserFeedback.fromJson(Map<String, dynamic>.from(row as Map)),
+          (row) => UserFeedback.fromJson(Map<String, dynamic>.from(row as Map)),
         )
         .toList();
   }
@@ -53,8 +52,9 @@ class FeedbackRepository {
     required String feedbackId,
     required FeedbackStatus status,
   }) async {
-    await supabase.from(_table).update({
-      'status': status.dbValue,
-    }).eq('id', feedbackId);
+    await supabase
+        .from(_table)
+        .update({'status': status.dbValue})
+        .eq('id', feedbackId);
   }
 }

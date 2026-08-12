@@ -65,7 +65,8 @@ OnboardingCardLayout resolveOnboardingCardLayout({
 
   final spaceAbove = placementRect.top - safeTop;
   final spaceBelow = safeBottom - placementRect.bottom;
-  var placeAbove = spaceAbove >= estimatedCardHeight + gap + pointerSize ||
+  var placeAbove =
+      spaceAbove >= estimatedCardHeight + gap + pointerSize ||
       spaceAbove >= spaceBelow;
 
   // Bottom FABs: always prefer above so the tooltip does not cover them.

@@ -7,7 +7,8 @@ class SkeletonPulse extends StatefulWidget {
   final Widget child;
 
   static Animation<double>? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_SkeletonPulseScope>()
+    return context
+        .dependOnInheritedWidgetOfExactType<_SkeletonPulseScope>()
         ?.animation;
   }
 
@@ -27,10 +28,7 @@ class _SkeletonPulseState extends State<SkeletonPulse>
       vsync: this,
       duration: const Duration(milliseconds: 1100),
     );
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
   }
 
   @override
@@ -53,18 +51,12 @@ class _SkeletonPulseState extends State<SkeletonPulse>
 
   @override
   Widget build(BuildContext context) {
-    return _SkeletonPulseScope(
-      animation: _animation,
-      child: widget.child,
-    );
+    return _SkeletonPulseScope(animation: _animation, child: widget.child);
   }
 }
 
 class _SkeletonPulseScope extends InheritedWidget {
-  const _SkeletonPulseScope({
-    required this.animation,
-    required super.child,
-  });
+  const _SkeletonPulseScope({required this.animation, required super.child});
 
   final Animation<double> animation;
 
@@ -76,12 +68,7 @@ class _SkeletonPulseScope extends InheritedWidget {
 
 /// Rounded placeholder block that pulses when inside a [SkeletonPulse].
 class SkeletonBox extends StatelessWidget {
-  const SkeletonBox({
-    this.width,
-    this.height,
-    this.borderRadius,
-    super.key,
-  });
+  const SkeletonBox({this.width, this.height, this.borderRadius, super.key});
 
   final double? width;
   final double? height;
@@ -95,10 +82,7 @@ class SkeletonBox extends StatelessWidget {
     final radius = borderRadius ?? BorderRadius.circular(8);
 
     Widget box(Color color) {
-      final decoration = BoxDecoration(
-        color: color,
-        borderRadius: radius,
-      );
+      final decoration = BoxDecoration(color: color, borderRadius: radius);
       if (width == null && height == null) {
         return DecoratedBox(
           decoration: decoration,
@@ -141,11 +125,7 @@ class SkeletonCircle extends StatelessWidget {
 }
 
 class SkeletonLine extends StatelessWidget {
-  const SkeletonLine({
-    this.height = 12,
-    this.widthFactor = 1,
-    super.key,
-  });
+  const SkeletonLine({this.height = 12, this.widthFactor = 1, super.key});
 
   final double height;
   final double widthFactor;
@@ -217,9 +197,7 @@ class RecipeCardRow extends StatelessWidget {
               aspectRatio: 1,
               child: Stack(
                 fit: StackFit.expand,
-                children: [
-                  Positioned.fill(child: photo),
-                ],
+                children: [Positioned.fill(child: photo)],
               ),
             ),
             Expanded(child: content),
@@ -262,10 +240,7 @@ class RecipeCardSkeleton extends StatelessWidget {
             children: [
               const SkeletonLine(height: 16, widthFactor: 0.85),
               const SizedBox(height: 4),
-              SkeletonLine(
-                height: 12,
-                widthFactor: showAuthorLine ? 0.9 : 0.4,
-              ),
+              SkeletonLine(height: 12, widthFactor: showAuthorLine ? 0.9 : 0.4),
               if (showTags) ...[
                 const SizedBox(height: 8),
                 const _TagChipRowSkeleton(),
@@ -448,10 +423,7 @@ class _PlannerMealRowSkeleton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: const Row(
         children: [
-          SizedBox(
-            width: 76,
-            child: SkeletonBox(width: 64, height: 14),
-          ),
+          SizedBox(width: 76, child: SkeletonBox(width: 64, height: 14)),
           Expanded(
             child: SkeletonBox(
               height: 32,
@@ -500,10 +472,7 @@ class RecipeDetailSkeleton extends StatelessWidget {
           physics: AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
-              child: SkeletonBox(
-                height: 220,
-                borderRadius: BorderRadius.zero,
-              ),
+              child: SkeletonBox(height: 220, borderRadius: BorderRadius.zero),
             ),
             SliverPadding(
               padding: EdgeInsets.all(16),
@@ -695,10 +664,7 @@ class FormPhotoSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExcludeSemantics(
       child: SkeletonPulse(
-        child: SkeletonBox(
-          height: height,
-          borderRadius: BorderRadius.zero,
-        ),
+        child: SkeletonBox(height: height, borderRadius: BorderRadius.zero),
       ),
     );
   }

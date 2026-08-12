@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 08/08/2026 — v1.2.2 hotfix: migración offline SQLCipher (VACUUM INTO + rekey) y reset de caché ilegible en TestFlight
+> Actualizado: 13/08/2026 — v1.2.3: RLS `037`–`045` en remoto; cuotas IA (20/usuario, 5 s, 500 global, 50/IP); job CI `quality`; Dependabot
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -34,7 +34,8 @@
   - URLs de share vía Firebase Hosting; mensaje WhatsApp con URL + título
   - Tests: `test/share_urls_test.dart`
 - [x] Fork desde receta compartida / hogar / pública vía `fork_recipe_into_my_book` (`026`; token obligatorio en enlace privado, `039`)
-- [x] Remediación seguridad share/hogar (`037`–`043`): token-gate lecturas, revoke de enlaces, rate-limit invite, ratings visibles, endurecimiento RLS/privilegios
+- [x] Remediación seguridad share/hogar (`037`–`043`) **aplicada en remoto** (13/08/2026): token-gate lecturas, revoke de enlaces, rate-limit invite, ratings visibles, endurecimiento RLS/privilegios
+- [x] `044_revoke_anon_execute` **aplicada en remoto**: `REVOKE EXECUTE` a `anon` en RPCs privilegiadas; helpers de RLS (`is_household_member`, `shares_household_with`, `can_access_*`, `auth_is_admin`) siguen ejecutables por `anon`
 - [ ] Validar en dispositivo (prueba cerrada / TestFlight): WhatsApp → app → ficha → fork; enlace caducado / revocado
 
 ---
@@ -52,7 +53,8 @@
 - [x] Crear repositorio en GitHub y primer commit
   - Remote `origin` → `https://github.com/Japegomez/Bol.git`
 - [x] Configurar GitHub Actions básico (análisis estático + `flutter test` en cada PR)
-  - Comando: `flutter analyze --fatal-infos lib test` (solo código de la app, no `build/`)
+  - Job **`quality`**: `dart format --set-exit-if-changed`, `flutter analyze --fatal-infos lib test`, `flutter test --coverage`, umbral `very_good_coverage` (excluye generated/l10n/presentation/widgets)
+  - Dependabot semanal (`pub` en `/meal_planner`, `github-actions` en `/`; target `develop`)
 - [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`)
   - Valores reales en `dart_defines.json` / `.env` local (gitignored); Codemagic como Environment Variables
 
@@ -121,7 +123,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Secret `GOOGLE_VISION_API_KEY` en Supabase; despliegue documentado en `supabase/README.md` (PR #37)
 - [x] Edge Function `recipe-assistant`: generación/adaptación de recetas y estimación nutricional (PR #47)
   - Modos: `generate_recipe`, `generate_nutrition`; JWT de usuario validado (`auth.getUser`)
-  - Cuota por usuario + cooldown + tope global opcional (migraciones `022_ai_assistant_usage.sql` y `023_ai_assistant_usage_gate_order.sql`, RPC `check_and_increment_ai_usage`)
+  - Cuota por usuario + cooldown + tope global + tope por IP (migraciones `022`/`023`/`045`, RPC `check_and_increment_ai_usage`; secrets `AI_ASSISTANT_*`)
+    - Producción (13/08/2026): **20**/usuario/día, cooldown **5 s**, global **500**/día, IP **50**/día (hash SHA-256; agotado → `service_at_capacity`)
+    - Gemini solo desde Edge Function (`LLM_API_KEY`); el cliente no llama a Google AI
+    - `044`: RPCs internas (`check_and_increment_ai_usage`, rebuild/merge/snapshot, OG) solo `service_role`
   - Límite de prompt **3.000 caracteres** (cliente + Edge Function); imagen opcional (jpeg/png/webp, ~1 MB cliente / ~1.5 MB servidor)
   - Multimodal: foto sola → extracción; foto + texto → ambos; dictado nativo (`speech_to_text`) rellena el prompt en cliente
   - Cliente OpenAI-compatible vía secrets `LLM_*` (recomendado Gemini `gemini-3.5-flash-lite` en proyecto GCP **sin** billing; Translation/Vision en proyecto con billing)
@@ -267,7 +272,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Abrir enlace con app → `/home/profile/household/join?code=` con código pre-rellenado
   - Sin app → landing OG con nombre del hogar + CTA instalar (`036` + `share-landing`)
   - Hosting redirect `/h/:code`; AASA `/h/*`; Android `pathPrefix="/h"`
-- [x] Unirse a hogar: input de código de 6 caracteres → RPC `join_household`
+- [x] Unirse a hogar: input de código → RPC `join_household` (códigos **nuevos** de 8 caracteres, `042`; existentes de 6 siguen válidos; rate-limit de intentos)
   - `join_household_screen.dart` (`initialCode` desde deep link)
 - [x] Regenerar código de invitación (solo admin del hogar)
 - [x] Lista de miembros del hogar con rol (admin / miembro)
@@ -642,15 +647,14 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.2 hotfix** (TestFlight / Play): fix SqliteException 26 al abrir caché offline previa (migración rekey / reset).
-2. **Validar en dispositivo** upgrade TestFlight: Compra / Plan / Recetas sin error 26; caché se regenera si hace falta.
-3. **Aplicar migraciones** `037`–`043` en remoto y redesplegar edge functions (`moderate-image`, `translate-recipe`, `share-landing`) + `config.toml` verify_jwt.
-4. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición.
-5. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
-6. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
-7. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
-8. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-9. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
-10. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
-11. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-12. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+1. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.3): Compra / Plan / Recetas; caché offline.
+2. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
+3. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
+4. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
+5. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+6. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+7. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
+8. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
+9. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+10. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+11. **Protección de ramas** `develop` / `main` en GitHub (check obligatorio `quality`).

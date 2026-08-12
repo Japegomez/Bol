@@ -52,7 +52,9 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = _mapJoinError(context.l10n, e.toString()));
+        setState(
+          () => _errorMessage = _mapJoinError(context.l10n, e.toString()),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -82,9 +84,7 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.joinHouseholdTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.joinHouseholdTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(

@@ -14,7 +14,8 @@ import 'package:meal_planner/features/auth/data/auth_error_mapper.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState, AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    hide AuthState, AuthException;
 
 class AuthRepository {
   GoogleSignIn? _googleSignInInstance;
@@ -93,7 +94,9 @@ class AuthRepository {
       final googleAuth = await googleUser.authentication;
       final idToken = googleAuth.idToken;
       if (idToken == null) {
-        throw const AuthProviderException('Google Sign-In returned no id token');
+        throw const AuthProviderException(
+          'Google Sign-In returned no id token',
+        );
       }
 
       try {

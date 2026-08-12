@@ -4,11 +4,7 @@ import 'package:meal_planner/core/locale/localized_data.dart';
 
 /// Horizontally scrollable chip row for recipe tags inside list cards.
 class HorizontalTagList extends StatefulWidget {
-  const HorizontalTagList({
-    required this.tags,
-    this.labelFor,
-    super.key,
-  });
+  const HorizontalTagList({required this.tags, this.labelFor, super.key});
 
   final List<String> tags;
 
@@ -33,10 +29,7 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
 
     final position = _scrollController.position;
     final offset = (_scrollController.offset - delta)
-        .clamp(
-          position.minScrollExtent,
-          position.maxScrollExtent,
-        )
+        .clamp(position.minScrollExtent, position.maxScrollExtent)
         .toDouble();
     _scrollController.jumpTo(offset);
   }
@@ -45,10 +38,10 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
     if (!_scrollController.hasClients) return;
 
     final position = _scrollController.position;
-    final target = (_scrollController.offset -
-            details.velocity.pixelsPerSecond.dx * 0.15)
-        .clamp(position.minScrollExtent, position.maxScrollExtent)
-        .toDouble();
+    final target =
+        (_scrollController.offset - details.velocity.pixelsPerSecond.dx * 0.15)
+            .clamp(position.minScrollExtent, position.maxScrollExtent)
+            .toDouble();
 
     _scrollController.animateTo(
       target,

@@ -81,28 +81,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     await _runAuth(() async {
-      await ref.read(authRepositoryProvider).signInWithEmail(
+      await ref
+          .read(authRepositoryProvider)
+          .signInWithEmail(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
     });
   }
 
-  Future<void> _signInWithGoogle() => _runAuth(
-        () => ref.read(authRepositoryProvider).signInWithGoogle(),
-      );
+  Future<void> _signInWithGoogle() =>
+      _runAuth(() => ref.read(authRepositoryProvider).signInWithGoogle());
 
-  Future<void> _signInWithApple() => _runAuth(
-        () => ref.read(authRepositoryProvider).signInWithApple(),
-      );
+  Future<void> _signInWithApple() =>
+      _runAuth(() => ref.read(authRepositoryProvider).signInWithApple());
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final sessionExpired = ref.watch(authStateProvider).maybeWhen(
-          data: (state) =>
-              state is AuthUnauthenticated && state.sessionExpired,
+    final sessionExpired = ref
+        .watch(authStateProvider)
+        .maybeWhen(
+          data: (state) => state is AuthUnauthenticated && state.sessionExpired,
           orElse: () => false,
         );
 
@@ -219,8 +220,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (Env.hasGoogleSignIn) ...[
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
-                        onPressed:
-                            _isLoading || !Env.hasSupabase ? null : _signInWithGoogle,
+                        onPressed: _isLoading || !Env.hasSupabase
+                            ? null
+                            : _signInWithGoogle,
                         icon: const Icon(Icons.g_mobiledata, size: 28),
                         label: Text(l10n.continueWithGoogle),
                       ),
@@ -228,8 +230,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (_canUseAppleSignIn) ...[
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
-                        onPressed:
-                            _isLoading || !Env.hasSupabase ? null : _signInWithApple,
+                        onPressed: _isLoading || !Env.hasSupabase
+                            ? null
+                            : _signInWithApple,
                         icon: const Icon(Icons.apple),
                         label: Text(l10n.continueWithApple),
                       ),
@@ -245,8 +248,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed:
-                          _isLoading ? null : () => context.go('/auth/register'),
+                      onPressed: _isLoading
+                          ? null
+                          : () => context.go('/auth/register'),
                       child: Text(l10n.noAccountRegister),
                     ),
                   ],

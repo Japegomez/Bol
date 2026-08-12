@@ -7,44 +7,45 @@ import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart'
 /// Machine-translated view of an own recipe detail, mirroring the public-recipe
 /// translation flow: auto-translate to the app language with a "view original"
 /// toggle.
-final recipeDisplayProvider =
-    FutureProvider.family<RecipeDisplayState, String>((ref, recipeId) async {
-  final detail = await ref.watch(recipeDetailProvider(recipeId).future);
-  final targetLang = ref.watch(currentLanguageCodeProvider);
-  final sourceLang = detail.sourceLang;
+final recipeDisplayProvider = FutureProvider.family<RecipeDisplayState, String>(
+  (ref, recipeId) async {
+    final detail = await ref.watch(recipeDetailProvider(recipeId).future);
+    final targetLang = ref.watch(currentLanguageCodeProvider);
+    final sourceLang = detail.sourceLang;
 
-  if (sourceLang == targetLang) {
-    return RecipeDisplayState(detail: detail, isTranslated: false);
-  }
-
-  try {
-    final translation = await ref
-        .read(recipeTranslationRepositoryProvider)
-        .fetchTranslation(
-          recipeId: detail.recipe.id,
-          targetLang: targetLang,
-          sourceLang: sourceLang,
-        );
-
-    if (translation == null) {
+    if (sourceLang == targetLang) {
       return RecipeDisplayState(detail: detail, isTranslated: false);
     }
 
-    return RecipeDisplayState(
-      detail: _applyTranslation(detail, translation),
-      isTranslated: true,
-      showTranslation: true,
-      translation: translation,
-      originalDetail: detail,
-    );
-  } catch (_) {
-    return RecipeDisplayState(
-      detail: detail,
-      isTranslated: false,
-      translationFailed: true,
-    );
-  }
-});
+    try {
+      final translation = await ref
+          .read(recipeTranslationRepositoryProvider)
+          .fetchTranslation(
+            recipeId: detail.recipe.id,
+            targetLang: targetLang,
+            sourceLang: sourceLang,
+          );
+
+      if (translation == null) {
+        return RecipeDisplayState(detail: detail, isTranslated: false);
+      }
+
+      return RecipeDisplayState(
+        detail: _applyTranslation(detail, translation),
+        isTranslated: true,
+        showTranslation: true,
+        translation: translation,
+        originalDetail: detail,
+      );
+    } catch (_) {
+      return RecipeDisplayState(
+        detail: detail,
+        isTranslated: false,
+        translationFailed: true,
+      );
+    }
+  },
+);
 
 class RecipeDisplayState {
   const RecipeDisplayState({

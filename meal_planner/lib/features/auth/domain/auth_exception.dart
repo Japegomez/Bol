@@ -17,11 +17,11 @@ final class AuthConfigurationException extends AuthException {
 
 final class AuthGoogleSignInConfigurationException extends AuthException {
   const AuthGoogleSignInConfigurationException()
-      : super(
-          'Google Sign-In no está configurado para esta build de Android. '
-          'Registra el SHA-1 (debug o release/Play App Signing) en Google Cloud '
-          'y Firebase, vuelve a descargar google-services.json y reinstala la app.',
-        );
+    : super(
+        'Google Sign-In no está configurado para esta build de Android. '
+        'Registra el SHA-1 (debug o release/Play App Signing) en Google Cloud '
+        'y Firebase, vuelve a descargar google-services.json y reinstala la app.',
+      );
 }
 
 final class AuthProviderException extends AuthException {
@@ -30,15 +30,21 @@ final class AuthProviderException extends AuthException {
 
 final class AuthInvalidCredentialsException extends AuthException {
   const AuthInvalidCredentialsException()
-      : super('Email o contraseña incorrectos. Comprueba los datos e inténtalo de nuevo.');
+    : super(
+        'Email o contraseña incorrectos. Comprueba los datos e inténtalo de nuevo.',
+      );
 }
 
 final class AuthEmailNotConfirmedException extends AuthException {
   const AuthEmailNotConfirmedException()
-      : super('Confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.');
+    : super(
+        'Confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
+      );
 }
 
 final class AuthUserAlreadyExistsException extends AuthException {
   const AuthUserAlreadyExistsException()
-      : super('Ya existe una cuenta con este email. Inicia sesión o usa otra dirección.');
+    : super(
+        'Ya existe una cuenta con este email. Inicia sesión o usa otra dirección.',
+      );
 }

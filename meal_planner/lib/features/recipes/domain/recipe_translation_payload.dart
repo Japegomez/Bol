@@ -27,9 +27,8 @@ class RecipeTranslationPayload {
           .toList(),
       steps: stepsJson
           .map(
-            (row) => TranslatedStep.fromJson(
-              Map<String, dynamic>.from(row as Map),
-            ),
+            (row) =>
+                TranslatedStep.fromJson(Map<String, dynamic>.from(row as Map)),
           )
           .toList(),
       sourceLang: json['source_lang']?.toString() ?? 'es',
@@ -70,10 +69,7 @@ class TranslatedIngredient {
 }
 
 class TranslatedStep {
-  const TranslatedStep({
-    required this.id,
-    required this.description,
-  });
+  const TranslatedStep({required this.id, required this.description});
 
   factory TranslatedStep.fromJson(Map<String, dynamic> json) {
     return TranslatedStep(

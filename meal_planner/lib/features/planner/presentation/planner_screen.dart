@@ -43,8 +43,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   void _onDragUpdate(Offset globalPosition) {
-    final renderBox =
-        _listKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = _listKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     final top = renderBox.localToGlobal(Offset.zero).dy;
@@ -64,12 +63,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     if (_autoScrollTimer != null && _autoScrollDirection == direction) return;
     _stopAutoScroll();
     _autoScrollDirection = direction;
-    _autoScrollTimer =
-        Timer.periodic(const Duration(milliseconds: 16), (_) {
+    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
       if (!_scrollController.hasClients) return;
       final position = _scrollController.position;
-      final next = (position.pixels + direction * _scrollStep)
-          .clamp(position.minScrollExtent, position.maxScrollExtent);
+      final next = (position.pixels + direction * _scrollStep).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      );
       if (next == position.pixels) {
         _stopAutoScroll();
         return;
@@ -99,9 +99,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
     await Clipboard.setData(ClipboardData(text: _planText(slots)));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.plannerCopied)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.l10n.plannerCopied)));
   }
 
   Future<void> _sharePlan(List<SlotItem> slots) async {
@@ -145,7 +145,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       ),
       body: planAsync.when(
         loading: () => const PlannerSkeleton(),
-        error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, _) =>
+            Center(child: Text(l10n.errorWithMessage('$error'))),
         data: (_) => Stack(
           children: [
             Column(
@@ -158,8 +159,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 ),
                 Expanded(
                   child: slotsAsync.when(
-                    loading: () =>
-                        const PlannerSkeleton(showWeekHeader: false),
+                    loading: () => const PlannerSkeleton(showWeekHeader: false),
                     error: (error, _) =>
                         Center(child: Text(l10n.errorWithMessage('$error'))),
                     data: (slots) => _VerticalPlanner(
@@ -220,8 +220,9 @@ class _WeekNavigationHeader extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: () {
-              ref.read(currentWeekProvider.notifier).state =
-                  weekStart.subtract(const Duration(days: 7));
+              ref.read(currentWeekProvider.notifier).state = weekStart.subtract(
+                const Duration(days: 7),
+              );
             },
           ),
           Expanded(
@@ -236,8 +237,8 @@ class _WeekNavigationHeader extends ConsumerWidget {
                   Text(
                     l10n.thisWeek,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
               ],
             ),
@@ -245,8 +246,9 @@ class _WeekNavigationHeader extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.chevron_right),
             onPressed: () {
-              ref.read(currentWeekProvider.notifier).state =
-                  weekStart.add(const Duration(days: 7));
+              ref.read(currentWeekProvider.notifier).state = weekStart.add(
+                const Duration(days: 7),
+              );
             },
           ),
         ],
@@ -276,7 +278,8 @@ class _VerticalPlanner extends StatelessWidget {
     return slots
         .where(
           (item) =>
-              item.slot.dayOfWeek == dayOfWeek && item.slot.mealType == mealType,
+              item.slot.dayOfWeek == dayOfWeek &&
+              item.slot.mealType == mealType,
         )
         .toList()
       ..sort((a, b) => a.slot.position.compareTo(b.slot.position));
@@ -360,15 +363,17 @@ class _DayCard extends StatelessWidget {
                 Text(
                   formatDayHeader(date, localeName),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isToday ? colorScheme.primary : null,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: isToday ? colorScheme.primary : null,
+                  ),
                 ),
                 if (isToday) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.primary,
                       borderRadius: BorderRadius.circular(10),
@@ -376,9 +381,9 @@ class _DayCard extends StatelessWidget {
                     child: Text(
                       l10n.today,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],

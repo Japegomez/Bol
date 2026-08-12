@@ -41,9 +41,11 @@ class SocialRepository {
     );
 
     return data
-        .map((row) => PublicRecipeSummary.fromJson(
-              Map<String, dynamic>.from(row as Map),
-            ))
+        .map(
+          (row) => PublicRecipeSummary.fromJson(
+            Map<String, dynamic>.from(row as Map),
+          ),
+        )
         .toList();
   }
 
@@ -128,7 +130,7 @@ class SocialRepository {
     final avgScore = ratings.isEmpty
         ? 0.0
         : ratings.map((r) => r['score'] as int).reduce((a, b) => a + b) /
-            ratings.length;
+              ratings.length;
 
     int? myRating;
     if (recipe.userId != _userId) {
@@ -148,9 +150,7 @@ class SocialRepository {
       ingredients: Ingredient.converter(
         List<Map<String, dynamic>>.from(ingredientsData),
       ),
-      steps: RecipeStep.converter(
-        List<Map<String, dynamic>>.from(stepsData),
-      ),
+      steps: RecipeStep.converter(List<Map<String, dynamic>>.from(stepsData)),
       nutrition: nutritionData != null
           ? NutritionInfo.converterSingle(
               Map<String, dynamic>.from(nutritionData),
@@ -183,14 +183,11 @@ class SocialRepository {
       throw Exception('La puntuación debe estar entre 1 y 5');
     }
 
-    await supabase.from('recipe_ratings').upsert(
-      {
-        'user_id': _userId,
-        'recipe_id': recipeId,
-        'score': score,
-      },
-      onConflict: 'user_id,recipe_id',
-    );
+    await supabase.from('recipe_ratings').upsert({
+      'user_id': _userId,
+      'recipe_id': recipeId,
+      'score': score,
+    }, onConflict: 'user_id,recipe_id');
   }
 
   Future<bool> isFollowing(String userId) async {
@@ -228,9 +225,9 @@ class SocialRepository {
         .select('following_id')
         .eq('follower_id', _userId);
 
-    final followingIds = List<Map<String, dynamic>>.from(followsData)
-        .map((row) => row['following_id'].toString())
-        .toList();
+    final followingIds = List<Map<String, dynamic>>.from(
+      followsData,
+    ).map((row) => row['following_id'].toString()).toList();
 
     if (followingIds.isEmpty) return [];
 
@@ -248,7 +245,9 @@ class SocialRepository {
         .order(Recipe.c_createdAt, ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    final recipes = Recipe.converter(List<Map<String, dynamic>>.from(recipesData));
+    final recipes = Recipe.converter(
+      List<Map<String, dynamic>>.from(recipesData),
+    );
     if (recipes.isEmpty) return [];
 
     final profilesData = await supabase
@@ -263,7 +262,6 @@ class SocialRepository {
 
     final summaries = <PublicRecipeSummary>[];
     for (final recipe in recipes) {
-
       final ratingsData = await supabase
           .from('recipe_ratings')
           .select('score')
@@ -272,7 +270,7 @@ class SocialRepository {
       final avgScore = ratings.isEmpty
           ? 0.0
           : ratings.map((r) => r['score'] as int).reduce((a, b) => a + b) /
-              ratings.length;
+                ratings.length;
 
       summaries.add(
         PublicRecipeSummary(
@@ -313,7 +311,9 @@ class SocialRepository {
         .eq(Recipe.c_isPublic, true)
         .order(Recipe.c_createdAt, ascending: false);
 
-    final recipes = Recipe.converter(List<Map<String, dynamic>>.from(recipesData));
+    final recipes = Recipe.converter(
+      List<Map<String, dynamic>>.from(recipesData),
+    );
 
     double totalScore = 0;
     int totalRatings = 0;
@@ -328,7 +328,7 @@ class SocialRepository {
       final avgScore = ratings.isEmpty
           ? 0.0
           : ratings.map((r) => r['score'] as int).reduce((a, b) => a + b) /
-              ratings.length;
+                ratings.length;
 
       totalScore += ratings.fold<double>(
         0,

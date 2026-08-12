@@ -11,10 +11,7 @@ void main() {
     });
 
     test('returns false when wifi is available', () {
-      expect(
-        isOfflineFromConnectivity([ConnectivityResult.wifi]),
-        isFalse,
-      );
+      expect(isOfflineFromConnectivity([ConnectivityResult.wifi]), isFalse);
     });
   });
 

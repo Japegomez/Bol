@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     const adminClient = createClient(supabaseUrl, serviceKey);
-    const quotaResult = await enforceAiQuota(adminClient, userId, corsHeaders);
+    const quotaResult = await enforceAiQuota(adminClient, userId, corsHeaders, req);
     if (!quotaResult.ok) return quotaResult.response;
 
     const apiKey = Deno.env.get("GOOGLE_API_KEY");
