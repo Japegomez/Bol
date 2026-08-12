@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/planner/domain/planner_drag_payload.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -106,8 +107,14 @@ class _RecipePaletteState extends ConsumerState<RecipePalette> {
             const SizedBox(height: 8),
             Expanded(
               child: recipesAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const SkeletonList(
+                  itemCount: 8,
+                  padding: EdgeInsets.fromLTRB(12, 0, 16, 12),
+                  item: Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: CompactRecipeRowSkeleton(),
+                  ),
+                ),
                 error: (error, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(12),

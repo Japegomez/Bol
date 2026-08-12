@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/feedback/domain/user_feedback.dart';
 import 'package:meal_planner/features/feedback/presentation/feedback_provider.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
@@ -165,7 +166,7 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
           const Divider(height: 1),
           Expanded(
             child: feedbackAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(item: ListTileSkeleton()),
               error: (error, _) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),

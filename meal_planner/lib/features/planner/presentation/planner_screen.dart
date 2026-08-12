@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/utils/date_utils.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/planner/domain/planner_constants.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
@@ -143,7 +144,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         ],
       ),
       body: planAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const PlannerSkeleton(),
         error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
         data: (_) => Stack(
           children: [
@@ -158,7 +159,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 Expanded(
                   child: slotsAsync.when(
                     loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                        const PlannerSkeleton(showWeekHeader: false),
                     error: (error, _) =>
                         Center(child: Text(l10n.errorWithMessage('$error'))),
                     data: (slots) => _VerticalPlanner(

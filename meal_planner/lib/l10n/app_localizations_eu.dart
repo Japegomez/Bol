@@ -1528,6 +1528,10 @@ class AppLocalizationsEu extends AppLocalizations {
       'Esan laguntzaileari zer egin argazkiarekin (adib.: plater hau birsortu, errezeta atera...)';
 
   @override
+  String get recipeAssistantSameRecipePhotosHint =>
+      'Argazki bat baino gehiago eransten badituzu, errezeta berarenak izan daitezela.';
+
+  @override
   String get recipeAssistantListening => 'Entzuten…';
 
   @override

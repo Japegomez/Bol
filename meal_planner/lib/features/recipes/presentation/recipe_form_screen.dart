@@ -10,6 +10,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -289,7 +290,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
           if (!_initialized) _initFrom(state.data);
           return _buildForm(context, state.error, canEdit: canEdit);
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const RecipeDetailSkeleton(),
         error: (error, _) =>
             Center(child: Text(l10n.errorWithMessage('$error'))),
       ),
@@ -840,10 +841,7 @@ class _PhotoSection extends ConsumerWidget {
         data: (url) => url == null
             ? null
             : Image.network(url, height: 180, fit: BoxFit.cover),
-        loading: () => const SizedBox(
-          height: 180,
-          child: Center(child: CircularProgressIndicator()),
-        ),
+        loading: () => const FormPhotoSkeleton(),
         error: (_, _) => null,
       );
     }

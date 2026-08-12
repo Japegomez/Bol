@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/app_branding.dart';
 import 'package:meal_planner/core/config/share_urls.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/domain/household_member_info.dart';
@@ -172,7 +173,7 @@ class HouseholdScreen extends ConsumerWidget {
     if (householdAsync.isLoading && household == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.myHouseholdTitle)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const HouseholdSkeleton(),
       );
     }
 
@@ -266,7 +267,17 @@ class HouseholdScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             membersAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ExcludeSemantics(
+                child: SkeletonPulse(
+                  child: Column(
+                    children: [
+                      ListTileSkeleton(),
+                      ListTileSkeleton(),
+                      ListTileSkeleton(),
+                    ],
+                  ),
+                ),
+              ),
               error: (error, _) => Text(
                 error.toString(),
                 style: TextStyle(color: theme.colorScheme.error),
