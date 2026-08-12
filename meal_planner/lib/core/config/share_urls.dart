@@ -31,9 +31,7 @@ abstract final class ShareUrls {
 
   static bool isShareHost(String host) {
     final h = host.toLowerCase();
-    return h == ShareUrls.host ||
-        h == firebaseHost ||
-        h == supabaseHost;
+    return h == ShareUrls.host || h == firebaseHost || h == supabaseHost;
   }
 
   static bool _isShareKind(String kind) =>
@@ -44,7 +42,8 @@ abstract final class ShareUrls {
     return switch (kind) {
       'p' => '/home/explore/$cleanId',
       'r' => '/share/r/$cleanId',
-      'h' => '/home/profile/household/join?code=${Uri.encodeComponent(cleanId)}',
+      'h' =>
+        '/home/profile/household/join?code=${Uri.encodeComponent(cleanId)}',
       _ => null,
     };
   }

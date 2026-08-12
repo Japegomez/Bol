@@ -45,9 +45,11 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.listen<AsyncValue<AuthState>>(authStateProvider, (prev, next) {
     final prevAuth = prev?.valueOrNull is AuthAuthenticated;
     final nextAuth = next.valueOrNull is AuthAuthenticated;
-    final prevExpired = prev?.valueOrNull is AuthUnauthenticated &&
+    final prevExpired =
+        prev?.valueOrNull is AuthUnauthenticated &&
         (prev!.valueOrNull! as AuthUnauthenticated).sessionExpired;
-    final nextExpired = next.valueOrNull is AuthUnauthenticated &&
+    final nextExpired =
+        next.valueOrNull is AuthUnauthenticated &&
         (next.valueOrNull! as AuthUnauthenticated).sessionExpired;
     if (prevAuth != nextAuth || prevExpired != nextExpired) {
       refresh.value++;
@@ -111,7 +113,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final shareLocation = ShareUrls.appLocationForIncomingUri(state.uri);
-      final isIncomingSharePath = state.uri.path.startsWith('/p/') ||
+      final isIncomingSharePath =
+          state.uri.path.startsWith('/p/') ||
           state.uri.path.startsWith('/r/') ||
           state.uri.path.startsWith('/h/') ||
           ShareUrls.isShareHost(state.uri.host);
@@ -147,25 +150,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        redirect: (_, _) => '/home/planner',
-      ),
+      GoRoute(path: '/', redirect: (_, _) => '/home/planner'),
       GoRoute(
         path: '/share/r/:token',
-        builder: (_, state) => SharePrivateLinkScreen(
-          token: state.pathParameters['token']!,
-        ),
+        builder: (_, state) =>
+            SharePrivateLinkScreen(token: state.pathParameters['token']!),
       ),
       GoRoute(
         path: '/p/:id',
-        redirect: (_, state) =>
-            '/home/explore/${state.pathParameters['id']}',
+        redirect: (_, state) => '/home/explore/${state.pathParameters['id']}',
       ),
       GoRoute(
         path: '/r/:token',
-        redirect: (_, state) =>
-            '/share/r/${state.pathParameters['token']}',
+        redirect: (_, state) => '/share/r/${state.pathParameters['token']}',
       ),
       GoRoute(
         path: '/h/:code',
@@ -174,10 +171,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return '/home/profile/household/join?code=${Uri.encodeComponent(code)}';
         },
       ),
-      GoRoute(
-        path: '/auth/login',
-        builder: (_, _) => const LoginScreen(),
-      ),
+      GoRoute(path: '/auth/login', builder: (_, _) => const LoginScreen()),
       GoRoute(
         path: '/auth/register',
         builder: (_, _) => const RegisterScreen(),
@@ -210,10 +204,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/home/explore',
                 builder: (_, _) => const ExploreScreen(),
                 routes: [
-                  GoRoute(
-                    path: 'feed',
-                    builder: (_, _) => const FeedScreen(),
-                  ),
+                  GoRoute(path: 'feed', builder: (_, _) => const FeedScreen()),
                   GoRoute(
                     path: 'user/:userId',
                     builder: (_, state) => PublicProfileScreen(
@@ -251,8 +242,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final sharedToken = extra is String
                           ? extra
                           : (extra is Map && extra['sharedToken'] is String)
-                              ? extra['sharedToken'] as String
-                              : null;
+                          ? extra['sharedToken'] as String
+                          : null;
                       return RecipeDetailScreen(
                         recipeId: state.pathParameters['id']!,
                         sharedToken: sharedToken,

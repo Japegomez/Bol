@@ -19,8 +19,8 @@ abstract final class DefaultFirebaseOptions {
       TargetPlatform.iOS => ios,
       TargetPlatform.macOS => macos,
       _ => throw UnsupportedError(
-          'Firebase is not configured for $defaultTargetPlatform.',
-        ),
+        'Firebase is not configured for $defaultTargetPlatform.',
+      ),
     };
   }
 

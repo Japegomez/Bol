@@ -382,14 +382,14 @@ String mealTypeLabel(AppLocalizations l10n, String mealType) {
 }
 
 List<String> dayAbbreviations(AppLocalizations l10n) => [
-      l10n.dayMon,
-      l10n.dayTue,
-      l10n.dayWed,
-      l10n.dayThu,
-      l10n.dayFri,
-      l10n.daySat,
-      l10n.daySun,
-    ];
+  l10n.dayMon,
+  l10n.dayTue,
+  l10n.dayWed,
+  l10n.dayThu,
+  l10n.dayFri,
+  l10n.daySat,
+  l10n.daySun,
+];
 
 String deleteConfirmationWord(AppLocalizations l10n) {
   return switch (l10n.localeName) {

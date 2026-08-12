@@ -92,8 +92,10 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
             final uri = Uri.tryParse(request.url);
             if (uri == null || !_isAllowed(uri)) {
               // Redirect disallowed navigations to the system browser.
-              launchUrl(Uri.parse(request.url),
-                  mode: LaunchMode.externalApplication);
+              launchUrl(
+                Uri.parse(request.url),
+                mode: LaunchMode.externalApplication,
+              );
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;

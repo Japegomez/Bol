@@ -77,7 +77,9 @@ class UserFeedback {
     return UserFeedback(
       id: json['id']?.toString() ?? '',
       userId: json['user_id']?.toString() ?? '',
-      category: FeedbackCategory.fromDb(json['category']?.toString() ?? 'other'),
+      category: FeedbackCategory.fromDb(
+        json['category']?.toString() ?? 'other',
+      ),
       status: FeedbackStatus.fromDb(json['status']?.toString() ?? 'pending'),
       message: json['message']?.toString() ?? '',
       createdAt: json['created_at'] != null

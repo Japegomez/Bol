@@ -9,8 +9,9 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepository();
 });
 
-final profileProvider =
-    AsyncNotifierProvider<ProfileNotifier, Profile?>(ProfileNotifier.new);
+final profileProvider = AsyncNotifierProvider<ProfileNotifier, Profile?>(
+  ProfileNotifier.new,
+);
 
 class ProfileNotifier extends AsyncNotifier<Profile?> {
   ProfileRepository get _repository => ref.read(profileRepositoryProvider);

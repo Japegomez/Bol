@@ -99,18 +99,10 @@ class CookingSession {
 
   factory CookingSession.fromJson(Map<String, dynamic> json) {
     final ingredients = (json['ingredients'] as List<dynamic>)
-        .map(
-          (e) => Ingredient.fromJson(
-            Map<String, dynamic>.from(e as Map),
-          ),
-        )
+        .map((e) => Ingredient.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
     final steps = (json['steps'] as List<dynamic>)
-        .map(
-          (e) => RecipeStep.fromJson(
-            Map<String, dynamic>.from(e as Map),
-          ),
-        )
+        .map((e) => RecipeStep.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
 
     final currentStepIndex = json['currentStepIndex'] as int;
@@ -150,23 +142,23 @@ class CookingSession {
   // ── Private serialization helpers ─────────────────────────────────────────
 
   static Map<String, dynamic> _ingredientToMap(Ingredient i) => {
-        'id': i.id,
-        'recipe_id': i.recipeId,
-        'name': i.name,
-        if (i.quantity != null) 'quantity': i.quantity.toString(),
-        if (i.unit != null) 'unit': i.unit,
-        if (i.category != null) 'category': i.category,
-        'position': i.position,
-        'is_optional': i.isOptional,
-        'is_included': i.isIncluded,
-        'is_to_taste': i.isToTaste,
-      };
+    'id': i.id,
+    'recipe_id': i.recipeId,
+    'name': i.name,
+    if (i.quantity != null) 'quantity': i.quantity.toString(),
+    if (i.unit != null) 'unit': i.unit,
+    if (i.category != null) 'category': i.category,
+    'position': i.position,
+    'is_optional': i.isOptional,
+    'is_included': i.isIncluded,
+    'is_to_taste': i.isToTaste,
+  };
 
   static Map<String, dynamic> _stepToMap(RecipeStep s) => {
-        'id': s.id,
-        'recipe_id': s.recipeId,
-        'position': s.position,
-        'description': s.description,
-        'is_optional': s.isOptional,
-      };
+    'id': s.id,
+    'recipe_id': s.recipeId,
+    'position': s.position,
+    'description': s.description,
+    'is_optional': s.isOptional,
+  };
 }

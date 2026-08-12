@@ -11,9 +11,9 @@ class RecipeDetailBodyTitle extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Text(
       title,
-      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: scheme.onSurface,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.headlineSmall?.copyWith(color: scheme.onSurface),
     );
   }
 }

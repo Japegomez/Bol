@@ -38,8 +38,9 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      ref.read(recipeListFilterProvider.notifier).state =
-          ref.read(recipeListFilterProvider).copyWith(search: value);
+      ref.read(recipeListFilterProvider.notifier).state = ref
+          .read(recipeListFilterProvider)
+          .copyWith(search: value);
     });
   }
 
@@ -59,12 +60,12 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
       final result = await runWithRecipeAssistantBlockingOverlay(
         context: context,
         message: context.l10n.recipeAssistantBlockingRecipe,
-        task: () => ref
-            .read(recipeAssistantRepositoryProvider)
-            .generateRecipe(input),
+        task: () =>
+            ref.read(recipeAssistantRepositoryProvider).generateRecipe(input),
       );
-      ref.read(recipeAssistantDraftProvider.notifier).state =
-          RecipeAssistantDraft(
+      ref
+          .read(recipeAssistantDraftProvider.notifier)
+          .state = RecipeAssistantDraft(
         formData: result.formData,
         sourceLang: result.sourceLang,
       );
@@ -198,7 +199,8 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                 }
 
                 final targetLang = ref.watch(currentLanguageCodeProvider);
-                final titles = ref
+                final titles =
+                    ref
                         .watch(
                           listTitleTranslationsProvider(
                             TitleTranslationRequest(
@@ -229,11 +231,8 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   ),
                 );
               },
-              loading: () => const SkeletonList(
-                item: RecipeCardSkeleton(
-                  showTags: true,
-                ),
-              ),
+              loading: () =>
+                  const SkeletonList(item: RecipeCardSkeleton(showTags: true)),
               error: (error, _) =>
                   Center(child: Text(l10n.errorWithMessage('$error'))),
             ),

@@ -6,7 +6,7 @@ const _sessionKey = 'supabase.auth.token';
 /// Persists Supabase auth session in Keychain (iOS) / Keystore (Android).
 final class SecureLocalStorage extends LocalStorage {
   SecureLocalStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
@@ -36,7 +36,7 @@ final class SecureLocalStorage extends LocalStorage {
 /// Persists PKCE flow tokens securely.
 final class SecureGotrueAsyncStorage extends GotrueAsyncStorage {
   SecureGotrueAsyncStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 

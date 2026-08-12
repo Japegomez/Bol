@@ -50,8 +50,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      ref.read(exploreFilterProvider.notifier).state =
-          ref.read(exploreFilterProvider).copyWith(search: value);
+      ref.read(exploreFilterProvider.notifier).state = ref
+          .read(exploreFilterProvider)
+          .copyWith(search: value);
     });
   }
 
@@ -59,8 +60,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget build(BuildContext context) {
     final exploreState = ref.watch(exploreRecipesProvider);
     final filter = ref.watch(exploreFilterProvider);
-    final sortLabel =
-        filter.sort == 'top' ? context.l10n.topRated : context.l10n.recent;
+    final sortLabel = filter.sort == 'top'
+        ? context.l10n.topRated
+        : context.l10n.recent;
 
     return Scaffold(
       appBar: AppBar(
@@ -104,8 +106,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   label: Text(context.l10n.recent),
                   selected: filter.sort == 'recent',
                   onSelected: (_) {
-                    ref.read(exploreFilterProvider.notifier).state =
-                        filter.copyWith(sort: 'recent');
+                    ref.read(exploreFilterProvider.notifier).state = filter
+                        .copyWith(sort: 'recent');
                   },
                 ),
                 const SizedBox(width: 8),
@@ -113,8 +115,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   label: Text(context.l10n.topRated),
                   selected: filter.sort == 'top',
                   onSelected: (_) {
-                    ref.read(exploreFilterProvider.notifier).state =
-                        filter.copyWith(sort: 'top');
+                    ref.read(exploreFilterProvider.notifier).state = filter
+                        .copyWith(sort: 'top');
                   },
                 ),
               ],
@@ -123,14 +125,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           PublicTagFilterBar(
             selectedTags: filter.tags,
             onSelectionChanged: (tags) {
-              ref.read(exploreFilterProvider.notifier).state =
-                  filter.copyWith(tags: tags);
+              ref.read(exploreFilterProvider.notifier).state = filter.copyWith(
+                tags: tags,
+              );
             },
           ),
           SocialSortLabel(label: sortLabel),
-          Expanded(
-            child: _buildBody(context, exploreState),
-          ),
+          Expanded(child: _buildBody(context, exploreState)),
         ],
       ),
     );
@@ -181,7 +182,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     final targetLang = ref.watch(currentLanguageCodeProvider);
-    final titles = ref
+    final titles =
+        ref
             .watch(
               listTitleTranslationsProvider(
                 TitleTranslationRequest(

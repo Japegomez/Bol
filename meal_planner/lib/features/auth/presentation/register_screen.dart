@@ -51,7 +51,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      await ref.read(authRepositoryProvider).signUpWithEmail(
+      await ref
+          .read(authRepositoryProvider)
+          .signUpWithEmail(
             email: _emailController.text.trim(),
             password: _passwordController.text,
             username: _usernameController.text.trim(),
@@ -75,9 +77,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.createAccountTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.createAccountTitle)),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -162,7 +162,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               if (value.length < 8) {
                                 return l10n.passwordTooShort;
                               }
-                              final hasLetter = RegExp(r'[A-Za-z]').hasMatch(value);
+                              final hasLetter = RegExp(
+                                r'[A-Za-z]',
+                              ).hasMatch(value);
                               final hasDigit = RegExp(r'[0-9]').hasMatch(value);
                               if (!hasLetter || !hasDigit) {
                                 return l10n.passwordTooWeak;
@@ -192,8 +194,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             onChanged: _isLoading || !Env.hasSupabase
                                 ? null
                                 : (value) => setState(
-                                      () => _acceptedTerms = value ?? false,
-                                    ),
+                                    () => _acceptedTerms = value ?? false,
+                                  ),
                             contentPadding: EdgeInsets.zero,
                             controlAffinity: ListTileControlAffinity.leading,
                             title: Wrap(

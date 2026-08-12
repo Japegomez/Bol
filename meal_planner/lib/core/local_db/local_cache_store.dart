@@ -75,34 +75,39 @@ class LocalCacheStore {
     return recipes;
   }
 
-  Future<RecipeDetail?> getRecipeDetail(String id, {required String userId}) async {
+  Future<RecipeDetail?> getRecipeDetail(
+    String id, {
+    required String userId,
+  }) async {
     if (_db == null) return null;
 
-    final recipeRow = await (_db.select(_db.localRecipes)
-          ..where((r) => r.id.equals(id) & r.userId.equals(userId)))
-        .getSingleOrNull();
+    final recipeRow =
+        await (_db.select(_db.localRecipes)
+              ..where((r) => r.id.equals(id) & r.userId.equals(userId)))
+            .getSingleOrNull();
     if (recipeRow == null) return null;
 
-    final ingredients = await (_db.select(_db.localIngredients)
-          ..where((i) => i.recipeId.equals(id))
-          ..orderBy([(i) => OrderingTerm.asc(i.position)]))
-        .get();
+    final ingredients =
+        await (_db.select(_db.localIngredients)
+              ..where((i) => i.recipeId.equals(id))
+              ..orderBy([(i) => OrderingTerm.asc(i.position)]))
+            .get();
 
-    final steps = await (_db.select(_db.localRecipeSteps)
-          ..where((s) => s.recipeId.equals(id))
-          ..orderBy([(s) => OrderingTerm.asc(s.position)]))
-        .get();
+    final steps =
+        await (_db.select(_db.localRecipeSteps)
+              ..where((s) => s.recipeId.equals(id))
+              ..orderBy([(s) => OrderingTerm.asc(s.position)]))
+            .get();
 
-    final nutritionRow = await (_db.select(_db.localNutritionInfo)
-          ..where((n) => n.recipeId.equals(id)))
-        .getSingleOrNull();
+    final nutritionRow = await (_db.select(
+      _db.localNutritionInfo,
+    )..where((n) => n.recipeId.equals(id))).getSingleOrNull();
 
     return RecipeDetail(
       recipe: _rowToRecipe(recipeRow),
       ingredients: ingredients.map(_rowToIngredient).toList(),
       steps: steps.map(_rowToStep).toList(),
-      nutrition:
-          nutritionRow != null ? _rowToNutrition(nutritionRow) : null,
+      nutrition: nutritionRow != null ? _rowToNutrition(nutritionRow) : null,
       photoDisplayUrl: recipeRow.photoUrl,
       forkedFromId: recipeRow.forkedFromId,
     );
@@ -118,30 +123,34 @@ class LocalCacheStore {
     if (_db == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.localRecipes).insertOnConflictUpdate(
+      await _db
+          .into(_db.localRecipes)
+          .insertOnConflictUpdate(
             _recipeToRow(recipe, forkedFromId: forkedFromId),
           );
 
-      await (_db.delete(_db.localIngredients)
-            ..where((i) => i.recipeId.equals(recipe.id)))
-          .go();
-      await (_db.delete(_db.localRecipeSteps)
-            ..where((s) => s.recipeId.equals(recipe.id)))
-          .go();
-      await (_db.delete(_db.localNutritionInfo)
-            ..where((n) => n.recipeId.equals(recipe.id)))
-          .go();
+      await (_db.delete(
+        _db.localIngredients,
+      )..where((i) => i.recipeId.equals(recipe.id))).go();
+      await (_db.delete(
+        _db.localRecipeSteps,
+      )..where((s) => s.recipeId.equals(recipe.id))).go();
+      await (_db.delete(
+        _db.localNutritionInfo,
+      )..where((n) => n.recipeId.equals(recipe.id))).go();
 
       for (final ingredient in ingredients) {
-        await _db.into(_db.localIngredients).insert(_ingredientToRow(ingredient));
+        await _db
+            .into(_db.localIngredients)
+            .insert(_ingredientToRow(ingredient));
       }
       for (final step in steps) {
         await _db.into(_db.localRecipeSteps).insert(_stepToRow(step));
       }
       if (nutrition != null) {
-        await _db.into(_db.localNutritionInfo).insertOnConflictUpdate(
-              _nutritionToRow(nutrition),
-            );
+        await _db
+            .into(_db.localNutritionInfo)
+            .insertOnConflictUpdate(_nutritionToRow(nutrition));
       }
     });
   }
@@ -151,15 +160,15 @@ class LocalCacheStore {
 
     await _db.transaction(() async {
       await (_db.delete(_db.localRecipes)..where((r) => r.id.equals(id))).go();
-      await (_db.delete(_db.localIngredients)
-            ..where((i) => i.recipeId.equals(id)))
-          .go();
-      await (_db.delete(_db.localRecipeSteps)
-            ..where((s) => s.recipeId.equals(id)))
-          .go();
-      await (_db.delete(_db.localNutritionInfo)
-            ..where((n) => n.recipeId.equals(id)))
-          .go();
+      await (_db.delete(
+        _db.localIngredients,
+      )..where((i) => i.recipeId.equals(id))).go();
+      await (_db.delete(
+        _db.localRecipeSteps,
+      )..where((s) => s.recipeId.equals(id))).go();
+      await (_db.delete(
+        _db.localNutritionInfo,
+      )..where((n) => n.recipeId.equals(id))).go();
     });
   }
 
@@ -168,7 +177,9 @@ class LocalCacheStore {
   Future<void> cacheWeeklyPlan(WeeklyPlan plan) async {
     if (_db == null) return;
 
-    await _db.into(_db.localWeeklyPlans).insertOnConflictUpdate(
+    await _db
+        .into(_db.localWeeklyPlans)
+        .insertOnConflictUpdate(
           LocalWeeklyPlansCompanion.insert(
             id: plan.id,
             householdId: Value(plan.householdId),
@@ -214,9 +225,9 @@ class LocalCacheStore {
 
     await _db.transaction(() async {
       if (protectedIds.isEmpty) {
-        await (_db.delete(_db.localPlanSlots)
-              ..where((s) => s.planId.equals(planId)))
-            .go();
+        await (_db.delete(
+          _db.localPlanSlots,
+        )..where((s) => s.planId.equals(planId))).go();
       } else {
         await (_db.delete(_db.localPlanSlots)
               ..where((s) => s.planId.equals(planId))
@@ -225,9 +236,9 @@ class LocalCacheStore {
       }
       for (final item in slots) {
         if (protectedIds.contains(item.slot.id)) continue;
-        await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
-              _slotItemToRow(item),
-            );
+        await _db
+            .into(_db.localPlanSlots)
+            .insertOnConflictUpdate(_slotItemToRow(item));
       }
     });
   }
@@ -235,14 +246,15 @@ class LocalCacheStore {
   Future<List<SlotItem>> getSlotsForPlan(String planId) async {
     if (_db == null) return const [];
 
-    final rows = await (_db.select(_db.localPlanSlots)
-          ..where((s) => s.planId.equals(planId))
-          ..orderBy([
-            (s) => OrderingTerm.asc(s.dayOfWeek),
-            (s) => OrderingTerm.asc(s.mealType),
-            (s) => OrderingTerm.asc(s.position),
-          ]))
-        .get();
+    final rows =
+        await (_db.select(_db.localPlanSlots)
+              ..where((s) => s.planId.equals(planId))
+              ..orderBy([
+                (s) => OrderingTerm.asc(s.dayOfWeek),
+                (s) => OrderingTerm.asc(s.mealType),
+                (s) => OrderingTerm.asc(s.position),
+              ]))
+            .get();
 
     return rows.map(_rowToSlotItem).toList();
   }
@@ -250,24 +262,25 @@ class LocalCacheStore {
   Future<void> upsertSlot(SlotItem item) async {
     if (_db == null) return;
 
-    await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
-          _slotItemToRow(item),
-        );
+    await _db
+        .into(_db.localPlanSlots)
+        .insertOnConflictUpdate(_slotItemToRow(item));
   }
 
   Future<void> deleteSlot(String slotId) async {
     if (_db == null) return;
 
-    await (_db.delete(_db.localPlanSlots)..where((s) => s.id.equals(slotId)))
-        .go();
+    await (_db.delete(
+      _db.localPlanSlots,
+    )..where((s) => s.id.equals(slotId))).go();
   }
 
   Future<SlotItem?> getSlotsForPlanBySlotId(String slotId) async {
     if (_db == null) return null;
 
-    final row = await (_db.select(_db.localPlanSlots)
-          ..where((s) => s.id.equals(slotId)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.localPlanSlots,
+    )..where((s) => s.id.equals(slotId))).getSingleOrNull();
     return row != null ? _rowToSlotItem(row) : null;
   }
 
@@ -276,7 +289,9 @@ class LocalCacheStore {
   Future<void> cacheShoppingList(ShoppingList list) async {
     if (_db == null) return;
 
-    await _db.into(_db.localShoppingLists).insertOnConflictUpdate(
+    await _db
+        .into(_db.localShoppingLists)
+        .insertOnConflictUpdate(
           LocalShoppingListsCompanion.insert(
             id: list.id,
             householdId: Value(list.householdId),
@@ -313,7 +328,10 @@ class LocalCacheStore {
     );
   }
 
-  Future<void> cacheShoppingItems(String listId, List<ShoppingItem> items) async {
+  Future<void> cacheShoppingItems(
+    String listId,
+    List<ShoppingItem> items,
+  ) async {
     if (_db == null) return;
     if (await _hasPendingClearForList(listId)) return;
 
@@ -321,9 +339,9 @@ class LocalCacheStore {
 
     await _db.transaction(() async {
       if (protectedIds.isEmpty) {
-        await (_db.delete(_db.localShoppingItems)
-              ..where((i) => i.shoppingListId.equals(listId)))
-            .go();
+        await (_db.delete(
+          _db.localShoppingItems,
+        )..where((i) => i.shoppingListId.equals(listId))).go();
       } else {
         await (_db.delete(_db.localShoppingItems)
               ..where((i) => i.shoppingListId.equals(listId))
@@ -332,9 +350,9 @@ class LocalCacheStore {
       }
       for (final item in items) {
         if (protectedIds.contains(item.id)) continue;
-        await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
-              _shoppingItemToRow(item),
-            );
+        await _db
+            .into(_db.localShoppingItems)
+            .insertOnConflictUpdate(_shoppingItemToRow(item));
       }
     });
   }
@@ -342,14 +360,15 @@ class LocalCacheStore {
   Future<List<ShoppingItem>> getShoppingItems(String listId) async {
     if (_db == null) return const [];
 
-    final rows = await (_db.select(_db.localShoppingItems)
-          ..where((i) => i.shoppingListId.equals(listId))
-          ..orderBy([
-            (i) => OrderingTerm.asc(i.isChecked),
-            (i) => OrderingTerm.asc(i.category),
-            (i) => OrderingTerm.asc(i.name),
-          ]))
-        .get();
+    final rows =
+        await (_db.select(_db.localShoppingItems)
+              ..where((i) => i.shoppingListId.equals(listId))
+              ..orderBy([
+                (i) => OrderingTerm.asc(i.isChecked),
+                (i) => OrderingTerm.asc(i.category),
+                (i) => OrderingTerm.asc(i.name),
+              ]))
+            .get();
 
     return rows.map(_rowToShoppingItem).toList();
   }
@@ -357,60 +376,62 @@ class LocalCacheStore {
   Future<ShoppingItem?> getShoppingItemById(String id) async {
     if (_db == null) return null;
 
-    final row = await (_db.select(_db.localShoppingItems)
-          ..where((i) => i.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.localShoppingItems,
+    )..where((i) => i.id.equals(id))).getSingleOrNull();
     return row != null ? _rowToShoppingItem(row) : null;
   }
 
   Future<void> upsertShoppingItem(ShoppingItem item) async {
     if (_db == null) return;
 
-    await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
-          _shoppingItemToRow(item),
-        );
+    await _db
+        .into(_db.localShoppingItems)
+        .insertOnConflictUpdate(_shoppingItemToRow(item));
   }
 
   Future<void> deleteShoppingItem(String id) async {
     if (_db == null) return;
 
-    await (_db.delete(_db.localShoppingItems)..where((i) => i.id.equals(id)))
-        .go();
+    await (_db.delete(
+      _db.localShoppingItems,
+    )..where((i) => i.id.equals(id))).go();
   }
 
   Future<void> clearShoppingItems(String listId) async {
     if (_db == null) return;
 
-    await (_db.delete(_db.localShoppingItems)
-          ..where((i) => i.shoppingListId.equals(listId)))
-        .go();
+    await (_db.delete(
+      _db.localShoppingItems,
+    )..where((i) => i.shoppingListId.equals(listId))).go();
   }
 
   Future<List<ShoppingItem>> getShoppingItemsByPlanSlot(String slotId) async {
     if (_db == null) return const [];
 
-    final rows = await (_db.select(_db.localShoppingItems)
-          ..where((i) => i.planSlotId.equals(slotId)))
-        .get();
+    final rows = await (_db.select(
+      _db.localShoppingItems,
+    )..where((i) => i.planSlotId.equals(slotId))).get();
     return rows.map(_rowToShoppingItem).toList();
   }
 
   Future<Ingredient?> getIngredient(String id) async {
     if (_db == null) return null;
 
-    final row = await (_db.select(_db.localIngredients)
-          ..where((i) => i.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.localIngredients,
+    )..where((i) => i.id.equals(id))).getSingleOrNull();
     return row != null ? _rowToIngredient(row) : null;
   }
 
   Future<List<Ingredient>> getIngredientsForRecipe(String recipeId) async {
     if (_db == null) return const [];
 
-    final rows = await (_db.select(_db.localIngredients)
-          ..where((i) => i.recipeId.equals(recipeId))
-          ..orderBy([(i) => OrderingTerm.asc(i.position)]))
-        .get();
+    final rows =
+        await (_db.select(_db.localIngredients)
+              ..where((i) => i.recipeId.equals(recipeId))
+              ..orderBy([(i) => OrderingTerm.asc(i.position)]))
+            .get();
     return rows.map(_rowToIngredient).toList();
   }
 
@@ -423,9 +444,9 @@ class LocalCacheStore {
     if (_db == null) return;
 
     await _db.transaction(() async {
-      await (_db.delete(_db.localIngredients)
-            ..where((i) => i.recipeId.equals(recipeId)))
-          .go();
+      await (_db.delete(
+        _db.localIngredients,
+      )..where((i) => i.recipeId.equals(recipeId))).go();
       for (final ingredient in ingredients) {
         await _db
             .into(_db.localIngredients)
@@ -437,8 +458,9 @@ class LocalCacheStore {
   Future<Recipe?> getRecipeById(String id) async {
     if (_db == null) return null;
 
-    final row = await (_db.select(_db.localRecipes)..where((r) => r.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.localRecipes,
+    )..where((r) => r.id.equals(id))).getSingleOrNull();
     return row != null ? _rowToRecipe(row) : null;
   }
 
@@ -512,7 +534,9 @@ class LocalCacheStore {
     required String opType,
     required Map<String, dynamic> payload,
   }) async {
-    await _db!.into(_db.pendingOperations).insert(
+    await _db!
+        .into(_db.pendingOperations)
+        .insert(
           PendingOperationsCompanion.insert(
             id: newLocalId(),
             userId: Value(userId),
@@ -563,9 +587,9 @@ class LocalCacheStore {
     if (_db == null) return;
 
     await _db.transaction(() async {
-      await (_db.delete(_db.pendingOperations)
-            ..where((o) => o.userId.equals(userId) | o.userId.isNull()))
-          .go();
+      await (_db.delete(
+        _db.pendingOperations,
+      )..where((o) => o.userId.equals(userId) | o.userId.isNull())).go();
       await _db.delete(_db.idMappings).go();
     });
   }
@@ -573,25 +597,31 @@ class LocalCacheStore {
   Future<void> deletePendingOperation(String id) async {
     if (_db == null) return;
 
-    await (_db.delete(_db.pendingOperations)..where((o) => o.id.equals(id)))
-        .go();
+    await (_db.delete(
+      _db.pendingOperations,
+    )..where((o) => o.id.equals(id))).go();
   }
 
   Future<void> incrementRetry(String id) async {
     if (_db == null) return;
 
-    final row = await (_db.select(_db.pendingOperations)
-          ..where((o) => o.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.pendingOperations,
+    )..where((o) => o.id.equals(id))).getSingleOrNull();
     if (row == null) return;
-    await (_db.update(_db.pendingOperations)..where((o) => o.id.equals(id)))
-        .write(PendingOperationsCompanion(retryCount: Value(row.retryCount + 1)));
+    await (_db.update(
+      _db.pendingOperations,
+    )..where((o) => o.id.equals(id))).write(
+      PendingOperationsCompanion(retryCount: Value(row.retryCount + 1)),
+    );
   }
 
   Future<void> saveIdMapping(String tempId, String realId) async {
     if (_db == null) return;
 
-    await _db.into(_db.idMappings).insertOnConflictUpdate(
+    await _db
+        .into(_db.idMappings)
+        .insertOnConflictUpdate(
           IdMappingsCompanion.insert(tempId: tempId, realId: realId),
         );
   }
@@ -599,9 +629,9 @@ class LocalCacheStore {
   Future<String?> resolveId(String id) async {
     if (_db == null) return id;
 
-    final mapping = await (_db.select(_db.idMappings)
-          ..where((m) => m.tempId.equals(id)))
-        .getSingleOrNull();
+    final mapping = await (_db.select(
+      _db.idMappings,
+    )..where((m) => m.tempId.equals(id))).getSingleOrNull();
     return mapping?.realId ?? id;
   }
 
@@ -613,7 +643,9 @@ class LocalCacheStore {
     if (_db == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.idMappings).insertOnConflictUpdate(
+      await _db
+          .into(_db.idMappings)
+          .insertOnConflictUpdate(
             IdMappingsCompanion.insert(tempId: tempId, realId: realId),
           );
 
@@ -628,26 +660,31 @@ class LocalCacheStore {
       await (_db.update(_db.localNutritionInfo)
             ..where((n) => n.recipeId.equals(tempId)))
           .write(LocalNutritionInfoCompanion(recipeId: Value(realId)));
-      await (_db.update(_db.localWeeklyPlans)..where((p) => p.id.equals(tempId)))
+      await (_db.update(_db.localWeeklyPlans)
+            ..where((p) => p.id.equals(tempId)))
           .write(LocalWeeklyPlansCompanion(id: Value(realId)));
-      await (_db.update(_db.localPlanSlots)..where((s) => s.planId.equals(tempId)))
+      await (_db.update(_db.localPlanSlots)
+            ..where((s) => s.planId.equals(tempId)))
           .write(LocalPlanSlotsCompanion(planId: Value(realId)));
       await (_db.update(_db.localPlanSlots)
             ..where((s) => s.recipeId.equals(tempId)))
           .write(LocalPlanSlotsCompanion(recipeId: Value(realId)));
       await (_db.update(_db.localPlanSlots)..where((s) => s.id.equals(tempId)))
           .write(LocalPlanSlotsCompanion(id: Value(realId)));
-      await (_db.update(_db.localShoppingLists)..where((l) => l.id.equals(tempId)))
+      await (_db.update(_db.localShoppingLists)
+            ..where((l) => l.id.equals(tempId)))
           .write(LocalShoppingListsCompanion(id: Value(realId)));
       await (_db.update(_db.localShoppingItems)
             ..where((i) => i.shoppingListId.equals(tempId)))
           .write(LocalShoppingItemsCompanion(shoppingListId: Value(realId)));
-      await (_db.update(_db.localShoppingItems)..where((i) => i.id.equals(tempId)))
+      await (_db.update(_db.localShoppingItems)
+            ..where((i) => i.id.equals(tempId)))
           .write(LocalShoppingItemsCompanion(id: Value(realId)));
       await (_db.update(_db.localShoppingItems)
             ..where((i) => i.planSlotId.equals(tempId)))
           .write(LocalShoppingItemsCompanion(planSlotId: Value(realId)));
-      await (_db.update(_db.localIngredients)..where((i) => i.id.equals(tempId)))
+      await (_db.update(_db.localIngredients)
+            ..where((i) => i.id.equals(tempId)))
           .write(LocalIngredientsCompanion(id: Value(realId)));
     });
   }
@@ -664,7 +701,9 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.localWeeklyPlans).insertOnConflictUpdate(
+      await _db
+          .into(_db.localWeeklyPlans)
+          .insertOnConflictUpdate(
             LocalWeeklyPlansCompanion.insert(
               id: plan.id,
               householdId: Value(plan.householdId),
@@ -694,7 +733,9 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.localShoppingLists).insertOnConflictUpdate(
+      await _db
+          .into(_db.localShoppingLists)
+          .insertOnConflictUpdate(
             LocalShoppingListsCompanion.insert(
               id: list.id,
               householdId: Value(list.householdId),
@@ -722,9 +763,9 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
-            _shoppingItemToRow(item),
-          );
+      await _db
+          .into(_db.localShoppingItems)
+          .insertOnConflictUpdate(_shoppingItemToRow(item));
       await _insertPendingOperation(
         userId: userId,
         entityType: PendingEntity.shoppingItem,
@@ -744,8 +785,9 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await (_db.delete(_db.localShoppingItems)..where((i) => i.id.equals(id)))
-          .go();
+      await (_db.delete(
+        _db.localShoppingItems,
+      )..where((i) => i.id.equals(id))).go();
       await _insertPendingOperation(
         userId: userId,
         entityType: PendingEntity.shoppingItem,
@@ -765,9 +807,9 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await (_db.delete(_db.localShoppingItems)
-            ..where((i) => i.shoppingListId.equals(listId)))
-          .go();
+      await (_db.delete(
+        _db.localShoppingItems,
+      )..where((i) => i.shoppingListId.equals(listId))).go();
       await _insertPendingOperation(
         userId: userId,
         entityType: PendingEntity.shoppingItem,
@@ -790,13 +832,13 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
-            _slotItemToRow(slotItem),
-          );
+      await _db
+          .into(_db.localPlanSlots)
+          .insertOnConflictUpdate(_slotItemToRow(slotItem));
       for (final item in shoppingItems) {
-        await _db.into(_db.localShoppingItems).insertOnConflictUpdate(
-              _shoppingItemToRow(item),
-            );
+        await _db
+            .into(_db.localShoppingItems)
+            .insertOnConflictUpdate(_shoppingItemToRow(item));
       }
       await _insertPendingOperation(
         userId: userId,
@@ -819,13 +861,13 @@ class LocalCacheStore {
 
     await _db.transaction(() async {
       for (final itemId in shoppingItemIds) {
-        await (_db.delete(_db.localShoppingItems)
-              ..where((i) => i.id.equals(itemId)))
-            .go();
+        await (_db.delete(
+          _db.localShoppingItems,
+        )..where((i) => i.id.equals(itemId))).go();
       }
-      await (_db.delete(_db.localPlanSlots)
-            ..where((s) => s.id.equals(slotId)))
-          .go();
+      await (_db.delete(
+        _db.localPlanSlots,
+      )..where((s) => s.id.equals(slotId))).go();
       await _insertPendingOperation(
         userId: userId,
         entityType: PendingEntity.planSlot,
@@ -845,9 +887,9 @@ class LocalCacheStore {
     if (userId == null) return;
 
     await _db.transaction(() async {
-      await _db.into(_db.localPlanSlots).insertOnConflictUpdate(
-            _slotItemToRow(slotItem),
-          );
+      await _db
+          .into(_db.localPlanSlots)
+          .insertOnConflictUpdate(_slotItemToRow(slotItem));
       await _insertPendingOperation(
         userId: userId,
         entityType: PendingEntity.planSlot,

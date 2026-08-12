@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const quotaResult = await enforceAiQuota(adminClient, userId, corsHeaders);
+    const quotaResult = await enforceAiQuota(adminClient, userId, corsHeaders, req);
     if (!quotaResult.ok) return quotaResult.response;
 
     const { data: recipe, error: recipeError } = await userClient

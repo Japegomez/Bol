@@ -12,8 +12,9 @@ import 'package:meal_planner/features/shopping/data/shopping_repository.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final activeShoppingListProvider =
-    FutureProvider.autoDispose<ShoppingList>((ref) async {
+final activeShoppingListProvider = FutureProvider.autoDispose<ShoppingList>((
+  ref,
+) async {
   ref.watch(currentHouseholdProvider);
 
   final household = ref.watch(currentHouseholdProvider).valueOrNull;
@@ -22,7 +23,9 @@ final activeShoppingListProvider =
     throw StateError('User not authenticated');
   }
 
-  return ref.read(shoppingRepositoryProvider).getOrCreateShoppingList(
+  return ref
+      .read(shoppingRepositoryProvider)
+      .getOrCreateShoppingList(
         userId: authState.user.id,
         householdId: household?.id,
       );
@@ -30,8 +33,8 @@ final activeShoppingListProvider =
 
 final shoppingItemsProvider =
     AsyncNotifierProvider<ShoppingItemsNotifier, List<ShoppingItem>>(
-  ShoppingItemsNotifier.new,
-);
+      ShoppingItemsNotifier.new,
+    );
 
 class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
   RealtimeChannel? _channel;
@@ -87,9 +90,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
     final listId = _listId;
     if (listId == null) return;
 
-    state = await AsyncValue.guard(
-      () => _repository.getItemsForList(listId),
-    );
+    state = await AsyncValue.guard(() => _repository.getItemsForList(listId));
   }
 
   /// Refreshes items. Works both online (from server) and offline (from cache).
@@ -100,9 +101,7 @@ class ShoppingItemsNotifier extends AsyncNotifier<List<ShoppingItem>> {
       return;
     }
 
-    state = await AsyncValue.guard(
-      () => _repository.getItemsForList(listId),
-    );
+    state = await AsyncValue.guard(() => _repository.getItemsForList(listId));
   }
 
   Future<void> toggleItem(String id, bool isChecked) async {
@@ -279,7 +278,9 @@ Map<String, List<ShoppingItem>> groupShoppingItemsByCategory(
     }
   }
 
-  return {for (final category in orderedCategories) category: grouped[category]!};
+  return {
+    for (final category in orderedCategories) category: grouped[category]!,
+  };
 }
 
 String? shoppingItemConsolidationKey(ShoppingItem item) {
@@ -327,12 +328,9 @@ String formatShoppingListForShare(
   for (final entry in grouped.entries) {
     buffer.writeln('${localizedCategoryLabel(l10n, entry.key)}:');
     for (final item in entry.value) {
-      buffer.writeln('• ${formatShoppingItemLabel(
-        l10n,
-        name: item.name,
-        quantity: item.quantity,
-        unit: item.unit,
-      )}');
+      buffer.writeln(
+        '• ${formatShoppingItemLabel(l10n, name: item.name, quantity: item.quantity, unit: item.unit)}',
+      );
     }
     buffer.writeln();
   }

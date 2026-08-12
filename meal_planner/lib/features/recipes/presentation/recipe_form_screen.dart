@@ -91,10 +91,12 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     _data = data;
     _titleController = TextEditingController(text: data.title);
     _servingsController = TextEditingController(text: data.servings.toString());
-    _prepController =
-        TextEditingController(text: data.prepTime?.toString() ?? '');
-    _cookController =
-        TextEditingController(text: data.cookTime?.toString() ?? '');
+    _prepController = TextEditingController(
+      text: data.prepTime?.toString() ?? '',
+    );
+    _cookController = TextEditingController(
+      text: data.cookTime?.toString() ?? '',
+    );
     _tipsController = TextEditingController(text: data.tips);
     _initialized = true;
   }
@@ -103,9 +105,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     if (ref.read(isOfflineProvider)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.photoRequiresConnection),
-        ),
+        SnackBar(content: Text(context.l10n.photoRequiresConnection)),
       );
       return;
     }
@@ -330,10 +330,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text(
-                    _resolveFormError(
-                      error ?? _photoModerationError!,
-                      l10n,
-                    ),
+                    _resolveFormError(error ?? _photoModerationError!, l10n),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
@@ -346,233 +343,244 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
               absorbing: !canEdit,
               child: CustomScrollView(
                 slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _PhotoSection(
-                  localPreview: _localPhotoPreview,
-                  existingPhotoPath:
-                      data.removePhoto ? null : data.existingPhotoPath,
-                  isModerating: _isModeratingPhoto,
-                  onPick: _pickPhoto,
-                  onRemove: _removePhoto,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: l10n.nameLabel,
-                    border: const OutlineInputBorder(),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _PhotoSection(
+                          localPreview: _localPhotoPreview,
+                          existingPhotoPath: data.removePhoto
+                              ? null
+                              : data.existingPhotoPath,
+                          isModerating: _isModeratingPhoto,
+                          onPick: _pickPhoto,
+                          onRemove: _removePhoto,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _titleController,
+                          decoration: InputDecoration(
+                            labelText: l10n.nameLabel,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? l10n.requiredField
+                              : null,
+                          onChanged: (v) => data.title = v,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _servingsController,
+                                decoration: InputDecoration(
+                                  labelText: l10n.servingsLabel,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (v) {
+                                  final n = int.tryParse(v ?? '');
+                                  return (n == null || n < 1)
+                                      ? l10n.minOneServing
+                                      : null;
+                                },
+                                onChanged: (v) {
+                                  final n = int.tryParse(v);
+                                  if (n != null) data.servings = n;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _prepController,
+                                decoration: InputDecoration(
+                                  labelText: l10n.prepMinLabel,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                onChanged: (v) =>
+                                    data.prepTime = int.tryParse(v),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _cookController,
+                                decoration: InputDecoration(
+                                  labelText: l10n.cookMinLabel,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                onChanged: (v) =>
+                                    data.cookTime = int.tryParse(v),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.tagsSection,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ...suggestedRecipeTags.map(
+                              (tag) => FilterChip(
+                                label: Text(localizedTagLabel(l10n, tag)),
+                                selected: data.tags.contains(tag),
+                                onSelected: (selected) => setState(() {
+                                  if (selected) {
+                                    data.tags.add(tag);
+                                  } else {
+                                    data.tags.remove(tag);
+                                  }
+                                }),
+                              ),
+                            ),
+                            ...data.tags
+                                .where((t) => !suggestedRecipeTags.contains(t))
+                                .map(
+                                  (tag) => InputChip(
+                                    label: Text(localizedTagLabel(l10n, tag)),
+                                    onDeleted: () =>
+                                        setState(() => data.tags.remove(tag)),
+                                  ),
+                                ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _tagController,
+                                decoration: InputDecoration(
+                                  labelText: l10n.customTagLabel,
+                                  border: const OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () {
+                                final tag = _tagController.text.trim();
+                                if (tag.isEmpty || data.tags.contains(tag))
+                                  return;
+                                _tagController.clear();
+                                setState(() => data.tags.add(tag));
+                              },
+                            ),
+                          ],
+                        ),
+                      ]),
+                    ),
                   ),
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? l10n.requiredField : null,
-                  onChanged: (v) => data.title = v,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _servingsController,
-                        decoration: InputDecoration(
-                          labelText: l10n.servingsLabel,
-                          border: const OutlineInputBorder(),
+
+                  // ── Ingredientes (lazy sliver + auto-scroll on drag) ────────────────
+                  SliverPadding(
+                    padding: hPad.copyWith(top: 24),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        l10n.ingredientsSection,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: hPad.copyWith(top: 8),
+                    sliver: _IngredientsSliverSection(
+                      ingredients: data.ingredients,
+                    ),
+                  ),
+
+                  // ── Pasos (lazy sliver + auto-scroll on drag) ─────────────────────
+                  SliverPadding(
+                    padding: hPad.copyWith(top: 24),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        l10n.stepsSection,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: hPad.copyWith(top: 8),
+                    sliver: _StepsSliverSection(steps: data.steps),
+                  ),
+
+                  // ── Consejos, nutrición, publicar ─────────────────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        TextFormField(
+                          controller: _tipsController,
+                          decoration: InputDecoration(
+                            labelText: l10n.tipsLabel,
+                            hintText: l10n.tipsHint,
+                            border: const OutlineInputBorder(),
+                            alignLabelWithHint: true,
+                          ),
+                          maxLines: 4,
+                          onChanged: (v) => data.tips = v,
                         ),
-                        keyboardType: TextInputType.number,
-                        validator: (v) {
-                          final n = int.tryParse(v ?? '');
-                          return (n == null || n < 1) ? l10n.minOneServing : null;
-                        },
-                        onChanged: (v) {
-                          final n = int.tryParse(v);
-                          if (n != null) data.servings = n;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _prepController,
-                        decoration: InputDecoration(
-                          labelText: l10n.prepMinLabel,
-                          border: const OutlineInputBorder(),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.nutritionPerServing,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (v) => data.prepTime = int.tryParse(v),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _cookController,
-                        decoration: InputDecoration(
-                          labelText: l10n.cookMinLabel,
-                          border: const OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (v) => data.cookTime = int.tryParse(v),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  l10n.tagsSection,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    ...suggestedRecipeTags.map(
-                      (tag) => FilterChip(
-                        label: Text(localizedTagLabel(l10n, tag)),
-                        selected: data.tags.contains(tag),
-                        onSelected: (selected) => setState(() {
-                          if (selected) {
-                            data.tags.add(tag);
-                          } else {
-                            data.tags.remove(tag);
-                          }
-                        }),
-                      ),
-                    ),
-                    ...data.tags
-                        .where((t) => !suggestedRecipeTags.contains(t))
-                        .map(
-                          (tag) => InputChip(
-                            label: Text(localizedTagLabel(l10n, tag)),
-                            onDeleted: () =>
-                                setState(() => data.tags.remove(tag)),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            onPressed: _isGeneratingNutrition
+                                ? null
+                                : _generateNutritionWithAssistant,
+                            icon: _isGeneratingNutrition
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.auto_awesome_outlined),
+                            label: Text(l10n.completeNutritionWithAssistant),
                           ),
                         ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _tagController,
-                        decoration: InputDecoration(
-                          labelText: l10n.customTagLabel,
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        final tag = _tagController.text.trim();
-                        if (tag.isEmpty || data.tags.contains(tag)) return;
-                        _tagController.clear();
-                        setState(() => data.tags.add(tag));
-                      },
-                    ),
-                  ],
-                ),
-              ]),
-            ),
-          ),
-
-          // ── Ingredientes (lazy sliver + auto-scroll on drag) ────────────────
-          SliverPadding(
-            padding: hPad.copyWith(top: 24),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                l10n.ingredientsSection,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: hPad.copyWith(top: 8),
-            sliver: _IngredientsSliverSection(ingredients: data.ingredients),
-          ),
-
-          // ── Pasos (lazy sliver + auto-scroll on drag) ─────────────────────
-          SliverPadding(
-            padding: hPad.copyWith(top: 24),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                l10n.stepsSection,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: hPad.copyWith(top: 8),
-            sliver: _StepsSliverSection(steps: data.steps),
-          ),
-
-          // ── Consejos, nutrición, publicar ─────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                TextFormField(
-                  controller: _tipsController,
-                  decoration: InputDecoration(
-                    labelText: l10n.tipsLabel,
-                    hintText: l10n.tipsHint,
-                    border: const OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: 4,
-                  onChanged: (v) => data.tips = v,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  l10n.nutritionPerServing,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: _isGeneratingNutrition
-                        ? null
-                        : _generateNutritionWithAssistant,
-                    icon: _isGeneratingNutrition
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        const SizedBox(height: 8),
+                        _NutritionFields(data: data.nutrition),
+                        const SizedBox(height: 24),
+                        if (!data.canPublish)
+                          Card(
+                            child: ListTile(
+                              leading: const Icon(
+                                Icons.bookmark_added_outlined,
+                              ),
+                              title: Text(l10n.forkedRecipeTitle),
+                              subtitle: Text(l10n.forkedRecipeCannotPublish),
+                            ),
                           )
-                        : const Icon(Icons.auto_awesome_outlined),
-                    label: Text(l10n.completeNutritionWithAssistant),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _NutritionFields(
-                  data: data.nutrition,
-                ),
-                const SizedBox(height: 24),
-                if (!data.canPublish)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.bookmark_added_outlined),
-                      title: Text(l10n.forkedRecipeTitle),
-                      subtitle: Text(l10n.forkedRecipeCannotPublish),
-                    ),
-                  )
-                else
-                  Card(
-                    child: SwitchListTile(
-                      title: Text(l10n.publishRecipeTitle),
-                      subtitle: Text(l10n.visibleInExploreShort),
-                      secondary: const Icon(Icons.public),
-                      value: data.isPublic,
-                      onChanged: _togglePublic,
+                        else
+                          Card(
+                            child: SwitchListTile(
+                              title: Text(l10n.publishRecipeTitle),
+                              subtitle: Text(l10n.visibleInExploreShort),
+                              secondary: const Icon(Icons.public),
+                              value: data.isPublic,
+                              onChanged: _togglePublic,
+                            ),
+                          ),
+                      ]),
                     ),
                   ),
-              ]),
-            ),
-          ),
-        ],
+                ],
               ),
             ),
           ),
@@ -630,8 +638,7 @@ class _IngredientsSliverSectionState extends State<_IngredientsSliverSection> {
           child: Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
-              onPressed: () =>
-                  setState(() => items.add(IngredientFormItem())),
+              onPressed: () => setState(() => items.add(IngredientFormItem())),
               icon: const Icon(Icons.add),
               label: Text(l10n.addIngredient),
             ),
@@ -816,8 +823,9 @@ class _PhotoSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final existingUrlAsync =
-        ref.watch(recipePhotoUrlProvider(existingPhotoPath));
+    final existingUrlAsync = ref.watch(
+      recipePhotoUrlProvider(existingPhotoPath),
+    );
 
     Widget? preview;
     if (isModerating) {
@@ -850,10 +858,7 @@ class _PhotoSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (preview != null)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: preview,
-          )
+          ClipRRect(borderRadius: BorderRadius.circular(12), child: preview)
         else
           Container(
             height: 120,
@@ -873,10 +878,7 @@ class _PhotoSection extends ConsumerWidget {
             ),
             if (preview != null && !isModerating) ...[
               const SizedBox(width: 8),
-              TextButton(
-                onPressed: onRemove,
-                child: Text(l10n.remove),
-              ),
+              TextButton(onPressed: onRemove, child: Text(l10n.remove)),
             ],
           ],
         ),
@@ -908,12 +910,11 @@ class _NutritionFieldsState extends State<_NutritionFields> {
   @override
   void initState() {
     super.initState();
-    _calories =
-        TextEditingController(text: _intText(widget.data.calories));
-    _protein =
-        TextEditingController(text: _intText(widget.data.protein));
-    _carbohydrates =
-        TextEditingController(text: _intText(widget.data.carbohydrates));
+    _calories = TextEditingController(text: _intText(widget.data.calories));
+    _protein = TextEditingController(text: _intText(widget.data.protein));
+    _carbohydrates = TextEditingController(
+      text: _intText(widget.data.carbohydrates),
+    );
     _fat = TextEditingController(text: _intText(widget.data.fat));
     _fiber = TextEditingController(text: _intText(widget.data.fiber));
   }
@@ -962,8 +963,11 @@ class _NutritionFieldsState extends State<_NutritionFields> {
       children: [
         _field(l10n.caloriesKcal, _calories, (v) => widget.data.calories = v),
         _field(l10n.proteinG, _protein, (v) => widget.data.protein = v),
-        _field(l10n.carbohydratesG, _carbohydrates,
-            (v) => widget.data.carbohydrates = v),
+        _field(
+          l10n.carbohydratesG,
+          _carbohydrates,
+          (v) => widget.data.carbohydrates = v,
+        ),
         _field(l10n.fatG, _fat, (v) => widget.data.fat = v),
         _field(l10n.fiberG, _fiber, (v) => widget.data.fiber = v),
       ],

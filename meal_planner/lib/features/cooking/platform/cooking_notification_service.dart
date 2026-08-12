@@ -54,8 +54,9 @@ class CookingNotificationService {
     if (!_isAndroid && !_isIOS) return;
 
     try {
-      const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const iosSettings = DarwinInitializationSettings(
         // Do not request permissions here — we request them below so we can
         // use the platform-specific API and ask only for alerts (no sound/badge).
@@ -77,7 +78,8 @@ class CookingNotificationService {
       if (_isAndroid) {
         await _plugin
             .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.requestNotificationsPermission();
       }
 
@@ -86,7 +88,8 @@ class CookingNotificationService {
         // notification appears passively in the notification centre.
         await _plugin
             .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin>()
+              IOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions(alert: true, badge: false, sound: false);
       }
 
@@ -126,8 +129,8 @@ class CookingNotificationService {
     CookingPlatformCopy copy,
   ) async {
     final isPaused = session.isPaused;
-    final chronometerBase = session.startedAt.millisecondsSinceEpoch +
-        session.accumulatedPauseMs;
+    final chronometerBase =
+        session.startedAt.millisecondsSinceEpoch + session.accumulatedPauseMs;
 
     final actions = [
       AndroidNotificationAction(
@@ -216,9 +219,7 @@ class CookingNotificationService {
 
   static Future<void> Function(String)? _directActionCallback;
 
-  static void setDirectActionCallback(
-    Future<void> Function(String) callback,
-  ) {
+  static void setDirectActionCallback(Future<void> Function(String) callback) {
     _directActionCallback = callback;
   }
 

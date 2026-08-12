@@ -15,8 +15,8 @@ const _kSessionKey = 'cooking_session_v1';
 
 final cookingSessionProvider =
     NotifierProvider<CookingSessionNotifier, CookingSession?>(
-  CookingSessionNotifier.new,
-);
+      CookingSessionNotifier.new,
+    );
 
 /// Ticks every second; listeners use it to refresh the elapsed-time display.
 final cookingTickProvider = StreamProvider<int>((ref) {
@@ -87,8 +87,7 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
 
   Future<void> resume() async {
     if (state == null || !state!.isPaused) return;
-    final extra =
-        DateTime.now().difference(state!.pausedAt!).inMilliseconds;
+    final extra = DateTime.now().difference(state!.pausedAt!).inMilliseconds;
     state = state!.copyWith(
       clearPausedAt: true,
       accumulatedPauseMs: state!.accumulatedPauseMs + extra,
@@ -119,8 +118,9 @@ class CookingSessionNotifier extends Notifier<CookingSession?>
     final next = state!.currentStepIndex + 1;
     state = state!.copyWith(
       completedSteps: completed,
-      currentStepIndex:
-          next < state!.totalSteps ? next : state!.currentStepIndex,
+      currentStepIndex: next < state!.totalSteps
+          ? next
+          : state!.currentStepIndex,
     );
     await _persist();
     await _syncPlatform();
@@ -275,8 +275,7 @@ Future<void> cookingApplyBackgroundAction(String action) async {
     if (action == 'pause' && !session.isPaused) {
       session = session.copyWith(pausedAt: DateTime.now());
     } else if (action == 'resume' && session.isPaused) {
-      final extra =
-          DateTime.now().difference(session.pausedAt!).inMilliseconds;
+      final extra = DateTime.now().difference(session.pausedAt!).inMilliseconds;
       session = session.copyWith(
         clearPausedAt: true,
         accumulatedPauseMs: session.accumulatedPauseMs + extra,

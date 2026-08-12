@@ -57,9 +57,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.recoverPasswordTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.recoverPasswordTitle)),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

@@ -59,10 +59,7 @@ class _ServingsDialogState extends State<_ServingsDialog> {
   }
 
   void _confirm() {
-    Navigator.pop(
-      context,
-      ServingsResult(servings: _servings),
-    );
+    Navigator.pop(context, ServingsResult(servings: _servings));
   }
 
   @override
@@ -124,15 +121,12 @@ class _AddTextDialogState extends State<_AddTextDialog> {
 
     final notes = _notesController.text.trim();
     if (notes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.enterMealName)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.enterMealName)));
       return;
     }
-    Navigator.pop(context, (
-      notes: notes,
-      servings: _servings,
-    ));
+    Navigator.pop(context, (notes: notes, servings: _servings));
   }
 
   @override
@@ -181,10 +175,7 @@ class _AddTextDialogState extends State<_AddTextDialog> {
 // ─── Servings stepper ────────────────────────────────────────────────────────
 
 class _ServingsStepper extends StatelessWidget {
-  const _ServingsStepper({
-    required this.value,
-    required this.onChanged,
-  });
+  const _ServingsStepper({required this.value, required this.onChanged});
 
   final int value;
   final ValueChanged<int> onChanged;

@@ -20,10 +20,8 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
   FeedbackStatus? _statusFilter = FeedbackStatus.pending;
   String? _updatingId;
 
-  AdminFeedbackFilters get _filters => AdminFeedbackFilters(
-        category: _categoryFilter,
-        status: _statusFilter,
-      );
+  AdminFeedbackFilters get _filters =>
+      AdminFeedbackFilters(category: _categoryFilter, status: _statusFilter);
 
   String _categoryLabel(AppLocalizations l10n, FeedbackCategory category) {
     return switch (category) {
@@ -63,10 +61,9 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
     final l10n = context.l10n;
     setState(() => _updatingId = item.id);
     try {
-      await ref.read(updateFeedbackStatusProvider.notifier).updateStatus(
-            feedbackId: item.id,
-            status: status,
-          );
+      await ref
+          .read(updateFeedbackStatusProvider.notifier)
+          .updateStatus(feedbackId: item.id, status: status);
       if (!mounted) return;
       ref.invalidate(adminFeedbackListProvider(_filters));
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,9 +77,9 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
       );
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.feedbackStatusUpdateError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.feedbackStatusUpdateError)));
     } finally {
       if (mounted) setState(() => _updatingId = null);
     }
@@ -93,14 +90,13 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final feedbackAsync = ref.watch(adminFeedbackListProvider(_filters));
-    final dateFormat =
-        DateFormat.yMMMd(Localizations.localeOf(context).toString()).add_Hm();
+    final dateFormat = DateFormat.yMMMd(
+      Localizations.localeOf(context).toString(),
+    ).add_Hm();
     final updating = ref.watch(updateFeedbackStatusProvider).isLoading;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.adminFeedbackTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.adminFeedbackTitle)),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -235,23 +231,20 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                               context,
                                               item.category,
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
                                           ),
                                           child: Text(
-                                            _categoryLabel(
-                                              l10n,
-                                              item.category,
-                                            ),
-                                            style: theme
-                                                .textTheme.labelMedium
+                                            _categoryLabel(l10n, item.category),
+                                            style: theme.textTheme.labelMedium
                                                 ?.copyWith(
-                                              color: _badgeForeground(
-                                                context,
-                                                item.category,
-                                              ),
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                                  color: _badgeForeground(
+                                                    context,
+                                                    item.category,
+                                                  ),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                         ),
                                         if (item.status !=
@@ -260,9 +253,10 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                             _statusLabel(l10n, item.status),
                                             style: theme.textTheme.labelMedium
                                                 ?.copyWith(
-                                              color: theme
-                                                  .colorScheme.onSurfaceVariant,
-                                            ),
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
                                           ),
                                       ],
                                     ),
@@ -277,9 +271,10 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                       ' · ${dateFormat.format(item.createdAt.toLocal())}',
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                      ),
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -303,9 +298,9 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                         onPressed: updating
                                             ? null
                                             : () => _setStatus(
-                                                  item,
-                                                  FeedbackStatus.resolved,
-                                                ),
+                                                item,
+                                                FeedbackStatus.resolved,
+                                              ),
                                         iconSize: 32,
                                         style: IconButton.styleFrom(
                                           foregroundColor:
@@ -321,9 +316,9 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                                         onPressed: updating
                                             ? null
                                             : () => _setStatus(
-                                                  item,
-                                                  FeedbackStatus.ignored,
-                                                ),
+                                                item,
+                                                FeedbackStatus.ignored,
+                                              ),
                                         iconSize: 32,
                                         style: IconButton.styleFrom(
                                           foregroundColor:

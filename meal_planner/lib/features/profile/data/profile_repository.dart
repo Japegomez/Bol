@@ -66,10 +66,7 @@ class ProfileRepository {
 
     await supabase
         .from(Profile.table_name)
-        .update({
-          Profile.c_avatarUrl: null,
-          'avatar_source': 'deleted',
-        })
+        .update({Profile.c_avatarUrl: null, 'avatar_source': 'deleted'})
         .eq(Profile.c_id, userId);
   }
 
@@ -77,7 +74,9 @@ class ProfileRepository {
     final path = '$userId/avatar.jpg';
     final bytes = await file.readAsBytes();
 
-    await supabase.storage.from(_avatarBucket).uploadBinary(
+    await supabase.storage
+        .from(_avatarBucket)
+        .uploadBinary(
           path,
           bytes,
           fileOptions: const FileOptions(

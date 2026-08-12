@@ -38,9 +38,7 @@ class CookingScreen extends ConsumerWidget {
                   children: [
                     _StepRail(session: session, notifier: notifier),
                     const VerticalDivider(width: 1),
-                    Expanded(
-                      child: _StepContent(session: session),
-                    ),
+                    Expanded(child: _StepContent(session: session)),
                   ],
                 ),
               ),
@@ -266,8 +264,10 @@ class _StepContent extends ConsumerWidget {
             isIngredientStep
                 ? l10n.checkIngredientsStep
                 : (session.steps[session.currentStepIndex - 1].isOptional
-                    ? '${l10n.optionalStepPrefix} ${session.steps[session.currentStepIndex - 1].description}'
-                    : session.steps[session.currentStepIndex - 1].description),
+                      ? '${l10n.optionalStepPrefix} ${session.steps[session.currentStepIndex - 1].description}'
+                      : session
+                            .steps[session.currentStepIndex - 1]
+                            .description),
             style: theme.textTheme.titleLarge,
           ),
           if (isIngredientStep) ...[
@@ -278,15 +278,19 @@ class _StepContent extends ConsumerWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      '• ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     Expanded(
                       child: Text(
                         formatIngredientLabel(l10n, ingredient),
                         style: ingredient.isOptional && !ingredient.isIncluded
                             ? TextStyle(
                                 decoration: TextDecoration.lineThrough,
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.45),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.45,
+                                ),
                               )
                             : null,
                       ),
@@ -324,17 +328,17 @@ class _NavigationBar extends StatelessWidget {
           _CookingIconButton(
             icon: const Icon(Icons.arrow_back_ios_new),
             tooltip: l10n.previousStep,
-            onPressed: isFirst ? null : () async {
-              await notifier.previousStep();
-            },
+            onPressed: isFirst
+                ? null
+                : () async {
+                    await notifier.previousStep();
+                  },
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _CookingIconButton(
-                icon: Icon(
-                  session.isPaused ? Icons.play_arrow : Icons.pause,
-                ),
+                icon: Icon(session.isPaused ? Icons.play_arrow : Icons.pause),
                 tooltip: session.isPaused
                     ? l10n.cookingResumeTooltip
                     : l10n.cookingPauseTooltip,
@@ -358,8 +362,7 @@ class _NavigationBar extends StatelessWidget {
               ? _CookingIconButton(
                   icon: const Icon(Icons.flag_rounded),
                   tooltip: l10n.finishCookingButton,
-                  onPressed: () =>
-                      celebrateAndFinishCooking(context, notifier),
+                  onPressed: () => celebrateAndFinishCooking(context, notifier),
                 )
               : _CookingIconButton(
                   icon: const Icon(Icons.arrow_forward_ios),
@@ -395,11 +398,11 @@ class _CookingIconButton extends StatelessWidget {
       icon: icon,
       style: IconButton.styleFrom(
         foregroundColor: colorScheme.primary,
-        disabledForegroundColor:
-            colorScheme.onSurface.withValues(alpha: 0.38),
+        disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
         backgroundColor: colorScheme.primaryContainer,
-        disabledBackgroundColor:
-            colorScheme.primaryContainer.withValues(alpha: 0.4),
+        disabledBackgroundColor: colorScheme.primaryContainer.withValues(
+          alpha: 0.4,
+        ),
       ),
     );
   }

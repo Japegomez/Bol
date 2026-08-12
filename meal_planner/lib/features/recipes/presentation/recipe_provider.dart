@@ -16,8 +16,9 @@ import 'package:meal_planner/features/social/presentation/social_provider.dart';
 const householdLoadErrorKey = 'householdLoadError';
 
 /// Used by the planner recipe picker (F7).
-final recipesProvider =
-    AsyncNotifierProvider<RecipesNotifier, List<Recipe>>(RecipesNotifier.new);
+final recipesProvider = AsyncNotifierProvider<RecipesNotifier, List<Recipe>>(
+  RecipesNotifier.new,
+);
 
 class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
   RecipesRepository get _repository => ref.read(recipesRepositoryProvider);
@@ -25,8 +26,9 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
   Future<List<String>?> _householdMemberIds() async {
     final household = ref.read(currentHouseholdProvider).valueOrNull;
     if (household == null) return null;
-    final members =
-        await ref.read(householdMembersByIdProvider(household.id).future);
+    final members = await ref.read(
+      householdMembersByIdProvider(household.id).future,
+    );
     return members.map((m) => m.userId).toList();
   }
 
@@ -40,8 +42,9 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
     final household = ref.watch(currentHouseholdProvider).valueOrNull;
     List<String>? memberIds;
     if (household != null) {
-      final members =
-          await ref.watch(householdMembersByIdProvider(household.id).future);
+      final members = await ref.watch(
+        householdMembersByIdProvider(household.id).future,
+      );
       memberIds = members.map((m) => m.userId).toList();
     }
     return _repository.fetchRecipes(memberUserIds: memberIds);
@@ -49,10 +52,7 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
 
   Future<List<Recipe>> search(String query) async {
     final memberIds = await _householdMemberIds();
-    return _repository.fetchRecipes(
-      search: query,
-      memberUserIds: memberIds,
-    );
+    return _repository.fetchRecipes(search: query, memberUserIds: memberIds);
   }
 
   Future<void> refresh() async {
@@ -82,8 +82,9 @@ class RecipeListFilter {
   }
 }
 
-final recipeListFilterProvider =
-    StateProvider<RecipeListFilter>((ref) => const RecipeListFilter());
+final recipeListFilterProvider = StateProvider<RecipeListFilter>(
+  (ref) => const RecipeListFilter(),
+);
 
 final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
   ref.watch(authStateProvider);
@@ -97,8 +98,9 @@ final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
   List<String>? memberIds;
   final household = ref.watch(currentHouseholdProvider).valueOrNull;
   if (household != null) {
-    final members =
-        await ref.watch(householdMembersByIdProvider(household.id).future);
+    final members = await ref.watch(
+      householdMembersByIdProvider(household.id).future,
+    );
     memberIds = members.map((m) => m.userId).toList();
   }
 
@@ -120,8 +122,9 @@ final recipeTagsProvider = FutureProvider<Set<String>>((ref) async {
   List<String>? memberIds;
   final household = ref.watch(currentHouseholdProvider).valueOrNull;
   if (household != null) {
-    final members =
-        await ref.watch(householdMembersByIdProvider(household.id).future);
+    final members = await ref.watch(
+      householdMembersByIdProvider(household.id).future,
+    );
     memberIds = members.map((m) => m.userId).toList();
   }
 
@@ -130,8 +133,10 @@ final recipeTagsProvider = FutureProvider<Set<String>>((ref) async {
       .fetchAllTags(memberUserIds: memberIds);
 });
 
-final recipeDetailProvider =
-    FutureProvider.family<RecipeDetail, String>((ref, recipeId) async {
+final recipeDetailProvider = FutureProvider.family<RecipeDetail, String>((
+  ref,
+  recipeId,
+) async {
   ref.watch(authStateProvider);
   final authState = ref.read(authStateProvider).valueOrNull;
   if (authState is! AuthAuthenticated) {
@@ -141,8 +146,10 @@ final recipeDetailProvider =
   return ref.watch(recipesRepositoryProvider).fetchRecipeDetail(recipeId);
 });
 
-final recipePhotoUrlProvider =
-    FutureProvider.family<String?, String?>((ref, photoPath) async {
+final recipePhotoUrlProvider = FutureProvider.family<String?, String?>((
+  ref,
+  photoPath,
+) async {
   if (photoPath == null) return null;
   return ref.watch(recipesRepositoryProvider).resolvePhotoUrl(photoPath);
 });
@@ -183,8 +190,8 @@ class RecipeFormState {
   }
 }
 
-class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
-    RecipeFormState, String?> {
+class RecipeFormNotifier
+    extends AutoDisposeFamilyAsyncNotifier<RecipeFormState, String?> {
   @override
   Future<RecipeFormState> build(String? recipeId) async {
     ref.watch(authStateProvider);
@@ -207,10 +214,10 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       return RecipeFormState(data: RecipeFormData());
     }
 
-    final detail =
-        await ref.read(recipesRepositoryProvider).fetchRecipeDetail(recipeId);
-    final data =
-        ref.read(recipesRepositoryProvider).formDataFromDetail(detail);
+    final detail = await ref
+        .read(recipesRepositoryProvider)
+        .fetchRecipeDetail(recipeId);
+    final data = ref.read(recipesRepositoryProvider).formDataFromDetail(detail);
     return RecipeFormState(data: data, recipeId: recipeId);
   }
 
@@ -257,15 +264,13 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       householdId = await _resolveHouseholdId();
     } catch (_) {
       state = AsyncData(
-        current.copyWith(
-          isSaving: false,
-          error: householdLoadErrorKey,
-        ),
+        current.copyWith(isSaving: false, error: householdLoadErrorKey),
       );
       return null;
     }
 
-    final sourceLang = current.sourceLang ??
+    final sourceLang =
+        current.sourceLang ??
         ref.read(localeProvider.notifier).currentLanguageCode;
 
     try {
@@ -296,14 +301,10 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       ref.invalidate(recipesProvider);
       ref.invalidate(exploreRecipesProvider);
       ref.invalidate(publicTagsProvider);
-      state = AsyncData(
-        current.copyWith(isSaving: false, recipeId: id),
-      );
+      state = AsyncData(current.copyWith(isSaving: false, recipeId: id));
       return id;
     } catch (e) {
-      state = AsyncData(
-        current.copyWith(isSaving: false, error: e.toString()),
-      );
+      state = AsyncData(current.copyWith(isSaving: false, error: e.toString()));
       return null;
     }
   }
@@ -319,18 +320,14 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
         householdId = await _resolveHouseholdId();
       } catch (_) {
         state = AsyncData(
-          current.copyWith(
-            isSaving: false,
-            error: householdLoadErrorKey,
-          ),
+          current.copyWith(isSaving: false, error: householdLoadErrorKey),
         );
         return false;
       }
 
-      await ref.read(recipesRepositoryProvider).deleteRecipe(
-            current.recipeId!,
-            householdId: householdId,
-          );
+      await ref
+          .read(recipesRepositoryProvider)
+          .deleteRecipe(current.recipeId!, householdId: householdId);
       state = AsyncData(current.copyWith(isSaving: false));
       ref.invalidate(recipeListProvider);
       ref.invalidate(recipeTagsProvider);
@@ -340,13 +337,15 @@ class RecipeFormNotifier extends AutoDisposeFamilyAsyncNotifier<
       ref.invalidate(publicTagsProvider);
       return true;
     } catch (e) {
-      state = AsyncData(
-        current.copyWith(isSaving: false, error: e.toString()),
-      );
+      state = AsyncData(current.copyWith(isSaving: false, error: e.toString()));
       return false;
     }
   }
 }
 
-final recipeFormProvider = AutoDisposeAsyncNotifierProviderFamily<
-    RecipeFormNotifier, RecipeFormState, String?>(RecipeFormNotifier.new);
+final recipeFormProvider =
+    AutoDisposeAsyncNotifierProviderFamily<
+      RecipeFormNotifier,
+      RecipeFormState,
+      String?
+    >(RecipeFormNotifier.new);

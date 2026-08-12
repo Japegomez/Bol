@@ -26,7 +26,9 @@ Future<void> main() async {
       );
       log.i('Supabase initialized');
     } else {
-      log.w('SUPABASE_URL / SUPABASE_ANON_KEY not set — running offline scaffold');
+      log.w(
+        'SUPABASE_URL / SUPABASE_ANON_KEY not set — running offline scaffold',
+      );
     }
 
     await AnalyticsService.initialize();

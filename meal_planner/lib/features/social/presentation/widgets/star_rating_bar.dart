@@ -69,8 +69,8 @@ class StarRatingDisplay extends StatelessWidget {
           Text(
             '($count)',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ],
       ],
