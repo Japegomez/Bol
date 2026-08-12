@@ -43,6 +43,7 @@ El desarrollo de **Böl** se ha llevado a cabo bajo la filosofía de **Spec-Driv
 | 📄 **`docs/spec-driven/REQUIREMENTS.md`** | Visión, stack, RF por módulo, decisiones de producto y seguridad |
 | ✅ **`docs/spec-driven/TASKS.md`** | Backlog vivo por fases, estado de avance y próximas validaciones |
 | 📌 **`supabase/README.md`** | Proyecto, migraciones, Edge Functions, secrets y cuotas de IA |
+| 🔒 **`SECURITY.md`** | Cómo reportar vulnerabilidades en privado |
 | 🔒 **Páginas legales** | Privacidad / términos publicados en `japegomez.github.io/Bol` |
 
 ### Flujo de trabajo con agentes
@@ -223,6 +224,7 @@ Los builds se generan con **Codemagic** en push a `main`; QA y checks en **GitHu
 
 | Recurso | Descripción |
 | ----------------- | ---------------------------------------------------------------------- |
+| `SECURITY.md` | Cómo reportar vulnerabilidades (no uses issues públicos) |
 | `docs/spec-driven/REQUIREMENTS.md` | Especificaciones funcionales y no funcionales |
 | `docs/spec-driven/TASKS.md` | Backlog vivo por fases y estado de avance |
 | `supabase/README.md` | Backend, Edge Functions, secrets y despliegues |
