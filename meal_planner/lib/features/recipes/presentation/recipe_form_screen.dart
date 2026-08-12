@@ -470,8 +470,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                               icon: const Icon(Icons.add),
                               onPressed: () {
                                 final tag = _tagController.text.trim();
-                                if (tag.isEmpty || data.tags.contains(tag))
+                                if (tag.isEmpty || data.tags.contains(tag)) {
                                   return;
+                                }
                                 _tagController.clear();
                                 setState(() => data.tags.add(tag));
                               },
