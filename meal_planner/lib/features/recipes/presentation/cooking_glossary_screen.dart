@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/recipes/domain/cooking_glossary_entry.dart';
 import 'package:meal_planner/features/recipes/presentation/cooking_glossary_provider.dart';
 
@@ -229,7 +230,7 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(item: ListTileSkeleton()),
               error: (error, _) =>
                   Center(child: Text(l10n.errorWithMessage('$error'))),
             ),

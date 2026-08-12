@@ -497,6 +497,7 @@
   "recipeAssistantDescription": "Diga-me o que lhe apetece, o que tem no frigorífico, cole uma receita, anexe uma foto ou dite com o microfone.",
   "recipeAssistantPromptHint": "Ex.: omelete de batata para 4 pessoas com cebola...",
   "recipeAssistantImagePromptHint": "Indique ao assistente o que fazer com a foto (ex.: recriar este prato, extrair a receita...)",
+  "recipeAssistantSameRecipePhotosHint": "Se anexar várias fotos, devem ser da mesma receita.",
   "recipeAssistantListening": "A ouvir…",
   "recipeAssistantDictate": "Ditar",
   "recipeAssistantStopDictation": "Parar ditado",

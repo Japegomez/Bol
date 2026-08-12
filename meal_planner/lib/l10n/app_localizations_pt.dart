@@ -1533,6 +1533,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Indique ao assistente o que fazer com a foto (ex.: recriar este prato, extrair a receita...)';
 
   @override
+  String get recipeAssistantSameRecipePhotosHint =>
+      'Se anexar várias fotos, devem ser da mesma receita.';
+
+  @override
   String get recipeAssistantListening => 'A ouvir…';
 
   @override

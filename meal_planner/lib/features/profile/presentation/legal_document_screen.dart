@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:meal_planner/core/config/legal_urls.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -129,13 +130,13 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
                       padding: const EdgeInsets.all(24),
                       child: Text(_error!),
                     )
-                  : const CircularProgressIndicator(),
+                  : const SkeletonList(item: ListTileSkeleton()),
             )
           : Stack(
               children: [
                 if (_controller != null)
                   WebViewWidget(controller: _controller!),
-                if (_isLoading) const Center(child: CircularProgressIndicator()),
+                if (_isLoading) const SkeletonList(item: ListTileSkeleton()),
                 if (_error != null)
                   Center(
                     child: Padding(

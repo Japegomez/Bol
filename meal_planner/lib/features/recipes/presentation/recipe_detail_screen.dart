@@ -9,6 +9,7 @@ import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/recipe_step.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
@@ -84,7 +85,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             sourceLang: detail.sourceLang,
             sharedToken: widget.sharedToken,
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const RecipeDetailSkeleton(),
           error: (error, _) {
             final raw = '$error';
             final lower = raw.toLowerCase();
@@ -131,7 +132,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 : null,
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const RecipeDetailSkeleton(),
         error: (error, _) =>
             Center(child: Text(l10n.errorWithMessage('$error'))),
       ),

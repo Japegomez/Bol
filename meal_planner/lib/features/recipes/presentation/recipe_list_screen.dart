@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
@@ -228,7 +229,12 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(
+                item: RecipeCardSkeleton(
+                  photoSize: 96,
+                  showTags: true,
+                ),
+              ),
               error: (error, _) =>
                   Center(child: Text(l10n.errorWithMessage('$error'))),
             ),
@@ -269,21 +275,14 @@ class _RecipeCard extends ConsumerWidget {
                       child: Icon(Icons.restaurant, size: 40),
                     );
                   }
-                  return CachedNetworkImage(
+                    return CachedNetworkImage(
                     imageUrl: url,
                     fit: BoxFit.cover,
-                    placeholder: (_, _) => const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    placeholder: (_, _) => const _RecipePhotoSkeleton(),
                     errorWidget: (_, _, _) => const Icon(Icons.broken_image),
                   );
                 },
-                loading: () => const ColoredBox(
-                  color: Color(0xFFE0E0E0),
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
+                loading: () => const _RecipePhotoSkeleton(),
                 error: (_, _) => const ColoredBox(
                   color: Color(0xFFE0E0E0),
                   child: Icon(Icons.restaurant, size: 40),
@@ -315,6 +314,21 @@ class _RecipeCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _RecipePhotoSkeleton extends StatelessWidget {
+  const _RecipePhotoSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SkeletonPulse(
+      child: SkeletonBox(
+        width: 96,
+        height: 96,
+        borderRadius: BorderRadius.zero,
       ),
     );
   }

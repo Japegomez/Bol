@@ -2904,6 +2904,12 @@ abstract class AppLocalizations {
   /// **'Tell the assistant what to do with the photo (e.g. recreate this dish, extract the recipe...)'**
   String get recipeAssistantImagePromptHint;
 
+  /// No description provided for @recipeAssistantSameRecipePhotosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If you attach more than one photo, they should all be of the same recipe.'**
+  String get recipeAssistantSameRecipePhotosHint;
+
   /// No description provided for @recipeAssistantListening.
   ///
   /// In en, this message translates to:

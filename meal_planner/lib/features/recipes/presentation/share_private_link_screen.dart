@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_share_provider.dart';
 
 /// Resolves a private share token then replaces with the recipe detail route.
@@ -67,7 +68,7 @@ class _SharePrivateLinkScreenState
     }
 
     return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+      body: RecipeDetailSkeleton(),
     );
   }
 }

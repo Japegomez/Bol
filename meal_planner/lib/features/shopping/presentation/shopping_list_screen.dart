@@ -4,6 +4,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/shopping_item.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/shopping/presentation/shopping_provider.dart';
 import 'package:meal_planner/features/shopping/presentation/widgets/add_edit_item_sheet.dart';
@@ -101,7 +102,7 @@ class ShoppingListScreen extends ConsumerWidget {
         ],
       ),
       body: itemsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ShoppingListSkeleton(),
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

@@ -7,6 +7,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/language_selector_tile.dart';
 import 'package:meal_planner/core/review/review_prompt_service.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
@@ -90,7 +91,7 @@ class ProfileScreen extends ConsumerWidget {
         title: Text(l10n.profileTitle),
       ),
       body: profileAsync.isLoading && profile == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const ProfileSkeleton()
           : ListView(
               padding: const EdgeInsets.all(24),
               children: [

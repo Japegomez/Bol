@@ -251,26 +251,28 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+type RecipeImagePayload = { mimeType: string; base64: string };
+
 type CallLlmOptions = {
   preferJsonObject?: boolean;
   minMaxTokens?: number;
-  /** Optional image as data URL payload for multimodal chat completions. */
-  image?: { mimeType: string; base64: string };
+  /** Optional images as data URL payloads for multimodal chat completions. */
+  images?: RecipeImagePayload[];
 };
 
 function buildUserContent(
   userPrompt: string,
-  image?: { mimeType: string; base64: string },
+  images?: RecipeImagePayload[],
 ): string | Array<Record<string, unknown>> {
-  if (!image) return userPrompt;
+  if (!images?.length) return userPrompt;
   return [
     { type: "text", text: userPrompt },
-    {
+    ...images.map((image) => ({
       type: "image_url",
       image_url: {
         url: `data:${image.mimeType};base64,${image.base64}`,
       },
-    },
+    })),
   ];
 }
 
@@ -514,7 +516,7 @@ async function callLlm(
       throw new Error("rate_limited");
     }
 
-    const userContent = buildUserContent(userPrompt, options.image);
+    const userContent = buildUserContent(userPrompt, options.images);
 
     const body: Record<string, unknown> = {
       model,
@@ -658,11 +660,13 @@ const RECIPE_SYSTEM_PROMPT = `You are a recipe assistant for a meal planning app
 Three modes of input (detect automatically):
 1) SHORT DESCRIPTION — the user names or briefly describes a dish (e.g. "tortilla de patatas para 4"). Invent a complete, realistic recipe.
 2) FULL RECIPE — the user pastes an existing recipe (ingredients list, method/steps, servings, tips, etc.). ADAPT it to the app schema; do NOT invent a different dish.
-3) IMAGE — the user attaches a photo of a recipe (book, screen, handwritten card, packaging) and/or a photo of ingredients/food. Extract or adapt using the image. If there is also text, follow the text as instructions (adapt, scale servings, dietary change, "what can I cook with this", etc.) while using the image as context.
+3) IMAGE — the user attaches one or more photos (up to 4) of a recipe (book, screen, handwritten card, packaging) and/or ingredients/food. Extract or adapt using all images together. If there is also text, follow the text as instructions (adapt, scale servings, dietary change, "what can I cook with this", etc.) while using the images as context.
+- Photos are expected to be of the SAME recipe (multiple pages, a dish plus its ingredients, etc.). Combine them into one recipe.
+- If the photos clearly show DISTINCT recipes, create ONLY the first recipe (the one in the first image, or the first complete recipe you can identify). Ignore the rest. Do not merge unrelated dishes into one recipe.
 
 When the input is image-only (no user text):
-- Treat it as FULL RECIPE extraction from the image. Transcribe ingredients, quantities, steps, servings, and tips from the photo as faithfully as possible.
-- If the image shows a finished dish or ingredients without a written recipe, invent a realistic recipe that matches what you see and set a clear title.
+- Treat it as FULL RECIPE extraction from the image(s). Transcribe ingredients, quantities, steps, servings, and tips from the photos as faithfully as possible.
+- If the images show a finished dish or ingredients without a written recipe, invent a realistic recipe that matches what you see and set a clear title.
 
 When adapting a full recipe (mode 2 or readable recipe text in an image):
 - Preserve the dish: keep the same title meaning, servings (if given), and cooking intent.
@@ -692,7 +696,7 @@ Shared rules (all modes):
 - Do not include photo references.`;
 
 const IMAGE_ONLY_USER_PROMPT =
-  "Extract the recipe from this image and fill the structured recipe fields. Prefer faithful transcription of any visible ingredients, quantities, and steps.";
+  "Extract the recipe from the attached image(s) and fill the structured recipe fields. Prefer faithful transcription of any visible ingredients, quantities, and steps. Photos are expected to be of the same recipe: combine them if they are. If they clearly show different recipes, create ONLY the first recipe and ignore the others.";
 
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
@@ -702,22 +706,18 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
 
 /** Max base64 character length (~1.5 MB binary). */
 const MAX_IMAGE_BASE64_LENGTH = Math.floor(1.5 * 1024 * 1024 * 4 / 3);
+const MAX_RECIPE_IMAGES = 4;
 
-function parseRecipeImage(
-  body: Record<string, unknown> | null | undefined,
-): { mimeType: string; base64: string } | null | "invalid" | "too_large" {
-  const rawBase64 = typeof body?.imageBase64 === "string"
-    ? body.imageBase64.trim()
-    : "";
-  if (!rawBase64) return null;
+function parseOneRecipeImage(
+  rawBase64: string,
+  mimeRaw: string,
+): RecipeImagePayload | "invalid" | "too_large" {
+  if (!rawBase64) return "invalid";
 
   if (rawBase64.length > MAX_IMAGE_BASE64_LENGTH) {
     return "too_large";
   }
 
-  const mimeRaw = typeof body?.imageMimeType === "string"
-    ? body.imageMimeType.trim().toLowerCase()
-    : "";
   if (!ALLOWED_IMAGE_MIME_TYPES.has(mimeRaw)) {
     return "invalid";
   }
@@ -744,6 +744,44 @@ function parseRecipeImage(
   }
 
   return { mimeType: mimeRaw, base64: cleaned };
+}
+
+function parseRecipeImages(
+  body: Record<string, unknown> | null | undefined,
+): RecipeImagePayload[] | "invalid" | "too_large" | "too_many" {
+  const rawImages = body?.images;
+  if (Array.isArray(rawImages)) {
+    if (rawImages.length > MAX_RECIPE_IMAGES) return "too_many";
+    if (rawImages.length === 0) return [];
+
+    const parsed: RecipeImagePayload[] = [];
+    for (const item of rawImages) {
+      if (!item || typeof item !== "object") return "invalid";
+      const rec = item as Record<string, unknown>;
+      const rawBase64 = typeof rec.imageBase64 === "string"
+        ? rec.imageBase64.trim()
+        : "";
+      const mimeRaw = typeof rec.imageMimeType === "string"
+        ? rec.imageMimeType.trim().toLowerCase()
+        : "";
+      const result = parseOneRecipeImage(rawBase64, mimeRaw);
+      if (result === "invalid" || result === "too_large") return result;
+      parsed.push(result);
+    }
+    return parsed;
+  }
+
+  const legacyBase64 = typeof body?.imageBase64 === "string"
+    ? body.imageBase64.trim()
+    : "";
+  if (!legacyBase64) return [];
+
+  const mimeRaw = typeof body?.imageMimeType === "string"
+    ? body.imageMimeType.trim().toLowerCase()
+    : "";
+  const result = parseOneRecipeImage(legacyBase64, mimeRaw);
+  if (result === "invalid" || result === "too_large") return result;
+  return [result];
 }
 
 const NUTRITION_SYSTEM_PROMPT = `You are a nutrition assistant for a meal planning app. Given a recipe title, servings count, and ingredient list, estimate the nutritional information PER SERVING.
@@ -860,7 +898,7 @@ Deno.serve(async (req) => {
 
     if (mode === "generate_recipe") {
       const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
-      const imageResult = parseRecipeImage(body as Record<string, unknown>);
+      const imageResult = parseRecipeImages(body as Record<string, unknown>);
 
       if (imageResult === "too_large") {
         return jsonResponse({ error: "image_too_large" }, 400);
@@ -868,9 +906,12 @@ Deno.serve(async (req) => {
       if (imageResult === "invalid") {
         return jsonResponse({ error: "invalid_image" }, 400);
       }
+      if (imageResult === "too_many") {
+        return jsonResponse({ error: "too_many_images" }, 400);
+      }
 
-      const image = imageResult;
-      if (!prompt && !image) {
+      const images = imageResult;
+      if (!prompt && images.length === 0) {
         return jsonResponse({ error: "missing_input" }, 400);
       }
 
@@ -879,11 +920,11 @@ Deno.serve(async (req) => {
       }
 
       let userPrompt = prompt;
-      if (image && !prompt) {
+      if (images.length > 0 && !prompt) {
         userPrompt = IMAGE_ONLY_USER_PROMPT;
-      } else if (image && prompt) {
+      } else if (images.length > 0 && prompt) {
         userPrompt =
-          `${prompt}\n\nUse the attached image as additional context for this recipe request.`;
+          `${prompt}\n\nUse the attached image(s) as additional context for this recipe request. Photos are expected to be of the same recipe. If they clearly show different recipes, create ONLY the first recipe and ignore the others.`;
       }
 
       const result = await callLlm(
@@ -892,7 +933,7 @@ Deno.serve(async (req) => {
         "generated_recipe",
         recipeSchema,
         8192,
-        image ? { image } : {},
+        images.length > 0 ? { images } : {},
       );
 
       if (result.error === "not_a_recipe_request") {

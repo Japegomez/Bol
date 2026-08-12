@@ -10,6 +10,7 @@ import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:meal_planner/core/utils/date_utils.dart';
 import 'package:meal_planner/core/widgets/ingredient_bullet.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/domain/ingredient_label.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -123,7 +124,7 @@ class PublicProfileScreen extends ConsumerWidget {
               ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const PublicProfileSkeleton(),
         error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
       ),
     );
@@ -574,7 +575,7 @@ class _PublicRecipeDetailScreenState
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const RecipeDetailSkeleton(),
         error: (error, _) {
           final isOffline = error is OfflinePublicRecipeBlockedException ||
               isTransientNetworkError(error);
