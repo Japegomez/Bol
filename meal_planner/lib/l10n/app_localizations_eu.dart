@@ -821,6 +821,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get recipeCreatedBy => 'Errezeta sortzailea';
 
   @override
+  String get recipeCreatedByName => 'Egilea:';
+
+  @override
   String get you => 'zu';
 
   @override

@@ -1578,6 +1578,12 @@ abstract class AppLocalizations {
   /// **'Recipe created by'**
   String get recipeCreatedBy;
 
+  /// No description provided for @recipeCreatedByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by'**
+  String get recipeCreatedByName;
+
   /// No description provided for @you.
   ///
   /// In en, this message translates to:

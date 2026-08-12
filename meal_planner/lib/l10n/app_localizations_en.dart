@@ -816,6 +816,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCreatedBy => 'Recipe created by';
 
   @override
+  String get recipeCreatedByName => 'Created by';
+
+  @override
   String get you => 'you';
 
   @override

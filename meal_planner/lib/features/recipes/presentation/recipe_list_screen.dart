@@ -231,7 +231,6 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
               },
               loading: () => const SkeletonList(
                 item: RecipeCardSkeleton(
-                  photoSize: 96,
                   showTags: true,
                 ),
               ),
@@ -261,58 +260,52 @@ class _RecipeCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => context.push('/home/recipes/${recipe.id}'),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 96,
-              height: 96,
-              child: photoUrlAsync.when(
-                data: (url) {
-                  if (url == null) {
-                    return const ColoredBox(
-                      color: Color(0xFFE0E0E0),
-                      child: Icon(Icons.restaurant, size: 40),
-                    );
-                  }
-                    return CachedNetworkImage(
-                    imageUrl: url,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => const _RecipePhotoSkeleton(),
-                    errorWidget: (_, _, _) => const Icon(Icons.broken_image),
-                  );
-                },
-                loading: () => const _RecipePhotoSkeleton(),
-                error: (_, _) => const ColoredBox(
+        child: RecipeCardRow(
+          photo: photoUrlAsync.when(
+            data: (url) {
+              if (url == null) {
+                return const ColoredBox(
                   color: Color(0xFFE0E0E0),
-                  child: Icon(Icons.restaurant, size: 40),
-                ),
-              ),
+                  child: Center(child: Icon(Icons.restaurant, size: 40)),
+                );
+              }
+              return CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                placeholder: (_, _) => const _RecipePhotoSkeleton(),
+                errorWidget: (_, _, _) =>
+                    const Center(child: Icon(Icons.broken_image)),
+              );
+            },
+            loading: () => const _RecipePhotoSkeleton(),
+            error: (_, _) => const ColoredBox(
+              color: Color(0xFFE0E0E0),
+              child: Center(child: Icon(Icons.restaurant, size: 40)),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titleOverride ?? recipe.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.servingsCount(recipe.servings),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (recipe.tags.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      HorizontalTagList(tags: recipe.tags),
-                    ],
-                  ],
+          ),
+          content: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titleOverride ?? recipe.title,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.servingsCount(recipe.servings),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (recipe.tags.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  HorizontalTagList(tags: recipe.tags),
+                ],
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -325,11 +318,7 @@ class _RecipePhotoSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SkeletonPulse(
-      child: SkeletonBox(
-        width: 96,
-        height: 96,
-        borderRadius: BorderRadius.zero,
-      ),
+      child: SkeletonBox(borderRadius: BorderRadius.zero),
     );
   }
 }

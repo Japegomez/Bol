@@ -819,6 +819,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get recipeCreatedBy => 'Recepta creada per';
 
   @override
+  String get recipeCreatedByName => 'Creada per';
+
+  @override
   String get you => 'tu';
 
   @override

@@ -95,15 +95,20 @@ class SkeletonBox extends StatelessWidget {
     final radius = borderRadius ?? BorderRadius.circular(8);
 
     Widget box(Color color) {
+      final decoration = BoxDecoration(
+        color: color,
+        borderRadius: radius,
+      );
+      if (width == null && height == null) {
+        return DecoratedBox(
+          decoration: decoration,
+          child: const SizedBox.expand(),
+        );
+      }
       return SizedBox(
         width: width,
         height: height,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: radius,
-          ),
-        ),
+        child: DecoratedBox(decoration: decoration),
       );
     }
 
@@ -187,18 +192,54 @@ class SkeletonList extends StatelessWidget {
   }
 }
 
+/// Square photo on the left that matches the card's content height.
+class RecipeCardRow extends StatelessWidget {
+  const RecipeCardRow({
+    required this.photo,
+    required this.content,
+    this.minSize = 96,
+    super.key,
+  });
+
+  final Widget photo;
+  final Widget content;
+  final double minSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: minSize),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(child: photo),
+                ],
+              ),
+            ),
+            Expanded(child: content),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Card matching recipe-book / explore / feed list rows
-/// (photo + title, meta, and tags in the text column).
+/// (square photo + title, meta, and tags in the text column).
 class RecipeCardSkeleton extends StatelessWidget {
   const RecipeCardSkeleton({
-    this.photoSize = 96,
     this.margin = const EdgeInsets.only(bottom: 12),
     this.showTags = false,
     this.showAuthorLine = false,
     super.key,
   });
 
-  final double photoSize;
   final EdgeInsetsGeometry margin;
 
   /// When true, shows chip placeholders like [HorizontalTagList] beside the photo.
@@ -212,39 +253,29 @@ class RecipeCardSkeleton extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: margin,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SkeletonBox(
-            width: photoSize,
-            height: photoSize,
-            borderRadius: BorderRadius.zero,
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SkeletonLine(height: 16, widthFactor: 0.85),
-                  const SizedBox(height: 4),
-                  const SkeletonLine(height: 12, widthFactor: 0.4),
-                  if (showAuthorLine) ...[
-                    const SizedBox(height: 4),
-                    const SkeletonLine(height: 12, widthFactor: 0.55),
-                  ],
-                  if (showTags) ...[
-                    const SizedBox(height: 8),
-                    const _TagChipRowSkeleton(),
-                  ] else if (!showAuthorLine) ...[
-                    const SizedBox(height: 8),
-                    const SkeletonLine(height: 12, widthFactor: 0.55),
-                  ],
-                ],
+      child: RecipeCardRow(
+        photo: const SkeletonBox(borderRadius: BorderRadius.zero),
+        content: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SkeletonLine(height: 16, widthFactor: 0.85),
+              const SizedBox(height: 4),
+              SkeletonLine(
+                height: 12,
+                widthFactor: showAuthorLine ? 0.9 : 0.4,
               ),
-            ),
+              if (showTags) ...[
+                const SizedBox(height: 8),
+                const _TagChipRowSkeleton(),
+              ] else if (!showAuthorLine) ...[
+                const SizedBox(height: 8),
+                const SkeletonLine(height: 12, widthFactor: 0.55),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -31,87 +31,81 @@ class PublicRecipeCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => context.push('/home/explore/${recipe.id}'),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 96,
-              height: 96,
-              child: photoUrlAsync.when(
-                data: (url) {
-                  if (url == null) {
-                    return const _PhotoPlaceholder(
-                      child: Icon(Icons.restaurant, size: 40),
-                    );
-                  }
-                  return CachedNetworkImage(
-                    imageUrl: url,
-                    width: 96,
-                    height: 96,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => const _PhotoSkeleton(),
-                    errorWidget: (_, _, _) => const _PhotoPlaceholder(
-                      child: Icon(Icons.broken_image),
-                    ),
-                  );
-                },
-                loading: () => const _PhotoSkeleton(),
-                error: (_, _) => const _PhotoPlaceholder(
+        child: RecipeCardRow(
+          photo: photoUrlAsync.when(
+            data: (url) {
+              if (url == null) {
+                return const _PhotoPlaceholder(
                   child: Icon(Icons.restaurant, size: 40),
+                );
+              }
+              return CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                placeholder: (_, _) => const _PhotoSkeleton(),
+                errorWidget: (_, _, _) => const _PhotoPlaceholder(
+                  child: Icon(Icons.broken_image),
                 ),
-              ),
+              );
+            },
+            loading: () => const _PhotoSkeleton(),
+            error: (_, _) => const _PhotoPlaceholder(
+              child: Icon(Icons.restaurant, size: 40),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          content: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titleOverride ?? recipe.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Row(
                   children: [
                     Text(
-                      titleOverride ?? recipe.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium,
+                      l10n.servingsCount(recipe.servings),
+                      style: theme.textTheme.bodySmall,
                     ),
-                    const SizedBox(height: 4),
-                    InkWell(
-                      onTap: () =>
-                          context.push('/home/explore/user/${recipe.userId}'),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
+                    const SizedBox(width: 8),
+                    StarRatingDisplay(rating: recipe.avgScore),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.recipeCreatedByName,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: InkWell(
+                        onTap: () => context
+                            .push('/home/explore/user/${recipe.userId}'),
+                        borderRadius: BorderRadius.circular(4),
                         child: Text(
                           recipe.authorName,
-                          style: theme.textTheme.titleSmall?.copyWith(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        StarRatingDisplay(
-                          rating: recipe.avgScore,
-                          count: recipe.ratingCount,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          l10n.servingsCount(recipe.servings),
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    if (recipe.tags.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      HorizontalTagList(tags: recipe.tags),
-                    ],
                   ],
                 ),
-              ),
+                if (recipe.tags.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  HorizontalTagList(tags: recipe.tags),
+                ],
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -127,7 +121,6 @@ class PublicRecipeCardSkeleton extends StatelessWidget {
     return const ExcludeSemantics(
       child: SkeletonPulse(
         child: RecipeCardSkeleton(
-          photoSize: 96,
           showTags: true,
           showAuthorLine: true,
         ),
@@ -146,7 +139,6 @@ class PublicRecipeCardSkeletonList extends StatelessWidget {
     return SkeletonList(
       itemCount: itemCount,
       item: const RecipeCardSkeleton(
-        photoSize: 96,
         showTags: true,
         showAuthorLine: true,
       ),
@@ -261,11 +253,7 @@ class _PhotoSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SkeletonPulse(
-      child: SkeletonBox(
-        width: 96,
-        height: 96,
-        borderRadius: BorderRadius.zero,
-      ),
+      child: SkeletonBox(borderRadius: BorderRadius.zero),
     );
   }
 }
@@ -279,9 +267,11 @@ class _PhotoPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: IconTheme(
-        data: IconThemeData(color: Theme.of(context).colorScheme.outline),
-        child: child,
+      child: Center(
+        child: IconTheme(
+          data: IconThemeData(color: Theme.of(context).colorScheme.outline),
+          child: child,
+        ),
       ),
     );
   }
