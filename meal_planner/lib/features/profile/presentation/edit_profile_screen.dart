@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -131,8 +132,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String _passwordErrorText(AuthException error, AppLocalizations l10n) {
     return switch (error) {
       AuthPasswordTooWeakException() => l10n.passwordTooWeak,
-      AuthInvalidCurrentPasswordException() => l10n.currentPasswordIncorrect,
+      AuthInvalidCurrentPasswordException() ||
+      AuthReauthenticationException() => l10n.currentPasswordIncorrect,
       AuthSamePasswordException() => l10n.passwordSameAsCurrent,
+      AuthCaptchaException() => l10n.captchaFailed,
       _ => error.message,
     };
   }
@@ -141,6 +144,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final auth = ref.watch(authStateProvider).valueOrNull;
     return auth is AuthAuthenticated &&
         ref.read(authRepositoryProvider).hasEmailPassword;
+  }
+
+  Widget _maybeAutofillGroup({required Widget child}) {
+    if (kIsWeb) return child;
+    return AutofillGroup(child: child);
   }
 
   Future<void> _changePassword() async {
@@ -282,7 +290,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   AppButton(
                     label: l10n.save,
                     isLoading: _isSaving,
-                    onPressed: _isBusy && !_isSaving ? null : _save,
+                    onPressed: _isBusy ? null : _save,
                   ),
                 ],
               ),
@@ -293,7 +301,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 16),
               Form(
                 key: _passwordFormKey,
-                child: AutofillGroup(
+                child: _maybeAutofillGroup(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -303,6 +311,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const SizedBox(height: 16),
                       PasswordTextField(
+                        key: const ValueKey('currentPassword'),
                         controller: _currentPasswordController,
                         labelText: l10n.currentPasswordLabel,
                         autofillHints: const [AutofillHints.password],
@@ -317,6 +326,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const SizedBox(height: 12),
                       PasswordTextField(
+                        key: const ValueKey('newPassword'),
                         controller: _newPasswordController,
                         labelText: l10n.newPasswordLabel,
                         autofillHints: const [AutofillHints.newPassword],
@@ -333,6 +343,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const SizedBox(height: 12),
                       PasswordTextField(
+                        key: const ValueKey('confirmPassword'),
                         controller: _confirmPasswordController,
                         labelText: l10n.confirmPasswordLabel,
                         autofillHints: const [AutofillHints.newPassword],
@@ -362,9 +373,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       AppButton(
                         label: l10n.changePasswordTitle,
                         isLoading: _isChangingPassword,
-                        onPressed: _isBusy && !_isChangingPassword
-                            ? null
-                            : _changePassword,
+                        onPressed: _isBusy ? null : _changePassword,
                       ),
                     ],
                   ),

@@ -29,12 +29,13 @@
     <div class="wrap">
       <div id="turnstile-host"></div>
     </div>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
     <script>
       (function () {
         var params = new URLSearchParams(window.location.search);
         var sitekey = params.get("sitekey") || "";
         var theme = params.get("theme") === "dark" ? "dark" : "light";
+        var lang = params.get("lang") || "auto";
+        document.documentElement.lang = lang === "auto" ? "en" : lang;
 
         function notify(payload) {
           if (window.Turnstile && Turnstile.postMessage) {
@@ -50,6 +51,7 @@
           turnstile.render("#turnstile-host", {
             sitekey: sitekey,
             theme: theme,
+            language: lang,
             callback: function (token) {
               notify({ event: "success", token: token });
             },
@@ -59,22 +61,17 @@
           });
         }
 
-        function waitStart(attempt) {
-          if (window.turnstile) {
-            start();
-            return;
-          }
-          if (attempt > 50) {
-            notify({ event: "error" });
-            return;
-          }
-          setTimeout(function () {
-            waitStart(attempt + 1);
-          }, 50);
-        }
-
-        waitStart(0);
+        window.__bolOnTurnstileLoad = start;
+        window.__bolOnTurnstileError = function () {
+          notify({ event: "error" });
+        };
       })();
     </script>
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__bolOnTurnstileLoad"
+      async
+      defer
+      onerror="window.__bolOnTurnstileError && window.__bolOnTurnstileError()"
+    ></script>
   </body>
 </html>

@@ -29,10 +29,15 @@ app_auth.AuthException mapAuthError(Object error) {
       return const app_auth.AuthSamePasswordException();
     }
 
-    if (code == 'reauthentication_needed' ||
-        code == 'reauthentication_not_valid' ||
-        message.contains('current password')) {
+    if (code == 'current_password_invalid' ||
+        code == 'current_password_required' ||
+        message.contains('current password required')) {
       return const app_auth.AuthInvalidCurrentPasswordException();
+    }
+
+    if (code == 'reauthentication_needed' ||
+        code == 'reauthentication_not_valid') {
+      return const app_auth.AuthReauthenticationException();
     }
 
     if (code == 'invalid_credentials' ||
@@ -72,8 +77,7 @@ app_auth.AuthException? mapGoogleSignInError(Object error) {
     if (error.code == GoogleSignInExceptionCode.canceled) {
       return const app_auth.AuthCancelledException();
     }
-    final message = '${error.description ?? ''} ${error.code.name}';
-    if (_isGoogleDeveloperError(message)) {
+    if (error.code == GoogleSignInExceptionCode.clientConfigurationError) {
       return const app_auth.AuthGoogleSignInConfigurationException();
     }
     return const app_auth.AuthProviderException(

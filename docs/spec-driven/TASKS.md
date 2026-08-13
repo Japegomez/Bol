@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 13/08/2026 — v1.2.4 hotfix: SECURITY.md + README (cuotas, RLS, quality CI)
+> Actualizado: 13/08/2026 — v1.2.4+9 hotfix: Turnstile, política de contraseñas, cambio de contraseña, SECURITY.md + README (cuotas, RLS, quality CI)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -55,7 +55,7 @@
 - [x] Configurar GitHub Actions básico (análisis estático + `flutter test` en cada PR)
   - Job **`quality`**: `dart format --set-exit-if-changed`, `flutter analyze --fatal-infos lib test`, `flutter test --coverage`, umbral `very_good_coverage` (excluye generated/l10n/presentation/widgets)
   - Dependabot semanal (`pub` en `/meal_planner`, `github-actions` en `/`; target `develop`)
-- [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`)
+- [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`, `TURNSTILE_SITE_KEY`)
   - Valores reales en `dart_defines.json` / `.env` local (gitignored); Codemagic como Environment Variables
 
 ### Prueba local (emulador Android)
@@ -647,7 +647,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.4 hotfix** (TestFlight / Play): SECURITY.md + README; store build 1.2.4+9.
+1. **Release 1.2.4 hotfix** (TestFlight / Play): Turnstile, política / cambio de contraseña, SECURITY.md + README; store build 1.2.4+9.
 2. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.4): Compra / Plan / Recetas; caché offline.
 3. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
 4. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.

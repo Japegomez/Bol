@@ -7,7 +7,9 @@ abstract final class PasswordPolicy {
   static final _lowercase = RegExp(r'[a-z]');
   static final _uppercase = RegExp(r'[A-Z]');
   static final _digit = RegExp(r'[0-9]');
-  static final _symbol = RegExp(r'[^A-Za-z0-9]');
+
+  /// ASCII symbols matching Supabase Auth / GoTrue `password_required_characters`.
+  static final _symbol = RegExp(r'''[!@#$%^&*()_+=\[\]{};':"|<>?,./`~-]''');
 
   static PasswordPolicyError? validate(String? value) {
     if (value == null || value.isEmpty) {

@@ -24,5 +24,15 @@ void main() {
     test('accepts a password that meets Supabase requirements', () {
       expect(PasswordPolicy.validate('Abcdef1!'), isNull);
     });
+
+    test('does not treat non-ASCII or whitespace as the required symbol', () {
+      expect(PasswordPolicy.validate('Abcdefg1á'), PasswordPolicyError.tooWeak);
+      expect(PasswordPolicy.validate('Abcdefg1ñ'), PasswordPolicyError.tooWeak);
+      expect(PasswordPolicy.validate('Abcdefg1 '), PasswordPolicyError.tooWeak);
+      expect(
+        PasswordPolicy.validate('Abcdefg1\t'),
+        PasswordPolicyError.tooWeak,
+      );
+    });
   });
 }

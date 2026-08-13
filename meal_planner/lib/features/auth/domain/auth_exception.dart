@@ -61,6 +61,11 @@ final class AuthInvalidCurrentPasswordException extends AuthException {
     : super('La contraseña actual no es correcta.');
 }
 
+final class AuthReauthenticationException extends AuthException {
+  const AuthReauthenticationException()
+    : super('Debes volver a autenticarte para continuar.');
+}
+
 final class AuthSamePasswordException extends AuthException {
   const AuthSamePasswordException()
     : super('La nueva contraseña debe ser distinta de la actual.');

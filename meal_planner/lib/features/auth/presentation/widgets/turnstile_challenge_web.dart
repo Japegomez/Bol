@@ -5,6 +5,7 @@ import 'dart:js_interop_unsafe';
 import 'package:flutter/material.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_language.dart';
 import 'package:web/web.dart' as web;
 
 /// Flutter `webview_flutter` has no web implementation, so Turnstile is
@@ -13,10 +14,14 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
   final l10n = context.l10n;
   final scheme = Theme.of(context).colorScheme;
   final isDark = Theme.of(context).brightness == Brightness.dark;
+  final language = turnstileLanguageFor(Localizations.localeOf(context));
 
   final completer = Completer<String?>();
   web.HTMLElement? overlay;
   String? widgetId;
+  JSFunction? keydownHandler;
+  JSFunction? focusinHandler;
+  final previouslyFocused = web.document.activeElement;
   final foundPane = web.document.querySelector('flt-glass-pane');
   final glassPane = foundPane == null ? null : foundPane as web.HTMLElement;
   final previousPointerEvents = glassPane?.style.pointerEvents;
@@ -28,8 +33,18 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
     if (id != null) {
       _readTurnstile()?.remove(id);
     }
-    overlay?.remove();
+    final host = overlay;
+    if (keydownHandler != null) {
+      host?.removeEventListener('keydown', keydownHandler);
+    }
+    if (focusinHandler != null) {
+      web.document.removeEventListener('focusin', focusinHandler);
+    }
+    host?.remove();
     glassPane?.style.setProperty('pointer-events', previousPointerEvents ?? '');
+    if (previouslyFocused != null) {
+      (previouslyFocused as web.HTMLElement).focus();
+    }
     completer.complete(token);
   }
 
@@ -42,6 +57,23 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
     onCancel: () => finish(null),
   );
   web.document.body!.append(overlay);
+
+  keydownHandler = ((web.Event event) {
+    final host = overlay;
+    if (host == null) return;
+    _onOverlayKeyDown(host, event, () => finish(null));
+  }).toJS;
+  focusinHandler = ((web.Event event) {
+    final host = overlay;
+    final target = event.target;
+    if (host != null && target != null && host.contains(target as web.Node)) {
+      return;
+    }
+    if (host != null) _focusCancelButton(host);
+  }).toJS;
+  overlay.addEventListener('keydown', keydownHandler);
+  web.document.addEventListener('focusin', focusinHandler);
+  _focusCancelButton(overlay);
 
   final widgetHost =
       overlay.querySelector('#turnstile-host') as web.HTMLElement;
@@ -67,9 +99,11 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
     widgetId = _renderWidget(
       host: widgetHost,
       isDark: isDark,
+      language: language,
       onSuccess: finish,
       onError: showError,
     );
+    if (widgetId == null) showError();
   }.toJS;
 
   try {
@@ -77,6 +111,7 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
     widgetId = _renderWidget(
       host: widgetHost,
       isDark: isDark,
+      language: language,
       onSuccess: finish,
       onError: showError,
     );
@@ -91,6 +126,7 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
 String? _renderWidget({
   required web.HTMLElement host,
   required bool isDark,
+  required String language,
   required void Function(String? token) onSuccess,
   required void Function() onError,
 }) {
@@ -100,6 +136,7 @@ String? _renderWidget({
   final options = JSObject();
   options.setProperty('sitekey'.toJS, Env.turnstileSiteKey.toJS);
   options.setProperty('theme'.toJS, (isDark ? 'dark' : 'light').toJS);
+  options.setProperty('language'.toJS, language.toJS);
   options.setProperty(
     'callback'.toJS,
     ((JSString token) {
@@ -176,7 +213,8 @@ web.HTMLElement _buildOverlay({
 }) {
   final overlay = web.HTMLDivElement()
     ..setAttribute('role', 'dialog')
-    ..setAttribute('aria-modal', 'true');
+    ..setAttribute('aria-modal', 'true')
+    ..tabIndex = -1;
   overlay.style
     ..position = 'fixed'
     ..inset = '0'
@@ -240,6 +278,7 @@ web.HTMLElement _buildOverlay({
     ..marginTop = '16px';
 
   final cancel = web.HTMLButtonElement()
+    ..id = 'turnstile-cancel'
     ..type = 'button'
     ..textContent = cancelLabel;
   _styleTextButton(cancel, scheme.primary);
@@ -266,6 +305,53 @@ web.HTMLElement _buildOverlay({
   );
 
   return overlay;
+}
+
+void _focusCancelButton(web.HTMLElement overlay) {
+  final cancel = overlay.querySelector('#turnstile-cancel');
+  if (cancel != null) {
+    (cancel as web.HTMLElement).focus();
+  }
+}
+
+void _onOverlayKeyDown(
+  web.HTMLElement overlay,
+  web.Event event,
+  VoidCallback onCancel,
+) {
+  final keyEvent = event as web.KeyboardEvent;
+  if (keyEvent.key == 'Escape') {
+    keyEvent.preventDefault();
+    onCancel();
+    return;
+  }
+  if (keyEvent.key == 'Tab') {
+    _trapFocus(overlay, keyEvent);
+  }
+}
+
+void _trapFocus(web.HTMLElement overlay, web.KeyboardEvent event) {
+  final focusable = overlay.querySelectorAll(
+    'button, iframe, [tabindex]:not([tabindex="-1"])',
+  );
+  final length = focusable.length;
+  if (length == 0) {
+    event.preventDefault();
+    overlay.focus();
+    return;
+  }
+  final first = focusable.item(0) as web.HTMLElement;
+  final last = focusable.item(length - 1) as web.HTMLElement;
+  final active = web.document.activeElement;
+  if (event.shiftKey) {
+    if (active == first || active == overlay) {
+      event.preventDefault();
+      last.focus();
+    }
+  } else if (active == last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 void _styleTextButton(web.HTMLButtonElement button, Color color) {

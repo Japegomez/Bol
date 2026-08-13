@@ -18,18 +18,33 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     hide AuthState, AuthException;
 
 class AuthRepository {
-  var _googleInitialized = false;
+  static Future<void>? _googleInitFuture;
   bool _manualSignOut = false;
 
   GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
 
+  Future<void> ensureGoogleInitialized() => _ensureGoogleInitialized();
+
   Future<void> _ensureGoogleInitialized() async {
-    if (_googleInitialized) return;
-    await _googleSignIn.initialize(
+    final existing = _googleInitFuture;
+    if (existing != null) {
+      await existing;
+      return;
+    }
+
+    final future = _googleSignIn.initialize(
       serverClientId: Env.googleWebClientId,
       clientId: _googleClientId,
     );
-    _googleInitialized = true;
+    _googleInitFuture = future;
+    try {
+      await future;
+    } catch (_) {
+      if (identical(_googleInitFuture, future)) {
+        _googleInitFuture = null;
+      }
+      rethrow;
+    }
   }
 
   String? get _googleClientId {
@@ -98,42 +113,15 @@ class AuthRepository {
 
     try {
       await _ensureGoogleInitialized();
+      if (!_googleSignIn.supportsAuthenticate()) {
+        throw const AuthConfigurationException(
+          'Google Sign-In on this platform requires the Google button',
+        );
+      }
       final googleUser = await _googleSignIn.authenticate(
         scopeHint: const ['email', 'profile', 'openid'],
       );
-      final idToken = googleUser.authentication.idToken;
-      if (idToken == null || idToken.isEmpty) {
-        throw const AuthProviderException(
-          'Google Sign-In returned no id token',
-        );
-      }
-
-      String? accessToken;
-      try {
-        final authorization = await _googleSignIn.authorizationClient
-            .authorizationForScopes(const ['email', 'profile', 'openid']);
-        accessToken = authorization?.accessToken;
-      } catch (_) {
-        // idToken is enough for Supabase; access token is best-effort.
-      }
-
-      try {
-        final response = await supabase.auth.signInWithIdToken(
-          provider: OAuthProvider.google,
-          idToken: idToken,
-          accessToken: accessToken,
-        );
-        final userId = response.user?.id;
-        final photoUrl = googleUser.photoUrl;
-        if (userId != null && photoUrl != null && photoUrl.isNotEmpty) {
-          await _maybeImportGoogleAvatar(userId, photoUrl);
-        }
-        return response;
-      } on AuthException {
-        rethrow;
-      } catch (e) {
-        throw mapAuthError(e);
-      }
+      return await _completeGoogleSignIn(googleUser);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         throw const AuthCancelledException();
@@ -145,6 +133,45 @@ class AuthRepository {
           AuthProviderException(e.message ?? e.code);
     } on AuthException {
       rethrow;
+    }
+  }
+
+  Future<AuthResponse> signInWithGoogleAccount(
+    GoogleSignInAccount googleUser,
+  ) async {
+    try {
+      await _ensureGoogleInitialized();
+      return await _completeGoogleSignIn(googleUser);
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw mapAuthError(e);
+    }
+  }
+
+  Future<AuthResponse> _completeGoogleSignIn(
+    GoogleSignInAccount googleUser,
+  ) async {
+    final idToken = googleUser.authentication.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      throw const AuthProviderException('Google Sign-In returned no id token');
+    }
+
+    try {
+      final response = await supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      );
+      final userId = response.user?.id;
+      final photoUrl = googleUser.photoUrl;
+      if (userId != null && photoUrl != null && photoUrl.isNotEmpty) {
+        await _maybeImportGoogleAvatar(userId, photoUrl);
+      }
+      return response;
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw mapAuthError(e);
     }
   }
 
@@ -239,7 +266,9 @@ class AuthRepository {
       );
     } catch (e) {
       final mapped = mapAuthError(e);
-      if (mapped is AuthInvalidCredentialsException) {
+      if (mapped is AuthInvalidCredentialsException ||
+          mapped is AuthReauthenticationException ||
+          mapped is AuthInvalidCurrentPasswordException) {
         throw const AuthInvalidCurrentPasswordException();
       }
       throw mapped;

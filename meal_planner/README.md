@@ -53,6 +53,8 @@ flutter run `
   --dart-define=TURNSTILE_SITE_KEY=<turnstile-site-key>
 ```
 
+Si `TURNSTILE_SITE_KEY` está vacío, `Env.hasTurnstile` es falso: la app omite el CAPTCHA y muestra el aviso de que Turnstile no está configurado.
+
 > **Android:** no hay `GOOGLE_ANDROID_CLIENT_ID` en Dart. El cliente Android en Google Cloud se valida por package + SHA-1; en código usas `GOOGLE_WEB_CLIENT_ID` como `serverClientId`.
 
 ## Estructura

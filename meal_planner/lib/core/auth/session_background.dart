@@ -5,6 +5,12 @@ abstract final class SessionBackground {
   static const _key = 'meal_planner.session_backgrounded_at';
 
   /// Sign out when the app returns from background after at least this long.
+  ///
+  /// Intentionally 12 hours (not a short idle timeout). Meal planning often
+  /// leaves the app backgrounded during cooking or shopping; a ~10-minute
+  /// cutoff signed users out mid-flow. 12 hours still bounds the unattended
+  /// access window on a leftover unlocked session, without competing with
+  /// Supabase's ~1-week refresh token.
   static const timeout = Duration(hours: 12);
 
   static Future<void> markBackgrounded() async {

@@ -53,12 +53,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         setState(() => _emailSent = true);
       }
     } on AuthException catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e is AuthCaptchaException
             ? context.l10n.captchaFailed
             : e.message;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);

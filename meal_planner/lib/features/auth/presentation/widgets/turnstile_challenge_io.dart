@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/config/share_urls.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_language.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
@@ -27,7 +29,10 @@ class _TurnstileChallengePage extends StatefulWidget {
 }
 
 class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
+  static const _challengeTimeout = Duration(seconds: 20);
+
   WebViewController? _controller;
+  Timer? _responseTimeout;
   var _failed = false;
   var _unsupported = false;
   var _scheduledInit = false;
@@ -40,7 +45,27 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
     return Uri.https(ShareUrls.host, '/turnstile.html', {
       'sitekey': Env.turnstileSiteKey,
       'theme': theme,
+      'lang': turnstileLanguageFor(Localizations.localeOf(context)),
     });
+  }
+
+  @override
+  void dispose() {
+    _cancelTimeout();
+    super.dispose();
+  }
+
+  void _armTimeout() {
+    _responseTimeout?.cancel();
+    _responseTimeout = Timer(_challengeTimeout, () {
+      if (!mounted) return;
+      setState(() => _failed = true);
+    });
+  }
+
+  void _cancelTimeout() {
+    _responseTimeout?.cancel();
+    _responseTimeout = null;
   }
 
   @override
@@ -84,6 +109,7 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
           onPageFinished: _onPageFinished,
           onWebResourceError: (error) {
             if (error.isForMainFrame ?? true) {
+              _cancelTimeout();
               if (mounted) setState(() => _failed = true);
             }
           },
@@ -96,7 +122,7 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
               return NavigationDecision.navigate;
             }
             final host = uri.host.toLowerCase();
-            if (host.isEmpty) return NavigationDecision.navigate;
+            if (host.isEmpty) return NavigationDecision.prevent;
             if (host == ShareUrls.host ||
                 host == ShareUrls.firebaseHost ||
                 host == 'challenges.cloudflare.com' ||
@@ -125,6 +151,7 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
     if (controller == null || !Env.hasTurnstile) return;
     _injected = false;
     setState(() => _failed = false);
+    _armTimeout();
     controller.loadRequest(_challengeUri);
   }
 
@@ -140,6 +167,9 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
     final siteKey = jsonEncode(Env.turnstileSiteKey);
     final theme = jsonEncode(
       Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light',
+    );
+    final language = jsonEncode(
+      turnstileLanguageFor(Localizations.localeOf(context)),
     );
     try {
       await controller.runJavaScript('''
@@ -160,6 +190,7 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
     turnstile.render('#turnstile-host', {
       sitekey: $siteKey,
       theme: $theme,
+      language: $language,
       callback: function (token) {
         notify({event: 'success', token: token});
       },
@@ -180,6 +211,7 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
 })();
 ''');
     } on Object {
+      _cancelTimeout();
       if (mounted) setState(() => _failed = true);
     }
   }
@@ -196,11 +228,13 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
     if (event == 'success') {
       final token = payload?['token'] as String?;
       if (token != null && token.isNotEmpty && mounted) {
+        _cancelTimeout();
         Navigator.of(context).pop(token);
       }
       return;
     }
     if (event == 'error' && mounted) {
+      _cancelTimeout();
       setState(() => _failed = true);
     }
   }

@@ -49,7 +49,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     String? captchaToken;
     if (Env.hasTurnstile) {
       captchaToken = await showTurnstileChallenge(context);
-      if (!mounted || captchaToken == null || captchaToken.isEmpty) return;
+      if (!mounted) return;
+      if (captchaToken == null || captchaToken.isEmpty) {
+        setState(() => _errorMessage = context.l10n.captchaRequired);
+        return;
+      }
     }
 
     ref.read(authOperationInProgressProvider.notifier).state = true;
@@ -71,6 +75,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         setState(() => _registrationSent = true);
       }
     } on AuthException catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = switch (e) {
           AuthCaptchaException() => context.l10n.captchaFailed,
@@ -79,6 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         };
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _errorMessage = e.toString());
     } finally {
       ref.read(authOperationInProgressProvider.notifier).state = false;
@@ -173,6 +179,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           const SizedBox(height: 12),
                           PasswordTextField(
+                            key: const ValueKey('registerPassword'),
                             controller: _passwordController,
                             labelText: l10n.passwordLabel,
                             autofillHints: const [AutofillHints.newPassword],
@@ -182,6 +189,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           const SizedBox(height: 12),
                           PasswordTextField(
+                            key: const ValueKey('registerConfirmPassword'),
                             controller: _confirmPasswordController,
                             labelText: l10n.confirmPasswordLabel,
                             autofillHints: const [AutofillHints.newPassword],

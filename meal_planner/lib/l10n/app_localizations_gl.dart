@@ -135,16 +135,6 @@ class AppLocalizationsGl extends AppLocalizations {
   String get signIn => 'Iniciar sesión';
 
   @override
-  String get captchaRequired => 'Completa a verificación';
-
-  @override
-  String get captchaFailed => 'A verificación fallou. Téntao de novo.';
-
-  @override
-  String get turnstileNotConfigured =>
-      'Turnstile non está configurado. Engade TURNSTILE_SITE_KEY a dart_defines.json.';
-
-  @override
   String get continueWithGoogle => 'Continuar con Google';
 
   @override

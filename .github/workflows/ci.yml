@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: subosito/flutter-action@v2
         with:
