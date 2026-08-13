@@ -24,7 +24,7 @@ dependencies:
   upgrader: ^11.4.0
   in_app_review: ^2.0.10
   google_sign_in: ^6.3.0
-  sign_in_with_apple: ^6.1.4
+  sign_in_with_apple: ^8.1.0
   crypto: ^3.0.6
   image_picker: ^1.1.2
   speech_to_text: ^7.3.0
