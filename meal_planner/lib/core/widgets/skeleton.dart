@@ -172,6 +172,26 @@ class SkeletonList extends StatelessWidget {
   }
 }
 
+/// Theme-aware placeholder when a recipe card has no photo.
+class RecipePhotoPlaceholder extends StatelessWidget {
+  const RecipePhotoPlaceholder({this.child, super.key});
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: IconTheme(
+          data: IconThemeData(color: Theme.of(context).colorScheme.outline),
+          child: child ?? const Icon(Icons.restaurant, size: 40),
+        ),
+      ),
+    );
+  }
+}
+
 /// Square photo on the left that matches the card's content height.
 class RecipeCardRow extends StatelessWidget {
   const RecipeCardRow({

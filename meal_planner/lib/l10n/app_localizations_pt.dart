@@ -813,7 +813,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get noRecipesWithTags => 'Sem receitas com estas etiquetas';
 
   @override
-  String get feedEmpty => 'Não há receitas de quem segue';
+  String get feedEmpty => 'Não há receitas de utilizadores que segue';
 
   @override
   String get tryOtherTags => 'Experimente outras etiquetas ou remova o filtro.';

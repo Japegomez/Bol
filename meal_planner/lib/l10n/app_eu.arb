@@ -99,7 +99,7 @@
   "favoritesFilter": "Gogokoak",
   "favoriteRecipeTooltip": "Gehitu gogokoetara",
   "unfavoriteRecipeTooltip": "Kendu gogokoetatik",
-  "noFavoriteRecipes": "Oraindik ez dago gogoko errezetarik. Markatu izarra hauek hemen aurkitzeko.",
+  "noFavoriteRecipes": "Oraindik ez dago gogoko errezetarik. Markatu errezetak izarrekin hemen aurkitzeko.",
   "createFirstRecipe": "Sortu lehen errezeta",
   "servingsCount": "{count, plural, =1{1 porzio} other{{count} porzio}}",
   "servingsCountShort": "{count} p.",

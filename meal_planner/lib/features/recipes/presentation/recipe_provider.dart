@@ -104,7 +104,11 @@ final recipeFavoritesProvider =
       RecipeFavoritesNotifier.new,
     );
 
+final favoriteInFlightIdsProvider = StateProvider<Set<String>>((ref) => {});
+
 class RecipeFavoritesNotifier extends AsyncNotifier<Set<String>> {
+  final _inFlight = <String, Future<void>>{};
+
   @override
   Future<Set<String>> build() async {
     ref.watch(authStateProvider);
@@ -113,7 +117,33 @@ class RecipeFavoritesNotifier extends AsyncNotifier<Set<String>> {
     return ref.read(recipesRepositoryProvider).fetchFavoriteIds();
   }
 
-  Future<void> toggle(String recipeId) async {
+  void _setInFlight(String recipeId, bool busy) {
+    final current = ref.read(favoriteInFlightIdsProvider);
+    if (busy == current.contains(recipeId)) return;
+    final next = Set<String>.from(current);
+    if (busy) {
+      next.add(recipeId);
+    } else {
+      next.remove(recipeId);
+    }
+    ref.read(favoriteInFlightIdsProvider.notifier).state = next;
+  }
+
+  Future<void> toggle(String recipeId) {
+    _setInFlight(recipeId, true);
+    final previous = _inFlight[recipeId] ?? Future<void>.value();
+    late final Future<void> current;
+    current = previous.catchError((_) {}).then((_) => _toggleOnce(recipeId));
+    _inFlight[recipeId] = current;
+    return current.whenComplete(() {
+      if (identical(_inFlight[recipeId], current)) {
+        _inFlight.remove(recipeId);
+        _setInFlight(recipeId, false);
+      }
+    });
+  }
+
+  Future<void> _toggleOnce(String recipeId) async {
     final current = state.valueOrNull ?? {};
     final adding = !current.contains(recipeId);
     final next = Set<String>.from(current);

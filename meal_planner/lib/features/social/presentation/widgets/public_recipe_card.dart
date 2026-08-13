@@ -36,9 +36,7 @@ class PublicRecipeCard extends ConsumerWidget {
           photo: photoUrlAsync.when(
             data: (url) {
               if (url == null) {
-                return const _PhotoPlaceholder(
-                  child: Icon(Icons.restaurant, size: 40),
-                );
+                return const RecipePhotoPlaceholder();
               }
               return CachedNetworkImage(
                 imageUrl: url,
@@ -47,13 +45,11 @@ class PublicRecipeCard extends ConsumerWidget {
                 height: double.infinity,
                 placeholder: (_, _) => const _PhotoSkeleton(),
                 errorWidget: (_, _, _) =>
-                    const _PhotoPlaceholder(child: Icon(Icons.broken_image)),
+                    const RecipePhotoPlaceholder(child: Icon(Icons.broken_image)),
               );
             },
             loading: () => const _PhotoSkeleton(),
-            error: (_, _) => const _PhotoPlaceholder(
-              child: Icon(Icons.restaurant, size: 40),
-            ),
+            error: (_, _) => const RecipePhotoPlaceholder(),
           ),
           content: Padding(
             padding: const EdgeInsets.all(12),
@@ -251,25 +247,6 @@ class _PhotoSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return const SkeletonPulse(
       child: SkeletonBox(borderRadius: BorderRadius.zero),
-    );
-  }
-}
-
-class _PhotoPlaceholder extends StatelessWidget {
-  const _PhotoPlaceholder({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: IconTheme(
-          data: IconThemeData(color: Theme.of(context).colorScheme.outline),
-          child: child,
-        ),
-      ),
     );
   }
 }

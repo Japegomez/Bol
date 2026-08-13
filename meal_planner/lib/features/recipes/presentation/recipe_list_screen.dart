@@ -336,6 +336,9 @@ class _RecipeCard extends ConsumerWidget {
     final isFavorite =
         ref.watch(recipeFavoritesProvider).valueOrNull?.contains(recipe.id) ??
         false;
+    final favoriteBusy = ref.watch(favoriteInFlightIdsProvider).contains(
+      recipe.id,
+    );
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -346,7 +349,7 @@ class _RecipeCard extends ConsumerWidget {
           photo: photoUrlAsync.when(
             data: (url) {
               if (url == null) {
-                return const _RecipePhotoFallback();
+                return const RecipePhotoPlaceholder();
               }
               return CachedNetworkImage(
                 imageUrl: url,
@@ -354,11 +357,13 @@ class _RecipeCard extends ConsumerWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: (_, _) => const _RecipePhotoSkeleton(),
-                errorWidget: (_, _, _) => const _RecipePhotoFallback(),
+                errorWidget: (_, _, _) => const RecipePhotoPlaceholder(
+                  child: Icon(Icons.broken_image),
+                ),
               );
             },
             loading: () => const _RecipePhotoSkeleton(),
-            error: (_, _) => const _RecipePhotoFallback(),
+            error: (_, _) => const RecipePhotoPlaceholder(),
           ),
           content: Padding(
             padding: const EdgeInsets.all(12),
@@ -383,11 +388,13 @@ class _RecipeCard extends ConsumerWidget {
                       tooltip: isFavorite
                           ? l10n.unfavoriteRecipeTooltip
                           : l10n.favoriteRecipeTooltip,
-                      onPressed: () {
-                        ref
-                            .read(recipeFavoritesProvider.notifier)
-                            .toggle(recipe.id);
-                      },
+                      onPressed: favoriteBusy
+                          ? null
+                          : () {
+                              ref
+                                  .read(recipeFavoritesProvider.notifier)
+                                  .toggle(recipe.id);
+                            },
                       icon: Icon(
                         isFavorite ? Icons.star : Icons.star_border,
                         color: isFavorite
@@ -411,18 +418,6 @@ class _RecipeCard extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _RecipePhotoFallback extends StatelessWidget {
-  const _RecipePhotoFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xFFE0E0E0),
-      child: Center(child: Icon(Icons.restaurant, size: 40)),
     );
   }
 }

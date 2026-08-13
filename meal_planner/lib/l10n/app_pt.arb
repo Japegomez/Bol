@@ -259,7 +259,7 @@
   "mostRecent": "Mais recentes",
   "sortedBy": "Ordenado por: {label}",
   "noRecipesWithTags": "Sem receitas com estas etiquetas",
-  "feedEmpty": "Não há receitas de quem segue",
+  "feedEmpty": "Não há receitas de utilizadores que segue",
   "tryOtherTags": "Experimente outras etiquetas ou remova o filtro.",
   "followUsersHint": "Siga outros utilizadores a partir dos seus perfis para ver as receitas públicas aqui.",
   "exploreTitle": "Explorar",

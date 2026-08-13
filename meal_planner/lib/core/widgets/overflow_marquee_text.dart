@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
 /// Single-line text that scrolls left when it overflows, then jumps back.
@@ -172,14 +171,13 @@ class _RenderMarqueeText extends RenderBox {
     required TextScaler textScaler,
     required bool disableAnimations,
     required double scrollOffset,
-    required ValueChanged<double> onOverflow,
+    required this.onOverflow,
   }) : _text = text,
        _style = style,
        _textDirection = textDirection,
        _textScaler = textScaler,
        _disableAnimations = disableAnimations,
-       _scrollOffset = scrollOffset,
-       onOverflow = onOverflow {
+       _scrollOffset = scrollOffset {
     _rebuildPainter();
   }
 
@@ -223,6 +221,7 @@ class _RenderMarqueeText extends RenderBox {
   set disableAnimations(bool value) {
     if (_disableAnimations == value) return;
     _disableAnimations = value;
+    markNeedsLayout();
     markNeedsPaint();
   }
 

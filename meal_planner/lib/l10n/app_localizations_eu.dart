@@ -307,7 +307,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get noFavoriteRecipes =>
-      'Oraindik ez dago gogoko errezetarik. Markatu izarra hauek hemen aurkitzeko.';
+      'Oraindik ez dago gogoko errezetarik. Markatu errezetak izarrekin hemen aurkitzeko.';
 
   @override
   String get createFirstRecipe => 'Sortu lehen errezeta';
