@@ -124,6 +124,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign in';
 
   @override
+  String get captchaRequired => 'Complete the verification challenge';
+
+  @override
+  String get captchaFailed => 'Verification failed. Please try again.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile is not configured. Add TURNSTILE_SITE_KEY to dart_defines.json.';
+
+  @override
   String get continueWithGoogle => 'Continue with Google';
 
   @override

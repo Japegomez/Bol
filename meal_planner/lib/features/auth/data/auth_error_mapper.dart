@@ -35,6 +35,12 @@ app_auth.AuthException mapAuthError(Object error) {
       return const app_auth.AuthUserAlreadyExistsException();
     }
 
+    if (code == 'captcha_failed' ||
+        code.contains('captcha') ||
+        message.contains('captcha')) {
+      return const app_auth.AuthCaptchaException();
+    }
+
     return app_auth.AuthProviderException(error.message);
   }
 

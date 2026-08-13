@@ -10,6 +10,7 @@ import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +25,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  String? _captchaToken;
+  var _captchaEpoch = 0;
 
   @override
   void dispose() {
@@ -53,7 +56,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on AuthCancelledException {
       // User dismissed the provider sheet — no error banner.
     } on AuthException catch (e) {
-      if (mounted) setState(() => _errorMessage = e.message);
+      if (mounted) {
+        setState(() {
+          _errorMessage = e is AuthCaptchaException
+              ? l10n.captchaFailed
+              : e.message;
+          _captchaToken = null;
+          _captchaEpoch++;
+        });
+      }
     } catch (_) {
       // Don't surface raw exception details; show a generic message.
       if (mounted) setState(() => _errorMessage = l10n.genericErrorMessage);
@@ -79,6 +90,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signInWithEmail() async {
     if (!_formKey.currentState!.validate()) return;
+    if (Env.hasTurnstile && (_captchaToken == null || _captchaToken!.isEmpty)) {
+      setState(() => _errorMessage = context.l10n.captchaRequired);
+      return;
+    }
 
     await _runAuth(() async {
       await ref
@@ -86,6 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .signInWithEmail(
             email: _emailController.text.trim(),
             password: _passwordController.text,
+            captchaToken: _captchaToken,
           );
     });
   }
@@ -167,6 +183,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Text(l10n.supabaseNotConfigured),
                         ),
                       ),
+                    if (Env.hasSupabase && !Env.hasTurnstile)
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(l10n.turnstileNotConfigured),
+                        ),
+                      ),
                     if (_errorMessage != null) ...[
                       const SizedBox(height: 16),
                       Text(
@@ -204,9 +227,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         return null;
                       },
                     ),
+                    if (Env.hasTurnstile) ...[
+                      const SizedBox(height: 16),
+                      TurnstileCaptcha(
+                        resetEpoch: _captchaEpoch,
+                        onTokenChanged: (token) {
+                          if (mounted) setState(() => _captchaToken = token);
+                        },
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     FilledButton(
-                      onPressed: _isLoading || !Env.hasSupabase
+                      onPressed:
+                          _isLoading ||
+                              !Env.hasSupabase ||
+                              (Env.hasTurnstile && _captchaToken == null)
                           ? null
                           : _signInWithEmail,
                       child: _isLoading

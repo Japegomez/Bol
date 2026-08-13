@@ -330,6 +330,24 @@ abstract class AppLocalizations {
   /// **'Sign in'**
   String get signIn;
 
+  /// No description provided for @captchaRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete the verification challenge'**
+  String get captchaRequired;
+
+  /// No description provided for @captchaFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please try again.'**
+  String get captchaFailed;
+
+  /// No description provided for @turnstileNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnstile is not configured. Add TURNSTILE_SITE_KEY to dart_defines.json.'**
+  String get turnstileNotConfigured;
+
   /// No description provided for @continueWithGoogle.
   ///
   /// In en, this message translates to:

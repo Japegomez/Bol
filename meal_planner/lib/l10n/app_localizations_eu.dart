@@ -124,6 +124,16 @@ class AppLocalizationsEu extends AppLocalizations {
   String get signIn => 'Hasi saioa';
 
   @override
+  String get captchaRequired => 'Osatu egiaztapena';
+
+  @override
+  String get captchaFailed => 'Egiaztapenak huts egin du. Saiatu berriro.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile ez dago konfiguratuta. Gehitu TURNSTILE_SITE_KEY dart_defines.json fitxategian.';
+
+  @override
   String get continueWithGoogle => 'Jarraitu Google-rekin';
 
   @override

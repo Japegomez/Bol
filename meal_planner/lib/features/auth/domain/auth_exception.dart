@@ -48,3 +48,7 @@ final class AuthUserAlreadyExistsException extends AuthException {
         'Ya existe una cuenta con este email. Inicia sesión o usa otra dirección.',
       );
 }
+
+final class AuthCaptchaException extends AuthException {
+  const AuthCaptchaException() : super('captcha_failed');
+}

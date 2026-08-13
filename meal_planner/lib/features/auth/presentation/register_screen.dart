@@ -7,6 +7,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -25,6 +26,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _registrationSent = false;
   bool _acceptedTerms = false;
   String? _errorMessage;
+  String? _captchaToken;
+  var _captchaEpoch = 0;
 
   @override
   void dispose() {
@@ -43,6 +46,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       });
       return;
     }
+    if (Env.hasTurnstile && (_captchaToken == null || _captchaToken!.isEmpty)) {
+      setState(() => _errorMessage = context.l10n.captchaRequired);
+      return;
+    }
 
     ref.read(authOperationInProgressProvider.notifier).state = true;
     setState(() {
@@ -57,12 +64,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
             username: _usernameController.text.trim(),
+            captchaToken: _captchaToken,
           );
       if (mounted) {
         setState(() => _registrationSent = true);
       }
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      setState(() {
+        _errorMessage = e is AuthCaptchaException
+            ? context.l10n.captchaFailed
+            : e.message;
+        _captchaToken = null;
+        _captchaEpoch++;
+      });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
     } finally {
@@ -102,6 +116,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Text(l10n.supabaseNotConfigured),
+                              ),
+                            ),
+                          if (Env.hasSupabase && !Env.hasTurnstile)
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l10n.turnstileNotConfigured),
                               ),
                             ),
                           if (_errorMessage != null) ...[
@@ -230,9 +251,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ],
                             ),
                           ),
+                          if (Env.hasTurnstile) ...[
+                            const SizedBox(height: 16),
+                            TurnstileCaptcha(
+                              resetEpoch: _captchaEpoch,
+                              onTokenChanged: (token) {
+                                if (mounted) {
+                                  setState(() => _captchaToken = token);
+                                }
+                              },
+                            ),
+                          ],
                           const SizedBox(height: 16),
                           FilledButton(
-                            onPressed: _isLoading || !Env.hasSupabase
+                            onPressed:
+                                _isLoading ||
+                                    !Env.hasSupabase ||
+                                    (Env.hasTurnstile && _captchaToken == null)
                                 ? null
                                 : _register,
                             child: _isLoading

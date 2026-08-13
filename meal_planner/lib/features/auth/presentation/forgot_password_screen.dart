@@ -5,6 +5,7 @@ import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -20,6 +21,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   bool _isLoading = false;
   bool _emailSent = false;
   String? _errorMessage;
+  String? _captchaToken;
+  var _captchaEpoch = 0;
 
   @override
   void dispose() {
@@ -29,6 +32,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
+    if (Env.hasTurnstile && (_captchaToken == null || _captchaToken!.isEmpty)) {
+      setState(() => _errorMessage = context.l10n.captchaRequired);
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -38,12 +45,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     try {
       await ref
           .read(authRepositoryProvider)
-          .sendPasswordResetEmail(_emailController.text.trim());
+          .sendPasswordResetEmail(
+            _emailController.text.trim(),
+            captchaToken: _captchaToken,
+          );
       if (mounted) {
         setState(() => _emailSent = true);
       }
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      setState(() {
+        _errorMessage = e is AuthCaptchaException
+            ? context.l10n.captchaFailed
+            : e.message;
+        _captchaToken = null;
+        _captchaEpoch++;
+      });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
     } finally {
@@ -92,6 +108,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                 child: Text(l10n.supabaseNotConfigured),
                               ),
                             ),
+                          if (Env.hasSupabase && !Env.hasTurnstile)
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l10n.turnstileNotConfigured),
+                              ),
+                            ),
                           if (_errorMessage != null) ...[
                             Text(
                               _errorMessage!,
@@ -118,9 +141,23 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                               return null;
                             },
                           ),
+                          if (Env.hasTurnstile) ...[
+                            const SizedBox(height: 16),
+                            TurnstileCaptcha(
+                              resetEpoch: _captchaEpoch,
+                              onTokenChanged: (token) {
+                                if (mounted) {
+                                  setState(() => _captchaToken = token);
+                                }
+                              },
+                            ),
+                          ],
                           const SizedBox(height: 16),
                           FilledButton(
-                            onPressed: _isLoading || !Env.hasSupabase
+                            onPressed:
+                                _isLoading ||
+                                    !Env.hasSupabase ||
+                                    (Env.hasTurnstile && _captchaToken == null)
                                 ? null
                                 : _sendResetEmail,
                             child: _isLoading

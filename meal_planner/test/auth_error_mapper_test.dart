@@ -45,6 +45,18 @@ void main() {
     expect(error, isA<AuthUserAlreadyExistsException>());
   });
 
+  test('maps captcha_failed', () {
+    final error = mapAuthError(
+      AuthApiException(
+        'captcha verification process failed',
+        statusCode: '400',
+        code: 'captcha_failed',
+      ),
+    );
+
+    expect(error, isA<AuthCaptchaException>());
+  });
+
   test('maps Google sign_in_failed code 10 to configuration message', () {
     final error = mapAuthError(
       PlatformException(code: 'sign_in_failed', message: 'pc2.c: 10: '),
