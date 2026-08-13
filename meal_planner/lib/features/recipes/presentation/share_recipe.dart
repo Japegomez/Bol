@@ -14,5 +14,7 @@ Future<void> shareRecipeLink(
       ? box.localToGlobal(Offset.zero) & box.size
       : const Rect.fromLTWH(0, 0, 1, 1);
 
-  await Share.share(text, sharePositionOrigin: origin);
+  await SharePlus.instance.share(
+    ShareParams(text: text, sharePositionOrigin: origin),
+  );
 }

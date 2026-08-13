@@ -112,7 +112,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         ? box.localToGlobal(Offset.zero) & box.size
         : const Rect.fromLTWH(0, 0, 1, 1);
 
-    await Share.share(_planText(slots), sharePositionOrigin: origin);
+    await SharePlus.instance.share(
+      ShareParams(text: _planText(slots), sharePositionOrigin: origin),
+    );
   }
 
   @override
