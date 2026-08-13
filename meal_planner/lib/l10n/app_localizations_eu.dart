@@ -370,6 +370,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get publicBadge => 'Publikoa';
 
   @override
+  String get privateBadge => 'Pribatua';
+
+  @override
   String prepTimeMin(int minutes) {
     return 'Prest.: $minutes min';
   }

@@ -60,9 +60,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget build(BuildContext context) {
     final exploreState = ref.watch(exploreRecipesProvider);
     final filter = ref.watch(exploreFilterProvider);
-    final sortLabel = filter.sort == 'top'
-        ? context.l10n.topRated
-        : context.l10n.mostRecent;
+    final l10n = context.l10n;
+    final sortLabel = filter.sort == 'top' ? l10n.topRated : l10n.mostRecent;
 
     return Scaffold(
       appBar: AppBar(
@@ -98,30 +97,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   : null,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                FilterChip(
-                  label: Text(context.l10n.recent),
-                  selected: filter.sort == 'recent',
-                  onSelected: (_) {
-                    ref.read(exploreFilterProvider.notifier).state = filter
-                        .copyWith(sort: 'recent');
-                  },
-                ),
-                const SizedBox(width: 8),
-                FilterChip(
-                  label: Text(context.l10n.topRated),
-                  selected: filter.sort == 'top',
-                  onSelected: (_) {
-                    ref.read(exploreFilterProvider.notifier).state = filter
-                        .copyWith(sort: 'top');
-                  },
-                ),
-              ],
-            ),
-          ),
           PublicTagFilterBar(
             selectedTags: filter.tags,
             onSelectionChanged: (tags) {
@@ -130,7 +105,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               );
             },
           ),
-          SocialSortLabel(label: sortLabel),
+          SocialSortLabel<String>(
+            label: sortLabel,
+            value: filter.sort,
+            options: [
+              SocialSortOption(value: 'recent', label: l10n.mostRecent),
+              SocialSortOption(value: 'top', label: l10n.topRated),
+            ],
+            onSelected: (sort) {
+              ref.read(exploreFilterProvider.notifier).state = filter.copyWith(
+                sort: sort,
+              );
+            },
+          ),
           Expanded(child: _buildBody(context, exploreState)),
         ],
       ),

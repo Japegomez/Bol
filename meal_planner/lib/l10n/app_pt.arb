@@ -114,6 +114,7 @@
   "makePrivate": "Tornar privada",
   "visibilityChangeError": "Erro ao alterar visibilidade: {error}",
   "publicBadge": "Pública",
+  "privateBadge": "Privada",
   "prepTimeMin": "Prep: {minutes} min",
   "cookTimeMin": "Cozedura: {minutes} min",
   "forkedRecipeTitle": "Receita guardada de outro utilizador",

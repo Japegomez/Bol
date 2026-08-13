@@ -370,6 +370,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get publicBadge => 'Pública';
 
   @override
+  String get privateBadge => 'Privada';
+
+  @override
   String prepTimeMin(int minutes) {
     return 'Prep: $minutes min';
   }

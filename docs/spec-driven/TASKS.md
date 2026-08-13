@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 13/08/2026 — v1.2.5+10 hotfix: Turnstile site key en Codemagic (TestFlight/Play)
+> Actualizado: 14/08/2026 — v1.2.6+11 hotfix: favoritos, orden en «Ordenado por» y fichas recetario/explorar
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -360,6 +360,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `TagFilterChips` (widget compartido) + `RecipeTagFilterBar` / `PublicTagFilterBar`
   - `RecipeListFilter`/`ExploreFilter` migrados de `tag` (String?) a `tags` (Set\<String\>)
   - RPC `list_public_recipes` migrado a `p_tags text[]` con `@>` para AND (`019_list_public_recipes_multi_tag.sql`)
+- [x] Favoritos por usuario (`recipe_favorites`; migración `046`): estrella en la foto de la ficha; chip **Favoritos** primero en la fila de etiquetas; sync offline con cola pendiente
+- [x] Orden del recetario y Explorar en «Ordenado por:» (menú); sin chips de criterio. Recetario: recientes / alfabético. Explorar: recientes / mejor valoradas
+- [x] Fichas recetario/explorar a la misma altura por defecto (sin chips de categoría); pública/privada bajo raciones; autor de Explorar en fila bajo el título
 - [x] Botón de recetario eliminado de la AppBar del planificador (acceso solo vía FAB del panel lateral)
 
 ### F4b — Asistente IA de recetas (PR #47)
@@ -647,15 +650,16 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.5 hotfix** (TestFlight / Play): Turnstile site key en Codemagic; store build 1.2.5+10.
-2. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.5): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline.
-3. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
-4. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
-5. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
-6. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
-7. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-8. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
-9. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
-10. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-11. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
-12. **Protección de ramas** `develop` / `main` en GitHub (check obligatorio `quality`).
+1. **Release 1.2.6 hotfix** (TestFlight / Play): favoritos, orden «Ordenado por», fichas alineadas; store build 1.2.6+11.
+2. **Validar en dispositivo** recetario/explorar: estrella, chip Favoritos, menú de orden, pública/privada, altura de fichas sin etiquetas.
+3. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.6): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline.
+4. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
+5. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
+6. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
+7. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+8. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+9. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
+10. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
+11. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+12. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+13. **Protección de ramas** `develop` / `main` en GitHub (check obligatorio `quality`).

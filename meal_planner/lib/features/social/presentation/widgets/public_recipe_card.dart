@@ -65,16 +65,6 @@ class PublicRecipeCard extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      l10n.servingsCount(recipe.servings),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(width: 8),
-                    StarRatingDisplay(
-                      rating: recipe.avgScore,
-                      count: recipe.ratingCount,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
                       l10n.recipeCreatedByName,
                       style: theme.textTheme.bodySmall,
                     ),
@@ -94,6 +84,20 @@ class PublicRecipeCard extends ConsumerWidget {
                           ),
                         ),
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      l10n.servingsCount(recipe.servings),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(width: 8),
+                    StarRatingDisplay(
+                      rating: recipe.avgScore,
+                      count: recipe.ratingCount,
                     ),
                   ],
                 ),
@@ -117,9 +121,7 @@ class PublicRecipeCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ExcludeSemantics(
-      child: SkeletonPulse(
-        child: RecipeCardSkeleton(showTags: true, showAuthorLine: true),
-      ),
+      child: SkeletonPulse(child: RecipeCardSkeleton(showAuthorLine: true)),
     );
   }
 }
@@ -133,7 +135,7 @@ class PublicRecipeCardSkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SkeletonList(
       itemCount: itemCount,
-      item: const RecipeCardSkeleton(showTags: true, showAuthorLine: true),
+      item: const RecipeCardSkeleton(showAuthorLine: true),
     );
   }
 }

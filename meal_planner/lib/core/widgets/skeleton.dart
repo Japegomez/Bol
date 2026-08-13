@@ -192,12 +192,15 @@ class RecipePhotoPlaceholder extends StatelessWidget {
   }
 }
 
+/// Default list-card size: title + two meta lines, no tag chips.
+const kRecipeCardDefaultMinSize = 112.0;
+
 /// Square photo on the left that matches the card's content height.
 class RecipeCardRow extends StatelessWidget {
   const RecipeCardRow({
     required this.photo,
     required this.content,
-    this.minSize = 96,
+    this.minSize = kRecipeCardDefaultMinSize,
     super.key,
   });
 
@@ -235,6 +238,8 @@ class RecipeCardSkeleton extends StatelessWidget {
     this.margin = const EdgeInsets.only(bottom: 12),
     this.showTags = false,
     this.showAuthorLine = false,
+    this.showVisibilityLine = false,
+    this.showFavoriteOnPhoto = false,
     super.key,
   });
 
@@ -246,27 +251,57 @@ class RecipeCardSkeleton extends StatelessWidget {
   /// Explore/feed cards also show author + rating next to the photo.
   final bool showAuthorLine;
 
+  /// Recipe-book cards show public/private under servings.
+  final bool showVisibilityLine;
+
+  /// Recipe-book cards show the favorite control on the photo.
+  final bool showFavoriteOnPhoto;
+
   @override
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: margin,
       child: RecipeCardRow(
-        photo: const SkeletonBox(borderRadius: BorderRadius.zero),
+        photo: Stack(
+          fit: StackFit.expand,
+          children: [
+            const SkeletonBox(borderRadius: BorderRadius.zero),
+            if (showFavoriteOnPhoto)
+              const Positioned(
+                top: 4,
+                right: 4,
+                child: SkeletonCircle(size: 36),
+              ),
+          ],
+        ),
         content: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SkeletonLine(height: 16, widthFactor: 0.85),
+              if (showAuthorLine) ...[
+                const SizedBox(height: 4),
+                const SkeletonLine(height: 12, widthFactor: 0.55),
+              ],
               const SizedBox(height: 4),
-              SkeletonLine(height: 12, widthFactor: showAuthorLine ? 0.9 : 0.4),
+              SkeletonLine(height: 12, widthFactor: showAuthorLine ? 0.7 : 0.4),
+              if (showVisibilityLine) ...[
+                const SizedBox(height: 4),
+                const Row(
+                  children: [
+                    SkeletonBox(width: 14, height: 14),
+                    SizedBox(width: 4),
+                    Expanded(
+                      child: SkeletonLine(height: 12, widthFactor: 0.35),
+                    ),
+                  ],
+                ),
+              ],
               if (showTags) ...[
                 const SizedBox(height: 8),
                 const _TagChipRowSkeleton(),
-              ] else if (!showAuthorLine) ...[
-                const SizedBox(height: 8),
-                const SkeletonLine(height: 12, widthFactor: 0.55),
               ],
             ],
           ),
@@ -597,10 +632,7 @@ class PublicProfileSkeleton extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (_, _) => const RecipeCardSkeleton(
-                    showTags: true,
-                    showAuthorLine: true,
-                  ),
+                  (_, _) => const RecipeCardSkeleton(showAuthorLine: true),
                   childCount: 4,
                 ),
               ),
