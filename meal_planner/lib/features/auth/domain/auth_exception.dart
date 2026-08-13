@@ -49,6 +49,23 @@ final class AuthUserAlreadyExistsException extends AuthException {
       );
 }
 
+final class AuthPasswordTooWeakException extends AuthException {
+  const AuthPasswordTooWeakException()
+    : super(
+        'La contraseña debe incluir una minúscula, una mayúscula, un número y un símbolo.',
+      );
+}
+
+final class AuthInvalidCurrentPasswordException extends AuthException {
+  const AuthInvalidCurrentPasswordException()
+    : super('La contraseña actual no es correcta.');
+}
+
+final class AuthSamePasswordException extends AuthException {
+  const AuthSamePasswordException()
+    : super('La nueva contraseña debe ser distinta de la actual.');
+}
+
 final class AuthCaptchaException extends AuthException {
   const AuthCaptchaException() : super('captcha_failed');
 }

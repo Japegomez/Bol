@@ -7,7 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() {
   test('maps invalid login credentials to friendly message', () {
     final error = mapAuthError(
-      AuthApiException(
+      const AuthApiException(
         'Invalid login credentials',
         statusCode: '400',
         code: 'invalid_credentials',
@@ -23,7 +23,7 @@ void main() {
 
   test('maps email not confirmed', () {
     final error = mapAuthError(
-      AuthApiException(
+      const AuthApiException(
         'Email not confirmed',
         statusCode: '400',
         code: 'email_not_confirmed',
@@ -35,7 +35,7 @@ void main() {
 
   test('maps user already registered on sign up', () {
     final error = mapAuthError(
-      AuthApiException(
+      const AuthApiException(
         'User already registered',
         statusCode: '422',
         code: 'user_already_exists',
@@ -45,10 +45,46 @@ void main() {
     expect(error, isA<AuthUserAlreadyExistsException>());
   });
 
+  test('maps weak password', () {
+    final error = mapAuthError(
+      AuthWeakPasswordException(
+        message: 'Password is known to be weak and easy to guess',
+        statusCode: '422',
+        reasons: ['characters'],
+      ),
+    );
+
+    expect(error, isA<AuthPasswordTooWeakException>());
+  });
+
+  test('maps same password', () {
+    final error = mapAuthError(
+      const AuthApiException(
+        'New password should be different from the old password.',
+        statusCode: '422',
+        code: 'same_password',
+      ),
+    );
+
+    expect(error, isA<AuthSamePasswordException>());
+  });
+
+  test('maps invalid current password', () {
+    final error = mapAuthError(
+      const AuthApiException(
+        'Invalid login credentials',
+        statusCode: '400',
+        code: 'reauthentication_not_valid',
+      ),
+    );
+
+    expect(error, isA<AuthInvalidCurrentPasswordException>());
+  });
+
   test('maps captcha_failed', () {
     final error = mapAuthError(
-      AuthApiException(
-        'captcha verification process failed',
+      const AuthApiException(
+        'captcha protection: request disallowed (no captcha_token found)',
         statusCode: '400',
         code: 'captcha_failed',
       ),

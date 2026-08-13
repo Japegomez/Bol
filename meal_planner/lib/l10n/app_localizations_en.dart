@@ -109,6 +109,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Supabase is not configured. Copy dart_defines.example.json to dart_defines.json and add SUPABASE_URL / SUPABASE_ANON_KEY.';
 
   @override
+  String get captchaRequired => 'Complete the verification challenge';
+
+  @override
+  String get captchaFailed => 'Verification failed. Please try again.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile is not configured. Add TURNSTILE_SITE_KEY to dart_defines.json.';
+
+  @override
   String get emailLabel => 'Email';
 
   @override
@@ -176,7 +186,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordTooWeak =>
-      'Password must include both letters and numbers';
+      'Password must include a lowercase letter, an uppercase letter, a number, and a symbol';
 
   @override
   String get confirmPasswordLabel => 'Confirm password';
@@ -186,6 +196,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get changePasswordTitle => 'Change password';
+
+  @override
+  String get currentPasswordLabel => 'Current password';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get enterCurrentPassword => 'Enter your current password';
+
+  @override
+  String get passwordChanged => 'Password updated';
+
+  @override
+  String get currentPasswordIncorrect => 'Current password is incorrect';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'The new password must be different from the current one';
 
   @override
   String get mustAcceptTerms => 'You must accept the Terms and Privacy Policy';

@@ -5,7 +5,7 @@ abstract final class SessionBackground {
   static const _key = 'meal_planner.session_backgrounded_at';
 
   /// Sign out when the app returns from background after at least this long.
-  static const timeout = Duration(minutes: 10);
+  static const timeout = Duration(hours: 12);
 
   static Future<void> markBackgrounded() async {
     final prefs = await SharedPreferences.getInstance();

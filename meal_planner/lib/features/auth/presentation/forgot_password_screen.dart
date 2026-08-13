@@ -21,8 +21,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   bool _isLoading = false;
   bool _emailSent = false;
   String? _errorMessage;
-  String? _captchaToken;
-  var _captchaEpoch = 0;
 
   @override
   void dispose() {
@@ -32,9 +30,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
-    if (Env.hasTurnstile && (_captchaToken == null || _captchaToken!.isEmpty)) {
-      setState(() => _errorMessage = context.l10n.captchaRequired);
-      return;
+
+    String? captchaToken;
+    if (Env.hasTurnstile) {
+      captchaToken = await showTurnstileChallenge(context);
+      if (!mounted || captchaToken == null || captchaToken.isEmpty) return;
     }
 
     setState(() {
@@ -47,7 +47,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           .read(authRepositoryProvider)
           .sendPasswordResetEmail(
             _emailController.text.trim(),
-            captchaToken: _captchaToken,
+            captchaToken: captchaToken,
           );
       if (mounted) {
         setState(() => _emailSent = true);
@@ -57,8 +57,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         _errorMessage = e is AuthCaptchaException
             ? context.l10n.captchaFailed
             : e.message;
-        _captchaToken = null;
-        _captchaEpoch++;
       });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
@@ -141,23 +139,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                               return null;
                             },
                           ),
-                          if (Env.hasTurnstile) ...[
-                            const SizedBox(height: 16),
-                            TurnstileCaptcha(
-                              resetEpoch: _captchaEpoch,
-                              onTokenChanged: (token) {
-                                if (mounted) {
-                                  setState(() => _captchaToken = token);
-                                }
-                              },
-                            ),
-                          ],
                           const SizedBox(height: 16),
                           FilledButton(
-                            onPressed:
-                                _isLoading ||
-                                    !Env.hasSupabase ||
-                                    (Env.hasTurnstile && _captchaToken == null)
+                            onPressed: _isLoading || !Env.hasSupabase
                                 ? null
                                 : _sendResetEmail,
                             child: _isLoading

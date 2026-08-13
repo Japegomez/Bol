@@ -209,6 +209,29 @@ class AuthRepository {
     await signOut(manual: true);
   }
 
+  bool get hasEmailPassword {
+    final identities = supabase.auth.currentUser?.identities;
+    if (identities == null) return false;
+    return identities.any((identity) => identity.provider == 'email');
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await supabase.auth.updateUser(
+        UserAttributes(password: newPassword, currentPassword: currentPassword),
+      );
+    } catch (e) {
+      final mapped = mapAuthError(e);
+      if (mapped is AuthInvalidCredentialsException) {
+        throw const AuthInvalidCurrentPasswordException();
+      }
+      throw mapped;
+    }
+  }
+
   Future<void> _deleteUserAvatar(String userId) async {
     try {
       await supabase.storage.from('avatars').remove(['$userId/avatar.jpg']);

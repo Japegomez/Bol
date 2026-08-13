@@ -25,8 +25,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
-  String? _captchaToken;
-  var _captchaEpoch = 0;
 
   @override
   void dispose() {
@@ -61,8 +59,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _errorMessage = e is AuthCaptchaException
               ? l10n.captchaFailed
               : e.message;
-          _captchaToken = null;
-          _captchaEpoch++;
         });
       }
     } catch (_) {
@@ -90,9 +86,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signInWithEmail() async {
     if (!_formKey.currentState!.validate()) return;
-    if (Env.hasTurnstile && (_captchaToken == null || _captchaToken!.isEmpty)) {
-      setState(() => _errorMessage = context.l10n.captchaRequired);
-      return;
+
+    String? captchaToken;
+    if (Env.hasTurnstile) {
+      captchaToken = await showTurnstileChallenge(context);
+      if (!mounted || captchaToken == null || captchaToken.isEmpty) return;
     }
 
     await _runAuth(() async {
@@ -101,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .signInWithEmail(
             email: _emailController.text.trim(),
             password: _passwordController.text,
-            captchaToken: _captchaToken,
+            captchaToken: captchaToken,
           );
     });
   }
@@ -227,21 +225,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         return null;
                       },
                     ),
-                    if (Env.hasTurnstile) ...[
-                      const SizedBox(height: 16),
-                      TurnstileCaptcha(
-                        resetEpoch: _captchaEpoch,
-                        onTokenChanged: (token) {
-                          if (mounted) setState(() => _captchaToken = token);
-                        },
-                      ),
-                    ],
                     const SizedBox(height: 16),
                     FilledButton(
-                      onPressed:
-                          _isLoading ||
-                              !Env.hasSupabase ||
-                              (Env.hasTurnstile && _captchaToken == null)
+                      onPressed: _isLoading || !Env.hasSupabase
                           ? null
                           : _signInWithEmail,
                       child: _isLoading

@@ -13,9 +13,26 @@ app_auth.AuthException mapAuthError(Object error) {
     return googleSignInError;
   }
 
-  if (error is AuthApiException) {
+  if (error is AuthException) {
     final code = error.code?.toLowerCase() ?? '';
     final message = error.message.toLowerCase();
+
+    if (error is AuthWeakPasswordException ||
+        code == 'weak_password' ||
+        message.contains('weak password')) {
+      return const app_auth.AuthPasswordTooWeakException();
+    }
+
+    if (code == 'same_password' ||
+        message.contains('should be different from the old password')) {
+      return const app_auth.AuthSamePasswordException();
+    }
+
+    if (code == 'reauthentication_needed' ||
+        code == 'reauthentication_not_valid' ||
+        message.contains('current password')) {
+      return const app_auth.AuthInvalidCurrentPasswordException();
+    }
 
     if (code == 'invalid_credentials' ||
         message.contains('invalid login credentials') ||

@@ -7,6 +7,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/auth/presentation/password_form_validators.dart';
 import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -26,8 +27,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _registrationSent = false;
   bool _acceptedTerms = false;
   String? _errorMessage;
-  String? _captchaToken;
-  var _captchaEpoch = 0;
 
   @override
   void dispose() {
@@ -46,9 +45,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       });
       return;
     }
-    if (Env.hasTurnstile && (_captchaToken == null || _captchaToken!.isEmpty)) {
-      setState(() => _errorMessage = context.l10n.captchaRequired);
-      return;
+
+    String? captchaToken;
+    if (Env.hasTurnstile) {
+      captchaToken = await showTurnstileChallenge(context);
+      if (!mounted || captchaToken == null || captchaToken.isEmpty) return;
     }
 
     ref.read(authOperationInProgressProvider.notifier).state = true;
@@ -64,18 +65,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
             username: _usernameController.text.trim(),
-            captchaToken: _captchaToken,
+            captchaToken: captchaToken,
           );
       if (mounted) {
         setState(() => _registrationSent = true);
       }
     } on AuthException catch (e) {
       setState(() {
-        _errorMessage = e is AuthCaptchaException
-            ? context.l10n.captchaFailed
-            : e.message;
-        _captchaToken = null;
-        _captchaEpoch++;
+        _errorMessage = switch (e) {
+          AuthCaptchaException() => context.l10n.captchaFailed,
+          AuthPasswordTooWeakException() => context.l10n.passwordTooWeak,
+          _ => e.message,
+        };
       });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
@@ -176,22 +177,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             labelText: l10n.passwordLabel,
                             autofillHints: const [AutofillHints.newPassword],
                             enabled: !_isLoading && Env.hasSupabase,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return l10n.enterPasswordRegister;
-                              }
-                              if (value.length < 8) {
-                                return l10n.passwordTooShort;
-                              }
-                              final hasLetter = RegExp(
-                                r'[A-Za-z]',
-                              ).hasMatch(value);
-                              final hasDigit = RegExp(r'[0-9]').hasMatch(value);
-                              if (!hasLetter || !hasDigit) {
-                                return l10n.passwordTooWeak;
-                              }
-                              return null;
-                            },
+                            validator: (value) =>
+                                validateNewPassword(value, l10n),
                           ),
                           const SizedBox(height: 12),
                           PasswordTextField(
@@ -251,23 +238,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ],
                             ),
                           ),
-                          if (Env.hasTurnstile) ...[
-                            const SizedBox(height: 16),
-                            TurnstileCaptcha(
-                              resetEpoch: _captchaEpoch,
-                              onTokenChanged: (token) {
-                                if (mounted) {
-                                  setState(() => _captchaToken = token);
-                                }
-                              },
-                            ),
-                          ],
                           const SizedBox(height: 16),
                           FilledButton(
-                            onPressed:
-                                _isLoading ||
-                                    !Env.hasSupabase ||
-                                    (Env.hasTurnstile && _captchaToken == null)
+                            onPressed: _isLoading || !Env.hasSupabase
                                 ? null
                                 : _register,
                             child: _isLoading

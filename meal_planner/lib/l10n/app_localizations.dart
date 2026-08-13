@@ -300,6 +300,24 @@ abstract class AppLocalizations {
   /// **'Supabase is not configured. Copy dart_defines.example.json to dart_defines.json and add SUPABASE_URL / SUPABASE_ANON_KEY.'**
   String get supabaseNotConfigured;
 
+  /// No description provided for @captchaRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete the verification challenge'**
+  String get captchaRequired;
+
+  /// No description provided for @captchaFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please try again.'**
+  String get captchaFailed;
+
+  /// No description provided for @turnstileNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnstile is not configured. Add TURNSTILE_SITE_KEY to dart_defines.json.'**
+  String get turnstileNotConfigured;
+
   /// No description provided for @emailLabel.
   ///
   /// In en, this message translates to:
@@ -429,7 +447,7 @@ abstract class AppLocalizations {
   /// No description provided for @passwordTooWeak.
   ///
   /// In en, this message translates to:
-  /// **'Password must include both letters and numbers'**
+  /// **'Password must include a lowercase letter, an uppercase letter, a number, and a symbol'**
   String get passwordTooWeak;
 
   /// No description provided for @confirmPasswordLabel.
@@ -449,6 +467,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Passwords do not match'**
   String get passwordsDoNotMatch;
+
+  /// No description provided for @changePasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePasswordTitle;
+
+  /// No description provided for @currentPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get currentPasswordLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @enterCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password'**
+  String get enterCurrentPassword;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get passwordChanged;
+
+  /// No description provided for @currentPasswordIncorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect'**
+  String get currentPasswordIncorrect;
+
+  /// No description provided for @passwordSameAsCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'The new password must be different from the current one'**
+  String get passwordSameAsCurrent;
 
   /// No description provided for @mustAcceptTerms.
   ///
