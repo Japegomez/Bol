@@ -819,6 +819,9 @@ class AppLocalizationsGl extends AppLocalizations {
   String get recipeCreatedBy => 'Receita creada por';
 
   @override
+  String get recipeCreatedByName => 'Creada por';
+
+  @override
   String get you => 'ti';
 
   @override
@@ -1526,6 +1529,10 @@ class AppLocalizationsGl extends AppLocalizations {
   @override
   String get recipeAssistantImagePromptHint =>
       'Indica ao asistente que facer coa foto (ex.: recrear este prato, extraer a receita...)';
+
+  @override
+  String get recipeAssistantSameRecipePhotosHint =>
+      'Se anexas varias fotos, que sexan da mesma receita.';
 
   @override
   String get recipeAssistantListening => 'Escoitando…';

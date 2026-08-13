@@ -4,6 +4,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/utils/date_utils.dart';
+import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/planner/presentation/planner_provider.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/past_meal_dialog.dart';
 import 'package:meal_planner/features/planner/presentation/widgets/servings_dialog.dart';
@@ -205,7 +206,9 @@ class _RecipePickerSheetState extends ConsumerState<RecipePickerSheet> {
           const Divider(height: 1),
           Expanded(
             child: recipesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(
+                item: ListTileSkeleton(),
+              ),
               error: (error, _) =>
                   Center(child: Text(l10n.errorWithMessage('$error'))),
               data: (recipes) {

@@ -68,7 +68,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     Set<String> selectedTags,
   ) {
     if (state.isLoading && state.recipes.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const PublicRecipeCardSkeletonList();
     }
 
     if (state.error != null && state.recipes.isEmpty) {
@@ -136,23 +136,23 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
 
     return RefreshIndicator(
       onRefresh: () => ref.read(feedProvider.notifier).reload(),
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: state.recipes.length + (state.isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= state.recipes.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
+      child: PublicRecipeListPhotoGate(
+        recipes: state.recipes,
+        child: ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(16),
+          itemCount: state.recipes.length + (state.isLoadingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= state.recipes.length) {
+              return const PublicRecipeCardSkeleton();
+            }
+            final recipe = state.recipes[index];
+            return PublicRecipeCard(
+              recipe: recipe,
+              titleOverride: titles[recipe.id],
             );
-          }
-          final recipe = state.recipes[index];
-          return PublicRecipeCard(
-            recipe: recipe,
-            titleOverride: titles[recipe.id],
-          );
-        },
+          },
+        ),
       ),
     );
   }

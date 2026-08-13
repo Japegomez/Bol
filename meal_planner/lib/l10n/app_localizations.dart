@@ -1578,6 +1578,12 @@ abstract class AppLocalizations {
   /// **'Recipe created by'**
   String get recipeCreatedBy;
 
+  /// No description provided for @recipeCreatedByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by'**
+  String get recipeCreatedByName;
+
   /// No description provided for @you.
   ///
   /// In en, this message translates to:
@@ -2903,6 +2909,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tell the assistant what to do with the photo (e.g. recreate this dish, extract the recipe...)'**
   String get recipeAssistantImagePromptHint;
+
+  /// No description provided for @recipeAssistantSameRecipePhotosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If you attach more than one photo, they should all be of the same recipe.'**
+  String get recipeAssistantSameRecipePhotosHint;
 
   /// No description provided for @recipeAssistantListening.
   ///

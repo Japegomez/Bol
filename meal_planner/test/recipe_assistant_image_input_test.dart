@@ -4,6 +4,13 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 
+RecipeAssistantImageInput _jpeg(List<int> bytes) {
+  return RecipeAssistantImageInput(
+    bytes: Uint8List.fromList(bytes),
+    mimeType: 'image/jpeg',
+  );
+}
+
 void main() {
   group('validateRecipeAssistantInput', () {
     test('rejects empty prompt without image', () {
@@ -39,12 +46,58 @@ void main() {
     test('accepts image-only with allowed mime', () {
       expect(
         validateRecipeAssistantInput(
+          RecipeAssistantPromptInput(images: [_jpeg([1, 2, 3])]),
+        ),
+        isNull,
+      );
+    });
+
+    test('rejects image with empty bytes', () {
+      expect(
+        validateRecipeAssistantInput(
           RecipeAssistantPromptInput(
-            imageBytes: Uint8List.fromList([1, 2, 3]),
-            imageMimeType: 'image/jpeg',
+            images: [
+              RecipeAssistantImageInput(
+                bytes: Uint8List(0),
+                mimeType: 'image/jpeg',
+              ),
+            ],
+          ),
+        ),
+        equals(recipeAssistantInvalidImageKey),
+      );
+    });
+
+    test('accepts multiple images up to the max', () {
+      expect(
+        validateRecipeAssistantInput(
+          RecipeAssistantPromptInput(
+            images: [
+              _jpeg([1]),
+              _jpeg([2]),
+              _jpeg([3]),
+              _jpeg([4]),
+            ],
           ),
         ),
         isNull,
+      );
+    });
+
+    test('rejects more images than the max', () {
+      expect(
+        validateRecipeAssistantInput(
+          RecipeAssistantPromptInput(
+            images: [
+              _jpeg([1]),
+              _jpeg([2]),
+              _jpeg([3]),
+              _jpeg([4]),
+              _jpeg([5]),
+            ],
+          ),
+        ),
+        equals(recipeAssistantInvalidImageKey),
       );
     });
 
@@ -52,8 +105,12 @@ void main() {
       expect(
         validateRecipeAssistantInput(
           RecipeAssistantPromptInput(
-            imageBytes: Uint8List.fromList([1, 2, 3]),
-            imageMimeType: 'image/gif',
+            images: [
+              RecipeAssistantImageInput(
+                bytes: Uint8List.fromList([1, 2, 3]),
+                mimeType: 'image/gif',
+              ),
+            ],
           ),
         ),
         equals(recipeAssistantInvalidImageKey),
@@ -64,8 +121,12 @@ void main() {
       expect(
         validateRecipeAssistantInput(
           RecipeAssistantPromptInput(
-            imageBytes: Uint8List(maxRecipeAssistantImageBytes + 1),
-            imageMimeType: 'image/png',
+            images: [
+              RecipeAssistantImageInput(
+                bytes: Uint8List(maxRecipeAssistantImageBytes + 1),
+                mimeType: 'image/png',
+              ),
+            ],
           ),
         ),
         equals(recipeAssistantImageTooLargeKey),
@@ -80,22 +141,34 @@ void main() {
       );
       expect(body['mode'], equals('generate_recipe'));
       expect(body['prompt'], equals('pasta'));
+      expect(body.containsKey('images'), isFalse);
       expect(body.containsKey('imageBase64'), isFalse);
       expect(body.containsKey('imageMimeType'), isFalse);
     });
 
-    test('includes base64 image fields when image present', () {
-      final bytes = Uint8List.fromList([10, 20, 30]);
+    test('includes images array when photos are present', () {
+      final first = Uint8List.fromList([10, 20, 30]);
+      final second = Uint8List.fromList([40, 50]);
       final body = buildGenerateRecipeBody(
         RecipeAssistantPromptInput(
           prompt: 'versión vegana',
-          imageBytes: bytes,
-          imageMimeType: 'image/jpeg',
+          images: [
+            RecipeAssistantImageInput(bytes: first, mimeType: 'image/jpeg'),
+            RecipeAssistantImageInput(bytes: second, mimeType: 'image/png'),
+          ],
         ),
       );
       expect(body['prompt'], equals('versión vegana'));
-      expect(body['imageBase64'], equals(base64Encode(bytes)));
-      expect(body['imageMimeType'], equals('image/jpeg'));
+      expect(body['images'], [
+        {
+          'imageBase64': base64Encode(first),
+          'imageMimeType': 'image/jpeg',
+        },
+        {
+          'imageBase64': base64Encode(second),
+          'imageMimeType': 'image/png',
+        },
+      ]);
     });
   });
 
@@ -124,6 +197,13 @@ void main() {
     test('maps invalid_image', () {
       expect(
         mapRecipeAssistantFunctionError(400, {'error': 'invalid_image'}),
+        equals(recipeAssistantInvalidImageKey),
+      );
+    });
+
+    test('maps too_many_images to invalid_image', () {
+      expect(
+        mapRecipeAssistantFunctionError(400, {'error': 'too_many_images'}),
         equals(recipeAssistantInvalidImageKey),
       );
     });

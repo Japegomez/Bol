@@ -821,6 +821,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get recipeCreatedBy => 'Errezeta sortzailea';
 
   @override
+  String get recipeCreatedByName => 'Egilea:';
+
+  @override
   String get you => 'zu';
 
   @override
@@ -1526,6 +1529,10 @@ class AppLocalizationsEu extends AppLocalizations {
   @override
   String get recipeAssistantImagePromptHint =>
       'Esan laguntzaileari zer egin argazkiarekin (adib.: plater hau birsortu, errezeta atera...)';
+
+  @override
+  String get recipeAssistantSameRecipePhotosHint =>
+      'Argazki bat baino gehiago eransten badituzu, errezeta berarenak izan daitezela.';
 
   @override
   String get recipeAssistantListening => 'Entzuten…';

@@ -105,8 +105,7 @@ class _RecipeAssistantPromptSheetState
   final _picker = ImagePicker();
   final _speech = SpeechToText();
 
-  Uint8List? _imageBytes;
-  String? _imageMimeType;
+  final List<RecipeAssistantImageInput> _images = [];
   String? _error;
   bool _pickingImage = false;
 
@@ -135,9 +134,10 @@ class _RecipeAssistantPromptSheetState
 
   bool get _canSubmit {
     final hasText = _controller.text.trim().isNotEmpty;
-    final hasImage = _imageBytes != null;
-    return hasText || hasImage;
+    return hasText || _images.isNotEmpty;
   }
+
+  bool get _canAddImage => _images.length < maxRecipeAssistantImages;
 
   Future<bool> _ensureSpeechReady() async {
     if (_speechReady) return true;
@@ -295,7 +295,7 @@ class _RecipeAssistantPromptSheetState
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    if (_pickingImage) return;
+    if (_pickingImage || !_canAddImage) return;
     if (_listening) {
       await _speech.stop();
       if (mounted) setState(() => _listening = false);
@@ -307,31 +307,27 @@ class _RecipeAssistantPromptSheetState
     });
 
     try {
-      final file = await _picker.pickImage(
-        source: source,
-        maxWidth: 1280,
-        imageQuality: 70,
-      );
-      if (file == null || !mounted) return;
-
-      final bytes = await file.readAsBytes();
-      if (!mounted) return;
-
-      if (bytes.isEmpty) {
-        setState(() => _error = context.l10n.recipeAssistantInvalidImage);
-        return;
+      final remaining = maxRecipeAssistantImages - _images.length;
+      final files = <XFile>[];
+      if (source == ImageSource.gallery && remaining > 1) {
+        files.addAll(
+          await _picker.pickMultiImage(
+            maxWidth: 1280,
+            imageQuality: 70,
+            limit: remaining,
+          ),
+        );
+      } else {
+        final file = await _picker.pickImage(
+          source: source,
+          maxWidth: 1280,
+          imageQuality: 70,
+        );
+        if (file != null) files.add(file);
       }
-      if (bytes.length > maxRecipeAssistantImageBytes) {
-        setState(() => _error = context.l10n.recipeAssistantImageTooLarge);
-        return;
-      }
+      if (files.isEmpty || !mounted) return;
 
-      final mime = _mimeTypeForBytes(bytes);
-      setState(() {
-        _imageBytes = bytes;
-        _imageMimeType = mime;
-        _error = null;
-      });
+      await _addImageFiles(files);
     } on Object {
       if (!mounted) return;
       setState(() => _error = context.l10n.recipeAssistantInvalidImage);
@@ -340,10 +336,50 @@ class _RecipeAssistantPromptSheetState
     }
   }
 
-  void _removeImage() {
+  Future<void> _addImageFiles(List<XFile> files) async {
+    final remaining = maxRecipeAssistantImages - _images.length;
+    final toAdd = files.take(remaining);
+    String? error;
+    final added = <RecipeAssistantImageInput>[];
+
+    for (final file in toAdd) {
+      final Uint8List bytes;
+      try {
+        bytes = await file.readAsBytes();
+      } on Object {
+        if (!mounted) return;
+        error = context.l10n.recipeAssistantInvalidImage;
+        continue;
+      }
+      if (!mounted) return;
+
+      if (bytes.isEmpty) {
+        error = context.l10n.recipeAssistantInvalidImage;
+        continue;
+      }
+      if (bytes.length > maxRecipeAssistantImageBytes) {
+        error = context.l10n.recipeAssistantImageTooLarge;
+        continue;
+      }
+
+      added.add(
+        RecipeAssistantImageInput(
+          bytes: bytes,
+          mimeType: _mimeTypeForBytes(bytes),
+        ),
+      );
+    }
+
+    if (!mounted) return;
     setState(() {
-      _imageBytes = null;
-      _imageMimeType = null;
+      _images.addAll(added);
+      _error = error;
+    });
+  }
+
+  void _removeImageAt(int index) {
+    setState(() {
+      _images.removeAt(index);
       _error = null;
     });
   }
@@ -358,8 +394,7 @@ class _RecipeAssistantPromptSheetState
       context,
       RecipeAssistantPromptInput(
         prompt: _controller.text.trim(),
-        imageBytes: _imageBytes,
-        imageMimeType: _imageMimeType,
+        images: List<RecipeAssistantImageInput>.from(_images),
       ),
     );
   }
@@ -404,7 +439,7 @@ class _RecipeAssistantPromptSheetState
             decoration: InputDecoration(
               hintText: _listening
                   ? l10n.recipeAssistantListening
-                  : _imageBytes != null
+                  : _images.isNotEmpty
                       ? l10n.recipeAssistantImagePromptHint
                       : l10n.recipeAssistantPromptHint,
               border: const OutlineInputBorder(),
@@ -427,7 +462,10 @@ class _RecipeAssistantPromptSheetState
                 const SizedBox(width: 12),
               ],
               IconButton.filledTonal(
-                onPressed: isOffline || _pickingImage || _listening
+                onPressed: isOffline ||
+                        _pickingImage ||
+                        _listening ||
+                        !_canAddImage
                     ? null
                     : () => _pickImage(ImageSource.camera),
                 tooltip: l10n.camera,
@@ -435,7 +473,10 @@ class _RecipeAssistantPromptSheetState
               ),
               const SizedBox(width: 4),
               IconButton.filledTonal(
-                onPressed: isOffline || _pickingImage || _listening
+                onPressed: isOffline ||
+                        _pickingImage ||
+                        _listening ||
+                        !_canAddImage
                     ? null
                     : () => _pickImage(ImageSource.gallery),
                 tooltip: l10n.choosePhoto,
@@ -462,26 +503,31 @@ class _RecipeAssistantPromptSheetState
               ),
             ],
           ),
-          if (_imageBytes != null) ...[
+          if (_images.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    _imageBytes!,
-                    width: 72,
-                    height: 72,
-                    fit: BoxFit.cover,
+            SizedBox(
+              height: 80,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _images.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  return _AttachedPhotoThumb(
+                    bytes: _images[index].bytes,
+                    removeTooltip: l10n.remove,
+                    onRemove: isOffline || _listening
+                        ? null
+                        : () => _removeImageAt(index),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.recipeAssistantSameRecipePhotosHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                ),
-                const SizedBox(width: 8),
-                TextButton(
-                  onPressed: isOffline || _listening ? null : _removeImage,
-                  child: Text(l10n.remove),
-                ),
-              ],
             ),
           ],
           if (isOffline) ...[
@@ -498,6 +544,64 @@ class _RecipeAssistantPromptSheetState
             onPressed: canGenerate ? () => unawaited(_submit()) : null,
             icon: const Icon(Icons.auto_awesome),
             label: Text(l10n.recipeAssistantGenerate),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AttachedPhotoThumb extends StatelessWidget {
+  const _AttachedPhotoThumb({
+    required this.bytes,
+    required this.removeTooltip,
+    required this.onRemove,
+  });
+
+  final Uint8List bytes;
+  final String removeTooltip;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 80,
+      height: 80,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.memory(
+                bytes,
+                width: 72,
+                height: 72,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              tooltip: removeTooltip,
+              onPressed: onRemove,
+              visualDensity: VisualDensity.compact,
+              style: IconButton.styleFrom(
+                backgroundColor: colorScheme.surface.withValues(alpha: 0.92),
+                foregroundColor: colorScheme.onSurface,
+                minimumSize: const Size(28, 28),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                shape: const CircleBorder(),
+              ),
+              icon: const Icon(Icons.close, size: 16),
+            ),
           ),
         ],
       ),
