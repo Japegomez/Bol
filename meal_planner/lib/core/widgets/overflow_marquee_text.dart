@@ -165,19 +165,14 @@ class _MarqueeText extends LeafRenderObjectWidget {
 
 class _RenderMarqueeText extends RenderBox {
   _RenderMarqueeText({
-    required String text,
-    required TextStyle style,
-    required TextDirection textDirection,
-    required TextScaler textScaler,
-    required bool disableAnimations,
-    required double scrollOffset,
+    required this._text,
+    required this._style,
+    required this._textDirection,
+    required this._textScaler,
+    required this._disableAnimations,
+    required this._scrollOffset,
     required this.onOverflow,
-  }) : _text = text,
-       _style = style,
-       _textDirection = textDirection,
-       _textScaler = textScaler,
-       _disableAnimations = disableAnimations,
-       _scrollOffset = scrollOffset {
+  }) {
     _rebuildPainter();
   }
 
