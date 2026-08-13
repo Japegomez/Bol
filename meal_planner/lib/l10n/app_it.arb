@@ -114,6 +114,12 @@
   "searchByName": "Cerca per nome",
   "noRecipesFoundForSearch": "Nessuna ricetta trovata. Creala tu stesso.",
   "noRecipesYet": "Nessuna ricetta ancora",
+  "sortAlphabetical": "Alfabetico",
+  "alphabeticalOrder": "Ordine alfabetico",
+  "favoritesFilter": "Preferiti",
+  "favoriteRecipeTooltip": "Aggiungi ai preferiti",
+  "unfavoriteRecipeTooltip": "Rimuovi dai preferiti",
+  "noFavoriteRecipes": "Nessuna ricetta preferita. Contrassegna le ricette con la stella per trovarle qui.",
   "createFirstRecipe": "Crea la prima ricetta",
   "servingsCount": "{count, plural, =1{1 porzione} other{{count} porzioni}}",
   "@servingsCount": {
@@ -335,8 +341,8 @@
   "nameRequired": "Il nome è obbligatorio",
   "othersCategory": "Altro",
 
-  "feedTitle": "Feed",
-  "mostRecent": "Più recente",
+  "feedTitle": "Seguiti",
+  "mostRecent": "Più recenti",
   "sortedBy": "Ordinato per: {label}",
   "@sortedBy": {
     "placeholders": {
@@ -344,11 +350,11 @@
     }
   },
   "noRecipesWithTags": "Nessuna ricetta con questi tag",
-  "feedEmpty": "Il tuo feed è vuoto",
+  "feedEmpty": "Nessuna ricetta da chi segui",
   "tryOtherTags": "Prova altri tag o rimuovi il filtro.",
   "followUsersHint": "Segui altri utenti dai loro profili per vedere le loro ricette pubbliche qui.",
   "exploreTitle": "Esplora",
-  "feedTooltip": "Feed",
+  "feedTooltip": "Seguiti",
   "searchPublicRecipes": "Cerca ricette pubbliche",
   "recent": "Recenti",
   "topRated": "Più votate",
@@ -607,8 +613,8 @@
   "onboardingStep7Body": "L'icona di condivisione crea un testo pronto da inviare via WhatsApp o altre app.",
   "onboardingStep8Title": "Scopri la community",
   "onboardingStep8Body": "Cerca ricette di altri utenti per nome o tag. Valutale e salvale nel tuo ricettario.",
-  "onboardingStep9Title": "Il tuo feed di cuochi",
-  "onboardingStep9Body": "Segui i tuoi cuochi preferiti dal loro profilo e vedi le loro ultime ricette toccando il pulsante feed.",
+  "onboardingStep9Title": "I cuochi che segui",
+  "onboardingStep9Body": "Segui i tuoi cuochi preferiti dal loro profilo e vedi le loro ultime ricette toccando il pulsante Seguiti.",
   "onboardingStep10Title": "Il tuo profilo e famiglia",
   "onboardingStep10Body": "Modifica nome e foto. Nella sezione La mia famiglia puoi pianificare con la tua famiglia in tempo reale. Da qui cambi anche lingua e modalità scura.",
 

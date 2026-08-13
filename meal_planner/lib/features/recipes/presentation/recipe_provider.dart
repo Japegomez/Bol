@@ -65,26 +65,71 @@ class RecipesNotifier extends AsyncNotifier<List<Recipe>> {
 }
 
 class RecipeListFilter {
-  const RecipeListFilter({this.search = '', this.tags = const {}});
+  const RecipeListFilter({
+    this.search = '',
+    this.tags = const {},
+    this.sort = RecipeListSort.recent,
+    this.favoritesOnly = false,
+  });
 
   final String search;
   final Set<String> tags;
+  final RecipeListSort sort;
+  final bool favoritesOnly;
 
   RecipeListFilter copyWith({
     String? search,
     Set<String>? tags,
     bool clearTags = false,
+    RecipeListSort? sort,
+    bool? favoritesOnly,
   }) {
     return RecipeListFilter(
       search: search ?? this.search,
       tags: clearTags ? {} : (tags ?? this.tags),
+      sort: sort ?? this.sort,
+      favoritesOnly: favoritesOnly ?? this.favoritesOnly,
     );
   }
 }
 
+enum RecipeListSort { recent, alpha }
+
 final recipeListFilterProvider = StateProvider<RecipeListFilter>(
   (ref) => const RecipeListFilter(),
 );
+
+final recipeFavoritesProvider =
+    AsyncNotifierProvider<RecipeFavoritesNotifier, Set<String>>(
+      RecipeFavoritesNotifier.new,
+    );
+
+class RecipeFavoritesNotifier extends AsyncNotifier<Set<String>> {
+  @override
+  Future<Set<String>> build() async {
+    ref.watch(authStateProvider);
+    final authState = ref.read(authStateProvider).valueOrNull;
+    if (authState is! AuthAuthenticated) return {};
+    return ref.read(recipesRepositoryProvider).fetchFavoriteIds();
+  }
+
+  Future<void> toggle(String recipeId) async {
+    final current = state.valueOrNull ?? {};
+    final adding = !current.contains(recipeId);
+    final next = Set<String>.from(current);
+    if (adding) {
+      next.add(recipeId);
+    } else {
+      next.remove(recipeId);
+    }
+    state = AsyncData(next);
+    try {
+      await ref.read(recipesRepositoryProvider).setFavorite(recipeId, adding);
+    } catch (_) {
+      state = AsyncData(current);
+    }
+  }
+}
 
 final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
   ref.watch(authStateProvider);

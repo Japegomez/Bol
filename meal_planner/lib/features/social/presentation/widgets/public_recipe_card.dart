@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
+import 'package:meal_planner/core/widgets/overflow_marquee_text.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_summary.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
@@ -59,10 +60,8 @@ class PublicRecipeCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titleOverride ?? recipe.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                OverflowMarqueeText(
+                  text: titleOverride ?? recipe.title,
                   style: theme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
@@ -73,7 +72,10 @@ class PublicRecipeCard extends ConsumerWidget {
                       style: theme.textTheme.bodySmall,
                     ),
                     const SizedBox(width: 8),
-                    StarRatingDisplay(rating: recipe.avgScore),
+                    StarRatingDisplay(
+                      rating: recipe.avgScore,
+                      count: recipe.ratingCount,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       l10n.recipeCreatedByName,

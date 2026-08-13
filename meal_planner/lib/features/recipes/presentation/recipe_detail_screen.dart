@@ -572,6 +572,12 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
       isTranslated: widget.isTranslated,
       showingOriginal: widget.showingOriginal,
     );
+    final isFavorite =
+        ref
+            .watch(recipeFavoritesProvider)
+            .valueOrNull
+            ?.contains(widget.recipeId) ??
+        false;
     return NotificationListener<ScrollNotification>(
       onNotification: _onScroll,
       child: CustomScrollView(
@@ -587,6 +593,21 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                 ? RecipeAppBarTitle(title: widget.title)
                 : null,
             actions: [
+              if (widget.sharedToken == null)
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.star : Icons.star_border,
+                    color: isFavorite ? Colors.amber : null,
+                  ),
+                  tooltip: isFavorite
+                      ? l10n.unfavoriteRecipeTooltip
+                      : l10n.favoriteRecipeTooltip,
+                  onPressed: () {
+                    ref
+                        .read(recipeFavoritesProvider.notifier)
+                        .toggle(widget.recipeId);
+                  },
+                ),
               if (_canShare)
                 _isSharing
                     ? const Padding(

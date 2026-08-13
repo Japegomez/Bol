@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meal_planner/core/local_db/local_cache_store.dart';
@@ -17,6 +19,7 @@ import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.d
 import 'package:meal_planner/features/recipes/domain/recipe_detail.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/domain/unit_mappings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RecipesRepository {
@@ -965,6 +968,76 @@ class RecipesRepository {
       isPublic: recipe.isPublic,
       forkedFromId: detail.forkedFromId,
     );
+  }
+
+  static const _favoritesTable = 'recipe_favorites';
+
+  String _favoritesStorageKey(String userId) => 'recipe.favorites.$userId';
+
+  Future<Set<String>> _readCachedFavoriteIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_favoritesStorageKey(_userId));
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return {};
+      return decoded.map((id) => id.toString()).toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> _writeCachedFavoriteIds(Set<String> ids) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _favoritesStorageKey(_userId),
+      jsonEncode(ids.toList()),
+    );
+  }
+
+  Future<Set<String>> fetchFavoriteIds() async {
+    if (await NetworkStatus.isOnline) {
+      try {
+        final data = await supabase
+            .from(_favoritesTable)
+            .select('recipe_id')
+            .eq('user_id', _userId);
+        final ids = List<Map<String, dynamic>>.from(
+          data,
+        ).map((row) => row['recipe_id'].toString()).toSet();
+        await _writeCachedFavoriteIds(ids);
+        return ids;
+      } catch (_) {
+        return _readCachedFavoriteIds();
+      }
+    }
+    return _readCachedFavoriteIds();
+  }
+
+  Future<void> setFavorite(String recipeId, bool isFavorite) async {
+    if (await NetworkStatus.isOnline) {
+      if (isFavorite) {
+        await supabase.from(_favoritesTable).upsert({
+          'user_id': _userId,
+          'recipe_id': recipeId,
+        }, onConflict: 'user_id,recipe_id');
+      } else {
+        await supabase
+            .from(_favoritesTable)
+            .delete()
+            .eq('user_id', _userId)
+            .eq('recipe_id', recipeId);
+      }
+    }
+
+    final cached = await _readCachedFavoriteIds();
+    final next = Set<String>.from(cached);
+    if (isFavorite) {
+      next.add(recipeId);
+    } else {
+      next.remove(recipeId);
+    }
+    await _writeCachedFavoriteIds(next);
   }
 }
 
