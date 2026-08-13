@@ -381,7 +381,7 @@ class _RecipeCard extends ConsumerWidget {
                           },
                     icon: Icon(
                       isFavorite ? Icons.star : Icons.star_border,
-                      size: 22,
+                      size: 18,
                       color: isFavorite
                           ? Colors.amber
                           : Theme.of(context).colorScheme.outline,
