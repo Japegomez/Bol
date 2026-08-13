@@ -16,7 +16,6 @@ import 'package:meal_planner/features/auth/presentation/auth_exception_l10n.dart
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/auth/presentation/password_form_validators.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
-import 'package:meal_planner/l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
