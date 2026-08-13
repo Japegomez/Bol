@@ -37,13 +37,13 @@ Future<ForkOptionalNoticeAction?> showForkOptionalIngredientsNoticeDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext)
-                .pop(ForkOptionalNoticeAction.close),
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(ForkOptionalNoticeAction.close),
             child: Text(l10n.understood),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext)
-                .pop(ForkOptionalNoticeAction.edit),
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(ForkOptionalNoticeAction.edit),
             child: Text(l10n.editRecipe),
           ),
         ],

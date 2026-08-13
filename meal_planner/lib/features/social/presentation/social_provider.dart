@@ -32,8 +32,9 @@ class ExploreFilter {
   }
 }
 
-final exploreFilterProvider =
-    StateProvider<ExploreFilter>((ref) => const ExploreFilter());
+final exploreFilterProvider = StateProvider<ExploreFilter>(
+  (ref) => const ExploreFilter(),
+);
 
 final feedTagsFilterProvider = StateProvider<Set<String>>((ref) => {});
 
@@ -134,16 +135,20 @@ class ExploreRecipesNotifier extends Notifier<ExploreRecipesState> {
 
 final exploreRecipesProvider =
     NotifierProvider<ExploreRecipesNotifier, ExploreRecipesState>(
-  ExploreRecipesNotifier.new,
-);
+      ExploreRecipesNotifier.new,
+    );
 
 final publicRecipeDetailProvider =
     FutureProvider.family<PublicRecipeDetail, String>((ref, recipeId) async {
-  return ref.watch(socialRepositoryProvider).fetchPublicRecipeDetail(recipeId);
-});
+      return ref
+          .watch(socialRepositoryProvider)
+          .fetchPublicRecipeDetail(recipeId);
+    });
 
-final socialPhotoUrlProvider =
-    FutureProvider.family<String?, String?>((ref, photoPath) async {
+final socialPhotoUrlProvider = FutureProvider.family<String?, String?>((
+  ref,
+  photoPath,
+) async {
   if (photoPath == null) return null;
   return ref.watch(socialRepositoryProvider).resolvePhotoUrl(photoPath);
 });
@@ -244,12 +249,16 @@ final feedProvider = NotifierProvider<FeedNotifier, FeedState>(
   FeedNotifier.new,
 );
 
-final publicProfileProvider =
-    FutureProvider.family<PublicProfileData, String>((ref, userId) async {
+final publicProfileProvider = FutureProvider.family<PublicProfileData, String>((
+  ref,
+  userId,
+) async {
   return ref.watch(socialRepositoryProvider).fetchPublicProfile(userId);
 });
 
-final isFollowingProvider =
-    FutureProvider.family<bool, String>((ref, userId) async {
+final isFollowingProvider = FutureProvider.family<bool, String>((
+  ref,
+  userId,
+) async {
   return ref.watch(socialRepositoryProvider).isFollowing(userId);
 });

@@ -1,10 +1,7 @@
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
 
 class SlotItem {
-  const SlotItem({
-    required this.slot,
-    this.recipeTitle,
-  });
+  const SlotItem({required this.slot, this.recipeTitle});
 
   final PlanSlot slot;
   final String? recipeTitle;
@@ -13,8 +10,7 @@ class SlotItem {
   bool get isTextSlot => slot.recipeId == null;
 
   /// Label shown in the planner chip.
-  String get displayTitle =>
-      recipeTitle ?? slot.notes ?? 'Receta';
+  String get displayTitle => recipeTitle ?? slot.notes ?? 'Receta';
 
   factory SlotItem.fromJson(Map<String, dynamic> json) {
     final recipeJson = json['recipes'];
@@ -23,9 +19,6 @@ class SlotItem {
       title = recipeJson['title'] as String?;
     }
 
-    return SlotItem(
-      slot: PlanSlot.fromJson(json),
-      recipeTitle: title,
-    );
+    return SlotItem(slot: PlanSlot.fromJson(json), recipeTitle: title);
   }
 }

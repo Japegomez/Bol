@@ -27,11 +27,9 @@ class LocalIngredients extends Table {
   TextColumn get unit => text().nullable()();
   TextColumn get category => text().nullable()();
   IntColumn get position => integer()();
-  BoolColumn get isOptional =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isOptional => boolean().withDefault(const Constant(false))();
   BoolColumn get isIncluded => boolean().withDefault(const Constant(true))();
-  BoolColumn get isToTaste =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isToTaste => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -42,8 +40,7 @@ class LocalRecipeSteps extends Table {
   TextColumn get recipeId => text()();
   IntColumn get position => integer()();
   TextColumn get description => text()();
-  BoolColumn get isOptional =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isOptional => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -82,8 +79,7 @@ class LocalPlanSlots extends Table {
   TextColumn get recipeTitle => text().nullable()();
   IntColumn get servings => integer()();
   IntColumn get position => integer()();
-  BoolColumn get isLeftover =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isLeftover => boolean().withDefault(const Constant(false))();
   TextColumn get notes => text().nullable()();
 
   @override
@@ -107,10 +103,8 @@ class LocalShoppingItems extends Table {
   RealColumn get quantity => real().nullable()();
   TextColumn get unit => text().nullable()();
   TextColumn get category => text().nullable()();
-  BoolColumn get isChecked =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get isManual =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isChecked => boolean().withDefault(const Constant(false))();
+  BoolColumn get isManual => boolean().withDefault(const Constant(false))();
   TextColumn get planSlotId => text().nullable()();
   TextColumn get ingredientId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();

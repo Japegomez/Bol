@@ -11,7 +11,8 @@ class LanguageSelectorTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final currentLocale = ref.watch(localeProvider);
-    final currentCode = currentLocale?.languageCode ??
+    final currentCode =
+        currentLocale?.languageCode ??
         Localizations.localeOf(context).languageCode;
 
     return ListTile(
@@ -59,16 +60,16 @@ class LanguageSelectorTile extends ConsumerWidget {
                   ),
                   for (final locale in supportedAppLocales)
                     ListTile(
-                      title:
-                          Text(displayNameForLanguageCode(locale.languageCode)),
+                      title: Text(
+                        displayNameForLanguageCode(locale.languageCode),
+                      ),
                       trailing:
                           currentLocale?.languageCode == locale.languageCode
-                              ? Icon(
-                                  Icons.check,
-                                  color:
-                                      Theme.of(sheetContext).colorScheme.primary,
-                                )
-                              : null,
+                          ? Icon(
+                              Icons.check,
+                              color: Theme.of(sheetContext).colorScheme.primary,
+                            )
+                          : null,
                       onTap: () async {
                         await ref
                             .read(localeProvider.notifier)

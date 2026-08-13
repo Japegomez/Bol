@@ -65,7 +65,9 @@ class ShoppingListScreen extends ConsumerWidget {
     final data = await AddEditItemSheet.show(context, canSave: canEdit);
     if (data == null) return;
 
-    await ref.read(shoppingItemsProvider.notifier).addManualItem(
+    await ref
+        .read(shoppingItemsProvider.notifier)
+        .addManualItem(
           name: data['name'] as String,
           quantity: data['quantity'] as num?,
           unit: data['unit'] as String?,
@@ -132,8 +134,8 @@ class ShoppingListScreen extends ConsumerWidget {
                       l10n.shoppingListEmptyHint,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                     ),
                   ],
                 ),
@@ -150,9 +152,9 @@ class ShoppingListScreen extends ConsumerWidget {
                   child: Text(
                     localizedCategoryLabel(l10n, entry.key),
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 for (final item in entry.value)
@@ -183,7 +185,9 @@ class ShoppingListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         key: OnboardingTargets.keyFor(OnboardingTarget.shoppingAddFab),
-        onPressed: canEdit ? () => _openAddSheet(context, ref, canEdit: canEdit) : null,
+        onPressed: canEdit
+            ? () => _openAddSheet(context, ref, canEdit: canEdit)
+            : null,
         tooltip: l10n.addItemTooltip,
         child: const Icon(Icons.add),
       ),

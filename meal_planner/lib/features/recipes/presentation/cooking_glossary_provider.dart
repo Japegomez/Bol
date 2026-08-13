@@ -7,21 +7,24 @@ import 'package:meal_planner/features/recipes/domain/default_cooking_glossary.da
 
 final cookingGlossaryProvider =
     AsyncNotifierProvider<CookingGlossaryNotifier, List<CookingGlossaryEntry>>(
-  CookingGlossaryNotifier.new,
-);
+      CookingGlossaryNotifier.new,
+    );
 
-class CookingGlossaryNotifier extends AsyncNotifier<List<CookingGlossaryEntry>> {
+class CookingGlossaryNotifier
+    extends AsyncNotifier<List<CookingGlossaryEntry>> {
   @override
   Future<List<CookingGlossaryEntry>> build() async {
     ref.watch(localeProvider);
-    final custom =
-        await ref.read(cookingGlossaryRepositoryProvider).loadCustomEntries();
+    final custom = await ref
+        .read(cookingGlossaryRepositoryProvider)
+        .loadCustomEntries();
     return _mergeEntries(custom);
   }
 
   List<CookingGlossaryEntry> _defaultEntries() {
     final locale = ref.read(localeProvider);
-    final languageCode = locale?.languageCode ??
+    final languageCode =
+        locale?.languageCode ??
         WidgetsBinding.instance.platformDispatcher.locale.languageCode;
     return defaultGlossaryForLocale(languageCode);
   }
@@ -30,15 +33,12 @@ class CookingGlossaryNotifier extends AsyncNotifier<List<CookingGlossaryEntry>> 
     List<CookingGlossaryEntry> customEntries,
   ) {
     final merged = <String, CookingGlossaryEntry>{
-      for (final entry in _defaultEntries())
-        _normalizeTerm(entry.term): entry,
+      for (final entry in _defaultEntries()) _normalizeTerm(entry.term): entry,
       for (final entry in customEntries) _normalizeTerm(entry.term): entry,
     };
 
     final entries = merged.values.toList()
-      ..sort(
-        (a, b) => a.term.toLowerCase().compareTo(b.term.toLowerCase()),
-      );
+      ..sort((a, b) => a.term.toLowerCase().compareTo(b.term.toLowerCase()));
     return entries;
   }
 
@@ -74,8 +74,9 @@ class CookingGlossaryNotifier extends AsyncNotifier<List<CookingGlossaryEntry>> 
 
   Future<void> removeCustomEntry(String id) async {
     final current = state.valueOrNull ?? await future;
-    final customEntries =
-        current.where((entry) => entry.isCustom && entry.id != id).toList();
+    final customEntries = current
+        .where((entry) => entry.isCustom && entry.id != id)
+        .toList();
 
     await ref
         .read(cookingGlossaryRepositoryProvider)

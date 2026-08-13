@@ -45,9 +45,8 @@ class PublicRecipeCard extends ConsumerWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: (_, _) => const _PhotoSkeleton(),
-                errorWidget: (_, _, _) => const _PhotoPlaceholder(
-                  child: Icon(Icons.broken_image),
-                ),
+                errorWidget: (_, _, _) =>
+                    const _PhotoPlaceholder(child: Icon(Icons.broken_image)),
               );
             },
             loading: () => const _PhotoSkeleton(),
@@ -83,8 +82,8 @@ class PublicRecipeCard extends ConsumerWidget {
                     const SizedBox(width: 4),
                     Flexible(
                       child: InkWell(
-                        onTap: () => context
-                            .push('/home/explore/user/${recipe.userId}'),
+                        onTap: () =>
+                            context.push('/home/explore/user/${recipe.userId}'),
                         borderRadius: BorderRadius.circular(4),
                         child: Text(
                           recipe.authorName,
@@ -120,10 +119,7 @@ class PublicRecipeCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return const ExcludeSemantics(
       child: SkeletonPulse(
-        child: RecipeCardSkeleton(
-          showTags: true,
-          showAuthorLine: true,
-        ),
+        child: RecipeCardSkeleton(showTags: true, showAuthorLine: true),
       ),
     );
   }
@@ -138,10 +134,7 @@ class PublicRecipeCardSkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SkeletonList(
       itemCount: itemCount,
-      item: const RecipeCardSkeleton(
-        showTags: true,
-        showAuthorLine: true,
-      ),
+      item: const RecipeCardSkeleton(showTags: true, showAuthorLine: true),
     );
   }
 }
@@ -203,7 +196,9 @@ class _PublicRecipeListPhotoGateState
 
     final firstPage = widget.recipes.take(widget.firstPageCount);
     final withPhotos = firstPage
-        .where((recipe) => recipe.photoUrl != null && recipe.photoUrl!.isNotEmpty)
+        .where(
+          (recipe) => recipe.photoUrl != null && recipe.photoUrl!.isNotEmpty,
+        )
         .toList();
 
     if (withPhotos.isEmpty) {

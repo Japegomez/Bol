@@ -25,11 +25,11 @@ class ShoppingItemTile extends StatelessWidget {
   final bool canEditDetails;
 
   String _label(AppLocalizations l10n) => formatShoppingItemLabel(
-        l10n,
-        name: item.name,
-        quantity: item.quantity,
-        unit: item.unit,
-      );
+    l10n,
+    name: item.name,
+    quantity: item.quantity,
+    unit: item.unit,
+  );
 
   Future<void> _confirmDelete(BuildContext context) async {
     final l10n = context.l10n;
@@ -72,9 +72,9 @@ class ShoppingItemTile extends StatelessWidget {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final textStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
-          decoration: item.isChecked ? TextDecoration.lineThrough : null,
-          color: item.isChecked ? colorScheme.outline : null,
-        );
+      decoration: item.isChecked ? TextDecoration.lineThrough : null,
+      color: item.isChecked ? colorScheme.outline : null,
+    );
 
     return Slidable(
       key: ValueKey(item.id),
@@ -117,7 +117,9 @@ class ShoppingItemTile extends StatelessWidget {
         ),
         title: Text(_label(l10n), style: textStyle),
         onTap: canEdit ? () => onToggle(!item.isChecked) : null,
-        onLongPress: canEdit && canEditDetails ? () => _openEdit(context) : null,
+        onLongPress: canEdit && canEditDetails
+            ? () => _openEdit(context)
+            : null,
       ),
     );
   }

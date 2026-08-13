@@ -31,14 +31,17 @@ import 'package:meal_planner/features/social/presentation/social_provider.dart';
 import 'package:meal_planner/l10n/app_localizations.dart';
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
-  const RecipeDetailScreen({required this.recipeId, this.sharedToken, super.key});
+  const RecipeDetailScreen({
+    required this.recipeId,
+    this.sharedToken,
+    super.key,
+  });
 
   final String recipeId;
   final String? sharedToken;
 
   @override
-  ConsumerState<RecipeDetailScreen> createState() =>
-      _RecipeDetailScreenState();
+  ConsumerState<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
 }
 
 class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
@@ -48,7 +51,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (_, _) {
+    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (
+      _,
+      _,
+    ) {
       if (mounted) setState(() => _showOriginal = false);
     });
   }
@@ -63,8 +69,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     if (widget.sharedToken != null) {
-      final sharedAsync =
-          ref.watch(sharedRecipeDetailProvider(widget.sharedToken!));
+      final sharedAsync = ref.watch(
+        sharedRecipeDetailProvider(widget.sharedToken!),
+      );
       return Scaffold(
         body: sharedAsync.when(
           data: (detail) => _RecipeDetailBody(
@@ -92,8 +99,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             final message = lower.contains('expired')
                 ? l10n.shareLinkExpired
                 : lower.contains('invalid share')
-                    ? l10n.shareLinkInvalid
-                    : l10n.errorWithMessage(raw);
+                ? l10n.shareLinkInvalid
+                : l10n.errorWithMessage(raw);
             return Center(child: Text(message));
           },
         ),
@@ -105,8 +112,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     return Scaffold(
       body: displayAsync.when(
         data: (state) {
-          final effective =
-              _showOriginal ? state.withShowOriginal(true) : state;
+          final effective = _showOriginal
+              ? state.withShowOriginal(true)
+              : state;
           final detail = effective.detail;
           return _RecipeDetailBody(
             recipeId: widget.recipeId,
@@ -208,7 +216,8 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
 
   bool _onScroll(ScrollNotification notification) {
     if (notification.metrics.axis != Axis.vertical) return false;
-    final show = notification.metrics.pixels >=
+    final show =
+        notification.metrics.pixels >=
         recipeAppBarCollapseOffset(hasPhoto: widget.photoUrl != null);
     if (show != _showAppBarTitle) {
       setState(() => _showAppBarTitle = show);
@@ -262,10 +271,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
               fiber: widget.nutrition!.fiber,
             ),
       onSuccess: (nutrition) async {
-        await ref.read(recipesRepositoryProvider).saveNutrition(
-              widget.recipeId,
-              nutrition,
-            );
+        await ref
+            .read(recipesRepositoryProvider)
+            .saveNutrition(widget.recipeId, nutrition);
         ref.invalidate(recipeDetailProvider(widget.recipeId));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -288,11 +296,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
           ? (await shareRepo.getOrCreatePrivateShareLink(widget.recipeId)).url
           : shareRepo.publicShareUrl(widget.recipeId);
       if (!mounted) return;
-      await shareRecipeLink(
-        context,
-        title: widget.title,
-        url: url,
-      );
+      await shareRecipeLink(context, title: widget.title, url: url);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -307,17 +311,15 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     if (_isForking) return;
     setState(() => _isForking = true);
     try {
-      final newId =
-          await ref.read(recipesRepositoryProvider).forkIntoMyBook(
-        widget.recipeId,
-        shareToken: widget.sharedToken,
-      );
+      final newId = await ref
+          .read(recipesRepositoryProvider)
+          .forkIntoMyBook(widget.recipeId, shareToken: widget.sharedToken);
       ref.invalidate(recipesProvider);
       ref.invalidate(recipeListProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeSavedToBook)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.recipeSavedToBook)));
       context.pushReplacement('/home/recipes/$newId');
     } catch (error) {
       if (!mounted) return;
@@ -357,17 +359,17 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
           .read(recipeShareRepositoryProvider)
           .revokePrivateShareLinks(widget.recipeId);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.shareLinkRevoked)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.shareLinkRevoked)));
     } on StateError catch (e) {
       if (!mounted) return;
       final message = e.message.contains('no_active_share_link')
           ? context.l10n.noActiveShareLink
           : context.l10n.errorWithMessage('$e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -479,11 +481,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.visibilityChangeError('$e'),
-          ),
-        ),
+        SnackBar(content: Text(context.l10n.visibilityChangeError('$e'))),
       );
     } finally {
       if (mounted) setState(() => _isUpdatingVisibility = false);
@@ -499,7 +497,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     setState(() => _updatingIngredientIds.add(ingredient.id));
     try {
       final household = ref.read(currentHouseholdProvider).valueOrNull;
-      await ref.read(recipesRepositoryProvider).updateIngredientIncluded(
+      await ref
+          .read(recipesRepositoryProvider)
+          .updateIngredientIncluded(
             ingredientId: ingredient.id,
             recipeId: widget.recipeId,
             isIncluded: isIncluded,
@@ -565,8 +565,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     final l10n = context.l10n;
     final appLocale = ref.watch(currentLanguageCodeProvider);
     final cookingSession = ref.watch(cookingSessionProvider);
-    final isThisRecipeCooking =
-        cookingSession?.recipeId == widget.recipeId;
+    final isThisRecipeCooking = cookingSession?.recipeId == widget.recipeId;
     final contentLocale = recipeContentLocaleName(
       sourceLang: widget.sourceLang,
       appLocale: appLocale,
@@ -576,294 +575,303 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     return NotificationListener<ScrollNotification>(
       onNotification: _onScroll,
       child: CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: widget.photoUrl != null ? 240 : 120,
-          pinned: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
-          ),
-          title: _showAppBarTitle
-              ? RecipeAppBarTitle(title: widget.title)
-              : null,
-          actions: [
-            if (_canShare)
-              _isSharing
-                  ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.ios_share),
-                      tooltip: l10n.shareRecipeTooltip,
-                      onPressed: _shareRecipe,
-                    ),
-            if (_isOwned) ...[
-              if (!_isPublic)
-                IconButton(
-                  icon: const Icon(Icons.link_off),
-                  tooltip: l10n.revokeShareLink,
-                  onPressed: _revokeShareLink,
-                ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () =>
-                    context.push('/home/recipes/${widget.recipeId}/edit'),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => _confirmDelete(context),
-              ),
-            ] else if (!_isForking)
-              IconButton(
-                icon: const Icon(Icons.bookmark_add_outlined),
-                tooltip: l10n.saveToMyRecipeBookTooltip,
-                onPressed: _forkIntoMyBook,
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-            background: widget.photoUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: widget.photoUrl!,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => const SizedBox.shrink(),
-                  )
+        slivers: [
+          SliverAppBar(
+            expandedHeight: widget.photoUrl != null ? 240 : 120,
+            pinned: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.pop(),
+            ),
+            title: _showAppBarTitle
+                ? RecipeAppBarTitle(title: widget.title)
                 : null,
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RecipeDetailBodyTitle(title: widget.title),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => _startCooking(context),
-                    icon: Icon(
-                      isThisRecipeCooking ? Icons.restaurant : Icons.play_arrow,
-                    ),
-                    label: Text(
-                      isThisRecipeCooking
-                          ? l10n.continueCookingButton
-                          : l10n.cookRecipeButton,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TranslationStatusBanner(
-                  l10n: l10n,
-                  isTranslated: widget.isTranslated,
-                  translationFailed: widget.translationFailed,
-                  showingOriginal: widget.showingOriginal,
-                  onToggleOriginal: widget.onToggleOriginal,
-                ),
-                if (widget.isTranslated || widget.translationFailed)
-                  const SizedBox(height: 12),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
-                  children: [
-                    _InfoChip(
-                      icon: Icons.people_outline,
-                      label: l10n.servingsCount(widget.servings),
-                    ),
-                    if (_isPublic)
-                      Chip(
-                        avatar: Icon(
-                          Icons.public,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
+            actions: [
+              if (_canShare)
+                _isSharing
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        label: Text(l10n.publicBadge),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.ios_share),
+                        tooltip: l10n.shareRecipeTooltip,
+                        onPressed: _shareRecipe,
                       ),
-                    if (widget.prepTime != null)
-                      _InfoChip(
-                        icon: Icons.timer_outlined,
-                        label: l10n.prepTimeMin(widget.prepTime!),
-                      ),
-                    if (widget.cookTime != null)
-                      _InfoChip(
-                        icon: Icons.local_fire_department_outlined,
-                        label: l10n.cookTimeMin(widget.cookTime!),
-                      ),
-                  ],
+              if (_isOwned) ...[
+                if (!_isPublic)
+                  IconButton(
+                    icon: const Icon(Icons.link_off),
+                    tooltip: l10n.revokeShareLink,
+                    onPressed: _revokeShareLink,
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () =>
+                      context.push('/home/recipes/${widget.recipeId}/edit'),
                 ),
-                const SizedBox(height: 16),
-                if (!_isOwned) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _isForking ? null : _forkIntoMyBook,
-                      icon: _isForking
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.bookmark_add_outlined),
-                      label: Text(l10n.saveToMyRecipeBook),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ] else if (widget.isForked)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.bookmark_added_outlined),
-                      title: Text(l10n.forkedRecipeTitle),
-                      subtitle: Text(l10n.forkedRecipeCannotPublish),
-                    ),
-                  )
-                else
-                  Card(
-                    child: SwitchListTile(
-                      title: Text(l10n.publicRecipeSwitch),
-                      subtitle: Text(
-                        _isPublic
-                            ? l10n.visibleInExplore
-                            : l10n.onlyInRecipeBook,
-                      ),
-                      secondary: _isUpdatingVisibility
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Icon(
-                              _isPublic ? Icons.public : Icons.lock_outline,
-                            ),
-                      value: _isPublic,
-                      onChanged:
-                          _isUpdatingVisibility ? null : _toggleVisibility,
-                    ),
-                  ),
-                if (widget.tags.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: widget.tags
-                        .map(
-                          (tag) => Chip(label: Text(localizedTagLabel(l10n, tag))),
-                        )
-                        .toList(),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                Text(
-                  l10n.ingredientsSection,
-                  style: Theme.of(context).textTheme.titleLarge,
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () => _confirmDelete(context),
                 ),
-                const SizedBox(height: 8),
-                if (widget.ingredients.isEmpty)
-                  Text(l10n.noIngredients)
-                else
-                  ...widget.ingredients.map(
-                        (ingredient) => _IngredientListTile(
-                          key: ValueKey(
-                            '${ingredient.id}-$contentLocale-${widget.showingOriginal}',
-                          ),
-                          ingredient: ingredient,
-                          contentLocaleName: contentLocale,
-                          isUpdating:
-                              _updatingIngredientIds.contains(ingredient.id),
-                          onIncludedChanged: _isOwned &&
-                                  ingredient.isOptional &&
-                                  !ingredient.isToTaste
-                              ? (included) => _toggleIngredientIncluded(
-                                    ingredient,
-                                    included,
-                                  )
-                              : null,
-                        ),
-                      ),
-                const SizedBox(height: 24),
-                Text(
-                  l10n.preparationSection,
-                  style: Theme.of(context).textTheme.titleLarge,
+              ] else if (!_isForking)
+                IconButton(
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  tooltip: l10n.saveToMyRecipeBookTooltip,
+                  onPressed: _forkIntoMyBook,
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                if (widget.steps.isEmpty)
-                  Text(l10n.noSteps)
-                else
-                  ...widget.steps.asMap().entries.map(
-                        (entry) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CircleAvatar(
-                                radius: 14,
-                                child: Text('${entry.key + 1}'),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: RecipeStepText(step: entry.value),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                if (widget.tips != null && widget.tips!.trim().isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.tipsSection,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(widget.tips!),
-                ],
-                if (widget.nutrition != null) ...[
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.nutritionPerServing,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  _NutritionGrid(nutrition: widget.nutrition!, l10n: l10n),
-                ] else if (_isOwned) ...[
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.nutritionPerServing,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _isGeneratingNutrition
-                        ? null
-                        : _completeNutritionWithAssistant,
-                    icon: _isGeneratingNutrition
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.auto_awesome_outlined),
-                    label: Text(l10n.completeNutritionWithAssistant),
-                  ),
-                ],
-              ],
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: widget.photoUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: widget.photoUrl!,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, _, _) => const SizedBox.shrink(),
+                    )
+                  : null,
             ),
           ),
-        ),
-      ],
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RecipeDetailBodyTitle(title: widget.title),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => _startCooking(context),
+                      icon: Icon(
+                        isThisRecipeCooking
+                            ? Icons.restaurant
+                            : Icons.play_arrow,
+                      ),
+                      label: Text(
+                        isThisRecipeCooking
+                            ? l10n.continueCookingButton
+                            : l10n.cookRecipeButton,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TranslationStatusBanner(
+                    l10n: l10n,
+                    isTranslated: widget.isTranslated,
+                    translationFailed: widget.translationFailed,
+                    showingOriginal: widget.showingOriginal,
+                    onToggleOriginal: widget.onToggleOriginal,
+                  ),
+                  if (widget.isTranslated || widget.translationFailed)
+                    const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 8,
+                    children: [
+                      _InfoChip(
+                        icon: Icons.people_outline,
+                        label: l10n.servingsCount(widget.servings),
+                      ),
+                      if (_isPublic)
+                        Chip(
+                          avatar: Icon(
+                            Icons.public,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          label: Text(l10n.publicBadge),
+                        ),
+                      if (widget.prepTime != null)
+                        _InfoChip(
+                          icon: Icons.timer_outlined,
+                          label: l10n.prepTimeMin(widget.prepTime!),
+                        ),
+                      if (widget.cookTime != null)
+                        _InfoChip(
+                          icon: Icons.local_fire_department_outlined,
+                          label: l10n.cookTimeMin(widget.cookTime!),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (!_isOwned) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isForking ? null : _forkIntoMyBook,
+                        icon: _isForking
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.bookmark_add_outlined),
+                        label: Text(l10n.saveToMyRecipeBook),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else if (widget.isForked)
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.bookmark_added_outlined),
+                        title: Text(l10n.forkedRecipeTitle),
+                        subtitle: Text(l10n.forkedRecipeCannotPublish),
+                      ),
+                    )
+                  else
+                    Card(
+                      child: SwitchListTile(
+                        title: Text(l10n.publicRecipeSwitch),
+                        subtitle: Text(
+                          _isPublic
+                              ? l10n.visibleInExplore
+                              : l10n.onlyInRecipeBook,
+                        ),
+                        secondary: _isUpdatingVisibility
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                _isPublic ? Icons.public : Icons.lock_outline,
+                              ),
+                        value: _isPublic,
+                        onChanged: _isUpdatingVisibility
+                            ? null
+                            : _toggleVisibility,
+                      ),
+                    ),
+                  if (widget.tags.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: widget.tags
+                          .map(
+                            (tag) =>
+                                Chip(label: Text(localizedTagLabel(l10n, tag))),
+                          )
+                          .toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.ingredientsSection,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  if (widget.ingredients.isEmpty)
+                    Text(l10n.noIngredients)
+                  else
+                    ...widget.ingredients.map(
+                      (ingredient) => _IngredientListTile(
+                        key: ValueKey(
+                          '${ingredient.id}-$contentLocale-${widget.showingOriginal}',
+                        ),
+                        ingredient: ingredient,
+                        contentLocaleName: contentLocale,
+                        isUpdating: _updatingIngredientIds.contains(
+                          ingredient.id,
+                        ),
+                        onIncludedChanged:
+                            _isOwned &&
+                                ingredient.isOptional &&
+                                !ingredient.isToTaste
+                            ? (included) => _toggleIngredientIncluded(
+                                ingredient,
+                                included,
+                              )
+                            : null,
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.preparationSection,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  if (widget.steps.isEmpty)
+                    Text(l10n.noSteps)
+                  else
+                    ...widget.steps.asMap().entries.map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 14,
+                              child: Text('${entry.key + 1}'),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(child: RecipeStepText(step: entry.value)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (widget.tips != null &&
+                      widget.tips!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.tipsSection,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(widget.tips!),
+                  ],
+                  if (widget.nutrition != null) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.nutritionPerServing,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    _NutritionGrid(nutrition: widget.nutrition!, l10n: l10n),
+                  ] else if (_isOwned) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.nutritionPerServing,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: _isGeneratingNutrition
+                          ? null
+                          : _completeNutritionWithAssistant,
+                      icon: _isGeneratingNutrition
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.auto_awesome_outlined),
+                      label: Text(l10n.completeNutritionWithAssistant),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -965,11 +973,7 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 4),
-        Text(label),
-      ],
+      children: [Icon(icon, size: 18), const SizedBox(width: 4), Text(label)],
     );
   }
 }
@@ -995,9 +999,8 @@ class _NutritionGrid extends StatelessWidget {
       runSpacing: 12,
       children: items
           .map(
-            (item) => Chip(
-              label: Text(l10n.nutritionChip(item.key, item.value!)),
-            ),
+            (item) =>
+                Chip(label: Text(l10n.nutritionChip(item.key, item.value!))),
           )
           .toList(),
     );

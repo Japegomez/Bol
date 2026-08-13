@@ -95,19 +95,23 @@ class _CookingGlossaryScreenState extends ConsumerState<CookingGlossaryScreen> {
     if (saved != true || !mounted) return;
 
     try {
-      await ref.read(cookingGlossaryProvider.notifier).addEntry(
+      await ref
+          .read(cookingGlossaryProvider.notifier)
+          .addEntry(
             term: termController.text,
             definition: definitionController.text,
           );
     } on StateError catch (error) {
       if (!mounted || error.message != 'duplicate_term') rethrow;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.duplicateGlossaryTerm)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.duplicateGlossaryTerm)));
     }
   }
 
-  List<CookingGlossaryEntry> _filterEntries(List<CookingGlossaryEntry> entries) {
+  List<CookingGlossaryEntry> _filterEntries(
+    List<CookingGlossaryEntry> entries,
+  ) {
     final query = _query.trim().toLowerCase();
     if (query.isEmpty) return entries;
 

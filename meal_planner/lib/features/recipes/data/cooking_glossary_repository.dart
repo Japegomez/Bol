@@ -38,5 +38,6 @@ class CookingGlossaryRepository {
   }
 }
 
-final cookingGlossaryRepositoryProvider =
-    Provider<CookingGlossaryRepository>((ref) => CookingGlossaryRepository());
+final cookingGlossaryRepositoryProvider = Provider<CookingGlossaryRepository>(
+  (ref) => CookingGlossaryRepository(),
+);

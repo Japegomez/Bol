@@ -96,7 +96,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                hasTagFilter ? Icons.label_off_outlined : Icons.rss_feed_outlined,
+                hasTagFilter
+                    ? Icons.label_off_outlined
+                    : Icons.rss_feed_outlined,
                 size: 64,
                 color: Theme.of(context).colorScheme.outline,
               ),
@@ -105,7 +107,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 hasTagFilter
                     ? context.l10n.noRecipesWithTags
                     : context.l10n.feedEmpty,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -122,7 +127,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     }
 
     final targetLang = ref.watch(currentLanguageCodeProvider);
-    final titles = ref
+    final titles =
+        ref
             .watch(
               listTitleTranslationsProvider(
                 TitleTranslationRequest(

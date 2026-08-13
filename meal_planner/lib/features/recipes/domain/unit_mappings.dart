@@ -22,7 +22,7 @@ const relativeUnits = [
   'bote',
   'paquete',
   'sobre',
-  ];
+];
 
 const predefinedUnits = [
   ...weightUnits,
@@ -67,10 +67,7 @@ String? normalizeUnit(String? unit) {
   return unit;
 }
 
-const abbreviatedUnits = [
-  ...weightUnits,
-  ...volumeUnits,
-];
+const abbreviatedUnits = [...weightUnits, ...volumeUnits];
 
 bool isAbbreviatedUnit(String? unit) {
   final normalized = normalizeUnit(unit);

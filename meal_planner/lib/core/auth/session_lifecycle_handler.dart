@@ -50,8 +50,7 @@ class _SessionLifecycleHandlerState
 
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      if (_isAuthenticated &&
-          !ref.read(authOperationInProgressProvider)) {
+      if (_isAuthenticated && !ref.read(authOperationInProgressProvider)) {
         unawaited(SessionBackground.markBackgrounded());
       }
       return;

@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _storageKey = 'app.locale';
 
-final localeProvider =
-    NotifierProvider<LocaleNotifier, Locale?>(LocaleNotifier.new);
+final localeProvider = NotifierProvider<LocaleNotifier, Locale?>(
+  LocaleNotifier.new,
+);
 
 class LocaleNotifier extends Notifier<Locale?> {
   var _hasLocalChange = false;
@@ -33,7 +34,8 @@ class LocaleNotifier extends Notifier<Locale?> {
   }
 
   String get currentLanguageCode =>
-      state?.languageCode ?? WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      state?.languageCode ??
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode;
 
   Future<void> setLocale(Locale? locale) async {
     _hasLocalChange = true;

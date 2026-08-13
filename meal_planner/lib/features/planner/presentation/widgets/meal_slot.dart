@@ -39,16 +39,10 @@ class _MealSlotState extends ConsumerState<MealSlot> {
 
   bool get _isPastDay {
     final weekStart = ref.read(currentWeekProvider);
-    return isPastPlannerDay(
-      weekStart: weekStart,
-      dayOfWeek: widget.dayOfWeek,
-    );
+    return isPastPlannerDay(weekStart: weekStart, dayOfWeek: widget.dayOfWeek);
   }
 
-  Future<void> _addRecipe(
-    BuildContext context,
-    Recipe recipe,
-  ) async {
+  Future<void> _addRecipe(BuildContext context, Recipe recipe) async {
     final canEdit = ref.read(canEditOfflineProvider);
     final result = await showServingsDialog(
       context,
@@ -63,7 +57,9 @@ class _MealSlotState extends ConsumerState<MealSlot> {
       if (!context.mounted) return;
     }
 
-    await ref.read(planSlotsProvider.notifier).addSlot(
+    await ref
+        .read(planSlotsProvider.notifier)
+        .addSlot(
           dayOfWeek: widget.dayOfWeek,
           mealType: widget.mealType,
           recipeId: recipe.id,
@@ -88,7 +84,9 @@ class _MealSlotState extends ConsumerState<MealSlot> {
       if (!mounted) return;
     }
 
-    await ref.read(planSlotsProvider.notifier).moveSlot(
+    await ref
+        .read(planSlotsProvider.notifier)
+        .moveSlot(
           slotId: item.slot.id,
           dayOfWeek: widget.dayOfWeek,
           mealType: widget.mealType,
@@ -109,18 +107,13 @@ class _MealSlotState extends ConsumerState<MealSlot> {
     );
   }
 
-  Future<void> _confirmRemove(
-    BuildContext context,
-    SlotItem item,
-  ) async {
+  Future<void> _confirmRemove(BuildContext context, SlotItem item) async {
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.removeMealTitle),
-        content: Text(
-          l10n.removeMealConfirm(item.displayTitle),
-        ),
+        content: Text(l10n.removeMealConfirm(item.displayTitle)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -139,10 +132,7 @@ class _MealSlotState extends ConsumerState<MealSlot> {
     }
   }
 
-  void _handleDrop(
-    BuildContext context,
-    PlannerDragPayload payload,
-  ) {
+  void _handleDrop(BuildContext context, PlannerDragPayload payload) {
     switch (payload) {
       case PlannerRecipeDrag(:final recipe):
         _addRecipe(context, recipe);
@@ -201,10 +191,9 @@ class _MealSlotState extends ConsumerState<MealSlot> {
                   maxLines: 1,
                   softWrap: false,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: labelColor,
-                        fontWeight:
-                            _isHovering ? FontWeight.w600 : FontWeight.w500,
-                      ),
+                    color: labelColor,
+                    fontWeight: _isHovering ? FontWeight.w600 : FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -216,8 +205,9 @@ class _MealSlotState extends ConsumerState<MealSlot> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 120),
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.4),
+                    color: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.4,
+                    ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
@@ -233,16 +223,20 @@ class _MealSlotState extends ConsumerState<MealSlot> {
                             item: item,
                             canRemove: canEdit,
                             canDrag: canEdit,
-                            onDragStart: () => ref
-                                .read(plannerDragActiveProvider.notifier)
-                                .state = true,
+                            onDragStart: () =>
+                                ref
+                                        .read(
+                                          plannerDragActiveProvider.notifier,
+                                        )
+                                        .state =
+                                    true,
                             onDragUpdate: widget.onDragUpdate,
                             onDragEnd: _finishDrag,
                             onOpenRecipe: item.isTextSlot
                                 ? null
                                 : () => context.push(
-                                      '/home/recipes/${item.slot.recipeId}',
-                                    ),
+                                    '/home/recipes/${item.slot.recipeId}',
+                                  ),
                             onRemove: () => _confirmRemove(context, item),
                           ),
                         ),
@@ -260,8 +254,7 @@ class _MealSlotState extends ConsumerState<MealSlot> {
                           ? (details) => _willAccept(details.data)
                           : null,
                       onAcceptWithDetails: canEdit
-                          ? (details) =>
-                              _handleDrop(context, details.data)
+                          ? (details) => _handleDrop(context, details.data)
                           : null,
                       onLeave: (_) => _setHovering(false),
                       builder: (context, candidate, rejected) {
@@ -272,8 +265,9 @@ class _MealSlotState extends ConsumerState<MealSlot> {
                           duration: const Duration(milliseconds: 120),
                           decoration: BoxDecoration(
                             color: isHovering
-                                ? colorScheme.primaryContainer
-                                    .withValues(alpha: 0.5)
+                                ? colorScheme.primaryContainer.withValues(
+                                    alpha: 0.5,
+                                  )
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
@@ -314,20 +308,16 @@ class _EmptySlot extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         child: Row(
           children: [
-            Icon(
-              Icons.add,
-              size: 18,
-              color: colorScheme.outline,
-            ),
+            Icon(Icons.add, size: 18, color: colorScheme.outline),
             const SizedBox(width: 4),
             Expanded(
               child: Text(
                 l10n.dragOrTap,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.outline,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: colorScheme.outline),
               ),
             ),
           ],
@@ -357,9 +347,9 @@ class _AddMoreButton extends StatelessWidget {
             const SizedBox(width: 2),
             Text(
               context.l10n.add,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: colorScheme.primary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: colorScheme.primary),
             ),
           ],
         ),
@@ -430,10 +420,7 @@ class _RecipeChip extends StatelessWidget {
           : (details) => onDragUpdate!(details.globalPosition),
       onDragEnd: (_) => onDragEnd?.call(),
       onDraggableCanceled: (_, _) => onDragEnd?.call(),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.grab,
-        child: chip,
-      ),
+      child: MouseRegion(cursor: SystemMouseCursors.grab, child: chip),
     );
   }
 }
@@ -497,10 +484,18 @@ class _RecipeChipBody extends StatelessWidget {
                         Icon(Icons.edit_note, size: 18, color: onChipColor),
                         const SizedBox(width: 8),
                       ] else if (isLeftover) ...[
-                        Icon(Icons.replay_rounded, size: 18, color: onChipColor),
+                        Icon(
+                          Icons.replay_rounded,
+                          size: 18,
+                          color: onChipColor,
+                        ),
                         const SizedBox(width: 8),
                       ] else ...[
-                        Icon(Icons.restaurant_menu, size: 18, color: onChipColor),
+                        Icon(
+                          Icons.restaurant_menu,
+                          size: 18,
+                          color: onChipColor,
+                        ),
                         const SizedBox(width: 8),
                       ],
                       Expanded(
@@ -508,7 +503,8 @@ class _RecipeChipBody extends StatelessWidget {
                           item.displayTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 color: onChipColor,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -518,7 +514,8 @@ class _RecipeChipBody extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           l10n.servingsCountShort(item.slot.servings),
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
                                 color: onChipColor.withValues(alpha: 0.85),
                               ),
                         ),

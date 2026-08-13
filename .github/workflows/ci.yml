@@ -7,8 +7,8 @@ on:
     branches: [main, develop]
 
 jobs:
-  flutter-ci:
-    name: flutter-ci
+  quality:
+    name: quality
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,8 +25,34 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed lib test
+
       - name: Analyze
         run: flutter analyze --fatal-infos lib test
 
-      - name: Run unit tests
-        run: flutter test
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: meal_planner/coverage/lcov.info
+          if-no-files-found: warn
+
+      # Floor measured 2026-08-13 after logic tests: 8.72% → 8.
+      # Excludes UI, generated l10n, and firebase_options.
+      - name: Check coverage floor
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: meal_planner/coverage/lcov.info
+          min_coverage: 8
+          exclude: >-
+            **/*.g.dart
+            **/*_localizations*.dart
+            **/l10n/**
+            **/firebase_options.dart
+            **/presentation/**
+            **/widgets/**

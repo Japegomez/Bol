@@ -25,13 +25,12 @@ class RecipeTranslationRepository {
     }
 
     try {
-      final response = await supabase.functions.invoke(
-        'translate-recipe',
-        body: {
-          'recipe_id': recipeId,
-          'target_lang': targetLang,
-        },
-      ).timeout(const Duration(seconds: 30));
+      final response = await supabase.functions
+          .invoke(
+            'translate-recipe',
+            body: {'recipe_id': recipeId, 'target_lang': targetLang},
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.status != 200) {
         throw Exception(
@@ -92,20 +91,24 @@ class RecipeTranslationRepository {
 
 final recipeTranslationRepositoryProvider =
     Provider<RecipeTranslationRepository>((ref) {
-  return RecipeTranslationRepository();
-});
+      return RecipeTranslationRepository();
+    });
 
-final publicRecipeTranslationProvider = FutureProvider.family<
-    RecipeTranslationPayload?,
-    PublicRecipeTranslationRequest>((ref, request) async {
-  if (request.sourceLang == request.targetLang) return null;
+final publicRecipeTranslationProvider =
+    FutureProvider.family<
+      RecipeTranslationPayload?,
+      PublicRecipeTranslationRequest
+    >((ref, request) async {
+      if (request.sourceLang == request.targetLang) return null;
 
-  return ref.read(recipeTranslationRepositoryProvider).fetchTranslation(
-        recipeId: request.recipeId,
-        targetLang: request.targetLang,
-        sourceLang: request.sourceLang,
-      );
-});
+      return ref
+          .read(recipeTranslationRepositoryProvider)
+          .fetchTranslation(
+            recipeId: request.recipeId,
+            targetLang: request.targetLang,
+            sourceLang: request.sourceLang,
+          );
+    });
 
 class PublicRecipeTranslationRequest {
   const PublicRecipeTranslationRequest({

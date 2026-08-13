@@ -56,13 +56,9 @@ class _OfflineEntryListenerState extends ConsumerState<OfflineEntryListener>
 
     ref.read(offlineDialogShownProvider.notifier).state = true;
 
-    final inHousehold =
-        ref.read(currentHouseholdProvider).valueOrNull != null;
+    final inHousehold = ref.read(currentHouseholdProvider).valueOrNull != null;
 
-    showOfflineLimitationsDialog(
-      context,
-      inHousehold: inHousehold,
-    );
+    showOfflineLimitationsDialog(context, inHousehold: inHousehold);
   }
 
   @override

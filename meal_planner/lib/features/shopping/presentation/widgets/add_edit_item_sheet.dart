@@ -6,11 +6,7 @@ import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 
 class AddEditItemSheet extends StatefulWidget {
-  const AddEditItemSheet({
-    this.item,
-    this.canSave = true,
-    super.key,
-  });
+  const AddEditItemSheet({this.item, this.canSave = true, super.key});
 
   final ShoppingItem? item;
   final bool canSave;
@@ -126,9 +122,7 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(
-                labelText: l10n.nameLabel,
-              ),
+              decoration: InputDecoration(labelText: l10n.nameLabel),
               textCapitalization: TextCapitalization.sentences,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -143,11 +137,10 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _quantityController,
-                    decoration: InputDecoration(
-                      labelText: l10n.quantityLabel,
+                    decoration: InputDecoration(labelText: l10n.quantityLabel),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
                         RegExp(r'^\d*[.,]?\d*'),
@@ -157,8 +150,9 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                       if (value == null || value.trim().isEmpty) {
                         return null;
                       }
-                      final parsed =
-                          num.tryParse(value.trim().replaceAll(',', '.'));
+                      final parsed = num.tryParse(
+                        value.trim().replaceAll(',', '.'),
+                      );
                       if (parsed == null) {
                         return l10n.enterValidNumber;
                       }
@@ -171,13 +165,8 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
                   child: DropdownButtonFormField<String>(
                     key: ValueKey('unit-$_useCustomUnit-$_unit'),
                     initialValue: _useCustomUnit ? customUnitOption : _unit,
-                    decoration: InputDecoration(
-                      labelText: l10n.unitLabel,
-                    ),
-                    items: [
-                      ...predefinedUnits,
-                      customUnitOption,
-                    ]
+                    decoration: InputDecoration(labelText: l10n.unitLabel),
+                    items: [...predefinedUnits, customUnitOption]
                         .map(
                           (unit) => DropdownMenuItem(
                             value: unit,
@@ -205,18 +194,14 @@ class _AddEditItemSheetState extends State<AddEditItemSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _customUnitController,
-                decoration: InputDecoration(
-                  labelText: l10n.customUnitLabel,
-                ),
+                decoration: InputDecoration(labelText: l10n.customUnitLabel),
               ),
             ],
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               key: ValueKey('category-$_category'),
               initialValue: _category,
-              decoration: InputDecoration(
-                labelText: l10n.categoryLabel,
-              ),
+              decoration: InputDecoration(labelText: l10n.categoryLabel),
               items: ingredientCategories
                   .map(
                     (category) => DropdownMenuItem(

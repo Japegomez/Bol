@@ -8,9 +8,9 @@ abstract final class NetworkStatus {
 
   static Future<bool> get isOnline async {
     try {
-      final results = await Connectivity()
-          .checkConnectivity()
-          .timeout(_connectivityTimeout);
+      final results = await Connectivity().checkConnectivity().timeout(
+        _connectivityTimeout,
+      );
       return results.isNotEmpty && !results.contains(ConnectivityResult.none);
     } on TimeoutException {
       return false;

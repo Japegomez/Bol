@@ -31,33 +31,30 @@ class TitleTranslationRequest {
 /// Only recipes whose source language differs from [targetLang] are returned;
 /// callers fall back to the original title for any id not present in the map.
 /// Translations are cached server-side, so repeated calls are cheap.
-final listTitleTranslationsProvider = FutureProvider.autoDispose.family<
-    Map<String, String>, TitleTranslationRequest>((ref, request) async {
-  if (request.ids.isEmpty) return const {};
+final listTitleTranslationsProvider = FutureProvider.autoDispose
+    .family<Map<String, String>, TitleTranslationRequest>((ref, request) async {
+      if (request.ids.isEmpty) return const {};
 
-  try {
-    final response = await supabase.functions.invoke(
-      'translate-titles',
-      body: {
-        'recipe_ids': request.ids,
-        'target_lang': request.targetLang,
-      },
-    );
+      try {
+        final response = await supabase.functions.invoke(
+          'translate-titles',
+          body: {'recipe_ids': request.ids, 'target_lang': request.targetLang},
+        );
 
-    if (response.status != 200) return const {};
+        if (response.status != 200) return const {};
 
-    final data = response.data;
-    if (data is! Map) return const {};
-    final translations = data['translations'];
-    if (translations is! Map) return const {};
+        final data = response.data;
+        if (data is! Map) return const {};
+        final translations = data['translations'];
+        if (translations is! Map) return const {};
 
-    return Map<String, String>.unmodifiable(
-      translations.map(
-        (key, value) => MapEntry(key.toString(), value.toString()),
-      ),
-    );
-  } catch (_) {
-    // Offline or transient error — callers show the original titles.
-    return const {};
-  }
-});
+        return Map<String, String>.unmodifiable(
+          translations.map(
+            (key, value) => MapEntry(key.toString(), value.toString()),
+          ),
+        );
+      } catch (_) {
+        // Offline or transient error — callers show the original titles.
+        return const {};
+      }
+    });

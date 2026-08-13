@@ -93,7 +93,9 @@ class PublicProfileScreen extends ConsumerWidget {
                             ref.invalidate(isFollowingProvider(userId));
                             ref.invalidate(feedProvider);
                           },
-                          child: Text(isFollowing ? l10n.unfollow : l10n.follow),
+                          child: Text(
+                            isFollowing ? l10n.unfollow : l10n.follow,
+                          ),
                         ),
                         loading: () => const SizedBox(
                           width: 24,
@@ -125,7 +127,8 @@ class PublicProfileScreen extends ConsumerWidget {
           ],
         ),
         loading: () => const PublicProfileSkeleton(),
-        error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, _) =>
+            Center(child: Text(l10n.errorWithMessage('$error'))),
       ),
     );
   }
@@ -155,7 +158,10 @@ class _PublicRecipeDetailScreenState
     super.initState();
     // Reset "view original" toggle whenever the app language changes so the
     // screen automatically shows the new translation instead of the old one.
-    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (_, _) {
+    _languageSubscription = ref.listenManual(currentLanguageCodeProvider, (
+      _,
+      _,
+    ) {
       if (mounted) setState(() => _showOriginal = false);
     });
   }
@@ -168,7 +174,8 @@ class _PublicRecipeDetailScreenState
 
   bool _onScroll(ScrollNotification notification, {required bool hasPhoto}) {
     if (notification.metrics.axis != Axis.vertical) return false;
-    final show = notification.metrics.pixels >=
+    final show =
+        notification.metrics.pixels >=
         recipeAppBarCollapseOffset(hasPhoto: hasPhoto);
     if (show != _showAppBarTitle) {
       setState(() => _showAppBarTitle = show);
@@ -184,11 +191,7 @@ class _PublicRecipeDetailScreenState
           .read(recipeShareRepositoryProvider)
           .publicShareUrl(widget.recipeId);
       if (!mounted) return;
-      await shareRecipeLink(
-        context,
-        title: detail.recipe.title,
-        url: url,
-      );
+      await shareRecipeLink(context, title: detail.recipe.title, url: url);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -200,13 +203,15 @@ class _PublicRecipeDetailScreenState
   }
 
   Future<void> _forkRecipe(PublicRecipeDetail detail) async {
-    final optionalIngredients =
-        detail.ingredients.where((ingredient) => ingredient.isOptional).toList();
+    final optionalIngredients = detail.ingredients
+        .where((ingredient) => ingredient.isOptional)
+        .toList();
 
     setState(() => _isForking = true);
     try {
-      final newId =
-          await ref.read(socialRepositoryProvider).forkRecipe(widget.recipeId);
+      final newId = await ref
+          .read(socialRepositoryProvider)
+          .forkRecipe(widget.recipeId);
       ref.invalidate(recipeListProvider);
       ref.invalidate(recipesProvider);
       if (!mounted) return;
@@ -225,9 +230,9 @@ class _PublicRecipeDetailScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeSavedToBook)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.recipeSavedToBook)));
       context.go('/home/recipes/$newId');
     } catch (e) {
       if (!mounted) return;
@@ -242,7 +247,9 @@ class _PublicRecipeDetailScreenState
   Future<void> _rateRecipe(int score) async {
     setState(() => _isRating = true);
     try {
-      await ref.read(socialRepositoryProvider).rateRecipe(widget.recipeId, score);
+      await ref
+          .read(socialRepositoryProvider)
+          .rateRecipe(widget.recipeId, score);
       ref.invalidate(publicRecipeDetailProvider(widget.recipeId));
       ref.invalidate(exploreRecipesProvider);
     } catch (e) {
@@ -257,8 +264,9 @@ class _PublicRecipeDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final displayAsync =
-        ref.watch(publicRecipeDisplayProvider(widget.recipeId));
+    final displayAsync = ref.watch(
+      publicRecipeDisplayProvider(widget.recipeId),
+    );
     final currentUserId = supabase.auth.currentUser?.id;
     final l10n = context.l10n;
     final appLocale = ref.watch(currentLanguageCodeProvider);
@@ -283,301 +291,302 @@ class _PublicRecipeDetailScreenState
             onNotification: (notification) =>
                 _onScroll(notification, hasPhoto: hasPhoto),
             child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                expandedHeight: hasPhoto ? 240 : 120,
-                pinned: true,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.pop(),
-                ),
-                title: _showAppBarTitle
-                    ? RecipeAppBarTitle(title: detail.recipe.title)
-                    : null,
-                actions: [
-                  _isSharing
-                      ? const _AppBarActionSpinner()
-                      : IconButton(
-                          icon: const Icon(Icons.ios_share),
-                          tooltip: l10n.shareRecipeTooltip,
-                          onPressed: () => _shareRecipe(detail),
-                        ),
-                  if (!isOwn && !_isForking)
-                    IconButton(
-                      icon: const Icon(Icons.bookmark_add_outlined),
-                      tooltip: l10n.saveToMyRecipeBookTooltip,
-                      onPressed: () => _forkRecipe(detail),
-                    )
-                  else if (!isOwn && _isForking)
-                    const _AppBarActionSpinner(),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: hasPhoto
-                      ? CachedNetworkImage(
-                          imageUrl: detail.photoDisplayUrl!,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, _, _) => const SizedBox.shrink(),
-                        )
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: hasPhoto ? 240 : 120,
+                  pinned: true,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => context.pop(),
+                  ),
+                  title: _showAppBarTitle
+                      ? RecipeAppBarTitle(title: detail.recipe.title)
                       : null,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      RecipeDetailBodyTitle(title: detail.recipe.title),
-                      const SizedBox(height: 16),
-                      TranslationStatusBanner(
-                        l10n: l10n,
-                        isTranslated: displayState.isTranslated,
-                        translationFailed: displayState.translationFailed,
-                        showingOriginal: _showOriginal,
-                        onToggleOriginal: () => setState(
-                          () => _showOriginal = !_showOriginal,
-                        ),
-                      ),
-                      if (displayState.isTranslated || displayState.translationFailed)
-                        const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Text(
-                            '${l10n.recipeCreatedBy} ',
-                            style:
-                                Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      color:
-                                          Theme.of(context).colorScheme.onSurface,
-                                    ),
+                  actions: [
+                    _isSharing
+                        ? const _AppBarActionSpinner()
+                        : IconButton(
+                            icon: const Icon(Icons.ios_share),
+                            tooltip: l10n.shareRecipeTooltip,
+                            onPressed: () => _shareRecipe(detail),
                           ),
-                          if (isOwn)
-                            Text(
-                              l10n.you,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface,
-                                  ),
-                            )
-                          else
-                            InkWell(
-                              onTap: () => context.push(
-                                '/home/explore/user/${detail.recipe.userId}',
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                  vertical: 1,
-                                ),
-                                child: Text(
-                                  detail.authorName,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          StarRatingDisplay(
-                            rating: detail.avgScore,
-                            count: detail.ratingCount,
-                          ),
-                          Text(l10n.servingsCount(detail.recipe.servings)),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 16,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                formatRecipeCreatedAt(
-                                  detail.recipe.createdAt,
-                                  appLocale,
-                                ),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      if (!isOwn) ...[
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed:
-                                _isForking ? null : () => _forkRecipe(detail),
-                            icon: _isForking
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.bookmark_add_outlined),
-                            label: Text(l10n.saveToMyRecipeBook),
-                          ),
-                        ),
-                      ],
-                      if (!isOwn) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.yourRating,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: 4),
-                        _isRating
-                            ? const LinearProgressIndicator()
-                            : StarRatingBar(
-                                rating: (detail.myRating ?? 0).toDouble(),
-                                onRatingChanged: _rateRecipe,
-                              ),
-                      ],
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 8,
-                        children: [
-                          if (detail.recipe.prepTime != null)
-                            _InfoChip(
-                              icon: Icons.timer_outlined,
-                              label: l10n.prepTimeMin(detail.recipe.prepTime!),
-                            ),
-                          if (detail.recipe.cookTime != null)
-                            _InfoChip(
-                              icon: Icons.local_fire_department_outlined,
-                              label: l10n.cookTimeMin(detail.recipe.cookTime!),
-                            ),
-                        ],
-                      ),
-                      if (detail.recipe.tags.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: detail.recipe.tags
-                              .map(
-                                (tag) => Chip(
-                                  label: Text(localizedTagLabel(l10n, tag)),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      Text(
-                        l10n.ingredientsSection,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      if (detail.ingredients.isEmpty)
-                        Text(l10n.noIngredients)
-                      else
-                        ...detail.ingredients.map(
-                              (ingredient) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const IngredientBullet(),
-                                    Expanded(
-                                      child: Text(
-                                        '${formatIngredientLabel(l10n, ingredient, contentLocaleName: contentLocale)}${ingredient.isOptional ? ' ${l10n.optionalIngredientSuffix}' : ''}',
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                      const SizedBox(height: 24),
-                      Text(
-                        l10n.preparationSection,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      if (detail.steps.isEmpty)
-                        Text(l10n.noSteps)
-                      else
-                        ...detail.steps.asMap().entries.map(
-                              (entry) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 14,
-                                      child: Text('${entry.key + 1}'),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: RecipeStepText(step: entry.value),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                      if (detail.recipe.tips != null &&
-                          detail.recipe.tips!.trim().isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        Text(
-                          l10n.tipsSection,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(detail.recipe.tips!),
-                      ],
-                      if (detail.nutrition != null) ...[
-                        const SizedBox(height: 24),
-                        Text(
-                          l10n.nutritionPerServing,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        _NutritionGrid(nutrition: detail.nutrition!),
-                      ],
-                    ],
+                    if (!isOwn && !_isForking)
+                      IconButton(
+                        icon: const Icon(Icons.bookmark_add_outlined),
+                        tooltip: l10n.saveToMyRecipeBookTooltip,
+                        onPressed: () => _forkRecipe(detail),
+                      )
+                    else if (!isOwn && _isForking)
+                      const _AppBarActionSpinner(),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: hasPhoto
+                        ? CachedNetworkImage(
+                            imageUrl: detail.photoDisplayUrl!,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, _, _) => const SizedBox.shrink(),
+                          )
+                        : null,
                   ),
                 ),
-              ),
-            ],
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RecipeDetailBodyTitle(title: detail.recipe.title),
+                        const SizedBox(height: 16),
+                        TranslationStatusBanner(
+                          l10n: l10n,
+                          isTranslated: displayState.isTranslated,
+                          translationFailed: displayState.translationFailed,
+                          showingOriginal: _showOriginal,
+                          onToggleOriginal: () =>
+                              setState(() => _showOriginal = !_showOriginal),
+                        ),
+                        if (displayState.isTranslated ||
+                            displayState.translationFailed)
+                          const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Text(
+                              '${l10n.recipeCreatedBy} ',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                            ),
+                            if (isOwn)
+                              Text(
+                                l10n.you,
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                    ),
+                              )
+                            else
+                              InkWell(
+                                onTap: () => context.push(
+                                  '/home/explore/user/${detail.recipe.userId}',
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                    vertical: 1,
+                                  ),
+                                  child: Text(
+                                    detail.authorName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            StarRatingDisplay(
+                              rating: detail.avgScore,
+                              count: detail.ratingCount,
+                            ),
+                            Text(l10n.servingsCount(detail.recipe.servings)),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 16,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  formatRecipeCreatedAt(
+                                    detail.recipe.createdAt,
+                                    appLocale,
+                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        if (!isOwn) ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: _isForking
+                                  ? null
+                                  : () => _forkRecipe(detail),
+                              icon: _isForking
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.bookmark_add_outlined),
+                              label: Text(l10n.saveToMyRecipeBook),
+                            ),
+                          ),
+                        ],
+                        if (!isOwn) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.yourRating,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          _isRating
+                              ? const LinearProgressIndicator()
+                              : StarRatingBar(
+                                  rating: (detail.myRating ?? 0).toDouble(),
+                                  onRatingChanged: _rateRecipe,
+                                ),
+                        ],
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 8,
+                          children: [
+                            if (detail.recipe.prepTime != null)
+                              _InfoChip(
+                                icon: Icons.timer_outlined,
+                                label: l10n.prepTimeMin(
+                                  detail.recipe.prepTime!,
+                                ),
+                              ),
+                            if (detail.recipe.cookTime != null)
+                              _InfoChip(
+                                icon: Icons.local_fire_department_outlined,
+                                label: l10n.cookTimeMin(
+                                  detail.recipe.cookTime!,
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (detail.recipe.tags.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: detail.recipe.tags
+                                .map(
+                                  (tag) => Chip(
+                                    label: Text(localizedTagLabel(l10n, tag)),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.ingredientsSection,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        if (detail.ingredients.isEmpty)
+                          Text(l10n.noIngredients)
+                        else
+                          ...detail.ingredients.map(
+                            (ingredient) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const IngredientBullet(),
+                                  Expanded(
+                                    child: Text(
+                                      '${formatIngredientLabel(l10n, ingredient, contentLocaleName: contentLocale)}${ingredient.isOptional ? ' ${l10n.optionalIngredientSuffix}' : ''}',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.preparationSection,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        if (detail.steps.isEmpty)
+                          Text(l10n.noSteps)
+                        else
+                          ...detail.steps.asMap().entries.map(
+                            (entry) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 14,
+                                    child: Text('${entry.key + 1}'),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: RecipeStepText(step: entry.value),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (detail.recipe.tips != null &&
+                            detail.recipe.tips!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            l10n.tipsSection,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(detail.recipe.tips!),
+                        ],
+                        if (detail.nutrition != null) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            l10n.nutritionPerServing,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          _NutritionGrid(nutrition: detail.nutrition!),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
         loading: () => const RecipeDetailSkeleton(),
         error: (error, _) {
-          final isOffline = error is OfflinePublicRecipeBlockedException ||
+          final isOffline =
+              error is OfflinePublicRecipeBlockedException ||
               isTransientNetworkError(error);
           if (isOffline) {
             return Center(
@@ -627,11 +636,7 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 4),
-        Text(label),
-      ],
+      children: [Icon(icon, size: 18), const SizedBox(width: 4), Text(label)],
     );
   }
 }
@@ -673,9 +678,8 @@ class _NutritionGrid extends StatelessWidget {
       runSpacing: 12,
       children: items
           .map(
-            (item) => Chip(
-              label: Text(l10n.nutritionChip(item.key, item.value!)),
-            ),
+            (item) =>
+                Chip(label: Text(l10n.nutritionChip(item.key, item.value!))),
           )
           .toList(),
     );

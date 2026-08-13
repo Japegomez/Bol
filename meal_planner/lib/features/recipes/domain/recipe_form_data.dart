@@ -30,8 +30,9 @@ class IngredientFormItem {
   bool isIncluded;
   bool isToTaste;
 
-  String? get effectiveUnit =>
-      useCustomUnit ? (customUnit.trim().isEmpty ? null : customUnit.trim()) : unit;
+  String? get effectiveUnit => useCustomUnit
+      ? (customUnit.trim().isEmpty ? null : customUnit.trim())
+      : unit;
 
   IngredientFormItem copyWith({
     String? name,
@@ -60,11 +61,8 @@ class IngredientFormItem {
 }
 
 class StepFormItem {
-  StepFormItem({
-    String? key,
-    this.description = '',
-    this.isOptional = false,
-  }) : key = key ?? _newFormItemKey('step');
+  StepFormItem({String? key, this.description = '', this.isOptional = false})
+    : key = key ?? _newFormItemKey('step');
 
   final String key;
   String description;
@@ -78,11 +76,11 @@ class NutritionFormData {
     num? carbohydrates,
     num? fat,
     num? fiber,
-  })  : calories = normalizeNutritionValue(calories),
-        protein = normalizeNutritionValue(protein),
-        carbohydrates = normalizeNutritionValue(carbohydrates),
-        fat = normalizeNutritionValue(fat),
-        fiber = normalizeNutritionValue(fiber);
+  }) : calories = normalizeNutritionValue(calories),
+       protein = normalizeNutritionValue(protein),
+       carbohydrates = normalizeNutritionValue(carbohydrates),
+       fat = normalizeNutritionValue(fat),
+       fiber = normalizeNutritionValue(fiber);
 
   int? calories;
   int? protein;
@@ -134,10 +132,10 @@ class RecipeFormData {
     this.isPublic = false,
     this.forkedFromId,
     this.tips = '',
-  })  : tags = tags ?? [],
-        ingredients = ingredients ?? [IngredientFormItem()],
-        steps = steps ?? [StepFormItem()],
-        nutrition = nutrition ?? NutritionFormData();
+  }) : tags = tags ?? [],
+       ingredients = ingredients ?? [IngredientFormItem()],
+       steps = steps ?? [StepFormItem()],
+       nutrition = nutrition ?? NutritionFormData();
 
   String title;
   int servings;
@@ -167,8 +165,7 @@ class RecipeFormData {
       return 'Añade al menos un ingrediente no opcional';
     }
 
-    final requiredSteps =
-        validSteps.where((step) => !step.isOptional);
+    final requiredSteps = validSteps.where((step) => !step.isOptional);
     if (requiredSteps.isEmpty) {
       return 'Añade al menos un paso de elaboración no opcional';
     }
