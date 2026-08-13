@@ -19,7 +19,7 @@ dependencies:
   firebase_core: ^4.13.0
   firebase_analytics: ^12.4.6
   logger: ^2.5.0
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^11.0.0
   connectivity_plus: ^7.3.1
   upgrader: ^13.6.0
   in_app_review: ^2.0.10
@@ -28,11 +28,11 @@ dependencies:
   crypto: ^3.0.6
   image_picker: ^1.2.3
   speech_to_text: ^7.3.0
-  share_plus: ^12.0.2
+  share_plus: ^13.3.0
   app_links: ^7.2.1
   cached_network_image: ^3.4.1
   flutter_slidable: ^4.0.3
-  intl: ^0.20.2
+  intl: ^0.20.3
   cupertino_icons: ^1.0.8
   webview_flutter: ^4.14.1
   webview_flutter_android: ^4.13.0
