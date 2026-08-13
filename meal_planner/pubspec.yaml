@@ -21,7 +21,7 @@ dependencies:
   logger: ^2.5.0
   flutter_secure_storage: ^9.2.4
   connectivity_plus: ^6.1.4
-  upgrader: ^11.4.0
+  upgrader: ^13.6.0
   in_app_review: ^2.0.10
   google_sign_in: ^6.3.0
   sign_in_with_apple: ^6.1.4
