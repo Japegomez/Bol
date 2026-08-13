@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +7,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/core/widgets/overflow_marquee_text.dart';
+import 'package:meal_planner/core/widgets/recipe_card_network_photo.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
@@ -274,9 +274,9 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                     ..sort((a, b) {
                       final titleA = titles[a.id] ?? a.title;
                       final titleB = titles[b.id] ?? b.title;
-                      return titleA.toLowerCase().compareTo(
-                        titleB.toLowerCase(),
-                      );
+                      return _alphaSortKey(
+                        titleA,
+                      ).compareTo(_alphaSortKey(titleB));
                     });
                 }
 
@@ -342,25 +342,7 @@ class _RecipeCard extends ConsumerWidget {
           photo: Stack(
             fit: StackFit.expand,
             children: [
-              photoUrlAsync.when(
-                data: (url) {
-                  if (url == null) {
-                    return const RecipePhotoPlaceholder();
-                  }
-                  return CachedNetworkImage(
-                    imageUrl: url,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    placeholder: (_, _) => const _RecipePhotoSkeleton(),
-                    errorWidget: (_, _, _) => const RecipePhotoPlaceholder(
-                      child: Icon(Icons.broken_image),
-                    ),
-                  );
-                },
-                loading: () => const _RecipePhotoSkeleton(),
-                error: (_, _) => const RecipePhotoPlaceholder(),
-              ),
+              RecipeCardNetworkPhoto(photoUrl: photoUrlAsync),
               Positioned(
                 top: 4,
                 right: 4,
@@ -372,8 +354,8 @@ class _RecipeCard extends ConsumerWidget {
                   child: IconButton(
                     visualDensity: VisualDensity.compact,
                     constraints: const BoxConstraints(
-                      minWidth: 36,
-                      minHeight: 36,
+                      minWidth: 48,
+                      minHeight: 48,
                     ),
                     padding: EdgeInsets.zero,
                     tooltip: isFavorite
@@ -381,10 +363,21 @@ class _RecipeCard extends ConsumerWidget {
                         : l10n.favoriteRecipeTooltip,
                     onPressed: favoriteBusy
                         ? null
-                        : () {
-                            ref
-                                .read(recipeFavoritesProvider.notifier)
-                                .toggle(recipe.id);
+                        : () async {
+                            try {
+                              await ref
+                                  .read(recipeFavoritesProvider.notifier)
+                                  .toggle(recipe.id);
+                            } catch (error) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    context.l10n.errorWithMessage('$error'),
+                                  ),
+                                ),
+                              );
+                            }
                           },
                     icon: Icon(
                       isFavorite ? Icons.star : Icons.star_border,
@@ -440,13 +433,40 @@ class _RecipeCard extends ConsumerWidget {
   }
 }
 
-class _RecipePhotoSkeleton extends StatelessWidget {
-  const _RecipePhotoSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SkeletonPulse(
-      child: SkeletonBox(borderRadius: BorderRadius.zero),
-    );
+String _alphaSortKey(String title) {
+  const diacritics = {
+    'á': 'a',
+    'à': 'a',
+    'ä': 'a',
+    'â': 'a',
+    'ã': 'a',
+    'å': 'a',
+    'é': 'e',
+    'è': 'e',
+    'ë': 'e',
+    'ê': 'e',
+    'í': 'i',
+    'ì': 'i',
+    'ï': 'i',
+    'î': 'i',
+    'ó': 'o',
+    'ò': 'o',
+    'ö': 'o',
+    'ô': 'o',
+    'õ': 'o',
+    'ú': 'u',
+    'ù': 'u',
+    'ü': 'u',
+    'û': 'u',
+    'ý': 'y',
+    'ÿ': 'y',
+    'ñ': 'n',
+    'ç': 'c',
+  };
+  final buffer = StringBuffer();
+  for (final rune in title.trim().toLowerCase().runes) {
+    final char = String.fromCharCode(rune);
+    buffer.write(diacritics[char] ?? char);
   }
+  return buffer.toString();
 }

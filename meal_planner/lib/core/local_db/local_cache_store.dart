@@ -27,6 +27,8 @@ class LocalCacheStore {
 
   final AppDatabase? _db;
 
+  bool get canQueueOperations => _db != null;
+
   // ── Recipes ────────────────────────────────────────────────────────────────
 
   Future<void> cacheRecipes(List<Recipe> recipes) async {

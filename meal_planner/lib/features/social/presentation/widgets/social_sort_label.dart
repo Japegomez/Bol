@@ -52,7 +52,7 @@ class SocialSortLabel<T> extends StatelessWidget {
             ? PopupMenuButton<T>(
                 initialValue: value,
                 tooltip: context.l10n.sortedBy(label),
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 onSelected: onSelected,
                 itemBuilder: (context) => [
                   for (final option in options!)

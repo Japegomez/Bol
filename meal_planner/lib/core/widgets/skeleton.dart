@@ -271,7 +271,7 @@ class RecipeCardSkeleton extends StatelessWidget {
               const Positioned(
                 top: 4,
                 right: 4,
-                child: SkeletonCircle(size: 36),
+                child: SkeletonCircle(size: 48),
               ),
           ],
         ),

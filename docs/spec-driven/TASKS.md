@@ -628,7 +628,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Tab **Explorar** (primera posición en bottom nav: Explorar | Recetario | **Planificador** | Compra | Perfil)
 - [x] Paginación / scroll infinito (10 recetas por página)
 - [x] Orden por defecto: fecha de creación (más reciente primero); indicador «Ordenado por: …» con icono debajo de etiquetas
-- [x] Tarjeta de receta pública: foto cuadrada **84×84** fija; título/autor/valoración compactos; etiquetas en fila a **ancho completo** debajo de la foto (`PublicRecipeCard`; `_PhotoPlaceholder` con color de tema)
+- [x] Tarjeta de receta pública: foto cuadrada a la **altura compartida por defecto** con las fichas del recetario (sin chips de categoría); título/autor/valoración compactos; etiquetas en fila a **ancho completo** debajo de la foto (`PublicRecipeCard`; `RecipePhotoPlaceholder` con color de tema)
 - [x] Detalle de receta pública: fecha de creación visible junto a valoración y raciones
 
 ### F15 - Interacción social
