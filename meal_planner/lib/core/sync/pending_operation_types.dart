@@ -15,5 +15,6 @@ abstract final class PendingOp {
   static const toggle = 'toggle';
   static const clear = 'clear';
   static const setVisibility = 'set_visibility';
+  static const setFavorite = 'set_favorite';
   static const setIngredientIncluded = 'set_ingredient_included';
 }

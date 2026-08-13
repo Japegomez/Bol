@@ -12,6 +12,7 @@ class TagFilterChips extends StatelessWidget {
     required this.tags,
     required this.selectedTags,
     required this.onSelectionChanged,
+    this.leading = const [],
     this.padding = const EdgeInsets.symmetric(horizontal: 16),
     super.key,
   });
@@ -19,13 +20,14 @@ class TagFilterChips extends StatelessWidget {
   final Iterable<String> tags;
   final Set<String> selectedTags;
   final ValueChanged<Set<String>> onSelectionChanged;
+  final List<Widget> leading;
   final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final sorted = tags.toList()..sort();
-    if (sorted.isEmpty) return const SizedBox.shrink();
+    if (sorted.isEmpty && leading.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
       height: 48,
@@ -33,6 +35,8 @@ class TagFilterChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: padding,
         children: [
+          for (final child in leading)
+            Padding(padding: const EdgeInsets.only(right: 8), child: child),
           if (selectedTags.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -71,12 +75,14 @@ class RecipeTagFilterBar extends ConsumerWidget {
   const RecipeTagFilterBar({
     required this.selectedTags,
     required this.onSelectionChanged,
+    this.leading = const [],
     this.padding = const EdgeInsets.symmetric(horizontal: 16),
     super.key,
   });
 
   final Set<String> selectedTags;
   final ValueChanged<Set<String>> onSelectionChanged;
+  final List<Widget> leading;
   final EdgeInsetsGeometry padding;
 
   @override
@@ -88,10 +94,23 @@ class RecipeTagFilterBar extends ConsumerWidget {
         tags: tags,
         selectedTags: selectedTags,
         onSelectionChanged: onSelectionChanged,
+        leading: leading,
         padding: padding,
       ),
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+      loading: () => TagFilterChips(
+        tags: const [],
+        selectedTags: selectedTags,
+        onSelectionChanged: onSelectionChanged,
+        leading: leading,
+        padding: padding,
+      ),
+      error: (_, _) => TagFilterChips(
+        tags: const [],
+        selectedTags: selectedTags,
+        onSelectionChanged: onSelectionChanged,
+        leading: leading,
+        padding: padding,
+      ),
     );
   }
 }

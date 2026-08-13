@@ -977,6 +977,14 @@ class RecipesRepository {
   String _pendingFavoritesStorageKey(String userId) =>
       'recipe.favorites.pending.$userId';
 
+  bool _isPermanentFavoriteReject(Object error) {
+    if (error is! PostgrestException) return false;
+    final code = error.code ?? '';
+    if (code == '408' || code == '429') return false;
+    if (code.startsWith('4')) return true;
+    return code == '23503' || code == '23505' || code == '42501';
+  }
+
   Future<Set<String>> _readCachedFavoriteIds() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_favoritesStorageKey(_userId));
@@ -998,7 +1006,7 @@ class RecipesRepository {
     );
   }
 
-  Future<Map<String, bool>> _readPendingFavorites() async {
+  Future<Map<String, bool>> _readPendingFavoritesPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_pendingFavoritesStorageKey(_userId));
     if (raw == null || raw.isEmpty) return {};
@@ -1013,7 +1021,61 @@ class RecipesRepository {
     }
   }
 
+  Future<Map<String, bool>> _readPendingFavoritesFromCache() async {
+    final ops = await _cache.getPendingOperations(userId: _userId);
+    final pending = <String, bool>{};
+    for (final op in ops) {
+      if (op.entityType != PendingEntity.recipe ||
+          op.opType != PendingOp.setFavorite) {
+        continue;
+      }
+      try {
+        final payload = jsonDecode(op.payloadJson);
+        if (payload is! Map) continue;
+        final recipeId = payload['recipeId']?.toString();
+        if (recipeId == null || recipeId.isEmpty) continue;
+        pending[recipeId] = payload['isFavorite'] == true;
+      } catch (_) {
+        continue;
+      }
+    }
+    return pending;
+  }
+
+  Future<Map<String, bool>> _readPendingFavorites() async {
+    if (_cache.canQueueOperations) {
+      final queued = await _readPendingFavoritesFromCache();
+      final leftover = await _readPendingFavoritesPrefs();
+      if (leftover.isNotEmpty) {
+        queued.addAll(leftover);
+        await _writePendingFavorites(queued);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_pendingFavoritesStorageKey(_userId));
+      }
+      return queued;
+    }
+    return _readPendingFavoritesPrefs();
+  }
+
   Future<void> _writePendingFavorites(Map<String, bool> pending) async {
+    if (_cache.canQueueOperations) {
+      final ops = await _cache.getPendingOperations(userId: _userId);
+      for (final op in ops) {
+        if (op.entityType == PendingEntity.recipe &&
+            op.opType == PendingOp.setFavorite) {
+          await _cache.deletePendingOperation(op.id);
+        }
+      }
+      for (final entry in pending.entries) {
+        await _cache.enqueueOperation(
+          entityType: PendingEntity.recipe,
+          opType: PendingOp.setFavorite,
+          payload: {'recipeId': entry.key, 'isFavorite': entry.value},
+        );
+      }
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     if (pending.isEmpty) {
       await prefs.remove(_pendingFavoritesStorageKey(_userId));
@@ -1038,25 +1100,37 @@ class RecipesRepository {
     await _writePendingFavorites(pending);
   }
 
+  Future<void> setFavoriteRemote(String recipeId, bool isFavorite) async {
+    if (isFavorite) {
+      await supabase.from(_favoritesTable).upsert({
+        'user_id': _userId,
+        'recipe_id': recipeId,
+      }, onConflict: 'user_id,recipe_id');
+    } else {
+      await supabase
+          .from(_favoritesTable)
+          .delete()
+          .eq('user_id', _userId)
+          .eq('recipe_id', recipeId);
+    }
+  }
+
   Future<void> _replayPendingFavorites() async {
     final pending = await _readPendingFavorites();
     if (pending.isEmpty) return;
 
+    final remaining = Map<String, bool>.from(pending);
     for (final entry in pending.entries) {
-      if (entry.value) {
-        await supabase.from(_favoritesTable).upsert({
-          'user_id': _userId,
-          'recipe_id': entry.key,
-        }, onConflict: 'user_id,recipe_id');
-      } else {
-        await supabase
-            .from(_favoritesTable)
-            .delete()
-            .eq('user_id', _userId)
-            .eq('recipe_id', entry.key);
+      try {
+        await setFavoriteRemote(entry.key, entry.value);
+        remaining.remove(entry.key);
+      } catch (error) {
+        if (_isPermanentFavoriteReject(error)) {
+          remaining.remove(entry.key);
+        }
       }
-      await _clearPendingFavorite(entry.key);
     }
+    await _writePendingFavorites(remaining);
   }
 
   Future<Set<String>> _favoriteIdsWithPending() async {
@@ -1094,19 +1168,12 @@ class RecipesRepository {
 
   Future<void> setFavorite(String recipeId, bool isFavorite) async {
     if (await NetworkStatus.isOnline) {
-      await _replayPendingFavorites();
-      if (isFavorite) {
-        await supabase.from(_favoritesTable).upsert({
-          'user_id': _userId,
-          'recipe_id': recipeId,
-        }, onConflict: 'user_id,recipe_id');
-      } else {
-        await supabase
-            .from(_favoritesTable)
-            .delete()
-            .eq('user_id', _userId)
-            .eq('recipe_id', recipeId);
+      try {
+        await _replayPendingFavorites();
+      } catch (_) {
+        // Other pending favorites must not block this recipe's upsert/delete.
       }
+      await setFavoriteRemote(recipeId, isFavorite);
       await _clearPendingFavorite(recipeId);
     } else {
       await _enqueuePendingFavorite(recipeId, isFavorite);

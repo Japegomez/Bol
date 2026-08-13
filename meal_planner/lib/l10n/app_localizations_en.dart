@@ -368,6 +368,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publicBadge => 'Public';
 
   @override
+  String get privateBadge => 'Private';
+
+  @override
   String prepTimeMin(int minutes) {
     return 'Prep: $minutes min';
   }

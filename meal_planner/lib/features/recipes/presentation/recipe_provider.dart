@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_planner/core/locale/locale_provider.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
@@ -91,6 +92,19 @@ class RecipeListFilter {
       favoritesOnly: favoritesOnly ?? this.favoritesOnly,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecipeListFilter &&
+        search == other.search &&
+        setEquals(tags, other.tags) &&
+        sort == other.sort &&
+        favoritesOnly == other.favoritesOnly;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(search, Object.hashAllUnordered(tags), sort, favoritesOnly);
 }
 
 enum RecipeListSort { recent, alpha }
@@ -155,8 +169,9 @@ class RecipeFavoritesNotifier extends AsyncNotifier<Set<String>> {
     state = AsyncData(next);
     try {
       await ref.read(recipesRepositoryProvider).setFavorite(recipeId, adding);
-    } catch (_) {
+    } catch (error) {
       state = AsyncData(current);
+      rethrow;
     }
   }
 }

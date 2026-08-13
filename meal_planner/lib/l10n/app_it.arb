@@ -159,6 +159,7 @@
     }
   },
   "publicBadge": "Pubblica",
+  "privateBadge": "Privata",
   "prepTimeMin": "Preparazione: {minutes} min",
   "@prepTimeMin": {
     "placeholders": {

@@ -89,11 +89,17 @@ class SyncService {
         ref.invalidate(shoppingItemsProvider);
       }
 
-      try {
-        await recipesRepository.fetchFavoriteIds();
-        ref.invalidate(recipeFavoritesProvider);
-      } catch (_) {
-        // Favorites sync is best-effort; recipe/plan replay already finished.
+      final hadFavoriteOps = ops.any(
+        (op) =>
+            op.entityType == PendingEntity.recipe &&
+            op.opType == PendingOp.setFavorite,
+      );
+      if (hadFavoriteOps) {
+        try {
+          await recipesRepository.fetchFavoriteIds();
+        } catch (_) {
+          // Favorites sync is best-effort; recipe/plan replay already finished.
+        }
       }
     } finally {
       _syncing = false;
@@ -208,6 +214,14 @@ class SyncService {
         await recipesRepository.setRecipeVisibilityRemote(
           recipeId,
           payload['isPublic'] as bool,
+        );
+      case PendingOp.setFavorite:
+        final recipeId = await cache.resolveIdOrSelf(
+          payload['recipeId'] as String,
+        );
+        await recipesRepository.setFavoriteRemote(
+          recipeId,
+          payload['isFavorite'] as bool,
         );
       case PendingOp.setIngredientIncluded:
         final recipeId = await cache.resolveIdOrSelf(

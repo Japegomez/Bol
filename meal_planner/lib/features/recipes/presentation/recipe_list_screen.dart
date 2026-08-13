@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +7,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/core/widgets/overflow_marquee_text.dart';
+import 'package:meal_planner/core/widgets/recipe_card_network_photo.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
@@ -129,6 +129,10 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
               key: OnboardingTargets.keyFor(OnboardingTarget.recipesSearchBar),
+              constraints: const BoxConstraints(
+                minWidth: double.infinity,
+                minHeight: 56,
+              ),
               controller: _searchController,
               hintText: l10n.searchByName,
               leading: const Icon(Icons.search),
@@ -146,58 +150,43 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   : null,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FilterChip(
-                      label: Text(l10n.recent),
-                      selected: filter.sort == RecipeListSort.recent,
-                      onSelected: (_) {
-                        ref.read(recipeListFilterProvider.notifier).state =
-                            filter.copyWith(sort: RecipeListSort.recent);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text(l10n.sortAlphabetical),
-                      selected: filter.sort == RecipeListSort.alpha,
-                      onSelected: (_) {
-                        ref.read(recipeListFilterProvider.notifier).state =
-                            filter.copyWith(sort: RecipeListSort.alpha);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text(l10n.favoritesFilter),
-                      selected: filter.favoritesOnly,
-                      onSelected: (selected) {
-                        ref.read(recipeListFilterProvider.notifier).state =
-                            filter.copyWith(favoritesOnly: selected);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
           RecipeTagFilterBar(
             selectedTags: activeTags,
+            leading: [
+              FilterChip(
+                label: Text(l10n.favoritesFilter),
+                selected: filter.favoritesOnly,
+                onSelected: (selected) {
+                  ref.read(recipeListFilterProvider.notifier).state = filter
+                      .copyWith(favoritesOnly: selected);
+                },
+              ),
+            ],
             onSelectionChanged: (tags) {
               ref.read(recipeListFilterProvider.notifier).state = ref
                   .read(recipeListFilterProvider)
                   .copyWith(tags: tags);
             },
           ),
-          SocialSortLabel(
+          SocialSortLabel<RecipeListSort>(
             label: filter.sort == RecipeListSort.alpha
                 ? l10n.alphabeticalOrder
                 : l10n.mostRecent,
+            value: filter.sort,
+            options: [
+              SocialSortOption(
+                value: RecipeListSort.recent,
+                label: l10n.mostRecent,
+              ),
+              SocialSortOption(
+                value: RecipeListSort.alpha,
+                label: l10n.alphabeticalOrder,
+              ),
+            ],
+            onSelected: (sort) {
+              ref.read(recipeListFilterProvider.notifier).state = filter
+                  .copyWith(sort: sort);
+            },
           ),
           Expanded(
             child: recipesAsync.when(
@@ -285,9 +274,9 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                     ..sort((a, b) {
                       final titleA = titles[a.id] ?? a.title;
                       final titleB = titles[b.id] ?? b.title;
-                      return titleA.toLowerCase().compareTo(
-                        titleB.toLowerCase(),
-                      );
+                      return _alphaSortKey(
+                        titleA,
+                      ).compareTo(_alphaSortKey(titleB));
                     });
                 }
 
@@ -311,8 +300,12 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   ),
                 );
               },
-              loading: () =>
-                  const SkeletonList(item: RecipeCardSkeleton(showTags: true)),
+              loading: () => const SkeletonList(
+                item: RecipeCardSkeleton(
+                  showVisibilityLine: true,
+                  showFavoriteOnPhoto: true,
+                ),
+              ),
               error: (error, _) =>
                   Center(child: Text(l10n.errorWithMessage('$error'))),
             ),
@@ -346,68 +339,86 @@ class _RecipeCard extends ConsumerWidget {
       child: InkWell(
         onTap: () => context.push('/home/recipes/${recipe.id}'),
         child: RecipeCardRow(
-          photo: photoUrlAsync.when(
-            data: (url) {
-              if (url == null) {
-                return const RecipePhotoPlaceholder();
-              }
-              return CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholder: (_, _) => const _RecipePhotoSkeleton(),
-                errorWidget: (_, _, _) => const RecipePhotoPlaceholder(
-                  child: Icon(Icons.broken_image),
+          photo: Stack(
+            fit: StackFit.expand,
+            children: [
+              RecipeCardNetworkPhoto(photoUrl: photoUrlAsync),
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Material(
+                  type: MaterialType.circle,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surface.withValues(alpha: 0.82),
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    padding: EdgeInsets.zero,
+                    tooltip: isFavorite
+                        ? l10n.unfavoriteRecipeTooltip
+                        : l10n.favoriteRecipeTooltip,
+                    onPressed: favoriteBusy
+                        ? null
+                        : () async {
+                            try {
+                              await ref
+                                  .read(recipeFavoritesProvider.notifier)
+                                  .toggle(recipe.id);
+                            } catch (error) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    context.l10n.errorWithMessage('$error'),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                    icon: Icon(
+                      isFavorite ? Icons.star : Icons.star_border,
+                      size: 20,
+                      color: isFavorite
+                          ? Colors.amber
+                          : Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
                 ),
-              );
-            },
-            loading: () => const _RecipePhotoSkeleton(),
-            error: (_, _) => const RecipePhotoPlaceholder(),
+              ),
+            ],
           ),
           content: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: OverflowMarqueeText(
-                        text: titleOverride ?? recipe.title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      tooltip: isFavorite
-                          ? l10n.unfavoriteRecipeTooltip
-                          : l10n.favoriteRecipeTooltip,
-                      onPressed: favoriteBusy
-                          ? null
-                          : () {
-                              ref
-                                  .read(recipeFavoritesProvider.notifier)
-                                  .toggle(recipe.id);
-                            },
-                      icon: Icon(
-                        isFavorite ? Icons.star : Icons.star_border,
-                        color: isFavorite
-                            ? Colors.amber
-                            : Theme.of(context).colorScheme.outline,
-                      ),
-                    ),
-                  ],
+                OverflowMarqueeText(
+                  text: titleOverride ?? recipe.title,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n.servingsCount(recipe.servings),
                   style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      recipe.isPublic ? Icons.public : Icons.lock_outline,
+                      size: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      recipe.isPublic ? l10n.publicBadge : l10n.privateBadge,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
                 if (recipe.tags.isNotEmpty) ...[
                   const SizedBox(height: 8),
@@ -422,13 +433,40 @@ class _RecipeCard extends ConsumerWidget {
   }
 }
 
-class _RecipePhotoSkeleton extends StatelessWidget {
-  const _RecipePhotoSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SkeletonPulse(
-      child: SkeletonBox(borderRadius: BorderRadius.zero),
-    );
+String _alphaSortKey(String title) {
+  const diacritics = {
+    'á': 'a',
+    'à': 'a',
+    'ä': 'a',
+    'â': 'a',
+    'ã': 'a',
+    'å': 'a',
+    'é': 'e',
+    'è': 'e',
+    'ë': 'e',
+    'ê': 'e',
+    'í': 'i',
+    'ì': 'i',
+    'ï': 'i',
+    'î': 'i',
+    'ó': 'o',
+    'ò': 'o',
+    'ö': 'o',
+    'ô': 'o',
+    'õ': 'o',
+    'ú': 'u',
+    'ù': 'u',
+    'ü': 'u',
+    'û': 'u',
+    'ý': 'y',
+    'ÿ': 'y',
+    'ñ': 'n',
+    'ç': 'c',
+  };
+  final buffer = StringBuffer();
+  for (final rune in title.trim().toLowerCase().runes) {
+    final char = String.fromCharCode(rune);
+    buffer.write(diacritics[char] ?? char);
   }
+  return buffer.toString();
 }

@@ -607,10 +607,21 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                       : l10n.favoriteRecipeTooltip,
                   onPressed: favoriteBusy
                       ? null
-                      : () {
-                          ref
-                              .read(recipeFavoritesProvider.notifier)
-                              .toggle(widget.recipeId);
+                      : () async {
+                          try {
+                            await ref
+                                .read(recipeFavoritesProvider.notifier)
+                                .toggle(widget.recipeId);
+                          } catch (error) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  context.l10n.errorWithMessage('$error'),
+                                ),
+                              ),
+                            );
+                          }
                         },
                 ),
               if (_canShare)

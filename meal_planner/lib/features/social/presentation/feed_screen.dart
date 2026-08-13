@@ -55,7 +55,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               ref.read(feedTagsFilterProvider.notifier).state = tags;
             },
           ),
-          SocialSortLabel(label: context.l10n.mostRecent),
+          SocialSortLabel<String>(label: context.l10n.mostRecent),
           Expanded(child: _buildBody(context, feedState, selectedTags)),
         ],
       ),

@@ -114,6 +114,7 @@
   "makePrivate": "Egin pribatua",
   "visibilityChangeError": "Errorea ikusgarritasuna aldatzean: {error}",
   "publicBadge": "Publikoa",
+  "privateBadge": "Pribatua",
   "prepTimeMin": "Prest.: {minutes} min",
   "cookTimeMin": "Sukald.: {minutes} min",
   "forkedRecipeTitle": "Beste erabiltzaile baten errezeta gordeta",

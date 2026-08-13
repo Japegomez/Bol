@@ -114,6 +114,7 @@
   "makePrivate": "Fer privada",
   "visibilityChangeError": "Error en canviar la visibilitat: {error}",
   "publicBadge": "Pública",
+  "privateBadge": "Privada",
   "prepTimeMin": "Prep: {minutes} min",
   "cookTimeMin": "Cocció: {minutes} min",
   "forkedRecipeTitle": "Recepta guardada d'un altre usuari",

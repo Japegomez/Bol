@@ -756,6 +756,12 @@ abstract class AppLocalizations {
   /// **'Public'**
   String get publicBadge;
 
+  /// No description provided for @privateBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get privateBadge;
+
   /// No description provided for @prepTimeMin.
   ///
   /// In en, this message translates to:

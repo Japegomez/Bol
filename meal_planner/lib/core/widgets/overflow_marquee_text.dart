@@ -63,10 +63,10 @@ class _OverflowMarqueeTextState extends State<OverflowMarqueeText>
 
     _overflow = overflow;
     _syncedOverflow = overflow;
-    final scrollMs = (overflow / _pixelsPerSecond * 1000).round().clamp(
-      600,
-      10000,
-    );
+    final scrollMs = (overflow / _pixelsPerSecond * 1000)
+        .round()
+        .clamp(600, 10000)
+        .toInt();
     _controller
       ..duration = _startPause + Duration(milliseconds: scrollMs) + _endPause
       ..repeat();
@@ -177,6 +177,12 @@ class _RenderMarqueeText extends RenderBox {
   }
 
   TextPainter? _painter;
+  TextPainter? _clippedPainter;
+  String? _clippedText;
+  TextStyle? _clippedStyle;
+  TextDirection? _clippedDirection;
+  TextScaler? _clippedScaler;
+  double? _clippedWidth;
   String _text;
   TextStyle _style;
   TextDirection _textDirection;
@@ -235,6 +241,42 @@ class _RenderMarqueeText extends RenderBox {
       textDirection: _textDirection,
       textScaler: _textScaler,
     )..layout();
+    _invalidateClippedPainter();
+  }
+
+  void _invalidateClippedPainter() {
+    _clippedPainter?.dispose();
+    _clippedPainter = null;
+    _clippedText = null;
+    _clippedStyle = null;
+    _clippedDirection = null;
+    _clippedScaler = null;
+    _clippedWidth = null;
+  }
+
+  TextPainter _ensureClippedPainter() {
+    if (_clippedPainter != null &&
+        _clippedText == _text &&
+        _clippedStyle == _style &&
+        _clippedDirection == _textDirection &&
+        _clippedScaler == _textScaler &&
+        _clippedWidth == size.width) {
+      return _clippedPainter!;
+    }
+    _clippedPainter?.dispose();
+    _clippedPainter = TextPainter(
+      text: TextSpan(text: _text, style: _style),
+      maxLines: 1,
+      ellipsis: '…',
+      textDirection: _textDirection,
+      textScaler: _textScaler,
+    )..layout(maxWidth: size.width);
+    _clippedText = _text;
+    _clippedStyle = _style;
+    _clippedDirection = _textDirection;
+    _clippedScaler = _textScaler;
+    _clippedWidth = size.width;
+    return _clippedPainter!;
   }
 
   TextPainter get _textPainter => _painter!;
@@ -249,7 +291,7 @@ class _RenderMarqueeText extends RenderBox {
   double computeMinIntrinsicWidth(double height) => 0;
 
   @override
-  double computeMaxIntrinsicWidth(double height) => 0;
+  double computeMaxIntrinsicWidth(double height) => _textPainter.width;
 
   @override
   double computeMinIntrinsicHeight(double width) => _lineHeight;
@@ -283,15 +325,7 @@ class _RenderMarqueeText extends RenderBox {
     context.canvas.save();
     context.canvas.clipRect(offset & size);
     if (_disableAnimations && overflow > 1) {
-      final clipped = TextPainter(
-        text: TextSpan(text: _text, style: _style),
-        maxLines: 1,
-        ellipsis: '…',
-        textDirection: _textDirection,
-        textScaler: _textScaler,
-      )..layout(maxWidth: size.width);
-      clipped.paint(context.canvas, offset);
-      clipped.dispose();
+      _ensureClippedPainter().paint(context.canvas, offset);
     } else {
       _textPainter.paint(context.canvas, offset.translate(_scrollOffset, 0));
     }
@@ -304,6 +338,7 @@ class _RenderMarqueeText extends RenderBox {
   @override
   void dispose() {
     _painter?.dispose();
+    _clippedPainter?.dispose();
     super.dispose();
   }
 }

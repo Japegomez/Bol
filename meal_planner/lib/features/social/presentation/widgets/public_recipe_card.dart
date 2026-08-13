@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/core/widgets/overflow_marquee_text.dart';
+import 'package:meal_planner/core/widgets/recipe_card_network_photo.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/social/domain/public_recipe_summary.dart';
 import 'package:meal_planner/features/social/presentation/social_provider.dart';
@@ -33,25 +34,7 @@ class PublicRecipeCard extends ConsumerWidget {
       child: InkWell(
         onTap: () => context.push('/home/explore/${recipe.id}'),
         child: RecipeCardRow(
-          photo: photoUrlAsync.when(
-            data: (url) {
-              if (url == null) {
-                return const RecipePhotoPlaceholder();
-              }
-              return CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholder: (_, _) => const _PhotoSkeleton(),
-                errorWidget: (_, _, _) => const RecipePhotoPlaceholder(
-                  child: Icon(Icons.broken_image),
-                ),
-              );
-            },
-            loading: () => const _PhotoSkeleton(),
-            error: (_, _) => const RecipePhotoPlaceholder(),
-          ),
+          photo: RecipeCardNetworkPhoto(photoUrl: photoUrlAsync),
           content: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -64,16 +47,6 @@ class PublicRecipeCard extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(
-                      l10n.servingsCount(recipe.servings),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(width: 8),
-                    StarRatingDisplay(
-                      rating: recipe.avgScore,
-                      count: recipe.ratingCount,
-                    ),
-                    const SizedBox(width: 8),
                     Text(
                       l10n.recipeCreatedByName,
                       style: theme.textTheme.bodySmall,
@@ -97,6 +70,24 @@ class PublicRecipeCard extends ConsumerWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        l10n.servingsCount(recipe.servings),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    StarRatingDisplay(
+                      rating: recipe.avgScore,
+                      count: recipe.ratingCount,
+                    ),
+                  ],
+                ),
                 if (recipe.tags.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   HorizontalTagList(tags: recipe.tags),
@@ -117,9 +108,7 @@ class PublicRecipeCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ExcludeSemantics(
-      child: SkeletonPulse(
-        child: RecipeCardSkeleton(showTags: true, showAuthorLine: true),
-      ),
+      child: SkeletonPulse(child: RecipeCardSkeleton(showAuthorLine: true)),
     );
   }
 }
@@ -133,7 +122,7 @@ class PublicRecipeCardSkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SkeletonList(
       itemCount: itemCount,
-      item: const RecipeCardSkeleton(showTags: true, showAuthorLine: true),
+      item: const RecipeCardSkeleton(showAuthorLine: true),
     );
   }
 }
@@ -238,16 +227,5 @@ class _PublicRecipeListPhotoGateState
   Widget build(BuildContext context) {
     if (_revealed) return widget.child;
     return PublicRecipeCardSkeletonList(itemCount: widget.firstPageCount);
-  }
-}
-
-class _PhotoSkeleton extends StatelessWidget {
-  const _PhotoSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SkeletonPulse(
-      child: SkeletonBox(borderRadius: BorderRadius.zero),
-    );
   }
 }
