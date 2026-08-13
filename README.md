@@ -86,7 +86,7 @@ El desarrollo de **Böl** se ha llevado a cabo bajo la filosofía de **Spec-Driv
 - **Offline-first** en modo individual con **Drift** (SQLite) y cola de sincronización.
 - **Tiempo real** en hogar compartido con Supabase Realtime.
 - **Seguridad**: RLS por fila, RPCs privilegiadas sin `EXECUTE` para `anon`, secretos en Supabase (nunca en la app). Los informes de vulnerabilidades van por [`SECURITY.md`](SECURITY.md), no por issues públicos.
-- **Deep links universales**: HTTPS App Links / Associated Domains (`/r`, `/p`, `/h`). El esquema custom `bol://` está retirado.
+- **Deep links universales**: HTTPS App Links / Associated Domains (`/r`, `/p`, `/h`). El esquema custom `bol://` está **deprecado**; sigue implementado en `AppBranding`, `ShareUrls`, tests y la Live Activity iOS.
 
 ---
 

@@ -929,7 +929,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Enter the 6-character code shared by a household member.';
+      'Enter the 6- or 8-character code shared by a household member.';
 
   @override
   String get invalidInviteCode => 'Invalid invitation code';
@@ -948,7 +948,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get genericErrorMessage => 'Something went wrong. Please try again.';
 
   @override
-  String get codeMustBeSixChars => 'The code must be 6 characters';
+  String get codeMustBeSixChars => 'The code must be 6 or 8 characters';
 
   @override
   String get join => 'Join';

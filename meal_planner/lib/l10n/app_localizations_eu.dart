@@ -934,7 +934,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Sartu etxe-kide batek partekatu duen 6 karaktere-kodea.';
+      'Sartu etxe-kide batek partekatu duen 6 edo 8 karaktere-kodea.';
 
   @override
   String get invalidInviteCode => 'Gonbidapen-kode baliogabea';
@@ -954,7 +954,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get genericErrorMessage => 'Zerbait gaizki joan da. Saiatu berriro.';
 
   @override
-  String get codeMustBeSixChars => 'Kodeak 6 karaktere izan behar ditu';
+  String get codeMustBeSixChars => 'Kodeak 6 edo 8 karaktere izan behar ditu';
 
   @override
   String get join => 'Bat egin';

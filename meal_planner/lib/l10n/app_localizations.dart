@@ -1785,7 +1785,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinCodeInstructions.
   ///
   /// In en, this message translates to:
-  /// **'Enter the 6-character code shared by a household member.'**
+  /// **'Enter the 6- or 8-character code shared by a household member.'**
   String get joinCodeInstructions;
 
   /// No description provided for @invalidInviteCode.
@@ -1821,7 +1821,7 @@ abstract class AppLocalizations {
   /// No description provided for @codeMustBeSixChars.
   ///
   /// In en, this message translates to:
-  /// **'The code must be 6 characters'**
+  /// **'The code must be 6 or 8 characters'**
   String get codeMustBeSixChars;
 
   /// No description provided for @join.
