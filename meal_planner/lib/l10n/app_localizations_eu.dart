@@ -116,7 +116,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get turnstileNotConfigured =>
-      'Turnstile ez dago konfiguratuta. Gehitu TURNSTILE_SITE_KEY dart_defines.json fitxategian.';
+      'Egiaztapena ez dago erabilgarri orain. Saiatu berriro geroago.';
 
   @override
   String get emailLabel => 'Emaila';
@@ -135,6 +135,10 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get continueWithGoogle => 'Jarraitu Google-rekin';
+
+  @override
+  String get googleSignInFailed =>
+      'Ezin izan da Google-rekin saioa hasi. Saiatu berriro.';
 
   @override
   String get continueWithApple => 'Jarraitu Apple-rekin';
@@ -986,7 +990,8 @@ class AppLocalizationsEu extends AppLocalizations {
   String get genericErrorMessage => 'Zerbait gaizki joan da. Saiatu berriro.';
 
   @override
-  String get codeMustBeSixChars => 'Kodeak 6 edo 8 karaktere izan behar ditu';
+  String get codeMustBeSixOrEightChars =>
+      'Kodeak 6 edo 8 karaktere izan behar ditu';
 
   @override
   String get join => 'Bat egin';

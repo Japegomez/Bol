@@ -9,6 +9,7 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
+import 'package:meal_planner/features/auth/presentation/auth_exception_l10n.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/auth/presentation/widgets/google_sign_in_web_button.dart';
 import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
@@ -56,11 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // User dismissed the provider sheet — no error banner.
     } on AuthException catch (e) {
       if (mounted) {
-        setState(() {
-          _errorMessage = e is AuthCaptchaException
-              ? l10n.captchaFailed
-              : e.message;
-        });
+        setState(() => _errorMessage = localizedAuthException(e, l10n));
       }
     } catch (_) {
       // Don't surface raw exception details; show a generic message.

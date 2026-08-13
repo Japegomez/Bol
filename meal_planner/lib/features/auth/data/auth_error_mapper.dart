@@ -80,8 +80,10 @@ app_auth.AuthException? mapGoogleSignInError(Object error) {
     if (error.code == GoogleSignInExceptionCode.clientConfigurationError) {
       return const app_auth.AuthGoogleSignInConfigurationException();
     }
-    return const app_auth.AuthProviderException(
-      'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
+    return app_auth.AuthProviderException(
+      app_auth.AuthProviderException.googleSignInFailedCode,
+      code: error.code.name,
+      description: error.description,
     );
   }
 
@@ -89,7 +91,9 @@ app_auth.AuthException? mapGoogleSignInError(Object error) {
 
   if (error.code != 'sign_in_failed') {
     return app_auth.AuthProviderException(
-      'No se pudo iniciar sesión con Google (${error.code}).',
+      app_auth.AuthProviderException.googleSignInFailedCode,
+      code: error.code,
+      description: error.message,
     );
   }
 
@@ -98,8 +102,10 @@ app_auth.AuthException? mapGoogleSignInError(Object error) {
     return const app_auth.AuthGoogleSignInConfigurationException();
   }
 
-  return const app_auth.AuthProviderException(
-    'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
+  return app_auth.AuthProviderException(
+    app_auth.AuthProviderException.googleSignInFailedCode,
+    code: error.code,
+    description: error.message,
   );
 }
 

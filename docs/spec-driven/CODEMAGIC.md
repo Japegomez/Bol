@@ -44,6 +44,8 @@ Los nombres de grupo deben ser **exactos** (coinciden con `codemagic.yaml`).
 | `sentry` | `SENTRY_DSN` |
 | `google` | `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_IOS_CLIENT_ID` |
 
+`TURNSTILE_SITE_KEY` (site key pública de Cloudflare) va en `codemagic.yaml` → `environment.vars` de Android e iOS. No hace falta grupo env.
+
 Valores = los mismos que en tu `dart_defines.json` local.
 
 > **Firebase:** no requiere grupo env — archivos en el repo.

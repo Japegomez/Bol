@@ -25,7 +25,12 @@ final class AuthGoogleSignInConfigurationException extends AuthException {
 }
 
 final class AuthProviderException extends AuthException {
-  const AuthProviderException(super.message);
+  const AuthProviderException(super.message, {this.code, this.description});
+
+  static const googleSignInFailedCode = 'google_sign_in_failed';
+
+  final String? code;
+  final String? description;
 }
 
 final class AuthInvalidCredentialsException extends AuthException {

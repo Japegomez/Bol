@@ -35,8 +35,9 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
   Timer? _responseTimeout;
   var _failed = false;
   var _unsupported = false;
+  var _notConfigured = false;
   var _scheduledInit = false;
-  var _injected = false;
+  var _pageHandled = false;
 
   Uri get _challengeUri {
     final theme = Theme.of(context).brightness == Brightness.dark
@@ -79,6 +80,10 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
     _scheduledInit = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _controller != null) return;
+      if (!Env.hasTurnstile) {
+        setState(() => _notConfigured = true);
+        return;
+      }
       try {
         _initController();
         setState(() {});
@@ -121,12 +126,12 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
                 uri.scheme == 'blob') {
               return NavigationDecision.navigate;
             }
+            if (uri.scheme != 'https') return NavigationDecision.prevent;
             final host = uri.host.toLowerCase();
             if (host.isEmpty) return NavigationDecision.prevent;
             if (host == ShareUrls.host ||
                 host == ShareUrls.firebaseHost ||
-                host == 'challenges.cloudflare.com' ||
-                host.endsWith('.cloudflare.com')) {
+                host == 'challenges.cloudflare.com') {
               return NavigationDecision.navigate;
             }
             return NavigationDecision.prevent;
@@ -148,72 +153,47 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
 
   void _loadChallenge() {
     final controller = _controller;
-    if (controller == null || !Env.hasTurnstile) return;
-    _injected = false;
-    setState(() => _failed = false);
+    if (controller == null) return;
+    if (!Env.hasTurnstile) {
+      setState(() => _notConfigured = true);
+      return;
+    }
+    _pageHandled = false;
+    setState(() {
+      _failed = false;
+      _notConfigured = false;
+    });
     _armTimeout();
     controller.loadRequest(_challengeUri);
   }
 
   Future<void> _onPageFinished(String url) async {
-    if (_injected || !mounted) return;
+    if (_pageHandled || !mounted) return;
     final uri = Uri.tryParse(url);
     if (uri == null || uri.host.toLowerCase() != ShareUrls.host) return;
 
-    _injected = true;
+    _pageHandled = true;
     final controller = _controller;
     if (controller == null) return;
 
-    final siteKey = jsonEncode(Env.turnstileSiteKey);
-    final theme = jsonEncode(
-      Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light',
-    );
-    final language = jsonEncode(
-      turnstileLanguageFor(Localizations.localeOf(context)),
-    );
     try {
-      await controller.runJavaScript('''
-(function () {
-  if (window.__bolTurnstilePage) return;
-  window.__bolTurnstilePage = true;
-  document.body.innerHTML = '<div id="turnstile-host" style="display:flex;justify-content:center;padding:12px;"></div>';
-  function notify(payload) {
-    if (window.Turnstile && Turnstile.postMessage) {
-      Turnstile.postMessage(JSON.stringify(payload));
-    }
-  }
-  function start() {
-    if (!window.turnstile) {
-      notify({event: 'error'});
-      return;
-    }
-    turnstile.render('#turnstile-host', {
-      sitekey: $siteKey,
-      theme: $theme,
-      language: $language,
-      callback: function (token) {
-        notify({event: 'success', token: token});
-      },
-      'error-callback': function () {
-        notify({event: 'error'});
-      }
-    });
-  }
-  if (window.turnstile) {
-    start();
-    return;
-  }
-  var s = document.createElement('script');
-  s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-  s.onload = start;
-  s.onerror = function () { notify({event: 'error'}); };
-  document.head.appendChild(s);
-})();
-''');
+      // Hosted public/turnstile.html must set window.__bolTurnstilePage.
+      final marker = await controller.runJavaScriptReturningResult(
+        'window.__bolTurnstilePage === true',
+      );
+      if (_isJsTrue(marker)) return;
+      _cancelTimeout();
+      if (mounted) setState(() => _failed = true);
     } on Object {
       _cancelTimeout();
       if (mounted) setState(() => _failed = true);
     }
+  }
+
+  bool _isJsTrue(Object result) {
+    if (result == true) return true;
+    final value = result.toString().toLowerCase();
+    return value == 'true' || value == '"true"';
   }
 
   void _onChannelMessage(String raw) {
@@ -253,6 +233,11 @@ class _TurnstileChallengePageState extends State<_TurnstileChallengePage> {
 
   Widget _body(BuildContext context) {
     final l10n = context.l10n;
+    if (_notConfigured) {
+      return Center(
+        child: Text(l10n.turnstileNotConfigured, textAlign: TextAlign.center),
+      );
+    }
     if (_unsupported || _failed) {
       return Center(
         child: Column(

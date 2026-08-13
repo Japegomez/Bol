@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
+import 'package:meal_planner/features/auth/presentation/auth_exception_l10n.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
@@ -54,11 +55,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       }
     } on AuthException catch (e) {
       if (!mounted) return;
-      setState(() {
-        _errorMessage = e is AuthCaptchaException
-            ? context.l10n.captchaFailed
-            : e.message;
-      });
+      setState(() => _errorMessage = localizedAuthException(e, context.l10n));
     } catch (e) {
       if (!mounted) return;
       setState(() => _errorMessage = e.toString());

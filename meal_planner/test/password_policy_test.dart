@@ -25,6 +25,16 @@ void main() {
       expect(PasswordPolicy.validate('Abcdef1!'), isNull);
     });
 
+    test(
+      'accepts hyphen, backtick, double quote and single quote as symbols',
+      () {
+        expect(PasswordPolicy.validate('Abcdef1-'), isNull);
+        expect(PasswordPolicy.validate('Abcdef1`'), isNull);
+        expect(PasswordPolicy.validate('Abcdef1"'), isNull);
+        expect(PasswordPolicy.validate("Abcdef1'"), isNull);
+      },
+    );
+
     test('does not treat non-ASCII or whitespace as the required symbol', () {
       expect(PasswordPolicy.validate('Abcdefg1á'), PasswordPolicyError.tooWeak);
       expect(PasswordPolicy.validate('Abcdefg1ñ'), PasswordPolicyError.tooWeak);

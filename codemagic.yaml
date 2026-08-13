@@ -18,6 +18,8 @@ workflows:
         GOOGLE_PLAY_TRACK: internal
         # Fallback when Play has no builds yet (first release is manual)
         BUILD_NUMBER_OFFSET: 0
+        # Cloudflare Turnstile site key (public widget key, not the secret).
+        TURNSTILE_SITE_KEY: 0x4AAAAAAEO0v7oX0UQiLyh1
     triggering:
       events:
         - push
@@ -138,6 +140,8 @@ workflows:
         # Numeric Apple ID from App Store Connect → App Information → Apple ID
         APP_STORE_APPLE_ID: 6785110375
         BUILD_NUMBER_OFFSET: 0
+        # Cloudflare Turnstile site key (public widget key, not the secret).
+        TURNSTILE_SITE_KEY: 0x4AAAAAAEO0v7oX0UQiLyh1
     triggering:
       events:
         - push

@@ -117,7 +117,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get turnstileNotConfigured =>
-      'Turnstile não está configurado. Adicione TURNSTILE_SITE_KEY a dart_defines.json.';
+      'A verificação não está disponível de momento. Tente novamente mais tarde.';
 
   @override
   String get emailLabel => 'Email';
@@ -136,6 +136,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get continueWithGoogle => 'Continuar com Google';
+
+  @override
+  String get googleSignInFailed =>
+      'Não foi possível iniciar sessão com o Google. Tente novamente.';
 
   @override
   String get continueWithApple => 'Continuar com Apple';
@@ -987,7 +991,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get genericErrorMessage => 'Algo correu mal. Tente novamente.';
 
   @override
-  String get codeMustBeSixChars => 'O código deve ter 6 ou 8 caracteres';
+  String get codeMustBeSixOrEightChars => 'O código deve ter 6 ou 8 caracteres';
 
   @override
   String get join => 'Juntar-se';

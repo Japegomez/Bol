@@ -116,7 +116,7 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
                 validator: (value) {
                   final length = value?.trim().length ?? 0;
                   if (length != 6 && length != 8) {
-                    return l10n.codeMustBeSixChars;
+                    return l10n.codeMustBeSixOrEightChars;
                   }
                   return null;
                 },

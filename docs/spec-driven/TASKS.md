@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 13/08/2026 — v1.2.4+9 hotfix: Turnstile, política de contraseñas, cambio de contraseña, SECURITY.md + README (cuotas, RLS, quality CI)
+> Actualizado: 13/08/2026 — v1.2.5+10 hotfix: Turnstile site key en Codemagic (TestFlight/Play)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -647,8 +647,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.4 hotfix** (TestFlight / Play): Turnstile, política / cambio de contraseña, SECURITY.md + README; store build 1.2.4+9.
-2. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.4): Compra / Plan / Recetas; caché offline.
+1. **Release 1.2.5 hotfix** (TestFlight / Play): Turnstile site key en Codemagic; store build 1.2.5+10.
+2. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.5): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline.
 3. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
 4. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
 5. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
