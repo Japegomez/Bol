@@ -354,8 +354,8 @@ class _RecipeCard extends ConsumerWidget {
                   child: IconButton(
                     visualDensity: VisualDensity.compact,
                     constraints: const BoxConstraints(
-                      minWidth: 48,
-                      minHeight: 48,
+                      minWidth: 40,
+                      minHeight: 40,
                     ),
                     padding: EdgeInsets.zero,
                     tooltip: isFavorite
@@ -381,7 +381,7 @@ class _RecipeCard extends ConsumerWidget {
                           },
                     icon: Icon(
                       isFavorite ? Icons.star : Icons.star_border,
-                      size: 18,
+                      size: 20,
                       color: isFavorite
                           ? Colors.amber
                           : Theme.of(context).colorScheme.outline,
