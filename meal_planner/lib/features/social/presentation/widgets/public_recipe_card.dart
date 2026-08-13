@@ -44,8 +44,9 @@ class PublicRecipeCard extends ConsumerWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: (_, _) => const _PhotoSkeleton(),
-                errorWidget: (_, _, _) =>
-                    const RecipePhotoPlaceholder(child: Icon(Icons.broken_image)),
+                errorWidget: (_, _, _) => const RecipePhotoPlaceholder(
+                  child: Icon(Icons.broken_image),
+                ),
               );
             },
             loading: () => const _PhotoSkeleton(),

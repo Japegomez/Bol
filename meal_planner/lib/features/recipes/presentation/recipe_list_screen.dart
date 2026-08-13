@@ -336,9 +336,9 @@ class _RecipeCard extends ConsumerWidget {
     final isFavorite =
         ref.watch(recipeFavoritesProvider).valueOrNull?.contains(recipe.id) ??
         false;
-    final favoriteBusy = ref.watch(favoriteInFlightIdsProvider).contains(
-      recipe.id,
-    );
+    final favoriteBusy = ref
+        .watch(favoriteInFlightIdsProvider)
+        .contains(recipe.id);
 
     return Card(
       clipBehavior: Clip.antiAlias,

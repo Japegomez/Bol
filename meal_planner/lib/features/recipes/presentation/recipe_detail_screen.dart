@@ -578,9 +578,9 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
             .valueOrNull
             ?.contains(widget.recipeId) ??
         false;
-    final favoriteBusy = ref.watch(favoriteInFlightIdsProvider).contains(
-      widget.recipeId,
-    );
+    final favoriteBusy = ref
+        .watch(favoriteInFlightIdsProvider)
+        .contains(widget.recipeId);
     return NotificationListener<ScrollNotification>(
       onNotification: _onScroll,
       child: CustomScrollView(
