@@ -5,6 +5,7 @@ import 'package:meal_planner/core/config/env.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -30,6 +31,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
 
+    String? captchaToken;
+    if (Env.hasTurnstile) {
+      captchaToken = await showTurnstileChallenge(context);
+      if (!mounted || captchaToken == null || captchaToken.isEmpty) return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -38,12 +45,19 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     try {
       await ref
           .read(authRepositoryProvider)
-          .sendPasswordResetEmail(_emailController.text.trim());
+          .sendPasswordResetEmail(
+            _emailController.text.trim(),
+            captchaToken: captchaToken,
+          );
       if (mounted) {
         setState(() => _emailSent = true);
       }
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      setState(() {
+        _errorMessage = e is AuthCaptchaException
+            ? context.l10n.captchaFailed
+            : e.message;
+      });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
     } finally {
@@ -90,6 +104,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Text(l10n.supabaseNotConfigured),
+                              ),
+                            ),
+                          if (Env.hasSupabase && !Env.hasTurnstile)
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l10n.turnstileNotConfigured),
                               ),
                             ),
                           if (_errorMessage != null) ...[

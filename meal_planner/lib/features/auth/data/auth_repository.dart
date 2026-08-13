@@ -42,11 +42,13 @@ class AuthRepository {
   Future<AuthResponse> signInWithEmail({
     required String email,
     required String password,
+    String? captchaToken,
   }) async {
     try {
       return await supabase.auth.signInWithPassword(
         email: email,
         password: password,
+        captchaToken: captchaToken,
       );
     } catch (e) {
       throw mapAuthError(e);
@@ -57,21 +59,29 @@ class AuthRepository {
     required String email,
     required String password,
     required String username,
+    String? captchaToken,
   }) async {
     try {
       return await supabase.auth.signUp(
         email: email,
         password: password,
         data: {'username': username},
+        captchaToken: captchaToken,
       );
     } catch (e) {
       throw mapAuthError(e);
     }
   }
 
-  Future<void> sendPasswordResetEmail(String email) async {
+  Future<void> sendPasswordResetEmail(
+    String email, {
+    String? captchaToken,
+  }) async {
     try {
-      await supabase.auth.resetPasswordForEmail(email);
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        captchaToken: captchaToken,
+      );
     } catch (e) {
       throw mapAuthError(e);
     }
@@ -197,6 +207,29 @@ class AuthRepository {
     await _deleteUserAvatar(userId);
     await supabase.rpc<void>('delete_user_account');
     await signOut(manual: true);
+  }
+
+  bool get hasEmailPassword {
+    final identities = supabase.auth.currentUser?.identities;
+    if (identities == null) return false;
+    return identities.any((identity) => identity.provider == 'email');
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await supabase.auth.updateUser(
+        UserAttributes(password: newPassword, currentPassword: currentPassword),
+      );
+    } catch (e) {
+      final mapped = mapAuthError(e);
+      if (mapped is AuthInvalidCredentialsException) {
+        throw const AuthInvalidCurrentPasswordException();
+      }
+      throw mapped;
+    }
   }
 
   Future<void> _deleteUserAvatar(String userId) async {

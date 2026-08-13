@@ -13,9 +13,26 @@ app_auth.AuthException mapAuthError(Object error) {
     return googleSignInError;
   }
 
-  if (error is AuthApiException) {
+  if (error is AuthException) {
     final code = error.code?.toLowerCase() ?? '';
     final message = error.message.toLowerCase();
+
+    if (error is AuthWeakPasswordException ||
+        code == 'weak_password' ||
+        message.contains('weak password')) {
+      return const app_auth.AuthPasswordTooWeakException();
+    }
+
+    if (code == 'same_password' ||
+        message.contains('should be different from the old password')) {
+      return const app_auth.AuthSamePasswordException();
+    }
+
+    if (code == 'reauthentication_needed' ||
+        code == 'reauthentication_not_valid' ||
+        message.contains('current password')) {
+      return const app_auth.AuthInvalidCurrentPasswordException();
+    }
 
     if (code == 'invalid_credentials' ||
         message.contains('invalid login credentials') ||
@@ -33,6 +50,12 @@ app_auth.AuthException mapAuthError(Object error) {
         message.contains('user already registered') ||
         message.contains('already been registered')) {
       return const app_auth.AuthUserAlreadyExistsException();
+    }
+
+    if (code == 'captcha_failed' ||
+        code.contains('captcha') ||
+        message.contains('captcha')) {
+      return const app_auth.AuthCaptchaException();
     }
 
     return app_auth.AuthProviderException(error.message);

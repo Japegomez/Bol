@@ -110,6 +110,16 @@ class AppLocalizationsPt extends AppLocalizations {
       'Supabase não configurado. Copie dart_defines.example.json para dart_defines.json e adicione SUPABASE_URL / SUPABASE_ANON_KEY.';
 
   @override
+  String get captchaRequired => 'Conclua a verificação';
+
+  @override
+  String get captchaFailed => 'A verificação falhou. Tente novamente.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile não está configurado. Adicione TURNSTILE_SITE_KEY a dart_defines.json.';
+
+  @override
   String get emailLabel => 'Email';
 
   @override
@@ -123,6 +133,16 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get signIn => 'Iniciar sessão';
+
+  @override
+  String get captchaRequired => 'Conclua a verificação';
+
+  @override
+  String get captchaFailed => 'A verificação falhou. Tente novamente.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile não está configurado. Adicione TURNSTILE_SITE_KEY a dart_defines.json.';
 
   @override
   String get continueWithGoogle => 'Continuar com Google';
@@ -167,7 +187,8 @@ class AppLocalizationsPt extends AppLocalizations {
       'A palavra-passe deve ter pelo menos 8 caracteres';
 
   @override
-  String get passwordTooWeak => 'A palavra-passe deve incluir letras e números';
+  String get passwordTooWeak =>
+      'A palavra-passe deve incluir uma minúscula, uma maiúscula, um número e um símbolo';
 
   @override
   String get confirmPasswordLabel => 'Confirmar palavra-passe';
@@ -177,6 +198,28 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'As palavras-passe não coincidem';
+
+  @override
+  String get changePasswordTitle => 'Alterar palavra-passe';
+
+  @override
+  String get currentPasswordLabel => 'Palavra-passe atual';
+
+  @override
+  String get newPasswordLabel => 'Nova palavra-passe';
+
+  @override
+  String get enterCurrentPassword => 'Introduza a palavra-passe atual';
+
+  @override
+  String get passwordChanged => 'Palavra-passe atualizada';
+
+  @override
+  String get currentPasswordIncorrect => 'A palavra-passe atual está incorreta';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'A nova palavra-passe deve ser diferente da atual';
 
   @override
   String get mustAcceptTerms =>

@@ -49,7 +49,8 @@ flutter run `
   --dart-define=SUPABASE_URL=https://hxtynisikjpwlvpdgdbt.supabase.co `
   --dart-define=SUPABASE_ANON_KEY=<tu-anon-key> `
   --dart-define=GOOGLE_WEB_CLIENT_ID=<web-client-id> `
-  --dart-define=GOOGLE_IOS_CLIENT_ID=<ios-client-id>
+  --dart-define=GOOGLE_IOS_CLIENT_ID=<ios-client-id> `
+  --dart-define=TURNSTILE_SITE_KEY=<turnstile-site-key>
 ```
 
 > **Android:** no hay `GOOGLE_ANDROID_CLIENT_ID` en Dart. El cliente Android en Google Cloud se valida por package + SHA-1; en código usas `GOOGLE_WEB_CLIENT_ID` como `serverClientId`.

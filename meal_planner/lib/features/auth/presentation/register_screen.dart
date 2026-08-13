@@ -7,6 +7,8 @@ import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
+import 'package:meal_planner/features/auth/presentation/password_form_validators.dart';
+import 'package:meal_planner/features/auth/presentation/widgets/turnstile_captcha.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -44,6 +46,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    String? captchaToken;
+    if (Env.hasTurnstile) {
+      captchaToken = await showTurnstileChallenge(context);
+      if (!mounted || captchaToken == null || captchaToken.isEmpty) return;
+    }
+
     ref.read(authOperationInProgressProvider.notifier).state = true;
     setState(() {
       _isLoading = true;
@@ -57,12 +65,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
             username: _usernameController.text.trim(),
+            captchaToken: captchaToken,
           );
       if (mounted) {
         setState(() => _registrationSent = true);
       }
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      setState(() {
+        _errorMessage = switch (e) {
+          AuthCaptchaException() => context.l10n.captchaFailed,
+          AuthPasswordTooWeakException() => context.l10n.passwordTooWeak,
+          _ => e.message,
+        };
+      });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
     } finally {
@@ -102,6 +117,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: Text(l10n.supabaseNotConfigured),
+                              ),
+                            ),
+                          if (Env.hasSupabase && !Env.hasTurnstile)
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l10n.turnstileNotConfigured),
                               ),
                             ),
                           if (_errorMessage != null) ...[
@@ -155,22 +177,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             labelText: l10n.passwordLabel,
                             autofillHints: const [AutofillHints.newPassword],
                             enabled: !_isLoading && Env.hasSupabase,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return l10n.enterPasswordRegister;
-                              }
-                              if (value.length < 8) {
-                                return l10n.passwordTooShort;
-                              }
-                              final hasLetter = RegExp(
-                                r'[A-Za-z]',
-                              ).hasMatch(value);
-                              final hasDigit = RegExp(r'[0-9]').hasMatch(value);
-                              if (!hasLetter || !hasDigit) {
-                                return l10n.passwordTooWeak;
-                              }
-                              return null;
-                            },
+                            validator: (value) =>
+                                validateNewPassword(value, l10n),
                           ),
                           const SizedBox(height: 12),
                           PasswordTextField(
