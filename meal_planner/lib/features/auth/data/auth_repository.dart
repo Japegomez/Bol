@@ -18,16 +18,33 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     hide AuthState, AuthException;
 
 class AuthRepository {
-  GoogleSignIn? _googleSignInInstance;
+  static Future<void>? _googleInitFuture;
   bool _manualSignOut = false;
 
-  GoogleSignIn? get _googleSignIn {
-    if (!Env.hasGoogleSignIn) return null;
-    return _googleSignInInstance ??= GoogleSignIn(
+  GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
+
+  Future<void> ensureGoogleInitialized() => _ensureGoogleInitialized();
+
+  Future<void> _ensureGoogleInitialized() async {
+    final existing = _googleInitFuture;
+    if (existing != null) {
+      await existing;
+      return;
+    }
+
+    final future = _googleSignIn.initialize(
       serverClientId: Env.googleWebClientId,
       clientId: _googleClientId,
-      scopes: const ['email', 'profile', 'openid'],
     );
+    _googleInitFuture = future;
+    try {
+      await future;
+    } catch (_) {
+      if (identical(_googleInitFuture, future)) {
+        _googleInitFuture = null;
+      }
+      rethrow;
+    }
   }
 
   String? get _googleClientId {
@@ -42,11 +59,13 @@ class AuthRepository {
   Future<AuthResponse> signInWithEmail({
     required String email,
     required String password,
+    String? captchaToken,
   }) async {
     try {
       return await supabase.auth.signInWithPassword(
         email: email,
         password: password,
+        captchaToken: captchaToken,
       );
     } catch (e) {
       throw mapAuthError(e);
@@ -57,70 +76,102 @@ class AuthRepository {
     required String email,
     required String password,
     required String username,
+    String? captchaToken,
   }) async {
     try {
       return await supabase.auth.signUp(
         email: email,
         password: password,
         data: {'username': username},
+        captchaToken: captchaToken,
       );
     } catch (e) {
       throw mapAuthError(e);
     }
   }
 
-  Future<void> sendPasswordResetEmail(String email) async {
+  Future<void> sendPasswordResetEmail(
+    String email, {
+    String? captchaToken,
+  }) async {
     try {
-      await supabase.auth.resetPasswordForEmail(email);
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        captchaToken: captchaToken,
+      );
     } catch (e) {
       throw mapAuthError(e);
     }
   }
 
   Future<AuthResponse> signInWithGoogle() async {
-    final googleSignIn = _googleSignIn;
-    if (googleSignIn == null) {
+    if (!Env.hasGoogleSignIn) {
       throw const AuthConfigurationException(
         'GOOGLE_WEB_CLIENT_ID is not configured',
       );
     }
 
     try {
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
+      await _ensureGoogleInitialized();
+      if (!_googleSignIn.supportsAuthenticate()) {
+        throw const AuthConfigurationException(
+          'Google Sign-In on this platform requires the Google button',
+        );
+      }
+      final googleUser = await _googleSignIn.authenticate(
+        scopeHint: const ['email', 'profile', 'openid'],
+      );
+      return await _completeGoogleSignIn(googleUser);
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
         throw const AuthCancelledException();
       }
-
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      if (idToken == null) {
-        throw const AuthProviderException(
-          'Google Sign-In returned no id token',
-        );
-      }
-
-      try {
-        final response = await supabase.auth.signInWithIdToken(
-          provider: OAuthProvider.google,
-          idToken: idToken,
-          accessToken: googleAuth.accessToken,
-        );
-        final userId = response.user?.id;
-        final photoUrl = googleUser.photoUrl;
-        if (userId != null && photoUrl != null && photoUrl.isNotEmpty) {
-          await _maybeImportGoogleAvatar(userId, photoUrl);
-        }
-        return response;
-      } on AuthException {
-        rethrow;
-      } catch (e) {
-        throw mapAuthError(e);
-      }
+      throw mapGoogleSignInError(e) ??
+          AuthProviderException(e.description ?? e.code.name);
     } on PlatformException catch (e) {
       throw mapGoogleSignInError(e) ??
           AuthProviderException(e.message ?? e.code);
     } on AuthException {
       rethrow;
+    }
+  }
+
+  Future<AuthResponse> signInWithGoogleAccount(
+    GoogleSignInAccount googleUser,
+  ) async {
+    try {
+      await _ensureGoogleInitialized();
+      return await _completeGoogleSignIn(googleUser);
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw mapAuthError(e);
+    }
+  }
+
+  Future<AuthResponse> _completeGoogleSignIn(
+    GoogleSignInAccount googleUser,
+  ) async {
+    final idToken = googleUser.authentication.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      throw const AuthProviderException('Google Sign-In returned no id token');
+    }
+
+    try {
+      final response = await supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      );
+      final userId = response.user?.id;
+      final photoUrl = googleUser.photoUrl;
+      if (userId != null && photoUrl != null && photoUrl.isNotEmpty) {
+        await _maybeImportGoogleAvatar(userId, photoUrl);
+      }
+      return response;
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw mapAuthError(e);
     }
   }
 
@@ -169,7 +220,7 @@ class AuthRepository {
     _manualSignOut = manual;
     if (_signedInWithGoogle) {
       try {
-        await _googleSignIn?.signOut();
+        await _googleSignIn.signOut();
       } catch (_) {
         // Best-effort; Supabase sign-out still runs below.
       }
@@ -197,6 +248,31 @@ class AuthRepository {
     await _deleteUserAvatar(userId);
     await supabase.rpc<void>('delete_user_account');
     await signOut(manual: true);
+  }
+
+  bool get hasEmailPassword {
+    final identities = supabase.auth.currentUser?.identities;
+    if (identities == null) return false;
+    return identities.any((identity) => identity.provider == 'email');
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await supabase.auth.updateUser(
+        UserAttributes(password: newPassword, currentPassword: currentPassword),
+      );
+    } catch (e) {
+      final mapped = mapAuthError(e);
+      if (mapped is AuthInvalidCredentialsException ||
+          mapped is AuthReauthenticationException ||
+          mapped is AuthInvalidCurrentPasswordException) {
+        throw const AuthInvalidCurrentPasswordException();
+      }
+      throw mapped;
+    }
   }
 
   Future<void> _deleteUserAvatar(String userId) async {

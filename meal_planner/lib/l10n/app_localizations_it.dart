@@ -109,6 +109,16 @@ class AppLocalizationsIt extends AppLocalizations {
       'Supabase non configurato. Copia dart_defines.example.json in dart_defines.json e aggiungi SUPABASE_URL / SUPABASE_ANON_KEY.';
 
   @override
+  String get captchaRequired => 'Completa la verifica';
+
+  @override
+  String get captchaFailed => 'Verifica non riuscita. Riprova.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile non è configurato. Aggiungi TURNSTILE_SITE_KEY a dart_defines.json.';
+
+  @override
   String get emailLabel => 'Email';
 
   @override
@@ -165,7 +175,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get passwordTooShort => 'La password deve avere almeno 8 caratteri';
 
   @override
-  String get passwordTooWeak => 'La password deve includere lettere e numeri';
+  String get passwordTooWeak =>
+      'La password deve includere una lettera minuscola, una maiuscola, un numero e un simbolo';
 
   @override
   String get confirmPasswordLabel => 'Conferma password';
@@ -175,6 +186,28 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'Le password non coincidono';
+
+  @override
+  String get changePasswordTitle => 'Cambia password';
+
+  @override
+  String get currentPasswordLabel => 'Password attuale';
+
+  @override
+  String get newPasswordLabel => 'Nuova password';
+
+  @override
+  String get enterCurrentPassword => 'Inserisci la password attuale';
+
+  @override
+  String get passwordChanged => 'Password aggiornata';
+
+  @override
+  String get currentPasswordIncorrect => 'La password attuale non è corretta';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'La nuova password deve essere diversa da quella attuale';
 
   @override
   String get mustAcceptTerms => 'Devi accettare i Termini e la Privacy';
@@ -928,7 +961,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Inserisci il codice di 6 caratteri condiviso da un membro della famiglia.';
+      'Inserisci il codice di 6 o 8 caratteri condiviso da un membro della famiglia.';
 
   @override
   String get invalidInviteCode => 'Codice invito non valido';
@@ -946,7 +979,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get genericErrorMessage => 'Qualcosa è andato storto. Riprova.';
 
   @override
-  String get codeMustBeSixChars => 'Il codice deve avere 6 caratteri';
+  String get codeMustBeSixChars => 'Il codice deve avere 6 o 8 caratteri';
 
   @override
   String get join => 'Unisciti';

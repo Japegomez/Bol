@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart'
     as app_auth;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
@@ -13,9 +14,31 @@ app_auth.AuthException mapAuthError(Object error) {
     return googleSignInError;
   }
 
-  if (error is AuthApiException) {
+  if (error is AuthException) {
     final code = error.code?.toLowerCase() ?? '';
     final message = error.message.toLowerCase();
+
+    if (error is AuthWeakPasswordException ||
+        code == 'weak_password' ||
+        message.contains('weak password')) {
+      return const app_auth.AuthPasswordTooWeakException();
+    }
+
+    if (code == 'same_password' ||
+        message.contains('should be different from the old password')) {
+      return const app_auth.AuthSamePasswordException();
+    }
+
+    if (code == 'current_password_invalid' ||
+        code == 'current_password_required' ||
+        message.contains('current password required')) {
+      return const app_auth.AuthInvalidCurrentPasswordException();
+    }
+
+    if (code == 'reauthentication_needed' ||
+        code == 'reauthentication_not_valid') {
+      return const app_auth.AuthReauthenticationException();
+    }
 
     if (code == 'invalid_credentials' ||
         message.contains('invalid login credentials') ||
@@ -35,14 +58,33 @@ app_auth.AuthException mapAuthError(Object error) {
       return const app_auth.AuthUserAlreadyExistsException();
     }
 
+    if (code == 'captcha_failed' ||
+        code.contains('captcha') ||
+        message.contains('captcha')) {
+      return const app_auth.AuthCaptchaException();
+    }
+
     return app_auth.AuthProviderException(error.message);
   }
 
   return app_auth.AuthProviderException(error.toString());
 }
 
-/// Maps [PlatformException] from `google_sign_in` (e.g. ApiException: 10).
+/// Maps Google Sign-In failures (v7 [GoogleSignInException] or legacy
+/// [PlatformException], e.g. ApiException: 10).
 app_auth.AuthException? mapGoogleSignInError(Object error) {
+  if (error is GoogleSignInException) {
+    if (error.code == GoogleSignInExceptionCode.canceled) {
+      return const app_auth.AuthCancelledException();
+    }
+    if (error.code == GoogleSignInExceptionCode.clientConfigurationError) {
+      return const app_auth.AuthGoogleSignInConfigurationException();
+    }
+    return const app_auth.AuthProviderException(
+      'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
+    );
+  }
+
   if (error is! PlatformException) return null;
 
   if (error.code != 'sign_in_failed') {
@@ -52,15 +94,19 @@ app_auth.AuthException? mapGoogleSignInError(Object error) {
   }
 
   final message = error.message ?? '';
-  // ApiException 10 / DEVELOPER_ERROR — SHA-1 or OAuth client mismatch on Android.
-  if (message.contains(': 10') ||
-      message.contains('10:') ||
-      message.contains('ApiException: 10') ||
-      message.contains('DEVELOPER_ERROR')) {
+  if (_isGoogleDeveloperError(message)) {
     return const app_auth.AuthGoogleSignInConfigurationException();
   }
 
   return const app_auth.AuthProviderException(
     'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
   );
+}
+
+bool _isGoogleDeveloperError(String message) {
+  return message.contains(': 10') ||
+      message.contains('10:') ||
+      message.contains('ApiException: 10') ||
+      message.contains('DEVELOPER_ERROR') ||
+      message.contains('clientConfigurationError');
 }

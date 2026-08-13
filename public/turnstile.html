@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>Böl</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: transparent;
+      }
+      .wrap {
+        display: flex;
+        justify-content: center;
+        padding: 12px;
+      }
+    </style>
+    <script>
+      window.__bolTurnstilePage = true;
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div id="turnstile-host"></div>
+    </div>
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var sitekey = params.get("sitekey") || "";
+        var theme = params.get("theme") === "dark" ? "dark" : "light";
+        var lang = params.get("lang") || "auto";
+        document.documentElement.lang = lang === "auto" ? "en" : lang;
+
+        function notify(payload) {
+          if (window.Turnstile && Turnstile.postMessage) {
+            Turnstile.postMessage(JSON.stringify(payload));
+          }
+        }
+
+        function start() {
+          if (!window.turnstile || !sitekey) {
+            notify({ event: "error" });
+            return;
+          }
+          turnstile.render("#turnstile-host", {
+            sitekey: sitekey,
+            theme: theme,
+            language: lang,
+            callback: function (token) {
+              notify({ event: "success", token: token });
+            },
+            "error-callback": function () {
+              notify({ event: "error" });
+            },
+          });
+        }
+
+        window.__bolOnTurnstileLoad = start;
+        window.__bolOnTurnstileError = function () {
+          notify({ event: "error" });
+        };
+      })();
+    </script>
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__bolOnTurnstileLoad"
+      async
+      defer
+      onerror="window.__bolOnTurnstileError && window.__bolOnTurnstileError()"
+    ></script>
+  </body>
+</html>

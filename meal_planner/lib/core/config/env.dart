@@ -9,9 +9,12 @@ abstract final class Env {
   static const googleIosClientId = String.fromEnvironment(
     'GOOGLE_IOS_CLIENT_ID',
   );
+  static const turnstileSiteKey = String.fromEnvironment('TURNSTILE_SITE_KEY');
 
   static bool get hasSupabase =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  static bool get hasTurnstile => turnstileSiteKey.isNotEmpty;
 
   static bool get hasSentry => sentryDsn.isNotEmpty;
 

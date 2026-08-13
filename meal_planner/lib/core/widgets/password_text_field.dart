@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 
@@ -26,7 +27,45 @@ class PasswordTextField extends StatefulWidget {
 }
 
 class _PasswordTextFieldState extends State<PasswordTextField> {
+  late final FocusNode _focusNode;
   bool _obscure = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode(debugLabel: widget.labelText);
+    _focusNode.addListener(_restoreSelectionIfInvalid);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_restoreSelectionIfInvalid);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _restoreSelectionIfInvalid() {
+    if (!_focusNode.hasFocus) return;
+    final controller = widget.controller;
+    final text = controller.text;
+    final selection = controller.selection;
+    if (selection.isValid &&
+        selection.start >= 0 &&
+        selection.end <= text.length) {
+      return;
+    }
+    controller.selection = TextSelection.collapsed(offset: text.length);
+  }
+
+  /// Chrome's password generator (`new-password`) desyncs Flutter's web
+  /// overlay input after blur, which freezes typing and deletion.
+  Iterable<String>? get _effectiveAutofillHints {
+    final hints = widget.autofillHints;
+    if (hints == null || !kIsWeb) return hints;
+    return List<String>.unmodifiable(
+      hints.where((hint) => hint != AutofillHints.newPassword),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,25 +73,32 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
 
     return TextFormField(
       controller: widget.controller,
+      focusNode: _focusNode,
       obscureText: _obscure,
-      autofillHints: widget.autofillHints,
+      autocorrect: false,
+      enableSuggestions: false,
+      enableInteractiveSelection: true,
+      autofillHints: _effectiveAutofillHints,
       enabled: widget.enabled,
       textInputAction: widget.textInputAction,
+      onTap: _restoreSelectionIfInvalid,
       onFieldSubmitted: widget.onFieldSubmitted,
       validator: widget.validator,
       decoration: InputDecoration(
         labelText: widget.labelText,
         border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          onPressed: widget.enabled
-              ? () => setState(() => _obscure = !_obscure)
-              : null,
-          icon: Icon(
-            _obscure
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
+        suffixIcon: ExcludeFocus(
+          child: IconButton(
+            onPressed: widget.enabled
+                ? () => setState(() => _obscure = !_obscure)
+                : null,
+            icon: Icon(
+              _obscure
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+            ),
+            tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
           ),
-          tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
         ),
       ),
     );

@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 13/08/2026 — v1.2.3: RLS `037`–`045` en remoto; cuotas IA (20/usuario, 5 s, 500 global, 50/IP); job CI `quality`; Dependabot
+> Actualizado: 13/08/2026 — v1.2.4+9 hotfix: Turnstile, política de contraseñas, cambio de contraseña, SECURITY.md + README (cuotas, RLS, quality CI)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -55,7 +55,7 @@
 - [x] Configurar GitHub Actions básico (análisis estático + `flutter test` en cada PR)
   - Job **`quality`**: `dart format --set-exit-if-changed`, `flutter analyze --fatal-infos lib test`, `flutter test --coverage`, umbral `very_good_coverage` (excluye generated/l10n/presentation/widgets)
   - Dependabot semanal (`pub` en `/meal_planner`, `github-actions` en `/`; target `develop`)
-- [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`)
+- [x] Añadir `.env.example` y `dart_defines.example.json` (`SUPABASE_*`, `SENTRY_DSN`, `GOOGLE_*`, `TURNSTILE_SITE_KEY`)
   - Valores reales en `dart_defines.json` / `.env` local (gitignored); Codemagic como Environment Variables
 
 ### Prueba local (emulador Android)
@@ -647,14 +647,15 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.3): Compra / Plan / Recetas; caché offline.
-2. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
-3. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
-4. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
-5. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
-6. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-7. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
-8. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
-9. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-10. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
-11. **Protección de ramas** `develop` / `main` en GitHub (check obligatorio `quality`).
+1. **Release 1.2.4 hotfix** (TestFlight / Play): Turnstile, política / cambio de contraseña, SECURITY.md + README; store build 1.2.4+9.
+2. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.4): Compra / Plan / Recetas; caché offline.
+3. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
+4. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
+5. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
+6. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+7. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+8. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
+9. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
+10. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
+11. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
+12. **Protección de ramas** `develop` / `main` en GitHub (check obligatorio `quality`).

@@ -109,6 +109,16 @@ class AppLocalizationsEu extends AppLocalizations {
   String get supabaseNotConfigured => 'Supabase ez dago konfiguratuta.';
 
   @override
+  String get captchaRequired => 'Osatu egiaztapena';
+
+  @override
+  String get captchaFailed => 'Egiaztapenak huts egin du. Saiatu berriro.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile ez dago konfiguratuta. Gehitu TURNSTILE_SITE_KEY dart_defines.json fitxategian.';
+
+  @override
   String get emailLabel => 'Emaila';
 
   @override
@@ -167,7 +177,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get passwordTooWeak =>
-      'Pasahitzak letrak eta zenbakiak izan behar ditu';
+      'Pasahitzak minuskula, maiuskula, zenbaki eta ikur bat izan behar ditu';
 
   @override
   String get confirmPasswordLabel => 'Berretsi pasahitza';
@@ -177,6 +187,28 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'Pasahitzak ez datoz bat';
+
+  @override
+  String get changePasswordTitle => 'Pasahitza aldatu';
+
+  @override
+  String get currentPasswordLabel => 'Uneko pasahitza';
+
+  @override
+  String get newPasswordLabel => 'Pasahitz berria';
+
+  @override
+  String get enterCurrentPassword => 'Sartu uneko pasahitza';
+
+  @override
+  String get passwordChanged => 'Pasahitza eguneratu da';
+
+  @override
+  String get currentPasswordIncorrect => 'Uneko pasahitza ez da zuzena';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'Pasahitz berria unekoa ez bezalakoa izan behar da';
 
   @override
   String get mustAcceptTerms =>
@@ -934,7 +966,7 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Sartu etxe-kide batek partekatu duen 6 karaktere-kodea.';
+      'Sartu etxe-kide batek partekatu duen 6 edo 8 karaktere-kodea.';
 
   @override
   String get invalidInviteCode => 'Gonbidapen-kode baliogabea';
@@ -954,7 +986,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get genericErrorMessage => 'Zerbait gaizki joan da. Saiatu berriro.';
 
   @override
-  String get codeMustBeSixChars => 'Kodeak 6 karaktere izan behar ditu';
+  String get codeMustBeSixChars => 'Kodeak 6 edo 8 karaktere izan behar ditu';
 
   @override
   String get join => 'Bat egin';

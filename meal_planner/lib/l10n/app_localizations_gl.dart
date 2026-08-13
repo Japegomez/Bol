@@ -110,6 +110,16 @@ class AppLocalizationsGl extends AppLocalizations {
       'Supabase non configurado. Copia dart_defines.example.json a dart_defines.json e engade SUPABASE_URL / SUPABASE_ANON_KEY.';
 
   @override
+  String get captchaRequired => 'Completa a verificación';
+
+  @override
+  String get captchaFailed => 'A verificación fallou. Téntao de novo.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile non está configurado. Engade TURNSTILE_SITE_KEY a dart_defines.json.';
+
+  @override
   String get emailLabel => 'Email';
 
   @override
@@ -167,7 +177,8 @@ class AppLocalizationsGl extends AppLocalizations {
       'O contrasinal debe ter polo menos 8 caracteres';
 
   @override
-  String get passwordTooWeak => 'O contrasinal debe incluír letras e números';
+  String get passwordTooWeak =>
+      'O contrasinal debe incluír unha minúscula, unha maiúscula, un número e un símbolo';
 
   @override
   String get confirmPasswordLabel => 'Confirmar contrasinal';
@@ -177,6 +188,28 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'Os contrasinais non coinciden';
+
+  @override
+  String get changePasswordTitle => 'Cambiar contrasinal';
+
+  @override
+  String get currentPasswordLabel => 'Contrasinal actual';
+
+  @override
+  String get newPasswordLabel => 'Novo contrasinal';
+
+  @override
+  String get enterCurrentPassword => 'Introduce o teu contrasinal actual';
+
+  @override
+  String get passwordChanged => 'Contrasinal actualizado';
+
+  @override
+  String get currentPasswordIncorrect => 'O contrasinal actual non é correcto';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'O novo contrasinal debe ser distinto do actual';
 
   @override
   String get mustAcceptTerms =>
@@ -932,7 +965,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Introduce o código de 6 caracteres que che compartiu un membro do fogar.';
+      'Introduce o código de 6 ou 8 caracteres que che compartiu un membro do fogar.';
 
   @override
   String get invalidInviteCode => 'Código de invitación non válido';
@@ -951,7 +984,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get genericErrorMessage => 'Algo saíu mal. Téntao de novo.';
 
   @override
-  String get codeMustBeSixChars => 'O código debe ter 6 caracteres';
+  String get codeMustBeSixChars => 'O código debe ter 6 ou 8 caracteres';
 
   @override
   String get join => 'Unirse';

@@ -109,6 +109,16 @@ class AppLocalizationsCa extends AppLocalizations {
   String get supabaseNotConfigured => 'Supabase no està configurat.';
 
   @override
+  String get captchaRequired => 'Completa la verificació';
+
+  @override
+  String get captchaFailed => 'La verificació ha fallat. Torna-ho a provar.';
+
+  @override
+  String get turnstileNotConfigured =>
+      'Turnstile no està configurat. Afegeix TURNSTILE_SITE_KEY a dart_defines.json.';
+
+  @override
   String get emailLabel => 'Email';
 
   @override
@@ -167,7 +177,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get passwordTooWeak =>
-      'La contrasenya ha d\'incloure lletres i números';
+      'La contrasenya ha d\'incloure una minúscula, una majúscula, un número i un símbol';
 
   @override
   String get confirmPasswordLabel => 'Confirmar contrasenya';
@@ -177,6 +187,28 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'Les contrasenyes no coincideixen';
+
+  @override
+  String get changePasswordTitle => 'Canviar contrasenya';
+
+  @override
+  String get currentPasswordLabel => 'Contrasenya actual';
+
+  @override
+  String get newPasswordLabel => 'Contrasenya nova';
+
+  @override
+  String get enterCurrentPassword => 'Introdueix la teva contrasenya actual';
+
+  @override
+  String get passwordChanged => 'Contrasenya actualitzada';
+
+  @override
+  String get currentPasswordIncorrect => 'La contrasenya actual no és correcta';
+
+  @override
+  String get passwordSameAsCurrent =>
+      'La contrasenya nova ha de ser diferent de l\'actual';
 
   @override
   String get mustAcceptTerms =>
@@ -932,7 +964,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Introdueix el codi de 6 caràcters que t\'ha compartit un membre de la llar.';
+      'Introdueix el codi de 6 o 8 caràcters que t\'ha compartit un membre de la llar.';
 
   @override
   String get invalidInviteCode => 'Codi d\'invitació no vàlid';
@@ -952,7 +984,7 @@ class AppLocalizationsCa extends AppLocalizations {
   String get genericErrorMessage => 'Alguna cosa ha fallat. Torna-ho a provar.';
 
   @override
-  String get codeMustBeSixChars => 'El codi ha de tenir 6 caràcters';
+  String get codeMustBeSixChars => 'El codi ha de tenir 6 o 8 caràcters';
 
   @override
   String get join => 'Unir-se';
