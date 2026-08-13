@@ -111,7 +111,6 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
   - Imagen + texto → usa ambos (adaptar, escalar, etc.).
 - **Cuotas y límites** (servidor, `check_and_increment_ai_usage`; el mismo contador cubre receta, nutrición, `translate-recipe` y `moderate-image`): **20**/usuario/día, cooldown **5 s**, **500** global/día, **50**/IP/día (hash SHA-256). Agotar global o IP → `service_at_capacity`. Gemini solo desde la Edge Function.
 - Errores localizados: offline, rate limit, cuota, imagen inválida/grande, speech no disponible, etc.
-
 ### 2) Moderación de imágenes
 
 - Edge Function `moderate-image` + **Google Cloud Vision SafeSearch**.
