@@ -976,7 +976,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Introduce el código de 6 caracteres que te ha compartido un miembro del hogar.';
+      'Introduce el código de 6 u 8 caracteres que te ha compartido un miembro del hogar.';
 
   @override
   String get invalidInviteCode => 'Código de invitación no válido';
@@ -996,7 +996,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get genericErrorMessage => 'Algo salió mal. Inténtalo de nuevo.';
 
   @override
-  String get codeMustBeSixChars => 'El código debe tener 6 caracteres';
+  String get codeMustBeSixChars => 'El código debe tener 6 u 8 caracteres';
 
   @override
   String get join => 'Unirse';

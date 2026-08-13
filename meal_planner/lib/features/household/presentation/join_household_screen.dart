@@ -104,17 +104,18 @@ class _JoinHouseholdScreenState extends ConsumerState<JoinHouseholdScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.inviteCode,
                   prefixIcon: const Icon(Icons.vpn_key_outlined),
-                  hintText: 'ABC123',
+                  hintText: 'ABCD1234',
                 ),
                 textCapitalization: TextCapitalization.characters,
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-                  LengthLimitingTextInputFormatter(6),
+                  LengthLimitingTextInputFormatter(8),
                   UpperCaseTextFormatter(),
                 ],
                 enabled: !_isLoading,
                 validator: (value) {
-                  if (value == null || value.trim().length != 6) {
+                  final length = value?.trim().length ?? 0;
+                  if (length != 6 && length != 8) {
                     return l10n.codeMustBeSixChars;
                   }
                   return null;

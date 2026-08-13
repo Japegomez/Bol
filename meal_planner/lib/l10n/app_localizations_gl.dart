@@ -975,7 +975,7 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get joinCodeInstructions =>
-      'Introduce o código de 6 caracteres que che compartiu un membro do fogar.';
+      'Introduce o código de 6 ou 8 caracteres que che compartiu un membro do fogar.';
 
   @override
   String get invalidInviteCode => 'Código de invitación non válido';
@@ -994,7 +994,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get genericErrorMessage => 'Algo saíu mal. Téntao de novo.';
 
   @override
-  String get codeMustBeSixChars => 'O código debe ter 6 caracteres';
+  String get codeMustBeSixChars => 'O código debe ter 6 ou 8 caracteres';
 
   @override
   String get join => 'Unirse';

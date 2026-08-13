@@ -56,6 +56,22 @@ void main() {
       );
     });
 
+    test('rejects image with empty bytes', () {
+      expect(
+        validateRecipeAssistantInput(
+          RecipeAssistantPromptInput(
+            images: [
+              RecipeAssistantImageInput(
+                bytes: Uint8List(0),
+                mimeType: 'image/jpeg',
+              ),
+            ],
+          ),
+        ),
+        equals(recipeAssistantInvalidImageKey),
+      );
+    });
+
     test('accepts multiple images up to the max', () {
       expect(
         validateRecipeAssistantInput(
