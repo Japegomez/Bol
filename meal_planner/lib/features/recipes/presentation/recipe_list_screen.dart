@@ -129,6 +129,10 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
               key: OnboardingTargets.keyFor(OnboardingTarget.recipesSearchBar),
+              constraints: const BoxConstraints(
+                minWidth: double.infinity,
+                minHeight: 56,
+              ),
               controller: _searchController,
               hintText: l10n.searchByName,
               leading: const Icon(Icons.search),

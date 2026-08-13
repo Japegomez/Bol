@@ -80,6 +80,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: SearchBar(
+              constraints: const BoxConstraints(
+                minWidth: double.infinity,
+                minHeight: 56,
+              ),
               controller: _searchController,
               hintText: context.l10n.searchPublicRecipes,
               leading: const Icon(Icons.search),
