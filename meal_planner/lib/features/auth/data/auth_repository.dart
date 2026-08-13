@@ -18,16 +18,18 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     hide AuthState, AuthException;
 
 class AuthRepository {
-  GoogleSignIn? _googleSignInInstance;
+  var _googleInitialized = false;
   bool _manualSignOut = false;
 
-  GoogleSignIn? get _googleSignIn {
-    if (!Env.hasGoogleSignIn) return null;
-    return _googleSignInInstance ??= GoogleSignIn(
+  GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
+
+  Future<void> _ensureGoogleInitialized() async {
+    if (_googleInitialized) return;
+    await _googleSignIn.initialize(
       serverClientId: Env.googleWebClientId,
       clientId: _googleClientId,
-      scopes: const ['email', 'profile', 'openid'],
     );
+    _googleInitialized = true;
   }
 
   String? get _googleClientId {
@@ -88,32 +90,38 @@ class AuthRepository {
   }
 
   Future<AuthResponse> signInWithGoogle() async {
-    final googleSignIn = _googleSignIn;
-    if (googleSignIn == null) {
+    if (!Env.hasGoogleSignIn) {
       throw const AuthConfigurationException(
         'GOOGLE_WEB_CLIENT_ID is not configured',
       );
     }
 
     try {
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        throw const AuthCancelledException();
-      }
-
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      if (idToken == null) {
+      await _ensureGoogleInitialized();
+      final googleUser = await _googleSignIn.authenticate(
+        scopeHint: const ['email', 'profile', 'openid'],
+      );
+      final idToken = googleUser.authentication.idToken;
+      if (idToken == null || idToken.isEmpty) {
         throw const AuthProviderException(
           'Google Sign-In returned no id token',
         );
+      }
+
+      String? accessToken;
+      try {
+        final authorization = await _googleSignIn.authorizationClient
+            .authorizationForScopes(const ['email', 'profile', 'openid']);
+        accessToken = authorization?.accessToken;
+      } catch (_) {
+        // idToken is enough for Supabase; access token is best-effort.
       }
 
       try {
         final response = await supabase.auth.signInWithIdToken(
           provider: OAuthProvider.google,
           idToken: idToken,
-          accessToken: googleAuth.accessToken,
+          accessToken: accessToken,
         );
         final userId = response.user?.id;
         final photoUrl = googleUser.photoUrl;
@@ -126,6 +134,12 @@ class AuthRepository {
       } catch (e) {
         throw mapAuthError(e);
       }
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        throw const AuthCancelledException();
+      }
+      throw mapGoogleSignInError(e) ??
+          AuthProviderException(e.description ?? e.code.name);
     } on PlatformException catch (e) {
       throw mapGoogleSignInError(e) ??
           AuthProviderException(e.message ?? e.code);
@@ -179,7 +193,7 @@ class AuthRepository {
     _manualSignOut = manual;
     if (_signedInWithGoogle) {
       try {
-        await _googleSignIn?.signOut();
+        await _googleSignIn.signOut();
       } catch (_) {
         // Best-effort; Supabase sign-out still runs below.
       }

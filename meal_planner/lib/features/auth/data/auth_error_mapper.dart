@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart'
     as app_auth;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
@@ -64,8 +65,22 @@ app_auth.AuthException mapAuthError(Object error) {
   return app_auth.AuthProviderException(error.toString());
 }
 
-/// Maps [PlatformException] from `google_sign_in` (e.g. ApiException: 10).
+/// Maps Google Sign-In failures (v7 [GoogleSignInException] or legacy
+/// [PlatformException], e.g. ApiException: 10).
 app_auth.AuthException? mapGoogleSignInError(Object error) {
+  if (error is GoogleSignInException) {
+    if (error.code == GoogleSignInExceptionCode.canceled) {
+      return const app_auth.AuthCancelledException();
+    }
+    final message = '${error.description ?? ''} ${error.code.name}';
+    if (_isGoogleDeveloperError(message)) {
+      return const app_auth.AuthGoogleSignInConfigurationException();
+    }
+    return const app_auth.AuthProviderException(
+      'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
+    );
+  }
+
   if (error is! PlatformException) return null;
 
   if (error.code != 'sign_in_failed') {
@@ -75,15 +90,19 @@ app_auth.AuthException? mapGoogleSignInError(Object error) {
   }
 
   final message = error.message ?? '';
-  // ApiException 10 / DEVELOPER_ERROR — SHA-1 or OAuth client mismatch on Android.
-  if (message.contains(': 10') ||
-      message.contains('10:') ||
-      message.contains('ApiException: 10') ||
-      message.contains('DEVELOPER_ERROR')) {
+  if (_isGoogleDeveloperError(message)) {
     return const app_auth.AuthGoogleSignInConfigurationException();
   }
 
   return const app_auth.AuthProviderException(
     'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
   );
+}
+
+bool _isGoogleDeveloperError(String message) {
+  return message.contains(': 10') ||
+      message.contains('10:') ||
+      message.contains('ApiException: 10') ||
+      message.contains('DEVELOPER_ERROR') ||
+      message.contains('clientConfigurationError');
 }
