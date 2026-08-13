@@ -62,7 +62,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final filter = ref.watch(exploreFilterProvider);
     final sortLabel = filter.sort == 'top'
         ? context.l10n.topRated
-        : context.l10n.recent;
+        : context.l10n.mostRecent;
 
     return Scaffold(
       appBar: AppBar(

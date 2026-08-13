@@ -289,6 +289,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noRecipesYet => 'No recipes yet';
 
   @override
+  String get sortAlphabetical => 'Alphabetical';
+
+  @override
+  String get alphabeticalOrder => 'Alphabetical order';
+
+  @override
+  String get favoritesFilter => 'Favorites';
+
+  @override
+  String get favoriteRecipeTooltip => 'Add to favorites';
+
+  @override
+  String get unfavoriteRecipeTooltip => 'Remove from favorites';
+
+  @override
+  String get noFavoriteRecipes =>
+      'No favorite recipes yet. Mark recipes with the star to find them here.';
+
+  @override
   String get createFirstRecipe => 'Create first recipe';
 
   @override
@@ -774,7 +793,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get othersCategory => 'Other';
 
   @override
-  String get feedTitle => 'Feed';
+  String get feedTitle => 'Following';
 
   @override
   String get mostRecent => 'Most recent';
@@ -788,7 +807,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noRecipesWithTags => 'No recipes with these tags';
 
   @override
-  String get feedEmpty => 'Your feed is empty';
+  String get feedEmpty => 'No recipes from people you follow';
 
   @override
   String get tryOtherTags => 'Try other tags or remove the filter.';
@@ -801,7 +820,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreTitle => 'Explore';
 
   @override
-  String get feedTooltip => 'Feed';
+  String get feedTooltip => 'Following';
 
   @override
   String get searchPublicRecipes => 'Search public recipes';
@@ -1516,11 +1535,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Search other users\' recipes by name or tags. Rate them and save them to your recipe book.';
 
   @override
-  String get onboardingStep9Title => 'Your cooks feed';
+  String get onboardingStep9Title => 'Your followed cooks';
 
   @override
   String get onboardingStep9Body =>
-      'Follow your favourite cooks from their profile and see their latest recipes by tapping the feed button.';
+      'Follow your favourite cooks from their profile and see their latest recipes by tapping the Following button.';
 
   @override
   String get onboardingStep10Title => 'Your profile and household';

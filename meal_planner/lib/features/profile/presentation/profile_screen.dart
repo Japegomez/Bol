@@ -71,7 +71,13 @@ class ProfileScreen extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final profileAsync = ref.watch(profileProvider);
     final householdAsync = ref.watch(currentHouseholdProvider);
-    final isDarkMode = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final themeMode = ref.watch(themeModeProvider);
+    final isDarkMode = switch (themeMode) {
+      ThemeMode.dark => true,
+      ThemeMode.light => false,
+      ThemeMode.system =>
+        MediaQuery.platformBrightnessOf(context) == Brightness.dark,
+    };
 
     final user = authState.maybeWhen(
       data: (value) => value is AuthAuthenticated ? value.user : null,

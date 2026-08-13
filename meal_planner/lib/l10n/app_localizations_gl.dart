@@ -292,6 +292,25 @@ class AppLocalizationsGl extends AppLocalizations {
   String get noRecipesYet => 'Aínda non hai receitas';
 
   @override
+  String get sortAlphabetical => 'Alfabético';
+
+  @override
+  String get alphabeticalOrder => 'Orde alfabética';
+
+  @override
+  String get favoritesFilter => 'Favoritos';
+
+  @override
+  String get favoriteRecipeTooltip => 'Engadir a favoritos';
+
+  @override
+  String get unfavoriteRecipeTooltip => 'Quitar de favoritos';
+
+  @override
+  String get noFavoriteRecipes =>
+      'Aínda non hai receitas favoritas. Márcaas coa estrela para atopalas aquí.';
+
+  @override
   String get createFirstRecipe => 'Crear primeira receita';
 
   @override
@@ -778,10 +797,10 @@ class AppLocalizationsGl extends AppLocalizations {
   String get othersCategory => 'Outros';
 
   @override
-  String get feedTitle => 'Feed';
+  String get feedTitle => 'Seguidos';
 
   @override
-  String get mostRecent => 'Máis recente';
+  String get mostRecent => 'Máis recentes';
 
   @override
   String sortedBy(String label) {
@@ -792,7 +811,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get noRecipesWithTags => 'Sen receitas con estas etiquetas';
 
   @override
-  String get feedEmpty => 'O teu feed está baleiro';
+  String get feedEmpty => 'Non hai receitas de quen segues';
 
   @override
   String get tryOtherTags => 'Proba con outras etiquetas ou quita o filtro.';
@@ -805,7 +824,7 @@ class AppLocalizationsGl extends AppLocalizations {
   String get exploreTitle => 'Explorar';
 
   @override
-  String get feedTooltip => 'Feed';
+  String get feedTooltip => 'Seguidos';
 
   @override
   String get searchPublicRecipes => 'Buscar receitas públicas';
@@ -1522,11 +1541,11 @@ class AppLocalizationsGl extends AppLocalizations {
       'Busca receitas doutros usuarios por nome ou etiquetas. Valóraas e gárdalas no teu receitar.';
 
   @override
-  String get onboardingStep9Title => 'O teu feed de cociñeiros';
+  String get onboardingStep9Title => 'Os teus cociñeiros seguidos';
 
   @override
   String get onboardingStep9Body =>
-      'Segue aos teus cociñeiros favoritos desde o seu perfil e consulta as súas últimas receitas premendo o botón do feed.';
+      'Segue aos teus cociñeiros favoritos desde o seu perfil e consulta as súas últimas receitas premendo o botón de Seguidos.';
 
   @override
   String get onboardingStep10Title => 'O teu perfil e fogar';

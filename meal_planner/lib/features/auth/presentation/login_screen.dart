@@ -236,6 +236,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             )
                           : Text(l10n.signIn),
                     ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => context.go('/auth/forgot-password'),
+                        child: Text(l10n.forgotPasswordLink),
+                      ),
+                    ),
                     if (Env.hasGoogleSignIn) ...[
                       const SizedBox(height: 12),
                       if (kIsWeb)
@@ -267,15 +276,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () => context.go('/auth/forgot-password'),
-                        child: Text(l10n.forgotPasswordLink),
-                      ),
-                    ),
                     TextButton(
                       onPressed: _isLoading
                           ? null

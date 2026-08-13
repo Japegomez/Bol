@@ -636,6 +636,42 @@ abstract class AppLocalizations {
   /// **'No recipes yet'**
   String get noRecipesYet;
 
+  /// No description provided for @sortAlphabetical.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical'**
+  String get sortAlphabetical;
+
+  /// No description provided for @alphabeticalOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical order'**
+  String get alphabeticalOrder;
+
+  /// No description provided for @favoritesFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favoritesFilter;
+
+  /// No description provided for @favoriteRecipeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get favoriteRecipeTooltip;
+
+  /// No description provided for @unfavoriteRecipeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get unfavoriteRecipeTooltip;
+
+  /// No description provided for @noFavoriteRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite recipes yet. Mark recipes with the star to find them here.'**
+  String get noFavoriteRecipes;
+
   /// No description provided for @createFirstRecipe.
   ///
   /// In en, this message translates to:
@@ -1515,7 +1551,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Feed'**
+  /// **'Following'**
   String get feedTitle;
 
   /// No description provided for @mostRecent.
@@ -1539,7 +1575,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Your feed is empty'**
+  /// **'No recipes from people you follow'**
   String get feedEmpty;
 
   /// No description provided for @tryOtherTags.
@@ -1563,7 +1599,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Feed'**
+  /// **'Following'**
   String get feedTooltip;
 
   /// No description provided for @searchPublicRecipes.
@@ -2901,13 +2937,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep9Title.
   ///
   /// In en, this message translates to:
-  /// **'Your cooks feed'**
+  /// **'Your followed cooks'**
   String get onboardingStep9Title;
 
   /// No description provided for @onboardingStep9Body.
   ///
   /// In en, this message translates to:
-  /// **'Follow your favourite cooks from their profile and see their latest recipes by tapping the feed button.'**
+  /// **'Follow your favourite cooks from their profile and see their latest recipes by tapping the Following button.'**
   String get onboardingStep9Body;
 
   /// No description provided for @onboardingStep10Title.

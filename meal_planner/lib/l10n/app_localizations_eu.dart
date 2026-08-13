@@ -291,6 +291,25 @@ class AppLocalizationsEu extends AppLocalizations {
   String get noRecipesYet => 'Oraindik ez dago errezetarik';
 
   @override
+  String get sortAlphabetical => 'Alfabetikoa';
+
+  @override
+  String get alphabeticalOrder => 'Orden alfabetikoa';
+
+  @override
+  String get favoritesFilter => 'Gogokoak';
+
+  @override
+  String get favoriteRecipeTooltip => 'Gehitu gogokoetara';
+
+  @override
+  String get unfavoriteRecipeTooltip => 'Kendu gogokoetatik';
+
+  @override
+  String get noFavoriteRecipes =>
+      'Oraindik ez dago gogoko errezetarik. Markatu errezetak izarrekin hemen aurkitzeko.';
+
+  @override
   String get createFirstRecipe => 'Sortu lehen errezeta';
 
   @override
@@ -779,10 +798,10 @@ class AppLocalizationsEu extends AppLocalizations {
   String get othersCategory => 'Besteak';
 
   @override
-  String get feedTitle => 'Jarioa';
+  String get feedTitle => 'Jarraituak';
 
   @override
-  String get mostRecent => 'Berriena';
+  String get mostRecent => 'Berrienak';
 
   @override
   String sortedBy(String label) {
@@ -793,7 +812,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get noRecipesWithTags => 'Ez dago errezetarik etiketa hauekin';
 
   @override
-  String get feedEmpty => 'Zure jarioa hutsik dago';
+  String get feedEmpty => 'Ez dago jarraitzen dituzun pertsonen errezetarik';
 
   @override
   String get tryOtherTags => 'Saiatu beste etiketekin edo kendu iragazkia.';
@@ -806,7 +825,7 @@ class AppLocalizationsEu extends AppLocalizations {
   String get exploreTitle => 'Arakatu';
 
   @override
-  String get feedTooltip => 'Jarioa';
+  String get feedTooltip => 'Jarraituak';
 
   @override
   String get searchPublicRecipes => 'Bilatu errezeta publikoak';
@@ -1523,11 +1542,11 @@ class AppLocalizationsEu extends AppLocalizations {
       'Bilatu beste erabiltzaileen errezetak izenaren edo etiketen arabera. Baloratu eta gorde zure liburuan.';
 
   @override
-  String get onboardingStep9Title => 'Zure sukaldarien feed-a';
+  String get onboardingStep9Title => 'Jarraitzen dituzun sukaldariak';
 
   @override
   String get onboardingStep9Body =>
-      'Jarraitu zure sukaldari gogokoenak haien profiletik eta kontsultatu beraien azken errezetak feed botoia sakatuz.';
+      'Jarraitu zure sukaldari gogokoenak haien profiletik eta kontsultatu beraien azken errezetak Jarraituak botoia sakatuz.';
 
   @override
   String get onboardingStep10Title => 'Zure profila eta etxea';

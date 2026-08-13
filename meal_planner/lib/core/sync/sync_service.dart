@@ -88,6 +88,13 @@ class SyncService {
         ref.invalidate(planSlotsProvider);
         ref.invalidate(shoppingItemsProvider);
       }
+
+      try {
+        await recipesRepository.fetchFavoriteIds();
+        ref.invalidate(recipeFavoritesProvider);
+      } catch (_) {
+        // Favorites sync is best-effort; recipe/plan replay already finished.
+      }
     } finally {
       _syncing = false;
     }

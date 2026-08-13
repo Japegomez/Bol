@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
+import 'package:meal_planner/core/widgets/overflow_marquee_text.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
@@ -16,6 +17,7 @@ import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart'
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_assistant_prompt_sheet.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_creation_options_sheet.dart';
 import 'package:meal_planner/features/recipes/presentation/widgets/recipe_tag_filter_bar.dart';
+import 'package:meal_planner/features/social/presentation/widgets/social_sort_label.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {
   const RecipeListScreen({super.key});
@@ -91,9 +93,12 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
     final l10n = context.l10n;
     final recipesAsync = ref.watch(recipeListProvider);
     final filter = ref.watch(recipeListFilterProvider);
+    final favoriteIds = ref.watch(recipeFavoritesProvider).valueOrNull ?? {};
     final activeTags = filter.tags;
     final hasActiveFilter =
-        filter.search.trim().isNotEmpty || filter.tags.isNotEmpty;
+        filter.search.trim().isNotEmpty ||
+        filter.tags.isNotEmpty ||
+        filter.favoritesOnly;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.recipeBookTitle)),
@@ -118,6 +123,7 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -140,6 +146,46 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   : null,
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FilterChip(
+                      label: Text(l10n.recent),
+                      selected: filter.sort == RecipeListSort.recent,
+                      onSelected: (_) {
+                        ref.read(recipeListFilterProvider.notifier).state =
+                            filter.copyWith(sort: RecipeListSort.recent);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: Text(l10n.sortAlphabetical),
+                      selected: filter.sort == RecipeListSort.alpha,
+                      onSelected: (_) {
+                        ref.read(recipeListFilterProvider.notifier).state =
+                            filter.copyWith(sort: RecipeListSort.alpha);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: Text(l10n.favoritesFilter),
+                      selected: filter.favoritesOnly,
+                      onSelected: (selected) {
+                        ref.read(recipeListFilterProvider.notifier).state =
+                            filter.copyWith(favoritesOnly: selected);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           RecipeTagFilterBar(
             selectedTags: activeTags,
             onSelectionChanged: (tags) {
@@ -148,11 +194,29 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                   .copyWith(tags: tags);
             },
           ),
+          SocialSortLabel(
+            label: filter.sort == RecipeListSort.alpha
+                ? l10n.alphabeticalOrder
+                : l10n.mostRecent,
+          ),
           Expanded(
             child: recipesAsync.when(
               data: (recipes) {
-                if (recipes.isEmpty) {
+                var visible = recipes;
+                if (filter.favoritesOnly) {
+                  visible = visible
+                      .where((recipe) => favoriteIds.contains(recipe.id))
+                      .toList();
+                }
+
+                if (visible.isEmpty) {
                   if (hasActiveFilter) {
+                    final emptyMessage =
+                        filter.favoritesOnly &&
+                            filter.search.trim().isEmpty &&
+                            filter.tags.isEmpty
+                        ? l10n.noFavoriteRecipes
+                        : l10n.noRecipesFoundForSearch;
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
@@ -160,13 +224,17 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.search_off_outlined,
+                              filter.favoritesOnly &&
+                                      filter.search.trim().isEmpty &&
+                                      filter.tags.isEmpty
+                                  ? Icons.star_border
+                                  : Icons.search_off_outlined,
                               size: 64,
                               color: Theme.of(context).colorScheme.outline,
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              l10n.noRecipesFoundForSearch,
+                              emptyMessage,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyLarge,
                             ),
@@ -205,24 +273,36 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
                           listTitleTranslationsProvider(
                             TitleTranslationRequest(
                               targetLang: targetLang,
-                              ids: recipes.map((r) => r.id),
+                              ids: visible.map((r) => r.id),
                             ),
                           ),
                         )
                         .valueOrNull ??
                     const <String, String>{};
 
+                if (filter.sort == RecipeListSort.alpha) {
+                  visible = [...visible]
+                    ..sort((a, b) {
+                      final titleA = titles[a.id] ?? a.title;
+                      final titleB = titles[b.id] ?? b.title;
+                      return titleA.toLowerCase().compareTo(
+                        titleB.toLowerCase(),
+                      );
+                    });
+                }
+
                 return RefreshIndicator(
                   onRefresh: () async {
                     ref.invalidate(recipeListProvider);
                     ref.invalidate(recipeTagsProvider);
                     ref.invalidate(recipesProvider);
+                    ref.invalidate(recipeFavoritesProvider);
                   },
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: recipes.length,
+                    itemCount: visible.length,
                     itemBuilder: (context, index) {
-                      final recipe = recipes[index];
+                      final recipe = visible[index];
                       return _RecipeCard(
                         recipe: recipe,
                         titleOverride: titles[recipe.id],
@@ -253,6 +333,12 @@ class _RecipeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final photoUrlAsync = ref.watch(recipePhotoUrlProvider(recipe.photoUrl));
+    final isFavorite =
+        ref.watch(recipeFavoritesProvider).valueOrNull?.contains(recipe.id) ??
+        false;
+    final favoriteBusy = ref
+        .watch(favoriteInFlightIdsProvider)
+        .contains(recipe.id);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -263,7 +349,7 @@ class _RecipeCard extends ConsumerWidget {
           photo: photoUrlAsync.when(
             data: (url) {
               if (url == null) {
-                return const _RecipePhotoFallback();
+                return const RecipePhotoPlaceholder();
               }
               return CachedNetworkImage(
                 imageUrl: url,
@@ -271,20 +357,52 @@ class _RecipeCard extends ConsumerWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: (_, _) => const _RecipePhotoSkeleton(),
-                errorWidget: (_, _, _) => const _RecipePhotoFallback(),
+                errorWidget: (_, _, _) => const RecipePhotoPlaceholder(
+                  child: Icon(Icons.broken_image),
+                ),
               );
             },
             loading: () => const _RecipePhotoSkeleton(),
-            error: (_, _) => const _RecipePhotoFallback(),
+            error: (_, _) => const RecipePhotoPlaceholder(),
           ),
           content: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titleOverride ?? recipe.title,
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    Expanded(
+                      child: OverflowMarqueeText(
+                        text: titleOverride ?? recipe.title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      tooltip: isFavorite
+                          ? l10n.unfavoriteRecipeTooltip
+                          : l10n.favoriteRecipeTooltip,
+                      onPressed: favoriteBusy
+                          ? null
+                          : () {
+                              ref
+                                  .read(recipeFavoritesProvider.notifier)
+                                  .toggle(recipe.id);
+                            },
+                      icon: Icon(
+                        isFavorite ? Icons.star : Icons.star_border,
+                        color: isFavorite
+                            ? Colors.amber
+                            : Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -300,18 +418,6 @@ class _RecipeCard extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _RecipePhotoFallback extends StatelessWidget {
-  const _RecipePhotoFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: Color(0xFFE0E0E0),
-      child: Center(child: Icon(Icons.restaurant, size: 40)),
     );
   }
 }

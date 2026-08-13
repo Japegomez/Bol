@@ -114,6 +114,12 @@
   "searchByName": "Search by name",
   "noRecipesFoundForSearch": "No recipe matched your search. Create it yourself.",
   "noRecipesYet": "No recipes yet",
+  "sortAlphabetical": "Alphabetical",
+  "alphabeticalOrder": "Alphabetical order",
+  "favoritesFilter": "Favorites",
+  "favoriteRecipeTooltip": "Add to favorites",
+  "unfavoriteRecipeTooltip": "Remove from favorites",
+  "noFavoriteRecipes": "No favorite recipes yet. Mark recipes with the star to find them here.",
   "createFirstRecipe": "Create first recipe",
   "servingsCount": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@servingsCount": {
@@ -335,7 +341,7 @@
   "nameRequired": "Name is required",
   "othersCategory": "Other",
 
-  "feedTitle": "Feed",
+  "feedTitle": "Following",
   "mostRecent": "Most recent",
   "sortedBy": "Sorted by: {label}",
   "@sortedBy": {
@@ -344,11 +350,11 @@
     }
   },
   "noRecipesWithTags": "No recipes with these tags",
-  "feedEmpty": "Your feed is empty",
+  "feedEmpty": "No recipes from people you follow",
   "tryOtherTags": "Try other tags or remove the filter.",
   "followUsersHint": "Follow other users from their profiles to see their public recipes here.",
   "exploreTitle": "Explore",
-  "feedTooltip": "Feed",
+  "feedTooltip": "Following",
   "searchPublicRecipes": "Search public recipes",
   "recent": "Recent",
   "topRated": "Top rated",
@@ -606,8 +612,8 @@
   "onboardingStep7Body": "The share icon creates text ready to send via WhatsApp or other apps.",
   "onboardingStep8Title": "Discover the community",
   "onboardingStep8Body": "Search other users' recipes by name or tags. Rate them and save them to your recipe book.",
-  "onboardingStep9Title": "Your cooks feed",
-  "onboardingStep9Body": "Follow your favourite cooks from their profile and see their latest recipes by tapping the feed button.",
+  "onboardingStep9Title": "Your followed cooks",
+  "onboardingStep9Body": "Follow your favourite cooks from their profile and see their latest recipes by tapping the Following button.",
   "onboardingStep10Title": "Your profile and household",
   "onboardingStep10Body": "Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.",
 

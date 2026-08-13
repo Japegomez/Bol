@@ -166,4 +166,19 @@ void main() {
     expect(provider.code, GoogleSignInExceptionCode.unknownError.name);
     expect(provider.description, 'Something went wrong with the provider');
   });
+
+  test('maps PlatformException network_error to provider exception', () {
+    final error = mapAuthError(
+      PlatformException(
+        code: 'network_error',
+        message: 'Unable to connect to the network',
+      ),
+    );
+
+    expect(error, isA<AuthProviderException>());
+    final provider = error as AuthProviderException;
+    expect(provider.message, AuthProviderException.googleSignInFailedCode);
+    expect(provider.code, 'network_error');
+    expect(provider.description, 'Unable to connect to the network');
+  });
 }
