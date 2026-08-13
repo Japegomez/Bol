@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fase 6 en `main`; offline móvil, asistente IA y modo cocina (implementado, validación pendiente)
 > **Fecha:** Agosto 2026
-> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Böl**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift (DB cifrada SQLCipher; migración plaintext con `VACUUM INTO` + `rekey` y reset si es ilegible), filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025 + token-gate `038`/`039`), **fork atómico + rebuild compra con `is_checked`** (026), **remediación seguridad aplicada en remoto** (`037`–`045`: RLS, `REVOKE` a `anon`, cuota IA por IP). App **v1.2.3**.
+> **Estado:** F1–F15 en producción de código; apps en Play (closed testing) y TestFlight como **Böl**. **Modo cocina** implementado en código (sesión persistente, banner, notificación Android, Live Activity iOS); pendiente validación manual en dispositivo y perfil de la extensión en builds. También: onboarding spotlight, offline Drift (DB cifrada SQLCipher; migración plaintext con `VACUUM INTO` + `rekey` y reset si es ilegible), filtro multi-etiqueta, modo oscuro, asistente IA (nutrición estable + enteros), **migración aditiva hogar↔individual** (024), **compartir recetas por enlace** (025 + token-gate `038`/`039`), **fork atómico + rebuild compra con `is_checked`** (026), **remediación seguridad aplicada en remoto** (`037`–`045`: RLS, `REVOKE` a `anon`, cuota IA por IP). Hotfix **v1.2.4**.
 
 ---
 
