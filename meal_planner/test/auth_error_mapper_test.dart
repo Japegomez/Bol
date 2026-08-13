@@ -161,9 +161,9 @@ void main() {
     );
 
     expect(error, isA<AuthProviderException>());
-    expect(
-      error.message,
-      'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
-    );
+    final provider = error as AuthProviderException;
+    expect(provider.message, AuthProviderException.googleSignInFailedCode);
+    expect(provider.code, GoogleSignInExceptionCode.unknownError.name);
+    expect(provider.description, 'Something went wrong with the provider');
   });
 }

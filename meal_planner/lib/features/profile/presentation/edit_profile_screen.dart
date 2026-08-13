@@ -12,10 +12,10 @@ import 'package:meal_planner/core/widgets/app_button.dart';
 import 'package:meal_planner/core/widgets/password_text_field.dart';
 import 'package:meal_planner/features/auth/domain/auth_exception.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
+import 'package:meal_planner/features/auth/presentation/auth_exception_l10n.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/auth/presentation/password_form_validators.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
-import 'package:meal_planner/l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -129,23 +129,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
-  String _passwordErrorText(AuthException error, AppLocalizations l10n) {
-    return switch (error) {
-      AuthPasswordTooWeakException() => l10n.passwordTooWeak,
-      AuthInvalidCurrentPasswordException() ||
-      AuthReauthenticationException() => l10n.currentPasswordIncorrect,
-      AuthSamePasswordException() => l10n.passwordSameAsCurrent,
-      AuthCaptchaException() => l10n.captchaFailed,
-      _ => error.message,
-    };
-  }
-
-  bool get _hasEmailPassword {
-    final auth = ref.watch(authStateProvider).valueOrNull;
-    return auth is AuthAuthenticated &&
-        ref.read(authRepositoryProvider).hasEmailPassword;
-  }
-
   Widget _maybeAutofillGroup({required Widget child}) {
     if (kIsWeb) return child;
     return AutofillGroup(child: child);
@@ -177,7 +160,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ).showSnackBar(SnackBar(content: Text(l10n.passwordChanged)));
     } on AuthException catch (e) {
       if (!mounted) return;
-      setState(() => _passwordErrorMessage = _passwordErrorText(e, l10n));
+      setState(() => _passwordErrorMessage = localizedAuthException(e, l10n));
     } catch (_) {
       if (!mounted) return;
       setState(() => _passwordErrorMessage = l10n.genericErrorMessage);
@@ -194,7 +177,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final profile = profileAsync.valueOrNull;
     final avatarUrl = _removeAvatar ? null : profile?.avatarUrl;
     final hasPhoto = _pickedImageBytes != null || avatarUrl != null;
-    final hasEmailPassword = _hasEmailPassword;
+    final auth = ref.watch(authStateProvider).valueOrNull;
+    final hasEmailPassword =
+        auth is AuthAuthenticated &&
+        ref.read(authRepositoryProvider).hasEmailPassword;
 
     if (profile != null && _usernameController.text.isEmpty) {
       _usernameController.text = profile.username;

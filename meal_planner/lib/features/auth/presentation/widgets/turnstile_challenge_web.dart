@@ -10,7 +10,7 @@ import 'package:web/web.dart' as web;
 
 /// Flutter `webview_flutter` has no web implementation, so Turnstile is
 /// rendered as a real DOM overlay (Cloudflare's JS widget).
-Future<String?> showTurnstileChallenge(BuildContext context) async {
+Future<String?> showTurnstileChallenge(BuildContext context) {
   final l10n = context.l10n;
   final scheme = Theme.of(context).colorScheme;
   final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -87,39 +87,38 @@ Future<String?> showTurnstileChallenge(BuildContext context) async {
     errorHost.style.display = 'flex';
   }
 
+  Future<void> loadAndRender({bool reload = false}) async {
+    try {
+      if (reload) {
+        final id = widgetId;
+        widgetId = null;
+        if (id != null) {
+          _readTurnstile()?.remove(id);
+        }
+      }
+      await _ensureTurnstileScript();
+      if (completer.isCompleted) return;
+      widgetId = _renderWidget(
+        host: widgetHost,
+        isDark: isDark,
+        language: language,
+        onSuccess: finish,
+        onError: showError,
+      );
+      if (widgetId == null) showError();
+    } on Object {
+      if (!completer.isCompleted) showError();
+    }
+  }
+
   retryButton.onclick = (web.Event event) {
     event.preventDefault();
     errorHost.style.display = 'none';
     widgetHost.style.display = 'flex';
-    final id = widgetId;
-    widgetId = null;
-    if (id != null) {
-      _readTurnstile()?.remove(id);
-    }
-    widgetId = _renderWidget(
-      host: widgetHost,
-      isDark: isDark,
-      language: language,
-      onSuccess: finish,
-      onError: showError,
-    );
-    if (widgetId == null) showError();
+    unawaited(loadAndRender(reload: true));
   }.toJS;
 
-  try {
-    await _ensureTurnstileScript();
-    widgetId = _renderWidget(
-      host: widgetHost,
-      isDark: isDark,
-      language: language,
-      onSuccess: finish,
-      onError: showError,
-    );
-    if (widgetId == null) showError();
-  } on Object {
-    showError();
-  }
-
+  unawaited(loadAndRender());
   return completer.future;
 }
 
@@ -163,13 +162,9 @@ _TurnstileJs? _readTurnstile() {
 Future<void> _ensureTurnstileScript() async {
   if (_readTurnstile() != null) return;
 
-  final existing = web.document.querySelector(
-    'script[src*="challenges.cloudflare.com/turnstile"]',
-  );
-  if (existing != null) {
-    await _waitForTurnstile();
-    return;
-  }
+  web.document
+      .querySelector('script[src*="challenges.cloudflare.com/turnstile"]')
+      ?.remove();
 
   final loaded = Completer<void>();
   final script = web.HTMLScriptElement()

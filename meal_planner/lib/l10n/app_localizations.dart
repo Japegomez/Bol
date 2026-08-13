@@ -315,7 +315,7 @@ abstract class AppLocalizations {
   /// No description provided for @turnstileNotConfigured.
   ///
   /// In en, this message translates to:
-  /// **'Turnstile is not configured. Add TURNSTILE_SITE_KEY to dart_defines.json.'**
+  /// **'Verification is temporarily unavailable. Please try again later.'**
   String get turnstileNotConfigured;
 
   /// No description provided for @emailLabel.
@@ -353,6 +353,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue with Google'**
   String get continueWithGoogle;
+
+  /// No description provided for @googleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign in with Google. Please try again.'**
+  String get googleSignInFailed;
 
   /// No description provided for @continueWithApple.
   ///
@@ -1878,11 +1884,11 @@ abstract class AppLocalizations {
   /// **'Something went wrong. Please try again.'**
   String get genericErrorMessage;
 
-  /// No description provided for @codeMustBeSixChars.
+  /// No description provided for @codeMustBeSixOrEightChars.
   ///
   /// In en, this message translates to:
   /// **'The code must be 6 or 8 characters'**
-  String get codeMustBeSixChars;
+  String get codeMustBeSixOrEightChars;
 
   /// No description provided for @join.
   ///

@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Böl</title>
     <style>
       html,
@@ -32,9 +29,24 @@
     <script>
       (function () {
         var params = new URLSearchParams(window.location.search);
+        var expectedSitekey = "0x4AAAAAAEO0v7oX0UQiLyh1";
+        var allowedLangs = {
+          auto: true,
+          en: true,
+          es: true,
+          ca: true,
+          eu: true,
+          gl: true,
+          it: true,
+          "it-IT": true,
+          pt: true,
+          "pt-BR": true,
+        };
         var sitekey = params.get("sitekey") || "";
+        if (sitekey !== expectedSitekey) sitekey = "";
         var theme = params.get("theme") === "dark" ? "dark" : "light";
         var lang = params.get("lang") || "auto";
+        if (!allowedLangs[lang]) lang = "auto";
         document.documentElement.lang = lang === "auto" ? "en" : lang;
 
         function notify(payload) {
