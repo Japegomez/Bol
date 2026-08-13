@@ -286,20 +286,20 @@ class _TagChipRowSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return const Wrap(
+      spacing: 4,
+      runSpacing: 4,
       children: [
         SkeletonBox(
           width: 76,
           height: 32,
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
-        SizedBox(width: 4),
         SkeletonBox(
           width: 108,
           height: 32,
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
-        SizedBox(width: 4),
         SkeletonBox(
           width: 64,
           height: 32,

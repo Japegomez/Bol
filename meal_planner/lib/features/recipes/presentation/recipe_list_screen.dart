@@ -264,10 +264,7 @@ class _RecipeCard extends ConsumerWidget {
           photo: photoUrlAsync.when(
             data: (url) {
               if (url == null) {
-                return const ColoredBox(
-                  color: Color(0xFFE0E0E0),
-                  child: Center(child: Icon(Icons.restaurant, size: 40)),
-                );
+                return const _RecipePhotoFallback();
               }
               return CachedNetworkImage(
                 imageUrl: url,
@@ -275,15 +272,11 @@ class _RecipeCard extends ConsumerWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: (_, _) => const _RecipePhotoSkeleton(),
-                errorWidget: (_, _, _) =>
-                    const Center(child: Icon(Icons.broken_image)),
+                errorWidget: (_, _, _) => const _RecipePhotoFallback(),
               );
             },
             loading: () => const _RecipePhotoSkeleton(),
-            error: (_, _) => const ColoredBox(
-              color: Color(0xFFE0E0E0),
-              child: Center(child: Icon(Icons.restaurant, size: 40)),
-            ),
+            error: (_, _) => const _RecipePhotoFallback(),
           ),
           content: Padding(
             padding: const EdgeInsets.all(12),
@@ -308,6 +301,18 @@ class _RecipeCard extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RecipePhotoFallback extends StatelessWidget {
+  const _RecipePhotoFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0xFFE0E0E0),
+      child: Center(child: Icon(Icons.restaurant, size: 40)),
     );
   }
 }

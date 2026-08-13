@@ -343,7 +343,14 @@ class _RecipeAssistantPromptSheetState
     final added = <RecipeAssistantImageInput>[];
 
     for (final file in toAdd) {
-      final bytes = await file.readAsBytes();
+      final Uint8List bytes;
+      try {
+        bytes = await file.readAsBytes();
+      } on Object {
+        if (!mounted) return;
+        error = context.l10n.recipeAssistantInvalidImage;
+        continue;
+      }
       if (!mounted) return;
 
       if (bytes.isEmpty) {
