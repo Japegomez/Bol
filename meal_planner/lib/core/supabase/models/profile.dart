@@ -8,6 +8,7 @@ class Profile implements SupadartClass<Profile> {
   final String username;
   final String? avatarUrl;
   final bool isAdmin;
+  final List<String> allergens;
   final DateTime createdAt;
 
   const Profile({
@@ -15,6 +16,7 @@ class Profile implements SupadartClass<Profile> {
     required this.username,
     this.avatarUrl,
     this.isAdmin = false,
+    this.allergens = const [],
     required this.createdAt,
   });
 
@@ -23,6 +25,7 @@ class Profile implements SupadartClass<Profile> {
   static String get c_username => 'username';
   static String get c_avatarUrl => 'avatar_url';
   static String get c_isAdmin => 'is_admin';
+  static String get c_allergens => 'allergens';
   static String get c_createdAt => 'created_at';
 
   static List<Profile> converter(List<Map<String, dynamic>> data) {
@@ -39,12 +42,14 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     String? username,
     String? avatarUrl,
+    List<String>? allergens,
     DateTime? createdAt,
   }) {
     return {
       'id': ?id,
       'username': ?username,
       'avatar_url': ?avatarUrl,
+      'allergens': ?allergens,
       if (createdAt != null) 'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
@@ -53,12 +58,14 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     required String username,
     String? avatarUrl,
+    List<String>? allergens,
     DateTime? createdAt,
   }) {
     return _generateMap(
       id: id,
       username: username,
       avatarUrl: avatarUrl,
+      allergens: allergens,
       createdAt: createdAt,
     );
   }
@@ -67,12 +74,14 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     String? username,
     String? avatarUrl,
+    List<String>? allergens,
     DateTime? createdAt,
   }) {
     return _generateMap(
       id: id,
       username: username,
       avatarUrl: avatarUrl,
+      allergens: allergens,
       createdAt: createdAt,
     );
   }
@@ -85,6 +94,11 @@ class Profile implements SupadartClass<Profile> {
           ? jsonn['avatar_url'].toString()
           : null,
       isAdmin: jsonn['is_admin'] == true,
+      allergens: jsonn['allergens'] is List
+          ? (jsonn['allergens'] as List<dynamic>)
+                .map((e) => e.toString())
+                .toList()
+          : const <String>[],
       createdAt: jsonn['created_at'] != null
           ? DateTime.parse(jsonn['created_at'].toString())
           : DateTime.fromMillisecondsSinceEpoch(0),
@@ -95,12 +109,14 @@ class Profile implements SupadartClass<Profile> {
     String? id,
     String? username,
     String? avatarUrl,
+    List<String>? allergens,
     DateTime? createdAt,
   }) {
     return {
       'id': ?id,
       'username': ?username,
       'avatar_url': ?avatarUrl,
+      'allergens': ?allergens,
       'created_at': ?createdAt,
     };
   }
@@ -110,6 +126,7 @@ class Profile implements SupadartClass<Profile> {
       id: id,
       username: username,
       avatarUrl: avatarUrl,
+      allergens: allergens,
       createdAt: createdAt,
     );
   }
@@ -120,6 +137,7 @@ class Profile implements SupadartClass<Profile> {
     Object? username = _unset,
     Object? avatarUrl = _unset,
     Object? isAdmin = _unset,
+    Object? allergens = _unset,
     Object? createdAt = _unset,
   }) {
     return Profile(
@@ -127,6 +145,9 @@ class Profile implements SupadartClass<Profile> {
       username: username == _unset ? this.username : username as String,
       avatarUrl: avatarUrl == _unset ? this.avatarUrl : avatarUrl as String?,
       isAdmin: isAdmin == _unset ? this.isAdmin : isAdmin as bool,
+      allergens: allergens == _unset
+          ? this.allergens
+          : allergens as List<String>,
       createdAt: createdAt == _unset ? this.createdAt : createdAt as DateTime,
     );
   }

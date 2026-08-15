@@ -75,10 +75,21 @@ class SyncService {
     try {
       final ops = await cache.getPendingOperations(userId: userId);
       var syncedAny = false;
+      final favoriteOps = ops
+          .where(
+            (op) =>
+                op.entityType == PendingEntity.recipe &&
+                op.opType == PendingOp.setFavorite,
+          )
+          .toList();
+      var allFavoriteOpsSucceeded = favoriteOps.isNotEmpty;
 
       for (final op in ops) {
-        if (await _replayWithRetries(op)) {
+        final ok = await _replayWithRetries(op);
+        if (ok) {
           syncedAny = true;
+        } else if (favoriteOps.any((favorite) => favorite.id == op.id)) {
+          allFavoriteOpsSucceeded = false;
         }
       }
 
@@ -89,16 +100,10 @@ class SyncService {
         ref.invalidate(shoppingItemsProvider);
       }
 
-      final hadFavoriteOps = ops.any(
-        (op) =>
-            op.entityType == PendingEntity.recipe &&
-            op.opType == PendingOp.setFavorite,
-      );
-      if (hadFavoriteOps) {
-        try {
-          await recipesRepository.fetchFavoriteIds();
-        } catch (_) {
-          // Favorites sync is best-effort; recipe/plan replay already finished.
+      if (allFavoriteOpsSucceeded) {
+        final synced = await recipesRepository.pullFavoriteIdsFromRemote();
+        if (synced) {
+          ref.invalidate(recipeFavoritesProvider);
         }
       }
     } finally {

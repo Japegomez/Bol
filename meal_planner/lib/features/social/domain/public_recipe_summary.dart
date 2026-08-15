@@ -1,3 +1,5 @@
+import 'package:meal_planner/core/locale/localized_data.dart';
+
 class PublicRecipeSummary {
   const PublicRecipeSummary({
     required this.id,
@@ -31,7 +33,9 @@ class PublicRecipeSummary {
       photoUrl: json['photo_url']?.toString(),
       servings: int.parse(json['servings'].toString()),
       tags: json['tags'] != null
-          ? (json['tags'] as List<dynamic>).map((e) => e.toString()).toList()
+          ? sortedRecipeTags(
+              (json['tags'] as List<dynamic>).map((e) => e.toString()),
+            )
           : <String>[],
       createdAt: DateTime.parse(json['created_at'].toString()),
       authorName: json['author_name']?.toString() ?? 'Usuario',

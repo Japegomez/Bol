@@ -11,6 +11,7 @@ import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/moderation/image_moderation_ui.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
+import 'package:meal_planner/features/recipes/domain/recipe_assistant_mapper.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_constants.dart';
 import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 import 'package:meal_planner/features/recipes/presentation/recipe_provider.dart';
@@ -75,6 +76,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   bool _isModeratingPhoto = false;
   String? _photoModerationError;
   bool _isGeneratingNutrition = false;
+  bool _isGeneratingTags = false;
 
   @override
   void dispose() {
@@ -251,6 +253,42 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     }
   }
 
+  Future<void> _generateTagsWithAssistant() async {
+    if (_data == null || _isGeneratingTags) return;
+
+    setState(() => _isGeneratingTags = true);
+    try {
+      await generateTagsWithAssistant(
+        ref: ref,
+        context: context,
+        title: _data!.title,
+        servings: _data!.servings,
+        ingredients: _data!.ingredients,
+        steps: _data!.steps,
+        prepTime: _data!.prepTime,
+        cookTime: _data!.cookTime,
+        tips: _data!.tips,
+        existingTags: _data!.tags,
+        onSuccess: (tags) {
+          if (!mounted) return;
+          setState(() {
+            final merged = mergeAssistantTags(
+              currentTags: _data!.tags,
+              assistantTags: tags,
+            );
+            _data!.tags
+              ..clear()
+              ..addAll(merged);
+          });
+        },
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingTags = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -287,12 +325,62 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       ),
       body: formAsync.when(
         data: (state) {
-          if (!_initialized) _initFrom(state.data);
+          if (!_initialized) {
+            _initFrom(state.data);
+            if (state.adjustedAllergens.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _showAllergenAdjustments(state.adjustedAllergens);
+                }
+              });
+            }
+          }
           return _buildForm(context, state.error, canEdit: canEdit);
         },
         loading: () => const RecipeDetailSkeleton(),
         error: (error, _) =>
             Center(child: Text(l10n.errorWithMessage('$error'))),
+      ),
+    );
+  }
+
+  Future<void> _showAllergenAdjustments(List<String> allergenKeys) async {
+    final l10n = context.l10n;
+    final notes = allergenAdjustmentMessages(l10n, allergenKeys);
+    if (notes.isEmpty) return;
+    await showAdaptiveDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.allergenAdjustmentsTitle),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.allergenAdjustmentsIntro),
+              const SizedBox(height: 8),
+              for (final note in notes)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('•  '),
+                      Expanded(child: Text(note)),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 12),
+              Text(l10n.allergenConfigureInProfileHint),
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.understood),
+          ),
+        ],
       ),
     );
   }
@@ -423,6 +511,35 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                         Text(
                           l10n.tagsSection,
                           style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: _isGeneratingTags
+                                  ? null
+                                  : _generateTagsWithAssistant,
+                              icon: _isGeneratingTags
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.auto_awesome_outlined),
+                              label: Text(l10n.completeTagsWithAssistant),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: _isGeneratingTags || data.tags.isEmpty
+                                  ? null
+                                  : () => setState(() => data.tags.clear()),
+                              icon: const Icon(Icons.label_off_outlined),
+                              label: Text(l10n.clearAllTags),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Wrap(

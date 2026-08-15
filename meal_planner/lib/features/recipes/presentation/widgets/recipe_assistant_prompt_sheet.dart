@@ -694,3 +694,60 @@ Future<void> generateNutritionWithAssistant({
     );
   }
 }
+
+Future<void> generateTagsWithAssistant({
+  required WidgetRef ref,
+  required BuildContext context,
+  required String title,
+  required int servings,
+  required List<IngredientFormItem> ingredients,
+  required FutureOr<void> Function(List<String> tags) onSuccess,
+  List<StepFormItem> steps = const [],
+  int? prepTime,
+  int? cookTime,
+  String? tips,
+  List<String>? existingTags,
+}) async {
+  final l10n = context.l10n;
+  final messenger = ScaffoldMessenger.of(context);
+
+  List<String> tags;
+  try {
+    tags = await runWithRecipeAssistantBlockingOverlay(
+      context: context,
+      message: l10n.recipeAssistantBlockingTags,
+      task: () => ref
+          .read(recipeAssistantRepositoryProvider)
+          .generateTags(
+            title: title,
+            servings: servings,
+            ingredients: ingredients,
+            steps: steps,
+            prepTime: prepTime,
+            cookTime: cookTime,
+            tips: tips,
+            existingTags: existingTags,
+          ),
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          resolveRecipeAssistantError(
+            error.toString().replaceFirst('Exception: ', ''),
+            l10n,
+          ),
+        ),
+      ),
+    );
+    return;
+  }
+
+  try {
+    await onSuccess(tags);
+  } catch (_) {
+    if (!context.mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+  }
+}

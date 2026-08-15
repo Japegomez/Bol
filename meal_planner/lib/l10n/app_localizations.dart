@@ -942,6 +942,12 @@ abstract class AppLocalizations {
   /// **'Custom tag'**
   String get customTagLabel;
 
+  /// No description provided for @clearAllTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAllTags;
+
   /// No description provided for @stepsSection.
   ///
   /// In en, this message translates to:
@@ -2682,6 +2688,36 @@ abstract class AppLocalizations {
   /// **'dessert'**
   String get tagDessert;
 
+  /// No description provided for @tagBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'breakfast'**
+  String get tagBreakfast;
+
+  /// No description provided for @tagAppetizer.
+  ///
+  /// In en, this message translates to:
+  /// **'appetizer'**
+  String get tagAppetizer;
+
+  /// No description provided for @tagSoup.
+  ///
+  /// In en, this message translates to:
+  /// **'soup'**
+  String get tagSoup;
+
+  /// No description provided for @tagSalad.
+  ///
+  /// In en, this message translates to:
+  /// **'salad'**
+  String get tagSalad;
+
+  /// No description provided for @tagSideDish.
+  ///
+  /// In en, this message translates to:
+  /// **'side dish'**
+  String get tagSideDish;
+
   /// No description provided for @tagVegetarian.
   ///
   /// In en, this message translates to:
@@ -2712,6 +2748,12 @@ abstract class AppLocalizations {
   /// **'lactose-free'**
   String get tagLactoseFree;
 
+  /// No description provided for @tagDairyFree.
+  ///
+  /// In en, this message translates to:
+  /// **'dairy-free'**
+  String get tagDairyFree;
+
   /// No description provided for @tagEggFree.
   ///
   /// In en, this message translates to:
@@ -2724,11 +2766,23 @@ abstract class AppLocalizations {
   /// **'nut-free'**
   String get tagNutFree;
 
+  /// No description provided for @tagPeanutFree.
+  ///
+  /// In en, this message translates to:
+  /// **'peanut-free'**
+  String get tagPeanutFree;
+
   /// No description provided for @tagSoyFree.
   ///
   /// In en, this message translates to:
   /// **'soy-free'**
   String get tagSoyFree;
+
+  /// No description provided for @tagFishFree.
+  ///
+  /// In en, this message translates to:
+  /// **'fish-free'**
+  String get tagFishFree;
 
   /// No description provided for @tagShellfishFree.
   ///
@@ -2766,11 +2820,41 @@ abstract class AppLocalizations {
   /// **'high fiber'**
   String get tagHighFiber;
 
-  /// No description provided for @tagMediterranean.
+  /// No description provided for @tagHealthy.
   ///
   /// In en, this message translates to:
-  /// **'Mediterranean'**
-  String get tagMediterranean;
+  /// **'healthy'**
+  String get tagHealthy;
+
+  /// No description provided for @tagSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get tagSpanish;
+
+  /// No description provided for @tagItalian.
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get tagItalian;
+
+  /// No description provided for @tagAsian.
+  ///
+  /// In en, this message translates to:
+  /// **'Asian'**
+  String get tagAsian;
+
+  /// No description provided for @tagMexican.
+  ///
+  /// In en, this message translates to:
+  /// **'Mexican'**
+  String get tagMexican;
+
+  /// No description provided for @tagIndian.
+  ///
+  /// In en, this message translates to:
+  /// **'Indian'**
+  String get tagIndian;
 
   /// No description provided for @tagQuick.
   ///
@@ -2795,6 +2879,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'freezer-friendly'**
   String get tagFreezerFriendly;
+
+  /// No description provided for @tagNoOven.
+  ///
+  /// In en, this message translates to:
+  /// **'no oven'**
+  String get tagNoOven;
 
   /// No description provided for @tagSpicy.
   ///
@@ -2955,13 +3045,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep10Title.
   ///
   /// In en, this message translates to:
-  /// **'Your profile and household'**
+  /// **'Your profile, allergies, and household'**
   String get onboardingStep10Title;
 
   /// No description provided for @onboardingStep10Body.
   ///
   /// In en, this message translates to:
-  /// **'Edit your name and photo. In the My household section you can plan with your family in real time. You can also change language and dark mode here.'**
+  /// **'Edit your name and photo, and set your allergies and intolerances so the recipe assistant respects them. In the My household section you can plan with your family in real time. You can also change language and dark mode here.'**
   String get onboardingStep10Body;
 
   /// No description provided for @createRecipeOptionsTitle.
@@ -3078,6 +3168,12 @@ abstract class AppLocalizations {
   /// **'Calculating nutritional information…'**
   String get recipeAssistantBlockingNutrition;
 
+  /// No description provided for @recipeAssistantBlockingTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Selecting tags…'**
+  String get recipeAssistantBlockingTags;
+
   /// No description provided for @recipeAssistantNotRecipeRequest.
   ///
   /// In en, this message translates to:
@@ -3156,11 +3252,143 @@ abstract class AppLocalizations {
   /// **'The assistant is currently at capacity. Please try again later.'**
   String get recipeAssistantServiceAtCapacity;
 
+  /// No description provided for @recipeAssistantAllergenConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe cannot be adapted to avoid one of your restricted substances.'**
+  String get recipeAssistantAllergenConflict;
+
+  /// No description provided for @allergenConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot create the recipe'**
+  String get allergenConflictTitle;
+
+  /// No description provided for @allergenConflictBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe cannot be adapted to avoid: {allergen}.'**
+  String allergenConflictBody(String allergen);
+
+  /// No description provided for @allergenAdjustmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients adjusted for your allergies/intolerances'**
+  String get allergenAdjustmentsTitle;
+
+  /// No description provided for @allergenAdjustmentsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant modified the recipe for the allergen or intolerance listed:'**
+  String get allergenAdjustmentsIntro;
+
+  /// No description provided for @allergenAdjustmentNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe was modified for the allergen or intolerance: {allergen}.'**
+  String allergenAdjustmentNote(String allergen);
+
+  /// No description provided for @allergenConfigureInProfileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can configure your allergies and intolerances in your profile.'**
+  String get allergenConfigureInProfileHint;
+
+  /// No description provided for @allergenSubstanceGluten.
+  ///
+  /// In en, this message translates to:
+  /// **'gluten'**
+  String get allergenSubstanceGluten;
+
+  /// No description provided for @allergenSubstanceLactose.
+  ///
+  /// In en, this message translates to:
+  /// **'lactose'**
+  String get allergenSubstanceLactose;
+
+  /// No description provided for @allergenSubstanceDairy.
+  ///
+  /// In en, this message translates to:
+  /// **'dairy'**
+  String get allergenSubstanceDairy;
+
+  /// No description provided for @allergenSubstanceEgg.
+  ///
+  /// In en, this message translates to:
+  /// **'egg'**
+  String get allergenSubstanceEgg;
+
+  /// No description provided for @allergenSubstanceNuts.
+  ///
+  /// In en, this message translates to:
+  /// **'tree nuts'**
+  String get allergenSubstanceNuts;
+
+  /// No description provided for @allergenSubstancePeanuts.
+  ///
+  /// In en, this message translates to:
+  /// **'peanuts'**
+  String get allergenSubstancePeanuts;
+
+  /// No description provided for @allergenSubstanceSoy.
+  ///
+  /// In en, this message translates to:
+  /// **'soy'**
+  String get allergenSubstanceSoy;
+
+  /// No description provided for @allergenSubstanceFish.
+  ///
+  /// In en, this message translates to:
+  /// **'fish'**
+  String get allergenSubstanceFish;
+
+  /// No description provided for @allergenSubstanceShellfish.
+  ///
+  /// In en, this message translates to:
+  /// **'shellfish'**
+  String get allergenSubstanceShellfish;
+
+  /// No description provided for @allergenSubstanceSugar.
+  ///
+  /// In en, this message translates to:
+  /// **'sugar'**
+  String get allergenSubstanceSugar;
+
+  /// No description provided for @allergiesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergies and intolerances'**
+  String get allergiesSection;
+
+  /// No description provided for @allergiesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The recipe assistant will avoid these ingredients when creating recipes.'**
+  String get allergiesHint;
+
+  /// No description provided for @editAllergies.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit allergies and intolerances'**
+  String get editAllergies;
+
+  /// No description provided for @allergiesNoneConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'None configured'**
+  String get allergiesNoneConfigured;
+
   /// No description provided for @completeNutritionWithAssistant.
   ///
   /// In en, this message translates to:
   /// **'Complete with AI'**
   String get completeNutritionWithAssistant;
+
+  /// No description provided for @completeTagsWithAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete with AI'**
+  String get completeTagsWithAssistant;
 
   /// No description provided for @recipeAssistantNutritionSaved.
   ///

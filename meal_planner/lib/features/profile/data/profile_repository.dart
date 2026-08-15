@@ -23,6 +23,7 @@ class ProfileRepository {
     // 043). For the current user's own profile, read the admin flag via
     // the SECURITY DEFINER auth_is_admin() RPC instead.
     var isAdmin = profile.isAdmin;
+    var allergens = profile.allergens;
     if (userId == supabase.auth.currentUser?.id) {
       try {
         final result = await supabase.rpc<dynamic>('auth_is_admin');
@@ -30,9 +31,23 @@ class ProfileRepository {
       } catch (_) {
         // Best-effort: leave isAdmin as parsed (false) if the RPC fails.
       }
+      final raw = await supabase.rpc<dynamic>('get_own_allergens');
+      if (raw is! List) {
+        throw StateError('get_own_allergens returned an unexpected payload');
+      }
+      allergens = raw
+          .map((e) => e?.toString().trim() ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } else {
+      allergens = const [];
     }
 
-    return profile.copyWith(avatarUrl: avatarUrl, isAdmin: isAdmin);
+    return profile.copyWith(
+      avatarUrl: avatarUrl,
+      isAdmin: isAdmin,
+      allergens: allergens,
+    );
   }
 
   Future<void> updateProfile({
@@ -52,6 +67,16 @@ class ProfileRepository {
     await supabase
         .from(Profile.table_name)
         .update(updates)
+        .eq(Profile.c_id, userId);
+  }
+
+  Future<void> updateAllergens({
+    required String userId,
+    required List<String> allergens,
+  }) async {
+    await supabase
+        .from(Profile.table_name)
+        .update({Profile.c_allergens: allergens})
         .eq(Profile.c_id, userId);
   }
 

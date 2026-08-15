@@ -244,6 +244,69 @@ void main() {
     });
   });
 
+  group('tagsFromAssistantJson', () {
+    test('keeps known keys, maps legacy labels, and drops unknown tags', () {
+      expect(
+        tagsFromAssistantJson([
+          'main_course',
+          'sin huevo',
+          'unknown_tag',
+          'main_course',
+          12,
+        ]),
+        ['main_course', 'egg_free'],
+      );
+    });
+
+    test('returns empty list for invalid payloads', () {
+      expect(tagsFromAssistantJson(null), isEmpty);
+      expect(tagsFromAssistantJson('invalid'), isEmpty);
+    });
+
+    test('orders tags like the form chips', () {
+      expect(tagsFromAssistantJson(['quick', 'vegetarian', 'main_course']), [
+        'main_course',
+        'vegetarian',
+        'quick',
+      ]);
+    });
+  });
+
+  group('mergeAssistantTags', () {
+    test('replaces suggested chips and preserves custom tags', () {
+      expect(
+        mergeAssistantTags(
+          currentTags: ['vegetarian', 'casera', 'egg_free'],
+          assistantTags: ['main_course', 'quick', 'unknown_tag'],
+        ),
+        ['main_course', 'quick', 'casera'],
+      );
+    });
+
+    test(
+      'does not duplicate custom tags already returned by the assistant',
+      () {
+        expect(
+          mergeAssistantTags(
+            currentTags: ['casera'],
+            assistantTags: ['dessert', 'casera'],
+          ),
+          ['dessert', 'casera'],
+        );
+      },
+    );
+
+    test('does not duplicate catalog tags present in both lists', () {
+      expect(
+        mergeAssistantTags(
+          currentTags: ['dessert', 'quick'],
+          assistantTags: ['dessert', 'main_course'],
+        ),
+        ['main_course', 'dessert'],
+      );
+    });
+  });
+
   group('nutritionFromAssistantJson', () {
     test('maps partial nutrition values as non-negative integers', () {
       final nutrition = nutritionFromAssistantJson({

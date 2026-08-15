@@ -34,7 +34,7 @@ void main() {
 
       expect(restored.title, 'Tortilla');
       expect(restored.servings, 2);
-      expect(restored.tags, ['entrante']);
+      expect(restored.tags, ['starter']);
       expect(restored.tips, 'Servir caliente');
     });
 

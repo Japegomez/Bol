@@ -10,7 +10,7 @@ void main() {
         'title': 'Arroz con leche',
         'photo_url': 'https://example.com/photo.jpg',
         'servings': 4,
-        'tags': ['dessert', 'vegetarian'],
+        'tags': ['vegetarian', 'dessert'],
         'created_at': '2026-08-01T10:00:00Z',
         'author_name': 'Javi',
         'avg_score': '4.5',

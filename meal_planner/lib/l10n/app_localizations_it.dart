@@ -469,6 +469,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get customTagLabel => 'Tag personalizzato';
 
   @override
+  String get clearAllTags => 'Rimuovi tutti';
+
+  @override
   String get stepsSection => 'Passaggi';
 
   @override
@@ -1402,6 +1405,21 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tagDessert => 'dolce';
 
   @override
+  String get tagBreakfast => 'colazione';
+
+  @override
+  String get tagAppetizer => 'aperitivo';
+
+  @override
+  String get tagSoup => 'zuppa';
+
+  @override
+  String get tagSalad => 'insalata';
+
+  @override
+  String get tagSideDish => 'contorno';
+
+  @override
   String get tagVegetarian => 'vegetariana';
 
   @override
@@ -1417,13 +1435,22 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tagLactoseFree => 'senza lattosio';
 
   @override
+  String get tagDairyFree => 'senza latticini';
+
+  @override
   String get tagEggFree => 'senza uova';
 
   @override
   String get tagNutFree => 'senza frutta secca';
 
   @override
+  String get tagPeanutFree => 'senza arachidi';
+
+  @override
   String get tagSoyFree => 'senza soia';
+
+  @override
+  String get tagFishFree => 'senza pesce';
 
   @override
   String get tagShellfishFree => 'senza crostacei';
@@ -1444,7 +1471,22 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tagHighFiber => 'ricca di fibre';
 
   @override
-  String get tagMediterranean => 'mediterranea';
+  String get tagHealthy => 'salutare';
+
+  @override
+  String get tagSpanish => 'spagnola';
+
+  @override
+  String get tagItalian => 'italiana';
+
+  @override
+  String get tagAsian => 'asiatica';
+
+  @override
+  String get tagMexican => 'messicana';
+
+  @override
+  String get tagIndian => 'indiana';
 
   @override
   String get tagQuick => 'veloce';
@@ -1457,6 +1499,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get tagFreezerFriendly => 'da congelare';
+
+  @override
+  String get tagNoOven => 'senza forno';
 
   @override
   String get tagSpicy => 'piccante';
@@ -1547,11 +1592,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Segui i tuoi cuochi preferiti dal loro profilo e vedi le loro ultime ricette toccando il pulsante Seguiti.';
 
   @override
-  String get onboardingStep10Title => 'Il tuo profilo e famiglia';
+  String get onboardingStep10Title => 'Il tuo profilo, allergie e famiglia';
 
   @override
   String get onboardingStep10Body =>
-      'Modifica nome e foto. Nella sezione La mia famiglia puoi pianificare con la tua famiglia in tempo reale. Da qui cambi anche lingua e modalità scura.';
+      'Modifica nome e foto, e configura allergie e intolleranze così l\'assistente delle ricette le rispetta. Nella sezione La mia famiglia puoi pianificare con la tua famiglia in tempo reale. Da qui cambi anche lingua e modalità scura.';
 
   @override
   String get createRecipeOptionsTitle => 'Crea ricetta';
@@ -1621,6 +1666,9 @@ class AppLocalizationsIt extends AppLocalizations {
       'Calcolo dei valori nutrizionali…';
 
   @override
+  String get recipeAssistantBlockingTags => 'Selezione dei tag…';
+
+  @override
   String get recipeAssistantNotRecipeRequest =>
       'Posso aiutarti solo a creare ricette. Descrivi un piatto o una ricetta.';
 
@@ -1673,7 +1721,82 @@ class AppLocalizationsIt extends AppLocalizations {
       'L\'assistente è al completo in questo momento. Riprova più tardi.';
 
   @override
+  String get recipeAssistantAllergenConflict =>
+      'La ricetta non può essere preparata senza uno dei tuoi allergeni.';
+
+  @override
+  String get allergenConflictTitle => 'Impossibile creare la ricetta';
+
+  @override
+  String allergenConflictBody(String allergen) {
+    return 'Impossibile creare la ricetta senza l\'allergene o l\'intolleranza: $allergen.';
+  }
+
+  @override
+  String get allergenAdjustmentsTitle =>
+      'Ingredienti modificati per le tue allergie/intolleranze';
+
+  @override
+  String get allergenAdjustmentsIntro =>
+      'L\'assistente ha modificato la ricetta per l\'allergene o l\'intolleranza indicato:';
+
+  @override
+  String allergenAdjustmentNote(String allergen) {
+    return 'La ricetta è stata modificata per l\'allergene o l\'intolleranza: $allergen.';
+  }
+
+  @override
+  String get allergenConfigureInProfileHint =>
+      'Puoi configurare le tue allergie e intolleranze nel profilo.';
+
+  @override
+  String get allergenSubstanceGluten => 'glutine';
+
+  @override
+  String get allergenSubstanceLactose => 'lattosio';
+
+  @override
+  String get allergenSubstanceDairy => 'latticini';
+
+  @override
+  String get allergenSubstanceEgg => 'uovo';
+
+  @override
+  String get allergenSubstanceNuts => 'frutta a guscio';
+
+  @override
+  String get allergenSubstancePeanuts => 'arachidi';
+
+  @override
+  String get allergenSubstanceSoy => 'soia';
+
+  @override
+  String get allergenSubstanceFish => 'pesce';
+
+  @override
+  String get allergenSubstanceShellfish => 'crostacei';
+
+  @override
+  String get allergenSubstanceSugar => 'zucchero';
+
+  @override
+  String get allergiesSection => 'Allergie e intolleranze';
+
+  @override
+  String get allergiesHint =>
+      'L\'assistente delle ricette eviterà questi ingredienti quando creerà ricette.';
+
+  @override
+  String get editAllergies => 'Modifica allergie e intolleranze';
+
+  @override
+  String get allergiesNoneConfigured => 'Nessuna configurata';
+
+  @override
   String get completeNutritionWithAssistant => 'Completa con IA';
+
+  @override
+  String get completeTagsWithAssistant => 'Completa con IA';
 
   @override
   String get recipeAssistantNutritionSaved => 'Valori nutrizionali completati';

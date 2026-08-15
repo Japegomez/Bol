@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 14/08/2026 — v1.2.6+11 hotfix: favoritos, orden en «Ordenado por» y fichas recetario/explorar
+> Actualizado: 15/08/2026 — v1.3.0+12: alergias/intolerancias en perfil, asistente consciente de alérgenos, orden de etiquetas estable, cierre de sesión robusto en web
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -16,7 +16,7 @@
 | Fase 5 — Lista compra   | Completada | Vista agrupada, CRUD, sync planificador↔lista por `plan_slot_id`, exportación, Realtime hogar |
 | Fase 6 — Red social     | Completada | Recetas públicas, exploración, valoraciones, seguimiento, feed, perfiles públicos; **compartir por enlace** (privado token / público id) |
 | Fase 7 — Acceso offline | Completada | Caché local Drift en iOS/Android; edición offline en modo individual; hogar solo lectura; sync al reconectar; **sin soporte offline en web** |
-| Fase 8 — Modo cocina   | Implementada (validación pendiente) | Código listo; pendiente perfil extensión iOS en builds y validación manual en dispositivo |
+| Fase 8 — Modo cocina   | Completada | Código, perfil extensión iOS en Codemagic y validación manual en dispositivo |
 
 ---
 
@@ -239,10 +239,11 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Trigger `handle_new_user` en `001_profiles.sql`
 - [x] Cerrar sesión desde perfil (con confirmación modal)
   - `profile_screen.dart` en tab Perfil (`/home/profile`); `signOut(manual: true)` para no mostrar aviso de caducidad
+  - **Web robusto** (v1.3.0): `signOut` no bloquea la UI en `_googleSignIn.signOut()` (fire-and-forget con timeout); revoke global con timeout 2 s y fallback a `scope: local`
 - [x] Mensajes de error amigables en login/registro (mapeo `AuthApiException` → `AuthException`)
 - [x] Sesión persistente al minimizar la app (sin cierre automático en background)
   - `SessionLifecycleHandler` ya no hace `signOut` al pausar; eliminado `signOut()` en arranque de `main.dart`
-- [x] Cierre de sesión tras **10 minutos** en background (`SessionBackground` + revalidación JWT al volver)
+- [x] Cierre de sesión tras **7 días** en background (`SessionBackground` + revalidación JWT al volver; antes 10 min / 12 h)
   - Mismo patrón que musApp; errores de red no cierran sesión (offline sigue funcionando)
 - [x] Aviso en login cuando la sesión caduca por expiración del refresh token (`AuthUnauthenticated.sessionExpired`)
 - [x] Campos de contraseña con icono mostrar/ocultar (`PasswordTextField`)
@@ -260,6 +261,10 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Importar foto de Google al iniciar sesión si el perfil aún no tiene avatar (`AuthRepository._maybeImportGoogleAvatar`; no sobrescribe foto existente)
 - [x] Moderación de avatar al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`)
   - Validación inmediata en `edit_profile_screen`; diálogo si contenido adulto/explícito; fail-closed si falla el servicio (PR #37)
+- [x] **Alergias e intolerancias** editables en el perfil (migración `048_profile_allergens`; v1.3.0)
+  - Checklist en `edit_allergies_screen` → `/home/profile/allergies` con `FilterChip`s / checkboxes para las 10 claves `*_free` (`allergenTagKeys` en `localized_data.dart`)
+  - Resumen de solo lectura en `profile_screen` (chips con icono de advertencia) cuando el usuario tiene alergias
+  - `ProfileRepository.updateAllergens` + `ProfileNotifier.updateAllergens`; columna `profiles.allergens text[]`
 
 ### F3 - Hogar compartido
 
@@ -380,6 +385,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] L10n (es, en, ca, eu, gl, pt, **it**) y errores localizados (offline, rate limit, no configurado, no es receta, prompt demasiado largo, imagen inválida/grande, speech no disponible)
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 - [x] Título en AppBar de detalle (propia y pública): margen, scrim blanco semitransparente al expandir, ellipsis al colapsar (`RecipeAppBarTitle`)
+- [x] **Orden de etiquetas estable** en ficha, tarjetas y persistencia (v1.3.0): helper `sortedRecipeTags` en `localized_data.dart` (catálogo primero, personalizadas después); aplicado en `HorizontalTagList`, detalle, Explorar, guardado y caché offline
+- [x] **Asistente consciente de alergias** al crear receta (v1.3.0): el cliente envía `userAllergens` del perfil; la Edge Function omite/sustituye ingredientes, auto-aplica etiquetas `*_free`, señala `allergen_conflict` (popup, no crea receta) y devuelve `allergenAdjustments` (diálogo al cargar el formulario)
 
 ### F4c — Modo cocina (rama `feature/cooking-mode`)
 
@@ -394,8 +401,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Título y texto del paso con `.foregroundStyle(.primary)` para contraste correcto desde el primer render (lock screen / notification centre)
 - [x] Compatibilidad **web:** servicios de plataforma no-op (`kIsWeb` + `defaultTargetPlatform`; sin `dart:io` Platform)
 - [x] L10n (es, en, ca, eu, gl, pt) para textos de cocina
-- [ ] Perfil de aprovisionamiento App Store para `com.japegomez.mealPlanner.CookingActivity` en Codemagic (manual en Apple Developer Portal)
-- [ ] Validación manual en dispositivo: notificación Android + Live Activity iOS + restauración tras matar la app
+- [x] Perfil de aprovisionamiento App Store para `com.japegomez.mealPlanner.CookingActivity` en Codemagic (manual en Apple Developer Portal)
+- [x] Validación manual en dispositivo: notificación Android + Live Activity iOS + restauración tras matar la app
 
 ---
 
@@ -570,7 +577,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ### Pendiente
 
-- [ ] Validación manual en móvil: modo avión → lectura/edición caché → reconexión → sync (individual y hogar)
+- [x] Validación manual en móvil: modo avión → lectura/edición caché → reconexión → sync (individual y hogar)
 
 ---
 
@@ -589,16 +596,17 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - Pendiente: aplicar migración `010` en Supabase remoto
 - [x] Onboarding para nuevos usuarios (tour guiado tipo **spotlight**)
   - `OnboardingOverlay` fullscreen: scrim oscuro, halo pulsante, tarjeta contextual junto al elemento resaltado
-  - **11 pasos** con highlights simples o múltiples (recetario: lupa + glosario; compra: intro + FAB + compartir; comunidad: intro + feed; perfil: Editar perfil + Mi hogar)
+  - **11 pasos** con highlights simples o múltiples (recetario: lupa + glosario; compra: intro + FAB + compartir; comunidad: intro + feed; perfil: Editar perfil + alergias + Mi hogar)
   - Navegación con flechas circulares; indicadores de progreso animados; `OnboardingTargets` con `GlobalKey` por widget
   - Completado persistido por `userId` en `SharedPreferences`; bottom nav bloqueado durante el tour
   - Textos en 6 idiomas; PR #43 (v1 tarjeta inferior), rediseño en develop / PR #46
 - [x] Icono de app y splash screen
   - `flutter_launcher_icons`; assets en `docs/store-assets/` (PR #15)
-- [ ] README de desarrollo con instrucciones de setup local
-- [ ] Protección de ramas `main` / `develop` en GitHub
+- [x] Protección de ramas `main` / `develop` en GitHub
 - [x] Tests unitarios: lógica de consolidación de lista de la compra (`test/shopping_item_consolidation_test.dart`)
-- [ ] Tests unitarios: escalado de ingredientes al planificar
+- [x] Tests unitarios: escalado de ingredientes al planificar
+  - `test/ingredient_scaling_test.dart` (`servingsScale` + `scaleIngredientQuantity`)
+  - También: `test/session_background_test.dart` (timeout 7 días); mensajes de alérgenos + `resolveAdjustedAllergens`
 
 ---
 
@@ -650,16 +658,16 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Release 1.2.6 hotfix** (TestFlight / Play): favoritos, orden «Ordenado por», fichas alineadas; store build 1.2.6+11.
-2. **Validar en dispositivo** recetario/explorar: estrella, chip Favoritos, menú de orden, pública/privada, altura de fichas sin etiquetas.
-3. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.6): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline.
-4. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
-5. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
-6. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
-7. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
-8. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
-9. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
-10. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
-11. **Tests unitarios** de escalado de ingredientes al planificar / merge de slots.
-12. **README de desarrollo** con instrucciones de setup local (incl. `firebase deploy --only hosting`).
-13. **Protección de ramas** `develop` / `main` en GitHub (check obligatorio `quality`).
+1. **Validar en dispositivo** alergias + asistente: marcar alergias en perfil → crear receta con asistente → verificar omisión/sustitución, popup de ajustes y popup de conflicto.
+2. **Validar en dispositivo** cierre de sesión en web (Google y email): debe salir al instante sin colgarse.
+3. **Validar en dispositivo** orden de etiquetas: ficha, tarjetas recetario/explorar y guardado muestran el orden del catálogo.
+4. **Validar en dispositivo** recetario/explorar: estrella, chip Favoritos, menú de orden, pública/privada, altura de fichas sin etiquetas.
+5. **Validar en dispositivo** upgrade TestFlight / Play (**v1.3.0+12**; origen de la base anterior v1.2.6): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline; alergias + asistente.
+6. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
+7. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
+8. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.
+9. **Validar scrollbar** del panel recetario en planificación (modo claro/oscuro).
+10. **Validar en dispositivo** Google Sign-In: login → entra al planner sin reiniciar la app.
+11. **Validar planner**: highlight de etiqueta al arrastrar; días pasados → diálogo + sin ingredientes en compra.
+12. **Validar modo cocina / offline cifrado** en dispositivo (arranque en frío tras unlock).
+13. **Validar en dispositivo** timeout de sesión en background (7 días) y mensajes de alérgeno concreto en conflicto/ajuste.

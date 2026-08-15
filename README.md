@@ -28,7 +28,7 @@ _Aplicación móvil multiplataforma para organizar comidas, listas de la compra 
 
 ## 📋 Visión del proyecto
 
-**Böl** es una app de planificación de comidas centrada en tres ideas: un **recetario propio** claro, un **planificador semanal** visual y una **lista de la compra** siempre sincronizada. Encima de esa base añade hogar compartido en tiempo real, modo cocina paso a paso, comunidad ligera y un **asistente de IA** que entiende texto, fotos de recetas y dictado por voz.
+**Böl** es una app de planificación de comidas centrada en tres ideas: un **recetario propio** claro, un **planificador semanal** visual y una **lista de la compra** siempre sincronizada. Encima de esa base añade hogar compartido en tiempo real, modo cocina paso a paso, comunidad ligera, **alergias e intolerancias en el perfil** (el asistente de IA las respeta al crear recetas) y un **asistente de IA** que entiende texto, fotos de recetas y dictado por voz.
 
 El producto está pensado para uso real en casa: offline en modo individual, invitaciones al hogar por enlace, compartir recetas por WhatsApp/App Links y privacidad cuidada (RLS en Supabase, enlaces privados con token, moderación de imágenes, consentimientos y eliminación de cuenta).
 
@@ -106,11 +106,14 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 - Modos:
   - `generate_recipe`: texto, imagen o ambos → receta estructurada (JSON schema) que pre-rellena el formulario.
   - `generate_nutrition`: estima kcal/macros por ración.
+  - `generate_tags`: sugiere etiquetas del catálogo a partir de la ficha.
 - Regla de intención:
   - Solo imagen → **extrae** la receta de la foto.
   - Imagen + texto → usa ambos (adaptar, escalar, etc.).
+- **Alergias del perfil** (v1.3.0): al crear una receta nueva, el cliente envía `userAllergens` (`profiles.allergens`). La Edge Function omite o sustituye ingredientes conflictivos, auto-aplica las etiquetas `*_free` correspondientes y devuelve `allergenAdjustments` (notas en español). Si el alérgeno es core del plato (p. ej. huevo en tortilla), responde `allergen_conflict` y la app muestra un popup sin crear la receta.
 - **Cuotas y límites** (servidor, `check_and_increment_ai_usage`; el mismo contador cubre receta, nutrición, `translate-recipe` y `moderate-image`): **20**/usuario/día, cooldown **5 s**, **500** global/día, **50**/IP/día (hash SHA-256). Agotar global o IP → `service_at_capacity`. Gemini solo desde la Edge Function.
-- Errores localizados: offline, rate limit, cuota, imagen inválida/grande, speech no disponible, etc.
+- Errores localizados: offline, rate limit, cuota, imagen inválida/grande, speech no disponible, conflicto de alérgenos, etc.
+
 ### 2) Moderación de imágenes
 
 - Edge Function `moderate-image` + **Google Cloud Vision SafeSearch**.
@@ -175,6 +178,7 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 
 - CRUD completo: foto moderada, ingredientes, pasos, nutrición y etiquetas
 - Creación manual o con **asistente IA** (texto, dictado o hasta 4 fotos)
+- Etiquetas con **orden estable** (mismo orden del catálogo en ficha, tarjetas y al guardar)
 - Traducción de títulos y fichas según idioma
 - Glosario culinario local
 
@@ -206,6 +210,10 @@ La parte de IA está aislada en el backend para controlar costes y permisos.
 ### 🔐 Cuenta y privacidad
 
 - Email, Google y Sign in with Apple
+- **Alergias e intolerancias** en el perfil (migración `048_profile_allergens`):
+  - Edición con checklist en `/home/profile/allergies` (mismas claves `*_free` que las etiquetas de receta: sin gluten, sin huevo, sin cacahuetes, etc.)
+  - Resumen de solo lectura en la pantalla de perfil
+  - El asistente de IA las tiene en cuenta al **crear** una receta nueva (omite/sustituye ingredientes, avisa de los cambios o bloquea si el plato es imposible sin ese alérgeno)
 - Offline individual, modo oscuro, eliminación de cuenta RGPD
 
 ---

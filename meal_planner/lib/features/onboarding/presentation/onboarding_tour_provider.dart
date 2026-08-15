@@ -61,6 +61,7 @@ const onboardingTourSteps = <OnboardingTourStep>[
     tabIndex: OnboardingTabIndex.profile,
     targets: [
       OnboardingTarget.profileEditTile,
+      OnboardingTarget.profileAllergiesTile,
       OnboardingTarget.profileHouseholdTile,
     ],
   ),

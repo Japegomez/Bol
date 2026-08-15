@@ -9,6 +9,7 @@ import 'package:meal_planner/core/supabase/models/shopping_item.dart';
 import 'package:meal_planner/core/supabase/models/shopping_list.dart';
 import 'package:meal_planner/core/supabase/models/weekly_plan.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
+import 'package:meal_planner/features/planner/domain/ingredient_scaling.dart';
 import 'package:meal_planner/features/planner/domain/slot_item.dart';
 
 class PlannerRepository {
@@ -271,11 +272,14 @@ class PlannerRepository {
       final list = await getOrCreateShoppingList(userId: userId);
       final recipe = await _cache.getRecipeById(recipeId);
       if (recipe != null && recipe.servings > 0) {
-        final scale = servings / recipe.servings;
+        final scale = servingsScale(
+          chosenServings: servings,
+          recipeServings: recipe.servings,
+        );
         final ingredients = await _cache.getIngredientsForRecipe(recipeId);
         for (final ingredient in ingredients) {
           if (!ingredient.isIncluded || ingredient.isToTaste) continue;
-          final scaledQty = _scaleQuantity(ingredient.quantity, scale);
+          final scaledQty = scaleIngredientQuantity(ingredient.quantity, scale);
           shoppingItems.add(
             ShoppingItem(
               id: newLocalId(),
@@ -686,7 +690,10 @@ class PlannerRepository {
       );
       if (recipeServings <= 0) return addedIds;
 
-      final scale = servings / recipeServings;
+      final scale = servingsScale(
+        chosenServings: servings,
+        recipeServings: recipeServings,
+      );
 
       final ingredientsData = await supabase
           .from(Ingredient.table_name)
@@ -711,7 +718,7 @@ class PlannerRepository {
         if (!ingredient.isIncluded) continue;
         if (ingredient.isToTaste) continue;
 
-        final scaledQty = _scaleQuantity(ingredient.quantity, scale);
+        final scaledQty = scaleIngredientQuantity(ingredient.quantity, scale);
 
         final insertedData = await supabase
             .from(ShoppingItem.table_name)
@@ -807,7 +814,10 @@ class PlannerRepository {
       );
       if (recipeServings <= 0) return removedItems;
 
-      final scale = slot.servings / recipeServings;
+      final scale = servingsScale(
+        chosenServings: slot.servings,
+        recipeServings: recipeServings,
+      );
 
       final ingredientsData = await supabase
           .from(Ingredient.table_name)
@@ -832,7 +842,7 @@ class PlannerRepository {
         if (!ingredient.isIncluded) continue;
         if (ingredient.isToTaste) continue;
 
-        final scaledQty = _scaleQuantity(ingredient.quantity, scale);
+        final scaledQty = scaleIngredientQuantity(ingredient.quantity, scale);
         if (scaledQty == null) continue;
 
         final matchIndex = existingItems.indexWhere(
@@ -940,11 +950,6 @@ class PlannerRepository {
     required String? unit,
   }) {
     return item.name.toLowerCase() == name.toLowerCase() && item.unit == unit;
-  }
-
-  num? _scaleQuantity(num? quantity, double scale) {
-    if (quantity == null) return null;
-    return (quantity * scale).round();
   }
 
   String _formatDate(DateTime date) {

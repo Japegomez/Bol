@@ -19,6 +19,7 @@ import 'package:meal_planner/features/household/presentation/household_screen.da
 import 'package:meal_planner/features/household/presentation/join_household_screen.dart';
 import 'package:meal_planner/features/planner/presentation/planner_screen.dart';
 import 'package:meal_planner/features/profile/presentation/delete_account_screen.dart';
+import 'package:meal_planner/features/profile/presentation/edit_allergies_screen.dart';
 import 'package:meal_planner/features/profile/presentation/edit_profile_screen.dart';
 import 'package:meal_planner/features/profile/presentation/legal_document_screen.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
@@ -287,6 +288,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'edit',
                     builder: (_, _) => const EditProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'allergies',
+                    builder: (_, _) => const EditAllergiesScreen(),
                   ),
                   GoRoute(
                     path: 'household',

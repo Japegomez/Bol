@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:meal_planner/core/local_db/app_database.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/ingredient.dart';
 import 'package:meal_planner/core/supabase/models/nutrition_info.dart';
 import 'package:meal_planner/core/supabase/models/plan_slot.dart';
@@ -930,7 +931,9 @@ class LocalCacheStore {
       servings: row.servings,
       prepTime: row.prepTime,
       cookTime: row.cookTime,
-      tags: (jsonDecode(row.tagsJson) as List<dynamic>).cast<String>(),
+      tags: sortedRecipeTags(
+        (jsonDecode(row.tagsJson) as List<dynamic>).cast<String>(),
+      ),
       isPublic: row.isPublic,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

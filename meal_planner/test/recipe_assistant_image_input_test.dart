@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
+import 'package:meal_planner/features/recipes/domain/recipe_form_data.dart';
 
 RecipeAssistantImageInput _jpeg(List<int> bytes) {
   return RecipeAssistantImageInput(
@@ -204,6 +205,89 @@ void main() {
         mapRecipeAssistantFunctionError(400, {'error': 'too_many_images'}),
         equals(recipeAssistantInvalidImageKey),
       );
+    });
+  });
+
+  group('buildGenerateTagsBody', () {
+    test('includes recipe context and omits empty optional fields', () {
+      final body = buildGenerateTagsBody(
+        title: '  Tortilla  ',
+        servings: 4,
+        ingredients: [
+          IngredientFormItem(name: 'Patata', quantity: 4, unit: 'unidad'),
+          IngredientFormItem(name: '  '),
+        ],
+        steps: [StepFormItem(description: '   ')],
+        tips: '  ',
+        existingTags: ['unknown_tag'],
+      );
+
+      expect(body['mode'], equals('generate_tags'));
+      expect(body['title'], equals('Tortilla'));
+      expect(body['servings'], equals(4));
+      expect(body['ingredients'], [
+        {
+          'name': 'Patata',
+          'quantity': 4,
+          'unit': 'unidad',
+          'category': 'vegetables',
+          'isOptional': false,
+          'isToTaste': false,
+        },
+      ]);
+      expect(body['steps'], isEmpty);
+      expect(body.containsKey('prepTime'), isFalse);
+      expect(body.containsKey('cookTime'), isFalse);
+      expect(body.containsKey('tips'), isFalse);
+      expect(body.containsKey('existingTags'), isFalse);
+    });
+
+    test('includes times, tips, steps, and known existing tags', () {
+      final body = buildGenerateTagsBody(
+        title: 'Pasta',
+        servings: 2,
+        ingredients: [
+          IngredientFormItem(name: 'Espagueti', quantity: 200, unit: 'g'),
+          IngredientFormItem(
+            name: 'Aceite',
+            quantity: 1,
+            unit: 'cucharada',
+            useCustomUnit: true,
+            customUnit: 'chorrito',
+          ),
+        ],
+        steps: [StepFormItem(description: 'Hervir')],
+        prepTime: 10,
+        cookTime: 12,
+        tips: 'Sal al agua',
+        existingTags: ['main_course', 'casera'],
+      );
+
+      expect(body['prepTime'], 10);
+      expect(body['cookTime'], 12);
+      expect(body['tips'], 'Sal al agua');
+      expect(body['existingTags'], ['main_course']);
+      expect(body['ingredients'], [
+        {
+          'name': 'Espagueti',
+          'quantity': 200,
+          'unit': 'g',
+          'category': 'vegetables',
+          'isOptional': false,
+          'isToTaste': false,
+        },
+        {
+          'name': 'Aceite',
+          'quantity': 1,
+          'unit': 'chorrito',
+          'category': 'vegetables',
+          'isOptional': false,
+          'isToTaste': false,
+        },
+      ]);
+      expect(body['steps'], [
+        {'description': 'Hervir', 'isOptional': false},
+      ]);
     });
   });
 }

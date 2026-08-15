@@ -1,3 +1,4 @@
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/offline/network_status.dart';
 import 'package:meal_planner/core/offline/offline_exceptions.dart';
 import 'package:meal_planner/core/offline/supabase_error_utils.dart';
@@ -279,7 +280,7 @@ class SocialRepository {
           title: recipe.title,
           photoUrl: recipe.photoUrl,
           servings: recipe.servings,
-          tags: recipe.tags,
+          tags: sortedRecipeTags(recipe.tags),
           createdAt: recipe.createdAt,
           authorName: usernames[recipe.userId] ?? 'Usuario',
           avgScore: avgScore,
@@ -343,7 +344,7 @@ class SocialRepository {
           title: recipe.title,
           photoUrl: recipe.photoUrl,
           servings: recipe.servings,
-          tags: recipe.tags,
+          tags: sortedRecipeTags(recipe.tags),
           createdAt: recipe.createdAt,
           authorName: profile.username,
           avgScore: avgScore,

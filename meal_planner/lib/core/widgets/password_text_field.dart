@@ -35,10 +35,26 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
     super.initState();
     _focusNode = FocusNode(debugLabel: widget.labelText);
     _focusNode.addListener(_restoreSelectionIfInvalid);
+    widget.controller.addListener(_restoreSelectionIfInvalid);
+  }
+
+  @override
+  void didUpdateWidget(PasswordTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_restoreSelectionIfInvalid);
+      widget.controller.addListener(_restoreSelectionIfInvalid);
+    }
+    // Showing/hiding FormField error text rebuilds the decorator and can leave
+    // an invalid selection (esp. on web), which freezes further typing.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _restoreSelectionIfInvalid();
+    });
   }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_restoreSelectionIfInvalid);
     _focusNode.removeListener(_restoreSelectionIfInvalid);
     _focusNode.dispose();
     super.dispose();
@@ -81,12 +97,15 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
       autofillHints: _effectiveAutofillHints,
       enabled: widget.enabled,
       textInputAction: widget.textInputAction,
+      autovalidateMode: AutovalidateMode.onUnfocus,
       onTap: _restoreSelectionIfInvalid,
+      onChanged: (_) => _restoreSelectionIfInvalid(),
       onFieldSubmitted: widget.onFieldSubmitted,
       validator: widget.validator,
       decoration: InputDecoration(
         labelText: widget.labelText,
         border: const OutlineInputBorder(),
+        errorMaxLines: 3,
         suffixIcon: ExcludeFocus(
           child: IconButton(
             onPressed: widget.enabled
