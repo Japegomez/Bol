@@ -212,10 +212,7 @@ function hasAllergenAdaptationSignal(
 ): boolean {
   if (allergenAdjustments.length > 0) return true;
   const title = typeof result.title === "string" ? result.title : "";
-  const tips = typeof result.tips === "string" ? result.tips : "";
-  const blob = `${title}\n${tips}\n${allergenAdjustments.join("\n")}`;
-  return /adaptad|adapted|omit|sustitu|reemplaz|without\b|alerg|intoleranc|sin\s+(huevo|gluten|cacahu|l[aá]ct|soja|pescado|marisco|az[uú]car|frutos?\s+sec)/i
-    .test(blob);
+  return /adaptad|adapted/i.test(title);
 }
 
 function fallbackAllergenAdjustments(userAllergens: readonly string[]): string[] {
@@ -229,14 +226,15 @@ function parseUserAllergens(body: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const valid = new Set<string>(SIN_TAG_KEYS);
   const seen = new Set<string>();
+  const out: string[] = [];
   for (const item of raw) {
     if (typeof item !== "string") continue;
     const key = item.trim();
-    if (valid.has(key) && seen.add(key)) {
-      // keep insertion order
-    }
+    if (!valid.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    out.push(key);
   }
-  return [...seen];
+  return out;
 }
 
 const tagsSchema = {
@@ -460,6 +458,10 @@ type CallLlmOptions = {
   /** Optional images as data URL payloads for multimodal chat completions. */
   images?: RecipeImagePayload[];
   temperature?: number;
+  maxAttempts?: number;
+  totalBudgetMs?: number;
+  fetchTimeoutMs?: number;
+  maxDelayMs?: number;
 };
 
 function buildUserContent(
@@ -717,10 +719,10 @@ async function callLlm(
     ? Math.max(parsedConfiguredMax, modeMax)
     : modeMax;
 
-  const maxAttempts = 3;
-  const totalBudgetMs = 240000;
-  const maxDelayMs = 30000;
-  const fetchTimeoutMs = 180000;
+  const maxAttempts = options.maxAttempts ?? 3;
+  const totalBudgetMs = options.totalBudgetMs ?? 240000;
+  const maxDelayMs = options.maxDelayMs ?? 30000;
+  const fetchTimeoutMs = options.fetchTimeoutMs ?? 180000;
   const startTime = Date.now();
   let useJsonObject = options.preferJsonObject ?? false;
 
@@ -1141,7 +1143,15 @@ async function selectRecipeTags(input: TagSelectionInput): Promise<string[]> {
     "recipe_tags",
     tagsSchema,
     1024,
-    { temperature: 0, minMaxTokens: 1024 },
+    {
+      temperature: 0,
+      minMaxTokens: 1024,
+      // Keep secondary tag selection well under the client's ~210s budget.
+      maxAttempts: 2,
+      totalBudgetMs: 60000,
+      fetchTimeoutMs: 45000,
+      maxDelayMs: 5000,
+    },
   );
   return normalizeTags(tagsResult);
 }
@@ -1335,10 +1345,10 @@ Deno.serve(async (req) => {
             tips: typeof result.tips === "string" ? result.tips : "",
             existingTags: parseExistingTags(result.tags),
           });
-          // Auto-apply the matching "sin" tag for each user allergen.
-          if (userAllergens.length > 0) {
+          // Auto-apply "sin" tags only for allergens the model confirmed adjusted.
+          if (adjustedAllergens.length > 0) {
             const merged = new Set<string>(selectedTags);
-            for (const allergen of userAllergens) {
+            for (const allergen of adjustedAllergens) {
               merged.add(allergen);
             }
             result.tags = [...merged];

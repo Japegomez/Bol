@@ -666,9 +666,9 @@
   "recipeAssistantDailyLimitReached": "You have reached your daily assistant limit. Come back tomorrow.",
   "recipeAssistantTooFast": "Please wait a moment before using the assistant again.",
   "recipeAssistantServiceAtCapacity": "The assistant is currently at capacity. Please try again later.",
-  "recipeAssistantAllergenConflict": "The recipe cannot be made without one of your allergens.",
+  "recipeAssistantAllergenConflict": "The recipe cannot be adapted to avoid one of your restricted substances.",
   "allergenConflictTitle": "Cannot create the recipe",
-  "allergenConflictBody": "The recipe cannot be created without the allergen or intolerance: {allergen}.",
+  "allergenConflictBody": "The recipe cannot be adapted to avoid: {allergen}.",
   "@allergenConflictBody": {
     "placeholders": {
       "allergen": { "type": "String" }

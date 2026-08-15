@@ -65,8 +65,18 @@ class ProfileScreen extends ConsumerWidget {
     }
     try {
       await authRepository.signOut(manual: true, scope: SignOutScope.local);
-    } catch (_) {
       ref.invalidate(authStateProvider);
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.genericErrorMessage),
+          action: SnackBarAction(
+            label: l10n.retry,
+            onPressed: () => _confirmSignOut(context, ref),
+          ),
+        ),
+      );
     }
   }
 

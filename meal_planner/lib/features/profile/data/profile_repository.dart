@@ -10,7 +10,7 @@ class ProfileRepository {
   Future<Profile?> fetchProfile(String userId) async {
     final data = await supabase
         .from(Profile.table_name)
-        .select('id, username, avatar_url, created_at, allergens')
+        .select('id, username, avatar_url, created_at')
         .eq(Profile.c_id, userId)
         .maybeSingle();
 
@@ -23,6 +23,7 @@ class ProfileRepository {
     // 043). For the current user's own profile, read the admin flag via
     // the SECURITY DEFINER auth_is_admin() RPC instead.
     var isAdmin = profile.isAdmin;
+    var allergens = profile.allergens;
     if (userId == supabase.auth.currentUser?.id) {
       try {
         final result = await supabase.rpc<dynamic>('auth_is_admin');
@@ -30,9 +31,26 @@ class ProfileRepository {
       } catch (_) {
         // Best-effort: leave isAdmin as parsed (false) if the RPC fails.
       }
+      try {
+        final raw = await supabase.rpc<dynamic>('get_own_allergens');
+        if (raw is List) {
+          allergens = raw
+              .map((e) => e?.toString().trim() ?? '')
+              .where((e) => e.isNotEmpty)
+              .toList();
+        }
+      } catch (_) {
+        allergens = const [];
+      }
+    } else {
+      allergens = const [];
     }
 
-    return profile.copyWith(avatarUrl: avatarUrl, isAdmin: isAdmin);
+    return profile.copyWith(
+      avatarUrl: avatarUrl,
+      isAdmin: isAdmin,
+      allergens: allergens,
+    );
   }
 
   Future<void> updateProfile({

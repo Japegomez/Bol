@@ -555,24 +555,24 @@
   "recipeAssistantDailyLimitReached": "Acadaches o límite diario do asistente. Volve mañá.",
   "recipeAssistantTooFast": "Agarda un momento antes de volver a usar o asistente.",
   "recipeAssistantServiceAtCapacity": "O asistente está saturado neste momento. Téntao máis tarde.",
-  "recipeAssistantAllergenConflict": "A receita non se pode preparar sen un dos teus alérgenos.",
+  "recipeAssistantAllergenConflict": "A receita non se pode adaptar para evitar unha das túas substancias restrinxidas.",
   "allergenConflictTitle": "Non se pode crear a receita",
-  "allergenConflictBody": "Non se pode crear a receita sen o alérgeno ou intolerancia: {allergen}.",
+  "allergenConflictBody": "Non se pode adaptar a receita para evitar: {allergen}.",
   "@allergenConflictBody": {
     "placeholders": {
       "allergen": { "type": "String" }
     }
   },
   "allergenAdjustmentsTitle": "Ingredientes axustados polas túas alerxias/intolerancias",
-  "allergenAdjustmentsIntro": "O asistente modificou a receita polo alérgeno ou intolerancia indicado:",
-  "allergenAdjustmentNote": "Modificouse a receita polo alérgeno ou intolerancia: {allergen}.",
+  "allergenAdjustmentsIntro": "O asistente modificou a receita polo alérxeno ou intolerancia indicado:",
+  "allergenAdjustmentNote": "Modificouse a receita polo alérxeno ou intolerancia: {allergen}.",
   "@allergenAdjustmentNote": {
     "placeholders": {
       "allergen": { "type": "String" }
     }
   },
   "allergenConfigureInProfileHint": "Podes configurar as túas alerxias e intolerancias no perfil.",
-  "allergenSubstanceGluten": "gluten",
+  "allergenSubstanceGluten": "glute",
   "allergenSubstanceLactose": "lactosa",
   "allergenSubstanceDairy": "lácteos",
   "allergenSubstanceEgg": "ovo",

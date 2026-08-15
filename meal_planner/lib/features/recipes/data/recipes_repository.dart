@@ -980,8 +980,10 @@ class RecipesRepository {
   bool _isPermanentFavoriteReject(Object error) {
     if (error is! PostgrestException) return false;
     final code = error.code ?? '';
+    // Transient HTTP / rate-limit style codes.
     if (code == '408' || code == '429') return false;
-    if (code.startsWith('4')) return true;
+    // SQLSTATE class 40xxx: transaction rollback (e.g. 40001, 40P01).
+    if (code.startsWith('40')) return false;
     return code == '23503' || code == '23505' || code == '42501';
   }
 
@@ -1044,13 +1046,15 @@ class RecipesRepository {
 
   Future<Map<String, bool>> _readPendingFavorites() async {
     if (_cache.canQueueOperations) {
-      final queued = await _readPendingFavoritesFromCache();
+      // Prefs first, then cache on top so queued Drift ops win on conflict.
       final leftover = await _readPendingFavoritesPrefs();
+      final queued = await _readPendingFavoritesFromCache();
       if (leftover.isNotEmpty) {
-        queued.addAll(leftover);
-        await _writePendingFavorites(queued);
+        final merged = {...leftover, ...queued};
+        await _writePendingFavorites(merged);
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove(_pendingFavoritesStorageKey(_userId));
+        return merged;
       }
       return queued;
     }
@@ -1087,17 +1091,30 @@ class RecipesRepository {
     );
   }
 
-  Future<void> _enqueuePendingFavorite(String recipeId, bool isFavorite) async {
-    final pending = await _readPendingFavorites();
-    pending[recipeId] = isFavorite;
-    await _writePendingFavorites(pending);
+  /// Serializes all pending-favorite read-modify-write mutations.
+  Future<void> _pendingFavoritesChain = Future<void>.value();
+
+  Future<T> _withPendingFavoritesLock<T>(Future<T> Function() action) {
+    final result = _pendingFavoritesChain.then((_) => action());
+    _pendingFavoritesChain = result.then<void>((_) {}, onError: (_) {});
+    return result;
   }
 
-  Future<void> _clearPendingFavorite(String recipeId) async {
-    final pending = await _readPendingFavorites();
-    if (!pending.containsKey(recipeId)) return;
-    pending.remove(recipeId);
-    await _writePendingFavorites(pending);
+  Future<void> _enqueuePendingFavorite(String recipeId, bool isFavorite) {
+    return _withPendingFavoritesLock(() async {
+      final pending = await _readPendingFavorites();
+      pending[recipeId] = isFavorite;
+      await _writePendingFavorites(pending);
+    });
+  }
+
+  Future<void> _clearPendingFavorite(String recipeId) {
+    return _withPendingFavoritesLock(() async {
+      final pending = await _readPendingFavorites();
+      if (!pending.containsKey(recipeId)) return;
+      pending.remove(recipeId);
+      await _writePendingFavorites(pending);
+    });
   }
 
   Future<void> setFavoriteRemote(String recipeId, bool isFavorite) async {
@@ -1115,22 +1132,24 @@ class RecipesRepository {
     }
   }
 
-  Future<void> _replayPendingFavorites() async {
-    final pending = await _readPendingFavorites();
-    if (pending.isEmpty) return;
+  Future<void> _replayPendingFavorites() {
+    return _withPendingFavoritesLock(() async {
+      final pending = await _readPendingFavorites();
+      if (pending.isEmpty) return;
 
-    final remaining = Map<String, bool>.from(pending);
-    for (final entry in pending.entries) {
-      try {
-        await setFavoriteRemote(entry.key, entry.value);
-        remaining.remove(entry.key);
-      } catch (error) {
-        if (_isPermanentFavoriteReject(error)) {
+      final remaining = Map<String, bool>.from(pending);
+      for (final entry in pending.entries) {
+        try {
+          await setFavoriteRemote(entry.key, entry.value);
           remaining.remove(entry.key);
+        } catch (error) {
+          if (_isPermanentFavoriteReject(error)) {
+            remaining.remove(entry.key);
+          }
         }
       }
-    }
-    await _writePendingFavorites(remaining);
+      await _writePendingFavorites(remaining);
+    });
   }
 
   Future<Set<String>> _favoriteIdsWithPending() async {
@@ -1144,6 +1163,26 @@ class RecipesRepository {
       }
     }
     return ids;
+  }
+
+  /// Fetches remote favorite ids and caches them. Returns `false` on failure
+  /// without overwriting callers' in-memory provider state.
+  Future<bool> pullFavoriteIdsFromRemote() async {
+    if (!await NetworkStatus.isOnline) return false;
+    try {
+      await _replayPendingFavorites();
+      final data = await supabase
+          .from(_favoritesTable)
+          .select('recipe_id')
+          .eq('user_id', _userId);
+      final ids = List<Map<String, dynamic>>.from(
+        data,
+      ).map((row) => row['recipe_id'].toString()).toSet();
+      await _writeCachedFavoriteIds(ids);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<Set<String>> fetchFavoriteIds() async {

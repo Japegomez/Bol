@@ -1,15 +1,8 @@
--- 048_profile_allergens: store per-user allergy/intolerance keys.
+-- 049: Harden profile allergens after 048 (already applied in some envs).
 --
--- The keys reuse the "sin"/allergen-free recipe tag keys (gluten_free,
--- lactose_free, dairy_free, egg_free, nut_free, peanut_free, soy_free,
--- fish_free, shellfish_free, sugar_free) so the recipe assistant can both
--- filter ingredients and auto-apply the matching recipe tags.
---
--- allergens is intentionally omitted from the public column-level SELECT
--- grant (see 043). Own-profile reads go through get_own_allergens().
-
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS allergens text[] NOT NULL DEFAULT '{}';
+-- * Drop public SELECT on allergens (household/public peers must not read it).
+-- * Constrain allowed allergen keys.
+-- * Expose own allergens via SECURITY DEFINER RPC.
 
 ALTER TABLE public.profiles
   DROP CONSTRAINT IF EXISTS profiles_allergens_valid;

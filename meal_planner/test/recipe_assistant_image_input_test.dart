@@ -225,7 +225,16 @@ void main() {
       expect(body['mode'], equals('generate_tags'));
       expect(body['title'], equals('Tortilla'));
       expect(body['servings'], equals(4));
-      expect(body['ingredients'], hasLength(1));
+      expect(body['ingredients'], [
+        {
+          'name': 'Patata',
+          'quantity': 4,
+          'unit': 'unidad',
+          'category': 'vegetables',
+          'isOptional': false,
+          'isToTaste': false,
+        },
+      ]);
       expect(body['steps'], isEmpty);
       expect(body.containsKey('prepTime'), isFalse);
       expect(body.containsKey('cookTime'), isFalse);
@@ -239,6 +248,13 @@ void main() {
         servings: 2,
         ingredients: [
           IngredientFormItem(name: 'Espagueti', quantity: 200, unit: 'g'),
+          IngredientFormItem(
+            name: 'Aceite',
+            quantity: 1,
+            unit: 'cucharada',
+            useCustomUnit: true,
+            customUnit: 'chorrito',
+          ),
         ],
         steps: [StepFormItem(description: 'Hervir')],
         prepTime: 10,
@@ -251,6 +267,24 @@ void main() {
       expect(body['cookTime'], 12);
       expect(body['tips'], 'Sal al agua');
       expect(body['existingTags'], ['main_course']);
+      expect(body['ingredients'], [
+        {
+          'name': 'Espagueti',
+          'quantity': 200,
+          'unit': 'g',
+          'category': 'vegetables',
+          'isOptional': false,
+          'isToTaste': false,
+        },
+        {
+          'name': 'Aceite',
+          'quantity': 1,
+          'unit': 'chorrito',
+          'category': 'vegetables',
+          'isOptional': false,
+          'isToTaste': false,
+        },
+      ]);
       expect(body['steps'], [
         {'description': 'Hervir', 'isOptional': false},
       ]);

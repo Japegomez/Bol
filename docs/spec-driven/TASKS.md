@@ -262,7 +262,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Moderación de avatar al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`)
   - Validación inmediata en `edit_profile_screen`; diálogo si contenido adulto/explícito; fail-closed si falla el servicio (PR #37)
 - [x] **Alergias e intolerancias** editables en el perfil (migración `048_profile_allergens`; v1.3.0)
-  - Sección en `edit_profile_screen` con `FilterChip`s para las 10 claves `*_free` (`allergenTagKeys` en `localized_data.dart`)
+  - Checklist en `edit_allergies_screen` → `/home/profile/allergies` con `FilterChip`s / checkboxes para las 10 claves `*_free` (`allergenTagKeys` en `localized_data.dart`)
   - Resumen de solo lectura en `profile_screen` (chips con icono de advertencia) cuando el usuario tiene alergias
   - `ProfileRepository.updateAllergens` + `ProfileNotifier.updateAllergens`; columna `profiles.allergens text[]`
 
@@ -662,7 +662,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 2. **Validar en dispositivo** cierre de sesión en web (Google y email): debe salir al instante sin colgarse.
 3. **Validar en dispositivo** orden de etiquetas: ficha, tarjetas recetario/explorar y guardado muestran el orden del catálogo.
 4. **Validar en dispositivo** recetario/explorar: estrella, chip Favoritos, menú de orden, pública/privada, altura de fichas sin etiquetas.
-5. **Validar en dispositivo** upgrade TestFlight / Play (v1.2.6): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline.
+5. **Validar en dispositivo** upgrade TestFlight / Play (**v1.3.0+12**; origen de la base anterior v1.2.6): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline; alergias + asistente.
 6. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
 7. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
 8. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.

@@ -55,18 +55,21 @@ void main() {
     });
 
     test('deduplicates and normalizes legacy labels', () {
-      expect(
-        sortedRecipeTags(['rápida', 'quick', 'postre']),
-        ['dessert', 'quick'],
-      );
+      expect(sortedRecipeTags(['rápida', 'quick', 'postre']), [
+        'dessert',
+        'quick',
+      ]);
     });
   });
 
   group('allergenTagKeys', () {
     test('are a subset of suggestedRecipeTagKeys', () {
       for (final allergen in allergenTagKeys) {
-        expect(suggestedRecipeTagKeys.contains(allergen), isTrue,
-            reason: '$allergen should be a suggested tag');
+        expect(
+          suggestedRecipeTagKeys.contains(allergen),
+          isTrue,
+          reason: '$allergen should be a suggested tag',
+        );
       }
     });
 
@@ -90,29 +93,22 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('es'));
 
     test('conflict messages name each allergen', () {
-      expect(
-        allergenConflictMessages(l10n, ['egg_free', 'gluten_free']),
-        [
-          'No se puede crear la receta sin el alérgeno o intolerancia: huevo.',
-          'No se puede crear la receta sin el alérgeno o intolerancia: gluten.',
-        ],
-      );
+      expect(allergenConflictMessages(l10n, ['egg_free', 'gluten_free']), [
+        'No se puede adaptar la receta para evitar: huevo.',
+        'No se puede adaptar la receta para evitar: gluten.',
+      ]);
     });
 
     test('conflict falls back when keys are empty', () {
-      expect(
-        allergenConflictMessages(l10n, const []),
-        [l10n.recipeAssistantAllergenConflict],
-      );
+      expect(allergenConflictMessages(l10n, const []), [
+        l10n.recipeAssistantAllergenConflict,
+      ]);
     });
 
     test('adjustment notes name each allergen', () {
-      expect(
-        allergenAdjustmentMessages(l10n, ['peanut_free']),
-        [
-          'Se ha modificado la receta por el alérgeno o intolerancia: cacahuetes.',
-        ],
-      );
+      expect(allergenAdjustmentMessages(l10n, ['peanut_free']), [
+        'Se ha modificado la receta por el alérgeno o intolerancia: cacahuetes.',
+      ]);
     });
 
     test('substance labels omit the sin prefix', () {

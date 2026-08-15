@@ -89,28 +89,12 @@ class RecipeTagFilterBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tagsAsync = ref.watch(recipeTagsProvider);
 
-    return tagsAsync.when(
-      data: (tags) => TagFilterChips(
-        tags: tags,
-        selectedTags: selectedTags,
-        onSelectionChanged: onSelectionChanged,
-        leading: leading,
-        padding: padding,
-      ),
-      loading: () => TagFilterChips(
-        tags: const [],
-        selectedTags: selectedTags,
-        onSelectionChanged: onSelectionChanged,
-        leading: leading,
-        padding: padding,
-      ),
-      error: (_, _) => TagFilterChips(
-        tags: const [],
-        selectedTags: selectedTags,
-        onSelectionChanged: onSelectionChanged,
-        leading: leading,
-        padding: padding,
-      ),
+    return TagFilterChips(
+      tags: tagsAsync.valueOrNull ?? const [],
+      selectedTags: selectedTags,
+      onSelectionChanged: onSelectionChanged,
+      leading: leading,
+      padding: padding,
     );
   }
 }

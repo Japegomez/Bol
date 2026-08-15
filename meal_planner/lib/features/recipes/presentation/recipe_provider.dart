@@ -170,7 +170,13 @@ class RecipeFavoritesNotifier extends AsyncNotifier<Set<String>> {
     try {
       await ref.read(recipesRepositoryProvider).setFavorite(recipeId, adding);
     } catch (error) {
-      state = AsyncData(current);
+      final latest = Set<String>.from(state.valueOrNull ?? next);
+      if (adding) {
+        latest.remove(recipeId);
+      } else {
+        latest.add(recipeId);
+      }
+      state = AsyncData(latest);
       rethrow;
     }
   }

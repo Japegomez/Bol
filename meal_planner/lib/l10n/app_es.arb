@@ -560,9 +560,9 @@
   "recipeAssistantDailyLimitReached": "Has alcanzado el límite diario del asistente. Vuelve mañana.",
   "recipeAssistantTooFast": "Espera un momento antes de volver a usar el asistente.",
   "recipeAssistantServiceAtCapacity": "El asistente está saturado en este momento. Inténtalo más tarde.",
-  "recipeAssistantAllergenConflict": "La receta no se puede preparar sin uno de tus alérgenos.",
+  "recipeAssistantAllergenConflict": "No se puede adaptar la receta para evitar una de tus sustancias restringidas.",
   "allergenConflictTitle": "No se puede crear la receta",
-  "allergenConflictBody": "No se puede crear la receta sin el alérgeno o intolerancia: {allergen}.",
+  "allergenConflictBody": "No se puede adaptar la receta para evitar: {allergen}.",
   "@allergenConflictBody": {
     "placeholders": {
       "allergen": { "type": "String" }

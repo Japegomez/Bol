@@ -4,31 +4,19 @@ import 'package:meal_planner/features/planner/domain/ingredient_scaling.dart';
 void main() {
   group('servingsScale', () {
     test('is 1 when chosen servings match the recipe', () {
-      expect(
-        servingsScale(chosenServings: 4, recipeServings: 4),
-        1,
-      );
+      expect(servingsScale(chosenServings: 4, recipeServings: 4), 1);
     });
 
     test('halves when planning half the recipe yield', () {
-      expect(
-        servingsScale(chosenServings: 2, recipeServings: 4),
-        0.5,
-      );
+      expect(servingsScale(chosenServings: 2, recipeServings: 4), 0.5);
     });
 
     test('doubles when planning twice the recipe yield', () {
-      expect(
-        servingsScale(chosenServings: 8, recipeServings: 4),
-        2,
-      );
+      expect(servingsScale(chosenServings: 8, recipeServings: 4), 2);
     });
 
     test('returns 0 when recipe servings are invalid', () {
-      expect(
-        servingsScale(chosenServings: 2, recipeServings: 0),
-        0,
-      );
+      expect(servingsScale(chosenServings: 2, recipeServings: 0), 0);
     });
   });
 

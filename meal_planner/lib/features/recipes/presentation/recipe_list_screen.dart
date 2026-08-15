@@ -60,8 +60,19 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
     final input = await showRecipeAssistantPromptSheet(context);
     if (!mounted || input == null) return;
 
-    final userAllergens =
-        ref.read(profileProvider).valueOrNull?.allergens ?? const <String>[];
+    List<String> userAllergens;
+    try {
+      final profile = await ref.read(profileProvider.future);
+      userAllergens = profile?.allergens ?? const <String>[];
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.genericErrorMessage)),
+      );
+      return;
+    }
+    if (!mounted) return;
+
     final inputWithAllergens = RecipeAssistantPromptInput(
       prompt: input.prompt,
       images: input.images,
@@ -167,18 +178,20 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.allergenConflictTitle),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final message in messages)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(message),
-              ),
-            const SizedBox(height: 4),
-            Text(l10n.allergenConfigureInProfileHint),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final message in messages)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(message),
+                ),
+              const SizedBox(height: 4),
+              Text(l10n.allergenConfigureInProfileHint),
+            ],
+          ),
         ),
         actions: [
           FilledButton(

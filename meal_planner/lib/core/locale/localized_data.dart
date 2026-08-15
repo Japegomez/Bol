@@ -399,11 +399,13 @@ List<String> allergenAdjustmentMessages(
 
 /// Recovers allergen keys when the model adapted the dish but forgot to
 /// return [adjustedAllergens] (e.g. title ends with "Adaptado").
+///
+/// [title] is optional; when empty, only explicit keys / free-text notes apply.
 List<String> inferAdjustedAllergens({
   required Iterable<String> adjustedAllergens,
   required Iterable<String> allergenAdjustments,
   required Iterable<String> userAllergens,
-  required String title,
+  String title = '',
 }) {
   final parsed = normalizeAllergenKeys(adjustedAllergens);
   if (parsed.isNotEmpty) return parsed;
@@ -416,10 +418,11 @@ List<String> inferAdjustedAllergens({
       .where((e) => e.isNotEmpty);
   if (notes.isNotEmpty) return users;
 
-  if (RegExp(
-    r'adaptad|adapted|allergy[- ]?friendly|sin al[eé]rgen',
-    caseSensitive: false,
-  ).hasMatch(title)) {
+  if (title.isNotEmpty &&
+      RegExp(
+        r'adaptad|adapted|allergy[- ]?friendly|sin al[eé]rgen',
+        caseSensitive: false,
+      ).hasMatch(title)) {
     return users;
   }
   return const [];

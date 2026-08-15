@@ -95,10 +95,9 @@ class SyncService {
             op.opType == PendingOp.setFavorite,
       );
       if (hadFavoriteOps) {
-        try {
-          await recipesRepository.fetchFavoriteIds();
-        } catch (_) {
-          // Favorites sync is best-effort; recipe/plan replay already finished.
+        final synced = await recipesRepository.pullFavoriteIdsFromRemote();
+        if (synced) {
+          ref.invalidate(recipeFavoritesProvider);
         }
       }
     } finally {

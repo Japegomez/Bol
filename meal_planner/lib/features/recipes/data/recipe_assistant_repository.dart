@@ -222,9 +222,10 @@ class RecipeAssistantRepository {
       recipeJson['allergenAdjustments'],
     );
     final adjustedAllergens = resolveAdjustedAllergens(
-      parsedKeys: _parseAllergenKeys(recipeJson['adjustedAllergens']),
+      parsedKeys: _parseAllergenStringList(recipeJson['adjustedAllergens']),
       allergenAdjustments: allergenAdjustments,
       userAllergens: input.userAllergens,
+      title: recipeJson['title']?.toString() ?? '',
     );
     return GeneratedRecipeResult(
       formData: recipeFromAssistantJson(recipeJson),
@@ -360,32 +361,20 @@ List<String> _parseAllergenStringList(dynamic raw) {
       .toList();
 }
 
-List<String> _parseAllergenKeys(dynamic raw) {
-  if (raw is! List) return const [];
-  final valid = allergenTagKeys.toSet();
-  final seen = <String>{};
-  final out = <String>[];
-  for (final item in raw) {
-    final key = item?.toString().trim() ?? '';
-    if (valid.contains(key) && seen.add(key)) {
-      out.add(key);
-    }
-  }
-  return out;
-}
-
-/// Prefers explicit [parsedKeys]; if the model only returned free-text notes,
-/// falls back to [userAllergens] so the UI can still name each restriction.
+/// Prefers explicit [parsedKeys]; shares catalog normalization and title-based
+/// inference with [inferAdjustedAllergens].
 List<String> resolveAdjustedAllergens({
   required List<String> parsedKeys,
   required List<String> allergenAdjustments,
   required List<String> userAllergens,
+  String title = '',
 }) {
-  if (parsedKeys.isNotEmpty) return parsedKeys;
-  if (allergenAdjustments.isNotEmpty) {
-    return normalizeAllergenKeys(userAllergens);
-  }
-  return const [];
+  return inferAdjustedAllergens(
+    adjustedAllergens: parsedKeys,
+    allergenAdjustments: allergenAdjustments,
+    userAllergens: userAllergens,
+    title: title,
+  );
 }
 
 /// Normalizes edge-function error payloads (Map or JSON string).

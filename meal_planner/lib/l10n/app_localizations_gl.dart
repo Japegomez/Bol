@@ -1726,14 +1726,14 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get recipeAssistantAllergenConflict =>
-      'A receita non se pode preparar sen un dos teus alérgenos.';
+      'A receita non se pode adaptar para evitar unha das túas substancias restrinxidas.';
 
   @override
   String get allergenConflictTitle => 'Non se pode crear a receita';
 
   @override
   String allergenConflictBody(String allergen) {
-    return 'Non se pode crear a receita sen o alérgeno ou intolerancia: $allergen.';
+    return 'Non se pode adaptar a receita para evitar: $allergen.';
   }
 
   @override
@@ -1742,11 +1742,11 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get allergenAdjustmentsIntro =>
-      'O asistente modificou a receita polo alérgeno ou intolerancia indicado:';
+      'O asistente modificou a receita polo alérxeno ou intolerancia indicado:';
 
   @override
   String allergenAdjustmentNote(String allergen) {
-    return 'Modificouse a receita polo alérgeno ou intolerancia: $allergen.';
+    return 'Modificouse a receita polo alérxeno ou intolerancia: $allergen.';
   }
 
   @override
@@ -1754,7 +1754,7 @@ class AppLocalizationsGl extends AppLocalizations {
       'Podes configurar as túas alerxias e intolerancias no perfil.';
 
   @override
-  String get allergenSubstanceGluten => 'gluten';
+  String get allergenSubstanceGluten => 'glute';
 
   @override
   String get allergenSubstanceLactose => 'lactosa';

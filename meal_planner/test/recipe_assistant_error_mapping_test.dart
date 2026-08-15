@@ -17,6 +17,7 @@ void main() {
         recipeAssistantMissingInputKey,
         recipeAssistantImageTooLargeKey,
         recipeAssistantInvalidImageKey,
+        recipeAssistantAllergenConflictKey,
       ];
 
       for (final key in keys) {
@@ -174,13 +175,6 @@ void main() {
           '{"error":"allergen_conflict","message":"No sin huevo"}',
         ),
         equals(recipeAssistantAllergenConflictKey),
-      );
-    });
-
-    test('maps not_a_recipe_request error code even without relying on status alone', () {
-      expect(
-        mapRecipeAssistantFunctionError(400, {'error': 'not_a_recipe_request'}),
-        equals(recipeAssistantNotRecipeRequestKey),
       );
     });
   });

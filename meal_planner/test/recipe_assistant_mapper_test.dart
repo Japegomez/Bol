@@ -264,10 +264,11 @@ void main() {
     });
 
     test('orders tags like the form chips', () {
-      expect(
-        tagsFromAssistantJson(['quick', 'vegetarian', 'main_course']),
-        ['main_course', 'vegetarian', 'quick'],
-      );
+      expect(tagsFromAssistantJson(['quick', 'vegetarian', 'main_course']), [
+        'main_course',
+        'vegetarian',
+        'quick',
+      ]);
     });
   });
 
@@ -282,13 +283,26 @@ void main() {
       );
     });
 
-    test('does not duplicate custom tags already returned by the assistant', () {
+    test(
+      'does not duplicate custom tags already returned by the assistant',
+      () {
+        expect(
+          mergeAssistantTags(
+            currentTags: ['casera'],
+            assistantTags: ['dessert', 'casera'],
+          ),
+          ['dessert', 'casera'],
+        );
+      },
+    );
+
+    test('does not duplicate catalog tags present in both lists', () {
       expect(
         mergeAssistantTags(
-          currentTags: ['casera'],
-          assistantTags: ['dessert'],
+          currentTags: ['dessert', 'quick'],
+          assistantTags: ['dessert', 'main_course'],
         ),
-        ['dessert', 'casera'],
+        ['main_course', 'dessert'],
       );
     });
   });

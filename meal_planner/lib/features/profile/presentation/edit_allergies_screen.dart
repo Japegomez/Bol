@@ -57,67 +57,71 @@ class _EditAllergiesScreenState extends ConsumerState<EditAllergiesScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final profile = ref.watch(profileProvider).valueOrNull;
+    final profileAsync = ref.watch(profileProvider);
+    final profile = profileAsync.valueOrNull;
 
-    if (profile != null && !_initialized) {
+    // Initialize once from the first loaded profile; never overwrite local edits.
+    if (!_initialized && profile != null) {
       _allergens = {...profile.allergens};
       _initialized = true;
     }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.allergiesSection)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        children: [
-          Text(
-            l10n.allergiesHint,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
+      body: !_initialized
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
-                for (var i = 0; i < allergenTagKeys.length; i++) ...[
-                  if (i > 0) const Divider(height: 1),
-                  CheckboxListTile(
-                    value: _allergens.contains(allergenTagKeys[i]),
-                    title: Text(allergenLabel(l10n, allergenTagKeys[i])),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    onChanged: _isSaving
-                        ? null
-                        : (selected) {
-                            setState(() {
-                              final key = allergenTagKeys[i];
-                              if (selected ?? false) {
-                                _allergens.add(key);
-                              } else {
-                                _allergens.remove(key);
-                              }
-                            });
-                          },
+                Text(
+                  l10n.allergiesHint,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < allergenTagKeys.length; i++) ...[
+                        if (i > 0) const Divider(height: 1),
+                        CheckboxListTile(
+                          value: _allergens.contains(allergenTagKeys[i]),
+                          title: Text(allergenLabel(l10n, allergenTagKeys[i])),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          onChanged: _isSaving
+                              ? null
+                              : (selected) {
+                                  setState(() {
+                                    final key = allergenTagKeys[i];
+                                    if (selected ?? false) {
+                                      _allergens.add(key);
+                                    } else {
+                                      _allergens.remove(key);
+                                    }
+                                  });
+                                },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: theme.colorScheme.error),
                   ),
                 ],
+                const SizedBox(height: 24),
+                AppButton(
+                  label: l10n.save,
+                  isLoading: _isSaving,
+                  onPressed: _isSaving ? null : _save,
+                ),
               ],
             ),
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
-          ],
-          const SizedBox(height: 24),
-          AppButton(
-            label: l10n.save,
-            isLoading: _isSaving,
-            onPressed: _isSaving ? null : _save,
-          ),
-        ],
-      ),
     );
   }
 }

@@ -566,6 +566,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
     final appLocale = ref.watch(currentLanguageCodeProvider);
     final cookingSession = ref.watch(cookingSessionProvider);
     final isThisRecipeCooking = cookingSession?.recipeId == widget.recipeId;
+    final normalizedTags = sortedRecipeTags(widget.tags);
     final contentLocale = recipeContentLocaleName(
       sourceLang: widget.sourceLang,
       appLocale: appLocale,
@@ -797,12 +798,12 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                             : _toggleVisibility,
                       ),
                     ),
-                  if (widget.tags.isNotEmpty) ...[
+                  if (normalizedTags.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: sortedRecipeTags(widget.tags)
+                      children: normalizedTags
                           .map(
                             (tag) =>
                                 Chip(label: Text(localizedTagLabel(l10n, tag))),

@@ -730,6 +730,7 @@ Future<void> generateTagsWithAssistant({
           ),
     );
   } catch (error) {
+    if (!context.mounted) return;
     messenger.showSnackBar(
       SnackBar(
         content: Text(
@@ -745,16 +746,10 @@ Future<void> generateTagsWithAssistant({
 
   try {
     await onSuccess(tags);
-  } catch (error) {
+  } catch (_) {
+    if (!context.mounted) return;
     messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          resolveRecipeAssistantError(
-            error.toString().replaceFirst('Exception: ', ''),
-            l10n,
-          ),
-        ),
-      ),
+      SnackBar(content: Text(l10n.genericErrorMessage)),
     );
   }
 }

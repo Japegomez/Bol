@@ -3255,7 +3255,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeAssistantAllergenConflict.
   ///
   /// In en, this message translates to:
-  /// **'The recipe cannot be made without one of your allergens.'**
+  /// **'The recipe cannot be adapted to avoid one of your restricted substances.'**
   String get recipeAssistantAllergenConflict;
 
   /// No description provided for @allergenConflictTitle.
@@ -3267,7 +3267,7 @@ abstract class AppLocalizations {
   /// No description provided for @allergenConflictBody.
   ///
   /// In en, this message translates to:
-  /// **'The recipe cannot be created without the allergen or intolerance: {allergen}.'**
+  /// **'The recipe cannot be adapted to avoid: {allergen}.'**
   String allergenConflictBody(String allergen);
 
   /// No description provided for @allergenAdjustmentsTitle.
