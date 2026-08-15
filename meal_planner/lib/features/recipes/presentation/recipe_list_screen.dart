@@ -66,9 +66,9 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
       userAllergens = profile?.allergens ?? const <String>[];
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.genericErrorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.genericErrorMessage)));
       return;
     }
     if (!mounted) return;

@@ -533,8 +533,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                               label: Text(l10n.completeTagsWithAssistant),
                             ),
                             OutlinedButton.icon(
-                              onPressed:
-                                  _isGeneratingTags || data.tags.isEmpty
+                              onPressed: _isGeneratingTags || data.tags.isEmpty
                                   ? null
                                   : () => setState(() => data.tags.clear()),
                               icon: const Icon(Icons.label_off_outlined),

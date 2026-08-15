@@ -184,10 +184,7 @@ Map<String, dynamic> buildGenerateTagsBody({
     ],
     'steps': [
       for (final step in validSteps)
-        {
-          'description': step.description.trim(),
-          'isOptional': step.isOptional,
-        },
+        {'description': step.description.trim(), 'isOptional': step.isOptional},
     ],
     if (prepTime != null) 'prepTime': prepTime,
     if (cookTime != null) 'cookTime': cookTime,
@@ -454,8 +451,8 @@ Never _throwRecipeAssistantFunctionError(int status, dynamic details) {
         detailMap?['message']?.toString() ?? recipeAssistantAllergenConflictKey;
     final conflicting = detailMap?['conflictingAllergens'] is List
         ? (detailMap!['conflictingAllergens'] as List<dynamic>)
-            .map((e) => e.toString())
-            .toList()
+              .map((e) => e.toString())
+              .toList()
         : const <String>[];
     throw RecipeAssistantAllergenConflictException(
       message: message,

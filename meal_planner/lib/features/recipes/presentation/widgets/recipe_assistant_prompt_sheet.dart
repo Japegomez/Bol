@@ -748,8 +748,6 @@ Future<void> generateTagsWithAssistant({
     await onSuccess(tags);
   } catch (_) {
     if (!context.mounted) return;
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.genericErrorMessage)),
-    );
+    messenger.showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
   }
 }

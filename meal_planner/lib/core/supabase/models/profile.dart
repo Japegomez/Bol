@@ -96,8 +96,8 @@ class Profile implements SupadartClass<Profile> {
       isAdmin: jsonn['is_admin'] == true,
       allergens: jsonn['allergens'] is List
           ? (jsonn['allergens'] as List<dynamic>)
-              .map((e) => e.toString())
-              .toList()
+                .map((e) => e.toString())
+                .toList()
           : const <String>[],
       createdAt: jsonn['created_at'] != null
           ? DateTime.parse(jsonn['created_at'].toString())

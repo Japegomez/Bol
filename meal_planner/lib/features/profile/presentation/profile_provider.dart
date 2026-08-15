@@ -70,10 +70,7 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await _repository.updateAllergens(
-        userId: userId,
-        allergens: allergens,
-      );
+      await _repository.updateAllergens(userId: userId, allergens: allergens);
       return _repository.fetchProfile(userId);
     });
   }
