@@ -107,7 +107,7 @@ void main() {
 
     test('adjustment notes name each allergen', () {
       expect(allergenAdjustmentMessages(l10n, ['peanut_free']), [
-        'Se ha modificado la receta por el alérgeno o intolerancia: cacahuetes.',
+        'Se ha modificado la receta para evitar el alérgeno o la intolerancia: cacahuetes.',
       ]);
     });
 
@@ -140,10 +140,35 @@ void main() {
       );
     });
 
+    test('inferAdjustedAllergens ignores generic allergy-friendly titles', () {
+      expect(
+        inferAdjustedAllergens(
+          adjustedAllergens: const [],
+          allergenAdjustments: const [],
+          userAllergens: const ['peanut_free'],
+          title: 'Allergy-friendly salad',
+        ),
+        isEmpty,
+      );
+    });
+
     test('normalizeAllergenKeys drops unknowns and duplicates', () {
       expect(
         normalizeAllergenKeys(['egg_free', 'nope', 'egg_free', 'gluten_free']),
         ['egg_free', 'gluten_free'],
+      );
+    });
+  });
+
+  group('legacy mediterranean tag', () {
+    final l10n = lookupAppLocalizations(const Locale('en'));
+
+    test('keeps mediterranean as an untranslated custom label', () {
+      expect(normalizeTagKey('mediterranean'), 'mediterranean');
+      expect(localizedTagLabel(l10n, 'mediterranean'), 'mediterranean');
+      expect(
+        sortedRecipeTags(['mediterranean', 'main_course']),
+        ['main_course', 'mediterranean'],
       );
     });
   });

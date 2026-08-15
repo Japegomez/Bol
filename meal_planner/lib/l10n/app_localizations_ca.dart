@@ -1742,7 +1742,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get allergenAdjustmentsIntro =>
-      'L\'assistent ha modificat la recepta per l\'al·lergen o intolerància indicat:';
+      'L\'assistent ha modificat la recepta per l\'al·lergen o la intolerància indicats:';
 
   @override
   String allergenAdjustmentNote(String allergen) {

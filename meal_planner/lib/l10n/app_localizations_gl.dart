@@ -1738,15 +1738,15 @@ class AppLocalizationsGl extends AppLocalizations {
 
   @override
   String get allergenAdjustmentsTitle =>
-      'Ingredientes axustados polas túas alerxias/intolerancias';
+      'Ingredientes adaptados ás túas alerxias e intolerancias';
 
   @override
   String get allergenAdjustmentsIntro =>
-      'O asistente modificou a receita polo alérxeno ou intolerancia indicado:';
+      'O asistente modificou a receita para evitar o alérxeno ou a intolerancia indicados:';
 
   @override
   String allergenAdjustmentNote(String allergen) {
-    return 'Modificouse a receita polo alérxeno ou intolerancia: $allergen.';
+    return 'Modificouse a receita para evitar o alérxeno ou a intolerancia: $allergen.';
   }
 
   @override

@@ -419,10 +419,7 @@ List<String> inferAdjustedAllergens({
   if (notes.isNotEmpty) return users;
 
   if (title.isNotEmpty &&
-      RegExp(
-        r'adaptad|adapted|allergy[- ]?friendly|sin al[eé]rgen',
-        caseSensitive: false,
-      ).hasMatch(title)) {
+      RegExp(r'adaptad|adapted', caseSensitive: false).hasMatch(title)) {
     return users;
   }
   return const [];

@@ -982,8 +982,8 @@ class RecipesRepository {
     final code = error.code ?? '';
     // Transient HTTP / rate-limit style codes.
     if (code == '408' || code == '429') return false;
-    // SQLSTATE class 40xxx: transaction rollback (e.g. 40001, 40P01).
-    if (code.startsWith('40')) return false;
+    // SQLSTATE class 40xxx (5-char): transaction rollback (e.g. 40001, 40P01).
+    if (code.length == 5 && code.startsWith('40')) return false;
     return code == '23503' || code == '23505' || code == '42501';
   }
 
@@ -1154,15 +1154,22 @@ class RecipesRepository {
 
   Future<Set<String>> _favoriteIdsWithPending() async {
     final ids = await _readCachedFavoriteIds();
-    final pending = await _readPendingFavorites();
+    return _applyPendingFavorites(ids, await _readPendingFavorites());
+  }
+
+  Set<String> _applyPendingFavorites(
+    Set<String> ids,
+    Map<String, bool> pending,
+  ) {
+    final next = Set<String>.from(ids);
     for (final entry in pending.entries) {
       if (entry.value) {
-        ids.add(entry.key);
+        next.add(entry.key);
       } else {
-        ids.remove(entry.key);
+        next.remove(entry.key);
       }
     }
-    return ids;
+    return next;
   }
 
   /// Fetches remote favorite ids and caches them. Returns `false` on failure
@@ -1175,9 +1182,13 @@ class RecipesRepository {
           .from(_favoritesTable)
           .select('recipe_id')
           .eq('user_id', _userId);
-      final ids = List<Map<String, dynamic>>.from(
+      final remoteIds = List<Map<String, dynamic>>.from(
         data,
       ).map((row) => row['recipe_id'].toString()).toSet();
+      final ids = _applyPendingFavorites(
+        remoteIds,
+        await _readPendingFavorites(),
+      );
       await _writeCachedFavoriteIds(ids);
       return true;
     } catch (_) {
@@ -1193,9 +1204,13 @@ class RecipesRepository {
             .from(_favoritesTable)
             .select('recipe_id')
             .eq('user_id', _userId);
-        final ids = List<Map<String, dynamic>>.from(
+        final remoteIds = List<Map<String, dynamic>>.from(
           data,
         ).map((row) => row['recipe_id'].toString()).toSet();
+        final ids = _applyPendingFavorites(
+          remoteIds,
+          await _readPendingFavorites(),
+        );
         await _writeCachedFavoriteIds(ids);
         return ids;
       } catch (_) {

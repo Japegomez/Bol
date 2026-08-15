@@ -31,17 +31,14 @@ class ProfileRepository {
       } catch (_) {
         // Best-effort: leave isAdmin as parsed (false) if the RPC fails.
       }
-      try {
-        final raw = await supabase.rpc<dynamic>('get_own_allergens');
-        if (raw is List) {
-          allergens = raw
-              .map((e) => e?.toString().trim() ?? '')
-              .where((e) => e.isNotEmpty)
-              .toList();
-        }
-      } catch (_) {
-        allergens = const [];
+      final raw = await supabase.rpc<dynamic>('get_own_allergens');
+      if (raw is! List) {
+        throw StateError('get_own_allergens returned an unexpected payload');
       }
+      allergens = raw
+          .map((e) => e?.toString().trim() ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList();
     } else {
       allergens = const [];
     }

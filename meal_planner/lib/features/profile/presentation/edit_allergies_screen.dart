@@ -68,7 +68,28 @@ class _EditAllergiesScreenState extends ConsumerState<EditAllergiesScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.allergiesSection)),
-      body: !_initialized
+      body: profileAsync.hasError && !_initialized
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      profileAsync.error.toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: theme.colorScheme.error),
+                    ),
+                    const SizedBox(height: 16),
+                    AppButton(
+                      label: l10n.retry,
+                      onPressed: () => ref.invalidate(profileProvider),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : !_initialized
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),

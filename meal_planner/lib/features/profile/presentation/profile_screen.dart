@@ -220,13 +220,9 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         leading: const Icon(Icons.warning_amber_outlined),
                         title: Text(l10n.editAllergies),
-                        subtitle: Text(
-                          profile != null && profile.allergens.isNotEmpty
-                              ? profile.allergens
-                                    .map((a) => allergenLabel(l10n, a))
-                                    .join(', ')
-                              : l10n.allergiesNoneConfigured,
-                        ),
+                        subtitle: profile == null || profile.allergens.isEmpty
+                            ? Text(l10n.allergiesNoneConfigured)
+                            : null,
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/home/profile/allergies'),
                       ),

@@ -564,7 +564,7 @@
     }
   },
   "allergenAdjustmentsTitle": "Ingredients ajustats per les teves al·lèrgies/intoleràncies",
-  "allergenAdjustmentsIntro": "L'assistent ha modificat la recepta per l'al·lergen o intolerància indicat:",
+  "allergenAdjustmentsIntro": "L'assistent ha modificat la recepta per l'al·lergen o la intolerància indicats:",
   "allergenAdjustmentNote": "S'ha modificat la recepta per l'al·lergen o intolerància: {allergen}.",
   "@allergenAdjustmentNote": {
     "placeholders": {

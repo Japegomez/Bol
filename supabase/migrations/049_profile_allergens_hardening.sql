@@ -1,7 +1,7 @@
--- 049: Harden profile allergens after 048 (already applied in some envs).
+-- 049: Harden profile allergens after 048.
 --
 -- * Drop public SELECT on allergens (household/public peers must not read it).
--- * Constrain allowed allergen keys.
+-- * Constrain allowed allergen keys (NOT VALID, then VALIDATE).
 -- * Expose own allergens via SECURITY DEFINER RPC.
 
 ALTER TABLE public.profiles
@@ -22,7 +22,10 @@ ALTER TABLE public.profiles
       'shellfish_free',
       'sugar_free'
     ]::text[]
-  );
+  ) NOT VALID;
+
+ALTER TABLE public.profiles
+  VALIDATE CONSTRAINT profiles_allergens_valid;
 
 REVOKE SELECT ON public.profiles FROM anon, authenticated;
 GRANT SELECT (id, username, avatar_url, created_at) ON public.profiles

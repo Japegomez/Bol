@@ -1432,7 +1432,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tagVegetarian => 'vegetariana';
 
   @override
-  String get tagVegan => 'vegano';
+  String get tagVegan => 'vegana';
 
   @override
   String get tagPescatarian => 'pescetariana';
@@ -1747,11 +1747,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get allergenAdjustmentsIntro =>
-      'O assistente modificou a receita pelo alergénio ou intolerância indicado:';
+      'O assistente adaptou a receita para evitar o alergénio ou a intolerância indicados:';
 
   @override
   String allergenAdjustmentNote(String allergen) {
-    return 'A receita foi modificada pelo alergénio ou intolerância: $allergen.';
+    return 'A receita foi adaptada para evitar o alergénio ou a intolerância: $allergen.';
   }
 
   @override

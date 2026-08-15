@@ -465,7 +465,7 @@
   "tagSalad": "salada",
   "tagSideDish": "acompanhamento",
   "tagVegetarian": "vegetariana",
-  "tagVegan": "vegano",
+  "tagVegan": "vegana",
   "tagPescatarian": "pescetariana",
   "tagGlutenFree": "sem glúten",
   "tagLactoseFree": "sem lactose",
@@ -564,8 +564,8 @@
     }
   },
   "allergenAdjustmentsTitle": "Ingredientes ajustados às suas restrições",
-  "allergenAdjustmentsIntro": "O assistente modificou a receita pelo alergénio ou intolerância indicado:",
-  "allergenAdjustmentNote": "A receita foi modificada pelo alergénio ou intolerância: {allergen}.",
+  "allergenAdjustmentsIntro": "O assistente adaptou a receita para evitar o alergénio ou a intolerância indicados:",
+  "allergenAdjustmentNote": "A receita foi adaptada para evitar o alergénio ou a intolerância: {allergen}.",
   "@allergenAdjustmentNote": {
     "placeholders": {
       "allergen": { "type": "String" }

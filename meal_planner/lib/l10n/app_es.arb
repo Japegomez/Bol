@@ -568,9 +568,9 @@
       "allergen": { "type": "String" }
     }
   },
-  "allergenAdjustmentsTitle": "Ingredientes ajustados por tus alergias/intolerancias",
-  "allergenAdjustmentsIntro": "El asistente modificó la receta por el alérgeno o intolerancia indicado:",
-  "allergenAdjustmentNote": "Se ha modificado la receta por el alérgeno o intolerancia: {allergen}.",
+  "allergenAdjustmentsTitle": "Ingredientes adaptados a tus alergias e intolerancias",
+  "allergenAdjustmentsIntro": "El asistente modificó la receta para evitar el alérgeno o la intolerancia indicados:",
+  "allergenAdjustmentNote": "Se ha modificado la receta para evitar el alérgeno o la intolerancia: {allergen}.",
   "@allergenAdjustmentNote": {
     "placeholders": {
       "allergen": { "type": "String" }
