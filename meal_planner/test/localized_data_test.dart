@@ -166,10 +166,10 @@ void main() {
     test('keeps mediterranean as an untranslated custom label', () {
       expect(normalizeTagKey('mediterranean'), 'mediterranean');
       expect(localizedTagLabel(l10n, 'mediterranean'), 'mediterranean');
-      expect(
-        sortedRecipeTags(['mediterranean', 'main_course']),
-        ['main_course', 'mediterranean'],
-      );
+      expect(sortedRecipeTags(['mediterranean', 'main_course']), [
+        'main_course',
+        'mediterranean',
+      ]);
     });
   });
 }
