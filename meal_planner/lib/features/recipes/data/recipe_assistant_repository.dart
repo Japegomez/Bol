@@ -186,8 +186,8 @@ Map<String, dynamic> buildGenerateTagsBody({
       for (final step in validSteps)
         {'description': step.description.trim(), 'isOptional': step.isOptional},
     ],
-    if (prepTime != null) 'prepTime': prepTime,
-    if (cookTime != null) 'cookTime': cookTime,
+    'prepTime': ?prepTime,
+    'cookTime': ?cookTime,
     if (trimmedTips.isNotEmpty) 'tips': trimmedTips,
     if (validExistingTags.isNotEmpty) 'existingTags': validExistingTags,
   };

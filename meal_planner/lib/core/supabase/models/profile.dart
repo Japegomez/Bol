@@ -49,7 +49,7 @@ class Profile implements SupadartClass<Profile> {
       'id': ?id,
       'username': ?username,
       'avatar_url': ?avatarUrl,
-      if (allergens != null) 'allergens': allergens,
+      'allergens': ?allergens,
       if (createdAt != null) 'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
