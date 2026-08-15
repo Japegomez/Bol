@@ -473,6 +473,9 @@ class AppLocalizationsEu extends AppLocalizations {
   String get customTagLabel => 'Etiketa pertsonalizatua';
 
   @override
+  String get clearAllTags => 'Denak kendu';
+
+  @override
   String get stepsSection => 'Urratsak';
 
   @override
@@ -1407,6 +1410,21 @@ class AppLocalizationsEu extends AppLocalizations {
   String get tagDessert => 'postrea';
 
   @override
+  String get tagBreakfast => 'gosaria';
+
+  @override
+  String get tagAppetizer => 'aperitiboa';
+
+  @override
+  String get tagSoup => 'zopa';
+
+  @override
+  String get tagSalad => 'entsalada';
+
+  @override
+  String get tagSideDish => 'lagungarria';
+
+  @override
   String get tagVegetarian => 'begetarianoa';
 
   @override
@@ -1422,13 +1440,22 @@ class AppLocalizationsEu extends AppLocalizations {
   String get tagLactoseFree => 'laktosarik gabe';
 
   @override
+  String get tagDairyFree => 'esnekirik gabe';
+
+  @override
   String get tagEggFree => 'arrautzarik gabe';
 
   @override
   String get tagNutFree => 'frutu lehorrik gabe';
 
   @override
+  String get tagPeanutFree => 'kakahueterik gabe';
+
+  @override
   String get tagSoyFree => 'sojarik gabe';
+
+  @override
+  String get tagFishFree => 'arrainik gabe';
 
   @override
   String get tagShellfishFree => 'itsaski-ganbarik gabe';
@@ -1449,7 +1476,22 @@ class AppLocalizationsEu extends AppLocalizations {
   String get tagHighFiber => 'zuntz handia';
 
   @override
-  String get tagMediterranean => 'mediterraneoa';
+  String get tagHealthy => 'osasungarria';
+
+  @override
+  String get tagSpanish => 'espainiarra';
+
+  @override
+  String get tagItalian => 'italiarra';
+
+  @override
+  String get tagAsian => 'asiarra';
+
+  @override
+  String get tagMexican => 'mexikarra';
+
+  @override
+  String get tagIndian => 'indiarra';
 
   @override
   String get tagQuick => 'azkarra';
@@ -1462,6 +1504,9 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get tagFreezerFriendly => 'izozteko';
+
+  @override
+  String get tagNoOven => 'laberik gabe';
 
   @override
   String get tagSpicy => 'min';
@@ -1552,11 +1597,11 @@ class AppLocalizationsEu extends AppLocalizations {
       'Jarraitu zure sukaldari gogokoenak haien profiletik eta kontsultatu beraien azken errezetak Jarraituak botoia sakatuz.';
 
   @override
-  String get onboardingStep10Title => 'Zure profila eta etxea';
+  String get onboardingStep10Title => 'Zure profila, alergiak eta etxea';
 
   @override
   String get onboardingStep10Body =>
-      'Editatu zure izena eta argazkia. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu.';
+      'Editatu zure izena eta argazkia, eta konfiguratu zure alergiak eta intolerantziak errezeta-laguntzaileak errespetatu ditzan. Nire etxea atalean zure familiarekin denbora errealean planifikatu dezakezu. Hemen hizkuntza eta modu iluna ere aldatzen dituzu.';
 
   @override
   String get createRecipeOptionsTitle => 'Errezeta sortu';
@@ -1625,6 +1670,9 @@ class AppLocalizationsEu extends AppLocalizations {
       'Nutrizio-informazioa kalkulatzen…';
 
   @override
+  String get recipeAssistantBlockingTags => 'Etiketak hautatzen…';
+
+  @override
   String get recipeAssistantNotRecipeRequest =>
       'Errezetak sortzen lagun zaitzaket soilik. Deskribatu plater edo errezeta bat.';
 
@@ -1677,7 +1725,82 @@ class AppLocalizationsEu extends AppLocalizations {
       'Laguntzailea momentu honetan gainezka dago. Saiatu geroago.';
 
   @override
+  String get recipeAssistantAllergenConflict =>
+      'Errezeta ezin da prestatu zure alergenoetako bat gabe.';
+
+  @override
+  String get allergenConflictTitle => 'Ezin da errezeta sortu';
+
+  @override
+  String allergenConflictBody(String allergen) {
+    return 'Ezin da errezeta sortu alergeno edo intolerantzia hau gabe: $allergen.';
+  }
+
+  @override
+  String get allergenAdjustmentsTitle =>
+      'Zure alergia/intolerantziengatik egokitutako osagaiak';
+
+  @override
+  String get allergenAdjustmentsIntro =>
+      'Laguntzaileak errezeta aldatu du adierazitako alergeno edo intolerantziagatik:';
+
+  @override
+  String allergenAdjustmentNote(String allergen) {
+    return 'Errezeta aldatu da alergeno edo intolerantzia honengatik: $allergen.';
+  }
+
+  @override
+  String get allergenConfigureInProfileHint =>
+      'Zure alergiak eta intolerantziak profilean konfigura ditzakezu.';
+
+  @override
+  String get allergenSubstanceGluten => 'gluten';
+
+  @override
+  String get allergenSubstanceLactose => 'laktosa';
+
+  @override
+  String get allergenSubstanceDairy => 'esnekiak';
+
+  @override
+  String get allergenSubstanceEgg => 'arrautza';
+
+  @override
+  String get allergenSubstanceNuts => 'fruitu lehorrak';
+
+  @override
+  String get allergenSubstancePeanuts => 'kakahueteak';
+
+  @override
+  String get allergenSubstanceSoy => 'soja';
+
+  @override
+  String get allergenSubstanceFish => 'arraina';
+
+  @override
+  String get allergenSubstanceShellfish => 'itsaskiak';
+
+  @override
+  String get allergenSubstanceSugar => 'azukrea';
+
+  @override
+  String get allergiesSection => 'Alergiak eta intolerantziak';
+
+  @override
+  String get allergiesHint =>
+      'Errezeta-laguntzaileak osagai hauek saihesten ditu errezetak sortzean.';
+
+  @override
+  String get editAllergies => 'Editatu alergiak eta intolerantziak';
+
+  @override
+  String get allergiesNoneConfigured => 'Bat ere ez dago konfiguratuta';
+
+  @override
   String get completeNutritionWithAssistant => 'IA-rekin osatu';
+
+  @override
+  String get completeTagsWithAssistant => 'IA-rekin osatu';
 
   @override
   String get recipeAssistantNutritionSaved => 'Nutrizio fitxa osatuta';

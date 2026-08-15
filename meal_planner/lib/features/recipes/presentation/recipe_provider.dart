@@ -251,6 +251,7 @@ class RecipeFormState {
     this.isSaving = false,
     this.error,
     this.sourceLang,
+    this.adjustedAllergens = const [],
   });
 
   final RecipeFormData data;
@@ -258,6 +259,7 @@ class RecipeFormState {
   final bool isSaving;
   final String? error;
   final String? sourceLang;
+  final List<String> adjustedAllergens;
 
   bool get isEditing => recipeId != null;
 
@@ -267,8 +269,10 @@ class RecipeFormState {
     bool? isSaving,
     String? error,
     String? sourceLang,
+    List<String>? adjustedAllergens,
     bool clearError = false,
     bool clearSourceLang = false,
+    bool clearAdjustedAllergens = false,
   }) {
     return RecipeFormState(
       data: data ?? this.data,
@@ -276,6 +280,9 @@ class RecipeFormState {
       isSaving: isSaving ?? this.isSaving,
       error: clearError ? null : (error ?? this.error),
       sourceLang: clearSourceLang ? null : (sourceLang ?? this.sourceLang),
+      adjustedAllergens: clearAdjustedAllergens
+          ? const []
+          : (adjustedAllergens ?? this.adjustedAllergens),
     );
   }
 }
@@ -299,6 +306,7 @@ class RecipeFormNotifier
         return RecipeFormState(
           data: draft.formData,
           sourceLang: draft.sourceLang,
+          adjustedAllergens: draft.adjustedAllergens,
         );
       }
       return RecipeFormState(data: RecipeFormData());

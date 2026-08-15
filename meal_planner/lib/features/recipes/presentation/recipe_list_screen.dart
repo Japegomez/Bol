@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/recipe.dart';
 import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 import 'package:meal_planner/core/widgets/overflow_marquee_text.dart';
 import 'package:meal_planner/core/widgets/recipe_card_network_photo.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
+import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
 import 'package:meal_planner/features/recipes/data/recipe_assistant_repository.dart';
 import 'package:meal_planner/features/recipes/data/recipe_translation_repository.dart';
 import 'package:meal_planner/features/recipes/presentation/list_title_translation_provider.dart';
@@ -58,21 +60,50 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
     final input = await showRecipeAssistantPromptSheet(context);
     if (!mounted || input == null) return;
 
+    final userAllergens =
+        ref.read(profileProvider).valueOrNull?.allergens ?? const <String>[];
+    final inputWithAllergens = RecipeAssistantPromptInput(
+      prompt: input.prompt,
+      images: input.images,
+      userAllergens: userAllergens,
+    );
+
     try {
       final result = await runWithRecipeAssistantBlockingOverlay(
         context: context,
         message: context.l10n.recipeAssistantBlockingRecipe,
-        task: () =>
-            ref.read(recipeAssistantRepositoryProvider).generateRecipe(input),
+        task: () => ref
+            .read(recipeAssistantRepositoryProvider)
+            .generateRecipe(inputWithAllergens),
+      );
+      final adjustedAllergens = inferAdjustedAllergens(
+        adjustedAllergens: result.adjustedAllergens,
+        allergenAdjustments: result.allergenAdjustments,
+        userAllergens: inputWithAllergens.userAllergens,
+        title: result.formData.title,
       );
       ref
           .read(recipeAssistantDraftProvider.notifier)
           .state = RecipeAssistantDraft(
         formData: result.formData,
         sourceLang: result.sourceLang,
+        allergenAdjustments: result.allergenAdjustments,
+        // Shown below before navigation; keep empty on the form to avoid a
+        // second dialog.
+        adjustedAllergens: const [],
       );
       if (!mounted) return;
+      if (adjustedAllergens.isNotEmpty) {
+        await _showAllergenAdjustmentsDialog(adjustedAllergens);
+        if (!mounted) return;
+      }
       context.push('/home/recipes/new');
+    } on RecipeAssistantAllergenConflictException catch (error) {
+      if (!mounted) return;
+      final keys = error.conflictingAllergens.isNotEmpty
+          ? error.conflictingAllergens
+          : inputWithAllergens.userAllergens;
+      await _showAllergenConflictDialog(keys);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,6 +117,77 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _showAllergenAdjustmentsDialog(List<String> allergenKeys) async {
+    final l10n = context.l10n;
+    final notes = allergenAdjustmentMessages(l10n, allergenKeys);
+    if (notes.isEmpty) return;
+    await showAdaptiveDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.allergenAdjustmentsTitle),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.allergenAdjustmentsIntro),
+              const SizedBox(height: 8),
+              for (final note in notes)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('•  '),
+                      Expanded(child: Text(note)),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 12),
+              Text(l10n.allergenConfigureInProfileHint),
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.understood),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAllergenConflictDialog(List<String> allergenKeys) async {
+    final l10n = context.l10n;
+    final messages = allergenConflictMessages(l10n, allergenKeys);
+    await showAdaptiveDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.allergenConflictTitle),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final message in messages)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(message),
+              ),
+            const SizedBox(height: 4),
+            Text(l10n.allergenConfigureInProfileHint),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.understood),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

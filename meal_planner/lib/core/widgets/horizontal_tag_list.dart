@@ -55,6 +55,7 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
     final l10n = context.l10n;
     final resolveLabel =
         widget.labelFor ?? (tag) => localizedTagLabel(l10n, tag);
+    final tags = sortedRecipeTags(widget.tags);
 
     return SizedBox(
       height: 32,
@@ -68,10 +69,10 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
           physics: const NeverScrollableScrollPhysics(),
           child: Row(
             children: [
-              for (var index = 0; index < widget.tags.length; index++) ...[
+              for (var index = 0; index < tags.length; index++) ...[
                 if (index > 0) const SizedBox(width: 4),
                 Chip(
-                  label: Text(resolveLabel(widget.tags[index])),
+                  label: Text(resolveLabel(tags[index])),
                   visualDensity: VisualDensity.compact,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

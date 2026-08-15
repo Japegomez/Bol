@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/local_db/local_db_provider.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/language_selector_tile.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/review/review_prompt_service.dart';
 import 'package:meal_planner/core/theme/theme_mode_provider.dart';
 import 'package:meal_planner/core/widgets/skeleton.dart';
@@ -13,6 +14,7 @@ import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:meal_planner/features/household/presentation/household_provider.dart';
 import 'package:meal_planner/features/onboarding/presentation/onboarding_targets.dart';
 import 'package:meal_planner/features/profile/presentation/profile_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -61,7 +63,11 @@ class ProfileScreen extends ConsumerWidget {
     } catch (_) {
       // Continue with sign-out even if local cleanup fails
     }
-    await authRepository.signOut(manual: true);
+    try {
+      await authRepository.signOut(manual: true, scope: SignOutScope.local);
+    } catch (_) {
+      ref.invalidate(authStateProvider);
+    }
   }
 
   @override
@@ -144,6 +150,29 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (profile != null && profile.allergens.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        for (final allergen in profile.allergens)
+                          Chip(
+                            avatar: const Icon(
+                              Icons.warning_amber_outlined,
+                              size: 16,
+                            ),
+                            label: Text(allergenLabel(l10n, allergen)),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Card(
                   child: Column(
@@ -173,6 +202,23 @@ class ProfileScreen extends ConsumerWidget {
                         title: Text(l10n.editProfile),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/home/profile/edit'),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        key: OnboardingTargets.keyFor(
+                          OnboardingTarget.profileAllergiesTile,
+                        ),
+                        leading: const Icon(Icons.warning_amber_outlined),
+                        title: Text(l10n.editAllergies),
+                        subtitle: Text(
+                          profile != null && profile.allergens.isNotEmpty
+                              ? profile.allergens
+                                    .map((a) => allergenLabel(l10n, a))
+                                    .join(', ')
+                              : l10n.allergiesNoneConfigured,
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push('/home/profile/allergies'),
                       ),
                       const Divider(height: 1),
                       ListTile(

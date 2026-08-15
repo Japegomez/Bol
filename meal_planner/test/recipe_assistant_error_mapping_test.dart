@@ -159,5 +159,97 @@ void main() {
         equals(recipeAssistantFailedKey),
       );
     });
+
+    test('maps allergen_conflict error code to allergen_conflict key', () {
+      expect(
+        mapRecipeAssistantFunctionError(422, {'error': 'allergen_conflict'}),
+        equals(recipeAssistantAllergenConflictKey),
+      );
+    });
+
+    test('maps allergen_conflict from JSON string details', () {
+      expect(
+        mapRecipeAssistantFunctionError(
+          422,
+          '{"error":"allergen_conflict","message":"No sin huevo"}',
+        ),
+        equals(recipeAssistantAllergenConflictKey),
+      );
+    });
+
+    test('maps not_a_recipe_request error code even without relying on status alone', () {
+      expect(
+        mapRecipeAssistantFunctionError(400, {'error': 'not_a_recipe_request'}),
+        equals(recipeAssistantNotRecipeRequestKey),
+      );
+    });
+  });
+
+  group('buildGenerateRecipeBody', () {
+    test('omits userAllergens when empty', () {
+      final body = buildGenerateRecipeBody(
+        const RecipeAssistantPromptInput(prompt: 'tortilla'),
+      );
+      expect(body.containsKey('userAllergens'), isFalse);
+      expect(body['mode'], 'generate_recipe');
+      expect(body['prompt'], 'tortilla');
+    });
+
+    test('includes userAllergens when provided', () {
+      final body = buildGenerateRecipeBody(
+        const RecipeAssistantPromptInput(
+          prompt: 'tortilla',
+          userAllergens: ['egg_free', 'gluten_free'],
+        ),
+      );
+      expect(body['userAllergens'], ['egg_free', 'gluten_free']);
+    });
+  });
+
+  group('RecipeAssistantAllergenConflictException', () {
+    test('carries message and conflicting allergens', () {
+      const exception = RecipeAssistantAllergenConflictException(
+        message: 'No se puede sin huevo',
+        conflictingAllergens: ['egg_free'],
+      );
+      expect(exception.message, 'No se puede sin huevo');
+      expect(exception.conflictingAllergens, ['egg_free']);
+      expect(exception.toString(), 'No se puede sin huevo');
+    });
+  });
+
+  group('resolveAdjustedAllergens', () {
+    test('prefers explicit adjusted keys', () {
+      expect(
+        resolveAdjustedAllergens(
+          parsedKeys: ['egg_free'],
+          allergenAdjustments: ['Se omitió el huevo.'],
+          userAllergens: ['egg_free', 'gluten_free'],
+        ),
+        ['egg_free'],
+      );
+    });
+
+    test('falls back to user allergens when only free-text notes exist', () {
+      expect(
+        resolveAdjustedAllergens(
+          parsedKeys: const [],
+          allergenAdjustments: ['Se omitió el huevo.'],
+          userAllergens: ['egg_free', 'unknown_tag'],
+        ),
+        ['egg_free'],
+      );
+    });
+
+    test('returns empty when nothing was adjusted', () {
+      expect(
+        resolveAdjustedAllergens(
+          parsedKeys: const [],
+          allergenAdjustments: const [],
+          userAllergens: ['egg_free'],
+        ),
+        isEmpty,
+      );
+    });
   });
 }

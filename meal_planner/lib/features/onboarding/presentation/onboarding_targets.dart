@@ -11,6 +11,7 @@ enum OnboardingTarget {
   shoppingShareButton,
   exploreFeedButton,
   profileEditTile,
+  profileAllergiesTile,
   profileHouseholdTile,
 }
 

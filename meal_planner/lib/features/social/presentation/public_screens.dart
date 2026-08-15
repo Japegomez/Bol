@@ -495,7 +495,7 @@ class _PublicRecipeDetailScreenState
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: detail.recipe.tags
+                            children: sortedRecipeTags(detail.recipe.tags)
                                 .map(
                                   (tag) => Chip(
                                     label: Text(localizedTagLabel(l10n, tag)),

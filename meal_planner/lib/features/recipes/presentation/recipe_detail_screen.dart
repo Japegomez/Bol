@@ -802,7 +802,7 @@ class _RecipeDetailBodyState extends ConsumerState<_RecipeDetailBody> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: widget.tags
+                      children: sortedRecipeTags(widget.tags)
                           .map(
                             (tag) =>
                                 Chip(label: Text(localizedTagLabel(l10n, tag))),

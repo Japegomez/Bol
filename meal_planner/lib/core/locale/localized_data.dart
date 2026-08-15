@@ -284,31 +284,146 @@ String ingredientNameConnector(String localeName) {
 }
 
 const suggestedRecipeTagKeys = [
-  'starter',
   'main_course',
   'dessert',
+  'breakfast',
+  'appetizer',
+  'side_dish',
   'vegetarian',
   'vegan',
   'pescatarian',
   'gluten_free',
   'lactose_free',
+  'dairy_free',
   'egg_free',
   'nut_free',
+  'peanut_free',
   'soy_free',
+  'fish_free',
   'shellfish_free',
   'sugar_free',
   'high_protein',
   'low_calorie',
   'low_carb',
   'high_fiber',
-  'mediterranean',
+  'healthy',
+  'spanish',
+  'italian',
+  'asian',
+  'mexican',
+  'indian',
   'quick',
   'budget',
   'batch_cooking',
   'freezer_friendly',
+  'no_oven',
   'spicy',
   'kid_friendly',
 ];
+
+/// Allergen / intolerance keys reused as the "sin" recipe tags. Stored on the
+/// profile so the recipe assistant can omit/substitute ingredients and
+/// auto-apply the matching tags. Must stay in sync with the Edge Function's
+/// `SIN_TAG_KEYS`.
+const allergenTagKeys = [
+  'gluten_free',
+  'lactose_free',
+  'dairy_free',
+  'egg_free',
+  'nut_free',
+  'peanut_free',
+  'soy_free',
+  'fish_free',
+  'shellfish_free',
+  'sugar_free',
+];
+
+/// Localized chip/tag label for an allergen key (includes "sin …").
+String allergenLabel(AppLocalizations l10n, String key) =>
+    localizedTagLabel(l10n, key);
+
+/// Substance name for dialogs (without the leading "sin"), e.g. "huevo".
+String allergenSubstanceLabel(AppLocalizations l10n, String key) {
+  return switch (key.trim()) {
+    'gluten_free' => l10n.allergenSubstanceGluten,
+    'lactose_free' => l10n.allergenSubstanceLactose,
+    'dairy_free' => l10n.allergenSubstanceDairy,
+    'egg_free' => l10n.allergenSubstanceEgg,
+    'nut_free' => l10n.allergenSubstanceNuts,
+    'peanut_free' => l10n.allergenSubstancePeanuts,
+    'soy_free' => l10n.allergenSubstanceSoy,
+    'fish_free' => l10n.allergenSubstanceFish,
+    'shellfish_free' => l10n.allergenSubstanceShellfish,
+    'sugar_free' => l10n.allergenSubstanceSugar,
+    _ => allergenLabel(l10n, key),
+  };
+}
+
+/// Valid allergen keys from [keys], preserving order and dropping unknowns.
+List<String> normalizeAllergenKeys(Iterable<String> keys) {
+  final seen = <String>{};
+  final out = <String>[];
+  for (final key in keys) {
+    final trimmed = key.trim();
+    if (allergenTagKeys.contains(trimmed) && seen.add(trimmed)) {
+      out.add(trimmed);
+    }
+  }
+  return out;
+}
+
+/// Conflict dialog lines that always name each allergen/intolerance.
+List<String> allergenConflictMessages(
+  AppLocalizations l10n,
+  Iterable<String> allergenKeys,
+) {
+  final keys = normalizeAllergenKeys(allergenKeys);
+  if (keys.isEmpty) return [l10n.recipeAssistantAllergenConflict];
+  return [
+    for (final key in keys)
+      l10n.allergenConflictBody(allergenSubstanceLabel(l10n, key)),
+  ];
+}
+
+/// Adjustment dialog notes that always name each allergen/intolerance.
+List<String> allergenAdjustmentMessages(
+  AppLocalizations l10n,
+  Iterable<String> allergenKeys,
+) {
+  final keys = normalizeAllergenKeys(allergenKeys);
+  return [
+    for (final key in keys)
+      l10n.allergenAdjustmentNote(allergenSubstanceLabel(l10n, key)),
+  ];
+}
+
+/// Recovers allergen keys when the model adapted the dish but forgot to
+/// return [adjustedAllergens] (e.g. title ends with "Adaptado").
+List<String> inferAdjustedAllergens({
+  required Iterable<String> adjustedAllergens,
+  required Iterable<String> allergenAdjustments,
+  required Iterable<String> userAllergens,
+  required String title,
+}) {
+  final parsed = normalizeAllergenKeys(adjustedAllergens);
+  if (parsed.isNotEmpty) return parsed;
+
+  final users = normalizeAllergenKeys(userAllergens);
+  if (users.isEmpty) return const [];
+
+  final notes = allergenAdjustments
+      .map((e) => e.trim())
+      .where((e) => e.isNotEmpty);
+  if (notes.isNotEmpty) return users;
+
+  if (RegExp(
+    r'adaptad|adapted|allergy[- ]?friendly|sin al[eé]rgen',
+    caseSensitive: false,
+  ).hasMatch(title)) {
+    return users;
+  }
+  return const [];
+}
 
 const _legacyTagLabels = {
   'entrante': 'starter',
@@ -328,13 +443,29 @@ const _legacyTagLabels = {
   'baja en calorías': 'low_calorie',
   'baja en carbohidratos': 'low_carb',
   'alta en fibra': 'high_fiber',
-  'mediterránea': 'mediterranean',
   'rápida': 'quick',
   'económica': 'budget',
   'batch cooking': 'batch_cooking',
   'para congelar': 'freezer_friendly',
   'picante': 'spicy',
   'para niños': 'kid_friendly',
+  'desayuno': 'breakfast',
+  'tentempié': 'appetizer',
+  'aperitivo': 'appetizer',
+  'snack': 'appetizer',
+  'sopa': 'soup',
+  'ensalada': 'salad',
+  'acompañamiento': 'side_dish',
+  'sin lácteos': 'dairy_free',
+  'sin cacahuetes': 'peanut_free',
+  'sin pescado': 'fish_free',
+  'saludable': 'healthy',
+  'española': 'spanish',
+  'italiana': 'italian',
+  'asiática': 'asian',
+  'mexicana': 'mexican',
+  'india': 'indian',
+  'sin horno': 'no_oven',
 };
 
 String normalizeTagKey(String tag) {
@@ -342,30 +473,58 @@ String normalizeTagKey(String tag) {
   return _legacyTagLabels[tag] ?? tag;
 }
 
+/// Suggested chips first (catalog order), then custom tags in original order.
+List<String> sortedRecipeTags(Iterable<String> tags) {
+  final seen = <String>{};
+  final custom = <String>[];
+  for (final tag in tags) {
+    final key = normalizeTagKey(tag.trim());
+    if (key.isEmpty || !seen.add(key)) continue;
+    if (!suggestedRecipeTagKeys.contains(key)) {
+      custom.add(key);
+    }
+  }
+  return [...suggestedRecipeTagKeys.where(seen.contains), ...custom];
+}
+
 String localizedTagLabel(AppLocalizations l10n, String tag) {
   return switch (normalizeTagKey(tag)) {
     'starter' => l10n.tagStarter,
     'main_course' => l10n.tagMainCourse,
     'dessert' => l10n.tagDessert,
+    'breakfast' => l10n.tagBreakfast,
+    'appetizer' => l10n.tagAppetizer,
+    'soup' => l10n.tagSoup,
+    'salad' => l10n.tagSalad,
+    'side_dish' => l10n.tagSideDish,
     'vegetarian' => l10n.tagVegetarian,
     'vegan' => l10n.tagVegan,
     'pescatarian' => l10n.tagPescatarian,
     'gluten_free' => l10n.tagGlutenFree,
     'lactose_free' => l10n.tagLactoseFree,
+    'dairy_free' => l10n.tagDairyFree,
     'egg_free' => l10n.tagEggFree,
     'nut_free' => l10n.tagNutFree,
+    'peanut_free' => l10n.tagPeanutFree,
     'soy_free' => l10n.tagSoyFree,
+    'fish_free' => l10n.tagFishFree,
     'shellfish_free' => l10n.tagShellfishFree,
     'sugar_free' => l10n.tagSugarFree,
     'high_protein' => l10n.tagHighProtein,
     'low_calorie' => l10n.tagLowCalorie,
     'low_carb' => l10n.tagLowCarb,
     'high_fiber' => l10n.tagHighFiber,
-    'mediterranean' => l10n.tagMediterranean,
+    'healthy' => l10n.tagHealthy,
+    'spanish' => l10n.tagSpanish,
+    'italian' => l10n.tagItalian,
+    'asian' => l10n.tagAsian,
+    'mexican' => l10n.tagMexican,
+    'indian' => l10n.tagIndian,
     'quick' => l10n.tagQuick,
     'budget' => l10n.tagBudget,
     'batch_cooking' => l10n.tagBatchCooking,
     'freezer_friendly' => l10n.tagFreezerFriendly,
+    'no_oven' => l10n.tagNoOven,
     'spicy' => l10n.tagSpicy,
     'kid_friendly' => l10n.tagKidFriendly,
     _ => tag,

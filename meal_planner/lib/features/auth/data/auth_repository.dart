@@ -218,19 +218,34 @@ class AuthRepository {
     SignOutScope scope = SignOutScope.global,
   }) async {
     _manualSignOut = manual;
+    // Google Sign-In can hang indefinitely on web; never block the UI on it.
     if (_signedInWithGoogle) {
-      try {
-        await _googleSignIn.signOut();
-      } catch (_) {
-        // Best-effort; Supabase sign-out still runs below.
-      }
+      unawaited(() async {
+        try {
+          await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
+        } catch (_) {
+          // Best-effort.
+        }
+      }());
     }
     try {
       await SessionBackground.clearMarker();
     } catch (_) {
       // Best-effort; auth sign-out still runs below.
     }
-    await supabase.auth.signOut(scope: scope);
+    // Local clear is what the UI needs and never waits on the network.
+    // Global revoke is best-effort with a short timeout, then fall back to local.
+    if (scope == SignOutScope.global) {
+      try {
+        await supabase.auth
+            .signOut(scope: SignOutScope.global)
+            .timeout(const Duration(seconds: 2));
+        return;
+      } catch (_) {
+        // Fall through to local sign-out.
+      }
+    }
+    await supabase.auth.signOut(scope: SignOutScope.local);
   }
 
   bool get _signedInWithGoogle {

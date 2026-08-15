@@ -10,8 +10,8 @@ import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
-/// Expires the session after a long background period (same pattern as musApp)
-/// and revalidates the JWT on resume.
+/// Expires the session after a long background period (~7 days, aligned with
+/// the Supabase refresh token) and revalidates the JWT on resume.
 class SessionLifecycleHandler extends ConsumerStatefulWidget {
   const SessionLifecycleHandler({required this.child, super.key});
 
@@ -48,8 +48,9 @@ class _SessionLifecycleHandlerState
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!Env.hasSupabase) return;
 
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+    // Only [paused]: [inactive] also fires for control center / app switcher
+    // glances and would keep rewriting the background timestamp unnecessarily.
+    if (state == AppLifecycleState.paused) {
       if (_isAuthenticated && !ref.read(authOperationInProgressProvider)) {
         unawaited(SessionBackground.markBackgrounded());
       }

@@ -10,7 +10,7 @@ class ProfileRepository {
   Future<Profile?> fetchProfile(String userId) async {
     final data = await supabase
         .from(Profile.table_name)
-        .select('id, username, avatar_url, created_at')
+        .select('id, username, avatar_url, created_at, allergens')
         .eq(Profile.c_id, userId)
         .maybeSingle();
 
@@ -52,6 +52,16 @@ class ProfileRepository {
     await supabase
         .from(Profile.table_name)
         .update(updates)
+        .eq(Profile.c_id, userId);
+  }
+
+  Future<void> updateAllergens({
+    required String userId,
+    required List<String> allergens,
+  }) async {
+    await supabase
+        .from(Profile.table_name)
+        .update({Profile.c_allergens: allergens})
         .eq(Profile.c_id, userId);
   }
 

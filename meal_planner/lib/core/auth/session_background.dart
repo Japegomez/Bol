@@ -6,16 +6,23 @@ abstract final class SessionBackground {
 
   /// Sign out when the app returns from background after at least this long.
   ///
-  /// Intentionally 12 hours (not a short idle timeout). Meal planning often
-  /// leaves the app backgrounded during cooking or shopping; a ~10-minute
-  /// cutoff signed users out mid-flow. 12 hours still bounds the unattended
-  /// access window on a leftover unlocked session, without competing with
-  /// Supabase's ~1-week refresh token.
-  static const timeout = Duration(hours: 12);
+  /// Intentionally aligned with Supabase's ~1-week refresh token (not a short
+  /// idle timeout). Meal planning leaves the app backgrounded during cooking,
+  /// shopping, or overnight; shorter cutoffs (10 min / 12 h) signed users out
+  /// mid-flow and broke offline access. After this window, resume forces a
+  /// local sign-out; before that, only an invalid refresh token ends the
+  /// session.
+  static const timeout = Duration(days: 7);
 
   static Future<void> markBackgrounded() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_key, DateTime.now().millisecondsSinceEpoch);
+  }
+
+  /// Test helper: mark backgrounded at an explicit instant.
+  static Future<void> markBackgroundedAt(DateTime at) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_key, at.millisecondsSinceEpoch);
   }
 
   static Future<void> clearMarker() async {

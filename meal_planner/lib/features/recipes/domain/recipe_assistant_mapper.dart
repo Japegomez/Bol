@@ -15,7 +15,7 @@ NutritionFormData nutritionFromAssistantJson(Map<String, dynamic> json) {
 RecipeFormData recipeFromAssistantJson(Map<String, dynamic> json) {
   final ingredients = _mapIngredients(json['ingredients']);
   final steps = _mapSteps(json['steps']);
-  final tags = _mapTags(json['tags']);
+  final tags = tagsFromAssistantJson(json['tags']);
 
   return RecipeFormData(
     title: (json['title'] as String? ?? '').trim(),
@@ -111,7 +111,7 @@ List<StepFormItem> _mapSteps(dynamic raw) {
       .toList();
 }
 
-List<String> _mapTags(dynamic raw) {
+List<String> tagsFromAssistantJson(dynamic raw) {
   if (raw is! List) return [];
 
   final tags = <String>[];
@@ -124,7 +124,26 @@ List<String> _mapTags(dynamic raw) {
       tags.add(normalized);
     }
   }
-  return tags;
+  return sortedRecipeTags(tags);
+}
+
+/// Replaces suggested chips with the assistant result and keeps custom tags.
+List<String> mergeAssistantTags({
+  required Iterable<String> currentTags,
+  required Iterable<String> assistantTags,
+}) {
+  final suggested = tagsFromAssistantJson(assistantTags.toList());
+  final merged = [...suggested];
+  for (final entry in currentTags) {
+    final normalized = normalizeTagKey(entry.trim());
+    if (normalized.isEmpty || suggestedRecipeTagKeys.contains(normalized)) {
+      continue;
+    }
+    if (!merged.contains(normalized)) {
+      merged.add(normalized);
+    }
+  }
+  return sortedRecipeTags(merged);
 }
 
 int _parseServings(dynamic value) {

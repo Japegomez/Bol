@@ -104,6 +104,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ? _SuccessView(email: _emailController.text.trim())
                   : Form(
                       key: _formKey,
+                      autovalidateMode: AutovalidateMode.onUnfocus,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -212,7 +213,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             title: Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Text(l10n.acceptTermsPrefix),
+                                Text('${l10n.acceptTermsPrefix} '),
                                 TextButton(
                                   onPressed: _isLoading
                                       ? null
@@ -225,7 +226,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                   child: Text(l10n.termsLink),
                                 ),
-                                Text(l10n.andThe),
+                                Text(' ${l10n.andThe} '),
                                 TextButton(
                                   onPressed: _isLoading
                                       ? null

@@ -472,6 +472,9 @@ class AppLocalizationsCa extends AppLocalizations {
   String get customTagLabel => 'Etiqueta personalitzada';
 
   @override
+  String get clearAllTags => 'Treure-les totes';
+
+  @override
   String get stepsSection => 'Passos';
 
   @override
@@ -1406,6 +1409,21 @@ class AppLocalizationsCa extends AppLocalizations {
   String get tagDessert => 'postre';
 
   @override
+  String get tagBreakfast => 'esmorzar';
+
+  @override
+  String get tagAppetizer => 'aperitiu';
+
+  @override
+  String get tagSoup => 'sopa';
+
+  @override
+  String get tagSalad => 'amanida';
+
+  @override
+  String get tagSideDish => 'acompanyament';
+
+  @override
   String get tagVegetarian => 'vegetariana';
 
   @override
@@ -1421,13 +1439,22 @@ class AppLocalizationsCa extends AppLocalizations {
   String get tagLactoseFree => 'sense lactosa';
 
   @override
+  String get tagDairyFree => 'sense làctics';
+
+  @override
   String get tagEggFree => 'sense ou';
 
   @override
   String get tagNutFree => 'sense fruits secs';
 
   @override
+  String get tagPeanutFree => 'sense cacauets';
+
+  @override
   String get tagSoyFree => 'sense soja';
+
+  @override
+  String get tagFishFree => 'sense peix';
 
   @override
   String get tagShellfishFree => 'sense marisc';
@@ -1448,7 +1475,22 @@ class AppLocalizationsCa extends AppLocalizations {
   String get tagHighFiber => 'alta en fibra';
 
   @override
-  String get tagMediterranean => 'mediterrània';
+  String get tagHealthy => 'saludable';
+
+  @override
+  String get tagSpanish => 'espanyola';
+
+  @override
+  String get tagItalian => 'italiana';
+
+  @override
+  String get tagAsian => 'asiàtica';
+
+  @override
+  String get tagMexican => 'mexicana';
+
+  @override
+  String get tagIndian => 'índia';
 
   @override
   String get tagQuick => 'ràpida';
@@ -1461,6 +1503,9 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get tagFreezerFriendly => 'per congelar';
+
+  @override
+  String get tagNoOven => 'sense forn';
 
   @override
   String get tagSpicy => 'picant';
@@ -1551,11 +1596,11 @@ class AppLocalizationsCa extends AppLocalizations {
       'Segueix els teus cuiners preferits des del seu perfil i consulta les seves últimes receptes prement el botó de Seguits.';
 
   @override
-  String get onboardingStep10Title => 'El teu perfil i llar';
+  String get onboardingStep10Title => 'El teu perfil, al·lèrgies i llar';
 
   @override
   String get onboardingStep10Body =>
-      'Edita el teu nom i foto. A la secció La meva llar pots planificar amb la teva família en temps real. Des d\'aquí també canvies l\'idioma i el mode fosc.';
+      'Edita el teu nom i foto, i configura les teves al·lèrgies i intoleràncies perquè l\'assistent de receptes les respecti. A la secció La meva llar pots planificar amb la teva família en temps real. Des d\'aquí també canvies l\'idioma i el mode fosc.';
 
   @override
   String get createRecipeOptionsTitle => 'Crear recepta';
@@ -1625,6 +1670,9 @@ class AppLocalizationsCa extends AppLocalizations {
       'Calculant la informació nutricional…';
 
   @override
+  String get recipeAssistantBlockingTags => 'Triant etiquetes…';
+
+  @override
   String get recipeAssistantNotRecipeRequest =>
       'Només puc ajudar-te a elaborar receptes. Descriu un plat o una recepta.';
 
@@ -1677,7 +1725,82 @@ class AppLocalizationsCa extends AppLocalizations {
       'L\'assistent està saturat en aquest moment. Torna-ho a provar més tard.';
 
   @override
+  String get recipeAssistantAllergenConflict =>
+      'La recepta no es pot preparar sense un dels teus al·lèrgens.';
+
+  @override
+  String get allergenConflictTitle => 'No es pot crear la recepta';
+
+  @override
+  String allergenConflictBody(String allergen) {
+    return 'No es pot crear la recepta sense l\'al·lergen o intolerància: $allergen.';
+  }
+
+  @override
+  String get allergenAdjustmentsTitle =>
+      'Ingredients ajustats per les teves al·lèrgies/intoleràncies';
+
+  @override
+  String get allergenAdjustmentsIntro =>
+      'L\'assistent ha modificat la recepta per l\'al·lergen o intolerància indicat:';
+
+  @override
+  String allergenAdjustmentNote(String allergen) {
+    return 'S\'ha modificat la recepta per l\'al·lergen o intolerància: $allergen.';
+  }
+
+  @override
+  String get allergenConfigureInProfileHint =>
+      'Pots configurar les teves al·lèrgies i intoleràncies al perfil.';
+
+  @override
+  String get allergenSubstanceGluten => 'gluten';
+
+  @override
+  String get allergenSubstanceLactose => 'lactosa';
+
+  @override
+  String get allergenSubstanceDairy => 'làctics';
+
+  @override
+  String get allergenSubstanceEgg => 'ou';
+
+  @override
+  String get allergenSubstanceNuts => 'fruits secs';
+
+  @override
+  String get allergenSubstancePeanuts => 'cacauets';
+
+  @override
+  String get allergenSubstanceSoy => 'soja';
+
+  @override
+  String get allergenSubstanceFish => 'peix';
+
+  @override
+  String get allergenSubstanceShellfish => 'marisc';
+
+  @override
+  String get allergenSubstanceSugar => 'sucre';
+
+  @override
+  String get allergiesSection => 'Al·lèrgies i intoleràncies';
+
+  @override
+  String get allergiesHint =>
+      'L\'assistent de receptes evitarà aquests ingredients en crear receptes.';
+
+  @override
+  String get editAllergies => 'Editar al·lèrgies i intoleràncies';
+
+  @override
+  String get allergiesNoneConfigured => 'Cap configurada';
+
+  @override
   String get completeNutritionWithAssistant => 'Completar amb IA';
+
+  @override
+  String get completeTagsWithAssistant => 'Completar amb IA';
 
   @override
   String get recipeAssistantNutritionSaved => 'Fitxa nutricional completada';

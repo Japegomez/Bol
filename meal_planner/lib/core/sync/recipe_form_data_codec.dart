@@ -97,7 +97,9 @@ abstract final class RecipeFormDataCodec {
       servings: servings,
       prepTime: json['prepTime'] as int?,
       cookTime: json['cookTime'] as int?,
-      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+      tags: sortedRecipeTags(
+        (json['tags'] as List<dynamic>?)?.cast<String>() ?? const [],
+      ),
       tips: json['tips'] as String? ?? '',
       existingPhotoPath: json['existingPhotoPath'] as String?,
       removePhoto: json['removePhoto'] as bool? ?? false,

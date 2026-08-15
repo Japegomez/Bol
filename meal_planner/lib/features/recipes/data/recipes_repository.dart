@@ -268,7 +268,7 @@ class RecipesRepository {
             servings: form.servings,
             prepTime: form.prepTime,
             cookTime: form.cookTime,
-            tags: form.tags.map(normalizeTagKey).toList(),
+            tags: sortedRecipeTags(form.tags),
             isPublic: form.isPublic,
             tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
           ),
@@ -524,7 +524,7 @@ class RecipesRepository {
       servings: form.servings,
       prepTime: form.prepTime,
       cookTime: form.cookTime,
-      tags: form.tags.map(normalizeTagKey).toList(),
+      tags: sortedRecipeTags(form.tags),
       isPublic: form.canPublish ? form.isPublic : false,
       tips: form.tips.trim().isEmpty ? null : form.tips.trim(),
     );
@@ -682,7 +682,7 @@ class RecipesRepository {
       servings: form.servings,
       prepTime: form.prepTime,
       cookTime: form.cookTime,
-      tags: List<String>.from(form.tags),
+      tags: sortedRecipeTags(form.tags),
       isPublic: form.canPublish ? form.isPublic : false,
       createdAt: createdAt ?? now,
       updatedAt: now,
@@ -918,7 +918,7 @@ class RecipesRepository {
       servings: recipe.servings,
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
-      tags: List<String>.from(recipe.tags),
+      tags: sortedRecipeTags(recipe.tags),
       tips: recipe.tips ?? '',
       ingredients: detail.ingredients.isEmpty
           ? [IngredientFormItem()]
