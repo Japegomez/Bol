@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   supabase_flutter: ^2.17.1
-  flutter_riverpod: ^3.4.2
+  flutter_riverpod: ^2.6.1
   go_router: ^14.8.1
   sentry_flutter: ^9.27.0
   firebase_core: ^4.13.0
@@ -54,7 +54,7 @@ dev_dependencies:
   supadart: ^1.9.3
   flutter_launcher_icons: ^0.14.3
   drift_dev: ^2.34.5
-  build_runner: ^2.16.0
+  build_runner: ^2.4.15
 
 flutter_launcher_icons:
   android: true
