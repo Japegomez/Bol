@@ -2,7 +2,7 @@
 
 > **Versión:** 1.0 — Fases 1–8 en código; apps en Play (closed testing) y TestFlight como **Böl**
 > **Fecha:** Agosto 2026
-> **Estado:** F1–F15 + offline + modo cocina en producción de código. **v1.3.0+12**: alergias/intolerancias en perfil (`048`, checklist `/home/profile/allergies`), asistente consciente de alérgenos (RF-REC-28), timeout de sesión en background 7 días, orden estable de etiquetas. También: onboarding spotlight, offline Drift (SQLCipher), filtro multi-etiqueta, modo oscuro, asistente IA, hogar↔individual (024), share links (025 + token-gate), fork (026), remediación seguridad (`037`–`045`), favoritos (`046`).
+> **Estado:** F1–F15 + offline + modo cocina en producción de código. **v1.3.1+13** (hotfix): prompt de valoración en tienda diferido hasta uso real (RF-UX-02). **v1.3.0+12**: alergias/intolerancias en perfil (`048`, checklist `/home/profile/allergies`), asistente consciente de alérgenos (RF-REC-28), timeout de sesión en background 7 días, orden estable de etiquetas. También: onboarding spotlight, offline Drift (SQLCipher), filtro multi-etiqueta, modo oscuro, asistente IA, hogar↔individual (024), share links (025 + token-gate), fork (026), remediación seguridad (`037`–`045`), favoritos (`046`).
 
 ---
 
@@ -55,7 +55,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 | Analytics | **Firebase Analytics (GA4)** | Eventos de producto; en Android declara uso de ID de publicidad solo para **analíticas** (`AD_ID` en manifiesto) |
 | Logs en cliente | **`logger`** (Dart) | Logs con niveles (`debug`→`error`), pretty-print en dev, redirigibles a Sentry en prod |
 | Actualizaciones forzadas | **`upgrader`** | Diálogo nativo cuando existe una versión mínima requerida en la store |
-| Valoración en tienda | **`in_app_review`** | Prompt nativo semanal (cooldown 7 días) al entrar en el home tras onboarding; CTA manual «Valorar la app» en Perfil abre la ficha de la store |
+| Valoración en tienda | **`in_app_review`** | Prompt nativo semanal (cooldown 7 días) tras uso real en el home (≥3 sesiones, ≥1 cambio de pestaña; no en la sesión de onboarding); CTA manual «Valorar la app» en Perfil abre la ficha de la store |
 | Conectividad | **`connectivity_plus`** | Detecta pérdida de red; banner «sin conexión» y bloqueo de acciones que requieren Supabase (solo iOS/Android) |
 | Caché offline (móvil) | **Drift** + **sqlite3** (SQLite3MultipleCiphers) | SQLite local cifrado en iOS/Android: espejo de recetario, planificador y lista de compra; cola de operaciones pendientes |
 | Almacenamiento seguro | **`flutter_secure_storage`** | Token de sesión en Keychain (iOS) / Keystore (Android) en lugar de SharedPreferences |
@@ -82,7 +82,7 @@ En una fase posterior se añadió una red social para descubrir y compartir rece
 **RF-AUTH-14** Las contraseñas nuevas (registro y cambio en perfil) cumplen la política de Supabase Auth: mínimo 8 caracteres, minúscula, mayúscula, dígito y símbolo ASCII del conjunto configurado (sin espacios ni caracteres no ASCII). El usuario con identidad email/contraseña puede cambiar la contraseña en `/home/profile/edit` aportando la actual.
 **RF-AUTH-15** El usuario puede registrar sus **alergias e intolerancias** en el perfil (`profiles.allergens text[]`, migración `048`). Las claves reutilizan las 10 etiquetas `*_free` del catálogo de recetas (`allergenTagKeys` en `localized_data.dart`): `gluten_free`, `lactose_free`, `dairy_free`, `egg_free`, `nut_free`, `peanut_free`, `soy_free`, `fish_free`, `shellfish_free`, `sugar_free`. La edición es una checklist independiente en `/home/profile/allergies` y se muestra un resumen de solo lectura en la pantalla de perfil. El asistente de recetas las tiene en cuenta al generar una receta nueva (ver RF-REC-28).  
 **RF-UX-01** Tras el primer acceso autenticado, la app muestra un **tour de onboarding** (11 pasos) con overlay tipo spotlight: resalta controles concretos (FABs, buscadores, acciones de compra/comunidad, secciones de perfil), tarjeta explicativa contextual, navegación con flechas y opción Omitir. Persistencia por usuario; la barra inferior queda bloqueada hasta finalizar u omitir.  
-**RF-UX-02** La app puede solicitar valoración en la store como máximo **una vez por semana** (prompt nativo vía `in_app_review` al entrar en el home tras completar onboarding; cooldown 7 días en secure storage).  
+**RF-UX-02** La app puede solicitar valoración en la store como máximo **una vez por semana** (prompt nativo vía `in_app_review` cuando el usuario ha usado la app de forma significativa: al menos **3** aperturas del home shell y **1** cambio de pestaña en la navegación inferior, contadores en secure storage; **no** en la misma sesión en que completa el onboarding; cooldown 7 días desde el último prompt).  
 **RF-UX-03** Desde Perfil, el usuario puede abrir la ficha de la app en la store («Valorar la app» / `openStoreListing`).  
 **RF-UX-04** Desde Perfil, el usuario puede **enviar feedback** (categorías: problema, sugerencia, otro; mensaje ≥ 10 caracteres) a la tabla `user_feedback`.  
 **RF-UX-05** Un usuario con `profiles.is_admin = true` ve un **panel de control** en Perfil para listar feedback, filtrar por estado/categoría y marcar ítems como resueltos o ignorados. La ruta `/home/profile/admin/*` solo es accesible tras cargar el perfil y confirmar `is_admin`.  

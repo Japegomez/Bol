@@ -8,6 +8,11 @@ void main() {
       expect(ReviewPromptService.cooldownDays, 7);
     });
 
+    test('requires several home sessions and navigation before prompting', () {
+      expect(ReviewPromptService.minHomeShellSessions, greaterThan(1));
+      expect(ReviewPromptService.minNavChanges, greaterThanOrEqualTo(1));
+    });
+
     test('App Store ID is configured for store listing', () {
       expect(AppBranding.appStoreId, isNotEmpty);
       expect(AppBranding.appStoreId, matches(RegExp(r'^\d+$')));
