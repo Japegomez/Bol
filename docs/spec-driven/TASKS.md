@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 15/08/2026 — v1.3.0+12: alergias/intolerancias en perfil, asistente consciente de alérgenos, orden de etiquetas estable, cierre de sesión robusto en web
+> Actualizado: 25/08/2026 — v1.3.1+13 (hotfix): prompt de valoración en tienda solo tras uso real (≥3 sesiones en home + navegación entre pestañas; no al completar onboarding)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -163,7 +163,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
   - `UpgradeAlert` envuelve la app en `app.dart`
 - [x] Instalar **`in_app_review`**
   - `ReviewPromptService` en `lib/core/review/review_prompt_service.dart`
-  - Prompt semanal (cooldown 7 días) vía `WeeklyReviewPrompt` en el home tras onboarding
+  - Prompt semanal (cooldown 7 días) vía `WeeklyReviewPrompt` en el home cuando hay uso real (≥3 sesiones + ≥1 cambio de pestaña; no en la sesión de onboarding)
   - CTA manual «Valorar la app» en Perfil (`openStoreListing`)
 
 ### Setup CI/CD (Codemagic) ✅
@@ -532,7 +532,8 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 - [x] Prompt de valoración en tienda (`in_app_review`) **una vez por semana**
   - `ReviewPromptService.maybeRequestReview()` con cooldown 7 días en secure storage
-  - `WeeklyReviewPrompt` en `home_shell.dart` tras completar onboarding
+  - **v1.3.1:** umbrales de engagement (≥3 aperturas del home, ≥1 cambio de pestaña); no se muestra al completar onboarding en la misma sesión
+  - `WeeklyReviewPrompt` en `home_shell.dart`; contadores en secure storage
 - [x] CTA manual «Valorar la app» en Perfil (abre ficha de la store; sin depender de `isAvailable` previo)
 - [x] Enviar feedback desde Perfil (`/home/profile/feedback`; categorías issue/feature/other; mín. 10 caracteres)
 - [x] Panel de control admin (`profiles.is_admin`) para listar / filtrar / resolver o ignorar feedback
@@ -662,7 +663,7 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 2. **Validar en dispositivo** cierre de sesión en web (Google y email): debe salir al instante sin colgarse.
 3. **Validar en dispositivo** orden de etiquetas: ficha, tarjetas recetario/explorar y guardado muestran el orden del catálogo.
 4. **Validar en dispositivo** recetario/explorar: estrella, chip Favoritos, menú de orden, pública/privada, altura de fichas sin etiquetas.
-5. **Validar en dispositivo** upgrade TestFlight / Play (**v1.3.0+12**; origen de la base anterior v1.2.6): Turnstile en login/registro/reset; Compra / Plan / Recetas; caché offline; alergias + asistente.
+5. **Validar en dispositivo** upgrade TestFlight / Play (**v1.3.1+13**; origen v1.3.0+12): prompt de valoración no debe aparecer en primer acceso ni al terminar onboarding; Turnstile; Compra / Plan / Recetas; caché offline; alergias + asistente.
 6. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
 7. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
 8. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.

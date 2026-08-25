@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/offline/can_edit_offline_provider.dart';
+import 'package:meal_planner/core/review/review_prompt_service.dart';
 import 'package:meal_planner/core/review/weekly_review_prompt.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_screen.dart';
 import 'package:meal_planner/features/cooking/presentation/cooking_session_provider.dart';
@@ -23,6 +24,10 @@ class HomeShell extends ConsumerWidget {
     required bool onboardingActive,
   }) {
     if (onboardingActive) return;
+
+    if (index != navigationShell.currentIndex) {
+      ReviewPromptService.recordNavChange();
+    }
 
     final isOffline = ref.read(isOfflineProvider);
     if (index == 0 && isOffline) {
