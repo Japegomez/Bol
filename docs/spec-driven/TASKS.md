@@ -1,6 +1,6 @@
 # Tareas - MealPlanner
 
-> Actualizado: 25/08/2026 — v1.3.1+13 (hotfix): prompt de valoración en tienda solo tras uso real (≥3 sesiones en home + navegación entre pestañas; no al completar onboarding)
+> Actualizado: 29/08/2026 — v1.3.2+14 (hotfix): alergias personalizadas, asistente con sustitutos de supermercado, fichas de receta de altura uniforme, fix Navigator offline (Sentry MEALPLANER-G)
 > Metodología: Kanban personal. Actualizar al inicio y al final de cada sesión de trabajo.
 
 ---
@@ -261,8 +261,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Importar foto de Google al iniciar sesión si el perfil aún no tiene avatar (`AuthRepository._maybeImportGoogleAvatar`; no sobrescribe foto existente)
 - [x] Moderación de avatar al seleccionar imagen (Google Cloud Vision SafeSearch vía Edge Function `moderate-image`)
   - Validación inmediata en `edit_profile_screen`; diálogo si contenido adulto/explícito; fail-closed si falla el servicio (PR #37)
-- [x] **Alergias e intolerancias** editables en el perfil (migración `048_profile_allergens`; v1.3.0)
-  - Checklist en `edit_allergies_screen` → `/home/profile/allergies` con `FilterChip`s / checkboxes para las 10 claves `*_free` (`allergenTagKeys` en `localized_data.dart`)
+- [x] **Alergias e intolerancias** editables en el perfil (migración `048_profile_allergens`; v1.3.0; custom `050`/`051` en v1.3.2)
+  - Checklist en `edit_allergies_screen` → `/home/profile/allergies` con checkboxes para las 10 claves `*_free` (`allergenTagKeys` en `localized_data.dart`)
+  - **Alergia/intolerancia personalizada** (última opción): claves `custom:<label>` (minúsculas, acentos, sin prefijo «sin»); hasta 10; constraint `allergens_are_valid`
   - Resumen de solo lectura en `profile_screen` (chips con icono de advertencia) cuando el usuario tiene alergias
   - `ProfileRepository.updateAllergens` + `ProfileNotifier.updateAllergens`; columna `profiles.allergens text[]`
 
@@ -386,7 +387,9 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 - [x] Test unitario del mapper JSON → `RecipeFormData` (`test/recipe_assistant_mapper_test.dart`)
 - [x] Título en AppBar de detalle (propia y pública): margen, scrim blanco semitransparente al expandir, ellipsis al colapsar (`RecipeAppBarTitle`)
 - [x] **Orden de etiquetas estable** en ficha, tarjetas y persistencia (v1.3.0): helper `sortedRecipeTags` en `localized_data.dart` (catálogo primero, personalizadas después); aplicado en `HorizontalTagList`, detalle, Explorar, guardado y caché offline
-- [x] **Asistente consciente de alergias** al crear receta (v1.3.0): el cliente envía `userAllergens` del perfil; la Edge Function omite/sustituye ingredientes, auto-aplica etiquetas `*_free`, señala `allergen_conflict` (popup, no crea receta) y devuelve `allergenAdjustments` (diálogo al cargar el formulario)
+- [x] **Asistente consciente de alergias** al crear receta (v1.3.0; adaptación supermercado + custom en v1.3.2): el cliente envía `userAllergens` del perfil; la Edge Function omite/sustituye con análogos de supermercado cuando es posible, auto-aplica etiquetas `*_free` predefinidas, señala `allergen_conflict` solo si el alérgeno es core sin sustituto, y devuelve `allergenAdjustments` (diálogo al cargar el formulario)
+- [x] **Fichas de receta de altura uniforme** (v1.3.2): `RecipeCardTagsSlot` reserva siempre la fila de etiquetas; foto cuadrada vía `IntrinsicHeight` + `AspectRatio` (recetario, explorar/feed, skeleton)
+- [x] **Fix offline dialog Navigator** (v1.3.2 / Sentry MEALPLANER-G): `Navigator.maybeOf` + post-frame al reconectar en `OfflineEntryListener`
 
 ### F4c — Modo cocina (rama `feature/cooking-mode`)
 
@@ -659,11 +662,11 @@ Variables: `--dart-define-from-file=dart_defines.json` → leídas por `lib/core
 
 ## Próximas tareas recomendadas
 
-1. **Validar en dispositivo** alergias + asistente: marcar alergias en perfil → crear receta con asistente → verificar omisión/sustitución, popup de ajustes y popup de conflicto.
-2. **Validar en dispositivo** cierre de sesión en web (Google y email): debe salir al instante sin colgarse.
-3. **Validar en dispositivo** orden de etiquetas: ficha, tarjetas recetario/explorar y guardado muestran el orden del catálogo.
-4. **Validar en dispositivo** recetario/explorar: estrella, chip Favoritos, menú de orden, pública/privada, altura de fichas sin etiquetas.
-5. **Validar en dispositivo** upgrade TestFlight / Play (**v1.3.1+13**; origen v1.3.0+12): prompt de valoración no debe aparecer en primer acceso ni al terminar onboarding; Turnstile; Compra / Plan / Recetas; caché offline; alergias + asistente.
+1. **Validar en dispositivo** alergias personalizadas + asistente: añadir «dátiles» / «sin dátiles» → chip «sin dátiles»; crear empanada con gluten+lactosa → adapta (masa SG, queso sin lactosa) en lugar de `allergen_conflict` si hay sustituto; con lácteos estrictos → análogo vegetal.
+2. **Validar en dispositivo** fichas recetario/explorar: misma altura e imagen con y sin etiquetas; sin franja blanca bajo la foto.
+3. **Validar en dispositivo** offline → online: diálogo de limitaciones no crashea al reconectar.
+4. **Validar en dispositivo** cierre de sesión en web (Google y email): debe salir al instante sin colgarse.
+5. **Validar en dispositivo** upgrade TestFlight / Play (**v1.3.2+14**): Turnstile; Compra / Plan / Recetas; caché offline; alergias + asistente; prompt de valoración solo tras uso real.
 6. **Validar en dispositivo** assistant: dictado; foto sola / foto+texto → ficha; hint con foto; nutrición; cuotas (20/día, 5 s, tope global/IP).
 7. **Validar en dispositivo** invitación hogar: WhatsApp → App Links → unirse; rate-limit de códigos inválidos.
 8. **Validar compartir** (prueba cerrada): enlace privado token-gated → ficha → fork; revoke; caducado.

@@ -88,10 +88,7 @@ class PublicRecipeCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (recipe.tags.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  HorizontalTagList(tags: recipe.tags),
-                ],
+                RecipeCardTagsSlot(tags: recipe.tags),
               ],
             ),
           ),

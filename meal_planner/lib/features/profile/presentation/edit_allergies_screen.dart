@@ -21,16 +21,24 @@ class _EditAllergiesScreenState extends ConsumerState<EditAllergiesScreen> {
   bool _isSaving = false;
   String? _errorMessage;
 
+  List<String> get _customAllergens {
+    final customs = _allergens.where(isCustomAllergenKey).toList()..sort();
+    return customs;
+  }
+
   bool _sameAs(List<String> other) {
-    if (_allergens.length != other.length) return false;
-    for (final item in other) {
-      if (!_allergens.contains(item)) return false;
+    final normalized = normalizeAllergenKeys(_allergens);
+    final otherNormalized = normalizeAllergenKeys(other);
+    if (normalized.length != otherNormalized.length) return false;
+    for (var i = 0; i < normalized.length; i++) {
+      if (normalized[i] != otherNormalized[i]) return false;
     }
     return true;
   }
 
   Future<void> _save() async {
     final current = ref.read(profileProvider).valueOrNull;
+    final toSave = normalizeAllergenKeys(_allergens);
     if (current != null && _sameAs(current.allergens)) {
       if (mounted) context.pop();
       return;
@@ -42,15 +50,96 @@ class _EditAllergiesScreenState extends ConsumerState<EditAllergiesScreen> {
     });
 
     try {
-      await ref
-          .read(profileProvider.notifier)
-          .updateAllergens(_allergens.toList()..sort());
+      await ref.read(profileProvider.notifier).updateAllergens(toSave);
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
+  }
+
+  Future<void> _addCustomAllergy() async {
+    if (_isSaving) return;
+    final customCount = _customAllergens.length;
+    if (customCount >= maxCustomAllergens) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.customAllergyLimitReached)),
+      );
+      return;
+    }
+
+    final l10n = context.l10n;
+    final controller = TextEditingController();
+    String? fieldError;
+
+    final result = await showAdaptiveDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.customAllergyDialogTitle),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
+                maxLength: maxCustomAllergenLabelLength,
+                decoration: InputDecoration(
+                  hintText: l10n.customAllergyHint,
+                  errorText: fieldError,
+                ),
+                onSubmitted: (_) {
+                  final encoded = encodeCustomAllergen(controller.text);
+                  if (encoded == null) {
+                    setDialogState(() {
+                      fieldError = l10n.customAllergyInvalid;
+                    });
+                    return;
+                  }
+                  if (hasEquivalentCustomAllergen(_allergens, encoded)) {
+                    setDialogState(() {
+                      fieldError = l10n.customAllergyDuplicate;
+                    });
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(encoded);
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final encoded = encodeCustomAllergen(controller.text);
+                    if (encoded == null) {
+                      setDialogState(() {
+                        fieldError = l10n.customAllergyInvalid;
+                      });
+                      return;
+                    }
+                    if (hasEquivalentCustomAllergen(_allergens, encoded)) {
+                      setDialogState(() {
+                        fieldError = l10n.customAllergyDuplicate;
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(encoded);
+                  },
+                  child: Text(l10n.customAllergyAdd),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    controller.dispose();
+    if (result == null || !mounted) return;
+    setState(() => _allergens.add(result));
   }
 
   @override
@@ -62,9 +151,11 @@ class _EditAllergiesScreenState extends ConsumerState<EditAllergiesScreen> {
 
     // Initialize once from the first loaded profile; never overwrite local edits.
     if (!_initialized && profile != null) {
-      _allergens = {...profile.allergens};
+      _allergens = {...normalizeAllergenKeys(profile.allergens)};
       _initialized = true;
     }
+
+    final customs = _customAllergens;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.allergiesSection)),
@@ -125,6 +216,44 @@ class _EditAllergiesScreenState extends ConsumerState<EditAllergiesScreen> {
                                 },
                         ),
                       ],
+                      for (final customKey in customs) ...[
+                        const Divider(height: 1),
+                        CheckboxListTile(
+                          value: true,
+                          title: Text(allergenLabel(l10n, customKey)),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          secondary: IconButton(
+                            tooltip: l10n.delete,
+                            icon: const Icon(Icons.close),
+                            onPressed: _isSaving
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _allergens.remove(customKey);
+                                    });
+                                  },
+                          ),
+                          onChanged: _isSaving
+                              ? null
+                              : (selected) {
+                                  if (selected == false) {
+                                    setState(() {
+                                      _allergens.remove(customKey);
+                                    });
+                                  }
+                                },
+                        ),
+                      ],
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: Icon(
+                          Icons.add_circle_outline,
+                          color: theme.colorScheme.primary,
+                        ),
+                        title: Text(l10n.addCustomAllergy),
+                        enabled: !_isSaving,
+                        onTap: _isSaving ? null : _addCustomAllergy,
+                      ),
                     ],
                   ),
                 ),

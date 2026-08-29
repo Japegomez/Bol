@@ -25,16 +25,16 @@ class HomeShell extends ConsumerWidget {
   }) {
     if (onboardingActive) return;
 
-    if (index != navigationShell.currentIndex) {
-      ReviewPromptService.recordNavChange();
-    }
-
     final isOffline = ref.read(isOfflineProvider);
     if (index == 0 && isOffline) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.exploreUnavailableOffline)),
       );
       return;
+    }
+
+    if (index != navigationShell.currentIndex) {
+      ReviewPromptService.recordNavChange();
     }
 
     navigationShell.goBranch(

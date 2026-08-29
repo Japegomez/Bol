@@ -1791,13 +1791,41 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get allergiesHint =>
-      'El asistente de recetas evitará estos ingredientes al crear recetas.';
+      'El asistente de recetas evitará estos ingredientes al crear recetas, y preferirá sustitutos seguros de supermercado cuando el plato se pueda adaptar.';
 
   @override
   String get editAllergies => 'Editar alergias e intolerancias';
 
   @override
   String get allergiesNoneConfigured => 'Ninguna configurada';
+
+  @override
+  String get addCustomAllergy => 'Añadir alergia/intolerancia personalizada';
+
+  @override
+  String get customAllergyDialogTitle => 'Alergia o intolerancia personalizada';
+
+  @override
+  String get customAllergyHint => 'Ej.: apio, mostaza, sésamo…';
+
+  @override
+  String get customAllergyAdd => 'Añadir';
+
+  @override
+  String get customAllergyInvalid =>
+      'Introduce un nombre válido (letras, números, espacios).';
+
+  @override
+  String get customAllergyDuplicate => 'Esa alergia ya está en la lista.';
+
+  @override
+  String get customAllergyLimitReached =>
+      'Puedes añadir hasta 10 alergias personalizadas.';
+
+  @override
+  String customAllergenFreeLabel(String name) {
+    return 'sin $name';
+  }
 
   @override
   String get completeNutritionWithAssistant => 'Completar con IA';

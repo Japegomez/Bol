@@ -583,9 +583,22 @@
   "allergenSubstanceShellfish": "itsaskiak",
   "allergenSubstanceSugar": "azukrea",
   "allergiesSection": "Alergiak eta intolerantziak",
-  "allergiesHint": "Errezeta-laguntzaileak osagai hauek saihesten ditu errezetak sortzean.",
+  "allergiesHint": "Errezeta-laguntzaileak osagai hauek saihesten ditu errezetak sortzean, eta supermerkatuko ordezko seguruak nahiago ditu platera egokitu daitekeenean.",
   "editAllergies": "Editatu alergiak eta intolerantziak",
   "allergiesNoneConfigured": "Bat ere ez dago konfiguratuta",
+  "addCustomAllergy": "Gehitu alergia/intolerantzia pertsonalizatua",
+  "customAllergyDialogTitle": "Alergia edo intolerantzia pertsonalizatua",
+  "customAllergyHint": "Adib.: apioa, ziapea, sesamoa…",
+  "customAllergyAdd": "Gehitu",
+  "customAllergyInvalid": "Sartu izen baliodun bat (letrak, zenbakiak, zuriuneak).",
+  "customAllergyDuplicate": "Alergia hori jada zerrendan dago.",
+  "customAllergyLimitReached": "Gehienez 10 alergia pertsonalizatu gehi ditzakezu.",
+  "customAllergenFreeLabel": "{name} gabe",
+  "@customAllergenFreeLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "completeNutritionWithAssistant": "IA-rekin osatu",
   "completeTagsWithAssistant": "IA-rekin osatu",
   "recipeAssistantNutritionSaved": "Nutrizio fitxa osatuta",

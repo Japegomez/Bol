@@ -583,9 +583,22 @@
   "allergenSubstanceShellfish": "marisco",
   "allergenSubstanceSugar": "açúcar",
   "allergiesSection": "Alergias e intolerâncias",
-  "allergiesHint": "O assistente de receitas evitará estes ingredientes ao criar receitas.",
+  "allergiesHint": "O assistente de receitas evitará estes ingredientes ao criar receitas, e preferirá substitutos seguros de supermercado quando o prato puder ser adaptado.",
   "editAllergies": "Editar alergias e intolerâncias",
   "allergiesNoneConfigured": "Nenhuma configurada",
+  "addCustomAllergy": "Adicionar alergia/intolerância personalizada",
+  "customAllergyDialogTitle": "Alergia ou intolerância personalizada",
+  "customAllergyHint": "Ex.: aipo, mostarda, sésamo…",
+  "customAllergyAdd": "Adicionar",
+  "customAllergyInvalid": "Introduza um nome válido (letras, números, espaços).",
+  "customAllergyDuplicate": "Essa alergia já está na lista.",
+  "customAllergyLimitReached": "Pode adicionar até 10 alergias personalizadas.",
+  "customAllergenFreeLabel": "sem {name}",
+  "@customAllergenFreeLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "completeNutritionWithAssistant": "Completar com IA",
   "completeTagsWithAssistant": "Completar com IA",
   "recipeAssistantNutritionSaved": "Ficha nutricional completada",

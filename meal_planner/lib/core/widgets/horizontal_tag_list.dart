@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:meal_planner/core/locale/l10n_extension.dart';
 import 'package:meal_planner/core/locale/localized_data.dart';
 
+/// Height of the chip row inside recipe list cards.
+const kRecipeCardTagsRowHeight = 32.0;
+
+/// Gap above the tags row inside recipe list cards.
+const kRecipeCardTagsTopGap = 8.0;
+
 /// Horizontally scrollable chip row for recipe tags inside list cards.
 class HorizontalTagList extends StatefulWidget {
   const HorizontalTagList({required this.tags, this.labelFor, super.key});
@@ -58,7 +64,7 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
     final tags = sortedRecipeTags(widget.tags);
 
     return SizedBox(
-      height: 32,
+      height: kRecipeCardTagsRowHeight,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onHorizontalDragUpdate: (details) => _scrollBy(details.delta.dx),
@@ -80,6 +86,28 @@ class _HorizontalTagListState extends State<HorizontalTagList> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Reserves the tags row height on every recipe card so cards with and without
+/// tags share the same layout height (and therefore the same square photo).
+class RecipeCardTagsSlot extends StatelessWidget {
+  const RecipeCardTagsSlot({this.tags = const [], this.labelFor, super.key});
+
+  final List<String> tags;
+  final String Function(String tag)? labelFor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: kRecipeCardTagsTopGap),
+      child: SizedBox(
+        height: kRecipeCardTagsRowHeight,
+        child: tags.isEmpty
+            ? null
+            : HorizontalTagList(tags: tags, labelFor: labelFor),
       ),
     );
   }

@@ -3363,7 +3363,7 @@ abstract class AppLocalizations {
   /// No description provided for @allergiesHint.
   ///
   /// In en, this message translates to:
-  /// **'The recipe assistant will avoid these ingredients when creating recipes.'**
+  /// **'The recipe assistant will avoid these ingredients when creating recipes, and will prefer safe supermarket substitutes when the dish can still be made.'**
   String get allergiesHint;
 
   /// No description provided for @editAllergies.
@@ -3377,6 +3377,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'None configured'**
   String get allergiesNoneConfigured;
+
+  /// No description provided for @addCustomAllergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom allergy/intolerance'**
+  String get addCustomAllergy;
+
+  /// No description provided for @customAllergyDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom allergy or intolerance'**
+  String get customAllergyDialogTitle;
+
+  /// No description provided for @customAllergyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. celery, mustard, sesame…'**
+  String get customAllergyHint;
+
+  /// No description provided for @customAllergyAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get customAllergyAdd;
+
+  /// No description provided for @customAllergyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid name (letters, numbers, spaces).'**
+  String get customAllergyInvalid;
+
+  /// No description provided for @customAllergyDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'That allergy is already on your list.'**
+  String get customAllergyDuplicate;
+
+  /// No description provided for @customAllergyLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add up to 10 custom allergies.'**
+  String get customAllergyLimitReached;
+
+  /// No description provided for @customAllergenFreeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'without {name}'**
+  String customAllergenFreeLabel(String name);
 
   /// No description provided for @completeNutritionWithAssistant.
   ///
