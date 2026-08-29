@@ -302,6 +302,338 @@ function filterAllergenKeysAgainstUser(
   return out;
 }
 
+/** Fold common Spanish/Portuguese diacritics for deterministic matching. */
+function foldDiacritics(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase();
+}
+
+function isWordChar(ch: string | undefined): boolean {
+  if (!ch) return false;
+  return /[\p{L}\p{N}]/u.test(ch);
+}
+
+/** Whole-term match so "pan" does not hit "empanada". */
+function containsTerm(haystack: string, term: string): boolean {
+  const needle = foldDiacritics(term.trim());
+  if (!needle) return false;
+  const text = foldDiacritics(haystack);
+  let from = 0;
+  while (from <= text.length) {
+    const idx = text.indexOf(needle, from);
+    if (idx < 0) return false;
+    const before = idx === 0 ? undefined : text[idx - 1];
+    const afterIdx = idx + needle.length;
+    const after = afterIdx >= text.length ? undefined : text[afterIdx];
+    if (!isWordChar(before) && !isWordChar(after)) return true;
+    from = idx + 1;
+  }
+  return false;
+}
+
+type AllergenTaxonomy = {
+  /** Ingredient terms that typically indicate the allergen is present. */
+  unsafe: readonly string[];
+  /** Markers that make an otherwise unsafe ingredient acceptable. */
+  safeMarkers?: readonly string[];
+};
+
+/**
+ * Maintained taxonomy for predefined allergen keys. Matching is deterministic
+ * (substring with word boundaries on folded text). Safe markers allow
+ * supermarket adaptations (e.g. "queso sin lactosa" for lactose_free).
+ */
+const ALLERGEN_TAXONOMY: Record<string, AllergenTaxonomy> = {
+  gluten_free: {
+    unsafe: [
+      "trigo",
+      "harina",
+      "gluten",
+      "pan",
+      "pan rallado",
+      "pasta",
+      "espagueti",
+      "macarron",
+      "fideo",
+      "hojaldre",
+      "masa",
+      "galleta",
+      "cerveza",
+      "seitan",
+      "wheat",
+      "flour",
+      "bread",
+      "pastry",
+      "noodle",
+      "couscous",
+      "semola",
+      "cebada",
+      "centeno",
+      "avena",
+    ],
+    safeMarkers: [
+      "sin gluten",
+      "gluten-free",
+      "gluten free",
+      "de arroz",
+      "de maiz",
+      "trigo sarraceno",
+      "buckwheat",
+    ],
+  },
+  lactose_free: {
+    unsafe: [
+      "leche",
+      "queso",
+      "yogur",
+      "yogurt",
+      "mantequilla",
+      "nata",
+      "crema",
+      "lactosa",
+      "milk",
+      "cheese",
+      "butter",
+      "cream",
+      "whey",
+      "suero",
+    ],
+    safeMarkers: [
+      "sin lactosa",
+      "lactose-free",
+      "lactose free",
+      "de avena",
+      "de soja",
+      "de almendra",
+      "de coco",
+      "vegetal",
+      "vegano",
+      "vegan",
+    ],
+  },
+  dairy_free: {
+    unsafe: [
+      "leche",
+      "queso",
+      "yogur",
+      "yogurt",
+      "mantequilla",
+      "nata",
+      "crema",
+      "lactosa",
+      "lacteo",
+      "milk",
+      "cheese",
+      "butter",
+      "cream",
+      "whey",
+      "suero",
+      "bechamel",
+    ],
+    // Lactose-free dairy is still dairy — not a safe marker here.
+    safeMarkers: [
+      "de avena",
+      "de soja",
+      "de almendra",
+      "de coco",
+      "vegetal",
+      "vegano",
+      "vegan",
+      "plant-based",
+      "sin lacteos",
+      "dairy-free",
+      "dairy free",
+    ],
+  },
+  egg_free: {
+    unsafe: [
+      "huevo",
+      "huevos",
+      "egg",
+      "eggs",
+      "mayonesa",
+      "mayonnaise",
+      "clara",
+      "yema",
+    ],
+    safeMarkers: ["sin huevo", "egg-free", "egg free", "sustituto de huevo"],
+  },
+  nut_free: {
+    unsafe: [
+      "almendra",
+      "nuez",
+      "nueces",
+      "avellana",
+      "anacardo",
+      "pistacho",
+      "nuez de brasil",
+      "nuez de pecan",
+      "macadamia",
+      "frutos secos",
+      "almond",
+      "walnut",
+      "hazelnut",
+      "cashew",
+      "pistachio",
+    ],
+    safeMarkers: ["sin frutos secos", "nut-free", "nut free"],
+  },
+  peanut_free: {
+    unsafe: [
+      "cacahuete",
+      "cacahuate",
+      "mani",
+      "peanut",
+      "crema de cacahuete",
+      "mantequilla de cacahuete",
+    ],
+    safeMarkers: ["sin cacahuete", "peanut-free", "peanut free"],
+  },
+  soy_free: {
+    unsafe: [
+      "soja",
+      "soy",
+      "tofu",
+      "edamame",
+      "miso",
+      "tempeh",
+      "salsa de soja",
+      "soy sauce",
+    ],
+    safeMarkers: ["sin soja", "soy-free", "soy free"],
+  },
+  fish_free: {
+    unsafe: [
+      "pescado",
+      "fish",
+      "salmon",
+      "atun",
+      "bacalao",
+      "merluza",
+      "sardina",
+      "anchoa",
+      "trout",
+      "cod",
+      "tuna",
+    ],
+    safeMarkers: ["sin pescado", "fish-free", "fish free"],
+  },
+  shellfish_free: {
+    unsafe: [
+      "marisco",
+      "gamba",
+      "langostino",
+      "camaron",
+      "mejillón",
+      "mejillon",
+      "calamar",
+      "pulpo",
+      "ostra",
+      "almeja",
+      "shrimp",
+      "prawn",
+      "mussel",
+      "squid",
+      "shellfish",
+    ],
+    safeMarkers: ["sin marisco", "shellfish-free", "shellfish free"],
+  },
+  sugar_free: {
+    unsafe: [
+      "azucar",
+      "sugar",
+      "miel",
+      "honey",
+      "sirope",
+      "syrup",
+      "melaza",
+      "panela",
+    ],
+    safeMarkers: [
+      "sin azucar",
+      "sugar-free",
+      "sugar free",
+      "edulcorante",
+      "stevia",
+      "eritritol",
+    ],
+  },
+};
+
+function ingredientNamesFromRecipe(result: Record<string, unknown>): string[] {
+  if (!Array.isArray(result.ingredients)) return [];
+  const names: string[] = [];
+  for (const item of result.ingredients) {
+    if (!item || typeof item !== "object") continue;
+    const name = (item as Record<string, unknown>).name;
+    if (typeof name === "string" && name.trim()) {
+      names.push(name.trim());
+    }
+  }
+  return names;
+}
+
+function ingredientViolatesAllergen(
+  ingredientName: string,
+  allergenKey: string,
+): boolean {
+  if (isCustomAllergenKey(allergenKey)) {
+    const substance = customAllergenSubstance(allergenKey);
+    if (!substance) return false;
+    return containsTerm(ingredientName, substance);
+  }
+
+  const taxonomy = ALLERGEN_TAXONOMY[allergenKey];
+  if (!taxonomy) return false;
+
+  const hasUnsafe = taxonomy.unsafe.some((term) =>
+    containsTerm(ingredientName, term)
+  );
+  if (!hasUnsafe) return false;
+
+  const markers = taxonomy.safeMarkers ?? [];
+  const hasSafe = markers.some((marker) => containsTerm(ingredientName, marker));
+  return !hasSafe;
+}
+
+/** Returns user allergen keys still present (unadapted) in recipe ingredients. */
+function findConflictingAllergensInRecipe(
+  result: Record<string, unknown>,
+  userAllergens: readonly string[],
+): string[] {
+  if (userAllergens.length === 0) return [];
+  const ingredients = ingredientNamesFromRecipe(result);
+  if (ingredients.length === 0) return [];
+
+  const conflicting: string[] = [];
+  for (const allergen of userAllergens) {
+    const hits = ingredients.some((name) =>
+      ingredientViolatesAllergen(name, allergen)
+    );
+    if (hits) conflicting.push(allergen);
+  }
+  return conflicting;
+}
+
+function allergenConflictResponse(
+  conflicting: readonly string[],
+  message?: string,
+): Response {
+  const named = conflicting.map((key) => allergenDisplayName(key)).join(", ");
+  return jsonResponse(
+    {
+      error: "allergen_conflict",
+      message: message && message.trim().length > 0
+        ? message.trim()
+        : `No se puede crear la receta sin el alérgeno o intolerancia: ${named}.`,
+      conflictingAllergens: [...conflicting],
+    },
+    422,
+  );
+}
+
 function normalizeAdaptedTitleMarker(title: unknown): string {
   if (typeof title !== "string") return "";
   return title
@@ -1325,7 +1657,7 @@ Deno.serve(async (req) => {
         userPrompt = `${userPrompt}\n${allergenRules}`;
       }
 
-      const result = await callLlm(
+      let result = await callLlm(
         RECIPE_SYSTEM_PROMPT,
         userPrompt,
         "generated_recipe",
@@ -1346,20 +1678,54 @@ Deno.serve(async (req) => {
         if (conflicting.length === 0) {
           conflicting = [...userAllergens];
         }
-        const named = conflicting
-          .map((key: string) => allergenDisplayName(key))
-          .join(", ");
-        return jsonResponse(
-          {
-            error: "allergen_conflict",
-            message: typeof result.message === "string" &&
-                result.message.trim().length > 0
-              ? result.message.trim()
-              : `No se puede crear la receta sin el alérgeno o intolerancia: ${named}.`,
-            conflictingAllergens: conflicting,
-          },
-          422,
+        return allergenConflictResponse(
+          conflicting,
+          typeof result.message === "string" ? result.message : undefined,
         );
+      }
+
+      // Deterministic post-check: reject (or one corrective retry) if ingredients
+      // still contain declared allergens without safe adaptation markers.
+      if (userAllergens.length > 0) {
+        let leftover = findConflictingAllergensInRecipe(result, userAllergens);
+        if (leftover.length > 0) {
+          const named = leftover.map((key) => allergenDisplayName(key)).join(", ");
+          const retryPrompt =
+            `${userPrompt}\n\nVALIDATION FAILURE: The previous draft still includes unsafe ingredients for: ${named}. Adapt with supermarket-safe alternatives (name them explicitly, e.g. "Queso sin lactosa", "Masa de hojaldre sin gluten") or return allergen_conflict if a core ingredient cannot be replaced.`;
+          try {
+            result = await callLlm(
+              RECIPE_SYSTEM_PROMPT,
+              retryPrompt,
+              "generated_recipe",
+              recipeSchema,
+              8192,
+              images.length > 0 ? { images } : {},
+            );
+          } catch (error) {
+            console.warn("allergen corrective retry failed", error);
+            return allergenConflictResponse(leftover);
+          }
+
+          if (result.error === "not_a_recipe_request") {
+            return jsonResponse({ error: "not_a_recipe_request" }, 422);
+          }
+          if (result.error === "allergen_conflict") {
+            let conflicting = filterAllergenKeysAgainstUser(
+              result.conflictingAllergens,
+              userAllergens,
+            );
+            if (conflicting.length === 0) conflicting = leftover;
+            return allergenConflictResponse(
+              conflicting,
+              typeof result.message === "string" ? result.message : undefined,
+            );
+          }
+
+          leftover = findConflictingAllergensInRecipe(result, userAllergens);
+          if (leftover.length > 0) {
+            return allergenConflictResponse(leftover);
+          }
+        }
       }
 
       // Normalize allergenAdjustments so the client always receives an array.

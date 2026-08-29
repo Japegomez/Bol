@@ -9,8 +9,8 @@ void main() {
     });
 
     test('requires several home sessions and navigation before prompting', () {
-      expect(ReviewPromptService.minHomeShellSessions, greaterThan(1));
-      expect(ReviewPromptService.minNavChanges, greaterThanOrEqualTo(1));
+      expect(ReviewPromptService.minHomeShellSessions, 3);
+      expect(ReviewPromptService.minNavChanges, 1);
     });
 
     test('App Store ID is configured for store listing', () {

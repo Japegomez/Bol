@@ -383,10 +383,9 @@ final _customAllergenLabelPattern = RegExp(
 /// Keeps accents, lowercases, collapses spaces, and strips a leading "sin"
 /// (or locale equivalents). Returns null when empty/invalid after cleanup.
 String? normalizeCustomAllergenLabel(String raw) {
-  final collapsed = stripLeadingAllergyFreePrefix(raw)
-      .toLowerCase()
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
+  final collapsed = stripLeadingAllergyFreePrefix(
+    raw,
+  ).toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
   if (collapsed.isEmpty) return null;
   if (collapsed.length > maxCustomAllergenLabelLength) return null;
   if (!_customAllergenLabelPattern.hasMatch(collapsed)) return null;
@@ -496,7 +495,9 @@ List<String> normalizeAllergenKeys(Iterable<String> keys) {
       .where(predefined.contains)
       .toList(growable: false);
   customs.sort();
-  final limitedCustoms = customs.take(maxCustomAllergens).toList(growable: false);
+  final limitedCustoms = customs
+      .take(maxCustomAllergens)
+      .toList(growable: false);
   return [...orderedPredefined, ...limitedCustoms];
 }
 

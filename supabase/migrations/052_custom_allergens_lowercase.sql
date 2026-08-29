@@ -1,5 +1,4 @@
--- 051: Allow Unicode letters in custom allergy labels (accents, etc.).
--- Stored form remains `custom:<lowercase label>`; display keeps accents.
+-- 052: Require custom allergen keys to be stored lowercase.
 
 CREATE OR REPLACE FUNCTION public.allergens_are_valid(arr text[])
 RETURNS boolean

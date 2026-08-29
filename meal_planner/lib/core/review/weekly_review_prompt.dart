@@ -28,7 +28,10 @@ class _WeeklyReviewPromptState extends ConsumerState<WeeklyReviewPrompt> {
   Future<void> _onHomeShellReady() async {
     if (!mounted) return;
 
-    if (!_recordedHomeShellSession) {
+    // Skip the first-run onboarding session; count only after onboarding is done
+    // (typically the next HomeShell mount / app open).
+    if (!_recordedHomeShellSession &&
+        ref.read(onboardingCompletedProvider) == true) {
       _recordedHomeShellSession = true;
       await ReviewPromptService.recordHomeShellSession();
     }
