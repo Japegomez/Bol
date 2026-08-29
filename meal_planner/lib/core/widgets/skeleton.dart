@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal_planner/core/widgets/horizontal_tag_list.dart';
 
 /// Provides a shared pulse animation to descendant [SkeletonBox] widgets.
 class SkeletonPulse extends StatefulWidget {
@@ -192,7 +193,7 @@ class RecipePhotoPlaceholder extends StatelessWidget {
   }
 }
 
-/// Default list-card size: title + two meta lines, no tag chips.
+/// Default list-card size: title + meta lines + reserved tags slot.
 const kRecipeCardDefaultMinSize = 112.0;
 
 /// Square photo on the left that matches the card's content height.
@@ -210,6 +211,8 @@ class RecipeCardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Square photo matches the content column height. Callers must reserve a
+    // fixed tags slot ([RecipeCardTagsSlot]) so cards with/without tags match.
     return ConstrainedBox(
       constraints: BoxConstraints(minHeight: minSize),
       child: IntrinsicHeight(
@@ -236,7 +239,7 @@ class RecipeCardRow extends StatelessWidget {
 class RecipeCardSkeleton extends StatelessWidget {
   const RecipeCardSkeleton({
     this.margin = const EdgeInsets.only(bottom: 12),
-    this.showTags = false,
+    this.showTags = true,
     this.showAuthorLine = false,
     this.showVisibilityLine = false,
     this.showFavoriteOnPhoto = false,
@@ -245,7 +248,8 @@ class RecipeCardSkeleton extends StatelessWidget {
 
   final EdgeInsetsGeometry margin;
 
-  /// When true, shows chip placeholders like [HorizontalTagList] beside the photo.
+  /// When true, shows chip placeholders in the reserved tags slot.
+  /// The slot height is always reserved so skeleton cards match real cards.
   final bool showTags;
 
   /// Explore/feed cards also show author + rating next to the photo.
@@ -299,10 +303,11 @@ class RecipeCardSkeleton extends StatelessWidget {
                   ],
                 ),
               ],
-              if (showTags) ...[
-                const SizedBox(height: 8),
-                const _TagChipRowSkeleton(),
-              ],
+              const SizedBox(height: kRecipeCardTagsTopGap),
+              SizedBox(
+                height: kRecipeCardTagsRowHeight,
+                child: showTags ? const _TagChipRowSkeleton() : null,
+              ),
             ],
           ),
         ),

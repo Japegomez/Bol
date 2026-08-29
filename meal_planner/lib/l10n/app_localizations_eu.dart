@@ -1788,13 +1788,42 @@ class AppLocalizationsEu extends AppLocalizations {
 
   @override
   String get allergiesHint =>
-      'Errezeta-laguntzaileak osagai hauek saihesten ditu errezetak sortzean.';
+      'Errezeta-laguntzaileak osagai hauek saihesten ditu errezetak sortzean, eta supermerkatuko ordezko seguruak nahiago ditu platera egokitu daitekeenean.';
 
   @override
   String get editAllergies => 'Editatu alergiak eta intolerantziak';
 
   @override
   String get allergiesNoneConfigured => 'Bat ere ez dago konfiguratuta';
+
+  @override
+  String get addCustomAllergy => 'Gehitu alergia/intolerantzia pertsonalizatua';
+
+  @override
+  String get customAllergyDialogTitle =>
+      'Alergia edo intolerantzia pertsonalizatua';
+
+  @override
+  String get customAllergyHint => 'Adib.: apioa, ziapea, sesamoa…';
+
+  @override
+  String get customAllergyAdd => 'Gehitu';
+
+  @override
+  String get customAllergyInvalid =>
+      'Sartu izen baliodun bat (letrak, zenbakiak, zuriuneak).';
+
+  @override
+  String get customAllergyDuplicate => 'Alergia hori jada zerrendan dago.';
+
+  @override
+  String get customAllergyLimitReached =>
+      'Gehienez 10 alergia pertsonalizatu gehi ditzakezu.';
+
+  @override
+  String customAllergenFreeLabel(String name) {
+    return '$name gabe';
+  }
 
   @override
   String get completeNutritionWithAssistant => 'IA-rekin osatu';

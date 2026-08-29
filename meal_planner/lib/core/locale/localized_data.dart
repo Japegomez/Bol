@@ -338,12 +338,110 @@ const allergenTagKeys = [
   'sugar_free',
 ];
 
+/// Prefix for free-text custom allergies stored in `profiles.allergens`.
+/// Format: `custom:<normalized_label>` (must stay in sync with DB + Edge Function).
+const customAllergenPrefix = 'custom:';
+
+/// Max length of the free-text label after [customAllergenPrefix].
+const maxCustomAllergenLabelLength = 40;
+
+/// Max number of custom allergy entries per profile.
+const maxCustomAllergens = 10;
+
+bool isCustomAllergenKey(String key) =>
+    key.trim().startsWith(customAllergenPrefix);
+
+/// Human-readable substance from a `custom:…` key, or null if not custom.
+String? customAllergenSubstance(String key) {
+  final trimmed = key.trim();
+  if (!trimmed.startsWith(customAllergenPrefix)) return null;
+  final label = trimmed.substring(customAllergenPrefix.length).trim();
+  return label.isEmpty ? null : label;
+}
+
+/// Strips a leading "sin"/"without"/… word from free-text allergy input.
+String stripLeadingAllergyFreePrefix(String input) {
+  return input
+      .trim()
+      .replaceFirst(
+        RegExp(
+          r'^(sin|sense|sen|sem|senza|without)(\s+|$)',
+          caseSensitive: false,
+        ),
+        '',
+      )
+      .trim();
+}
+
+final _customAllergenLabelPattern = RegExp(
+  r'^[\p{L}\p{N}][\p{L}\p{N} _-]{0,39}$',
+  unicode: true,
+);
+
+/// Normalizes a user-entered custom allergy label for storage.
+///
+/// Keeps accents, lowercases, collapses spaces, and strips a leading "sin"
+/// (or locale equivalents). Returns null when empty/invalid after cleanup.
+String? normalizeCustomAllergenLabel(String raw) {
+  final collapsed = stripLeadingAllergyFreePrefix(raw)
+      .toLowerCase()
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  if (collapsed.isEmpty) return null;
+  if (collapsed.length > maxCustomAllergenLabelLength) return null;
+  if (!_customAllergenLabelPattern.hasMatch(collapsed)) return null;
+  return collapsed;
+}
+
+/// Folds accents for duplicate detection only (storage keeps accents).
+String foldAllergenDiacritics(String input) {
+  const from = 'áàäâãåéèëêíìïîóòöôõúùüûñç';
+  const to = 'aaaaaaeeeeiiiiooooouuuunc';
+  final buffer = StringBuffer();
+  for (final codeUnit in input.codeUnits) {
+    final char = String.fromCharCode(codeUnit);
+    final index = from.indexOf(char);
+    buffer.write(index >= 0 ? to[index] : char);
+  }
+  return buffer.toString();
+}
+
+/// Encodes a free-text label as `custom:<label>`, or null if invalid.
+String? encodeCustomAllergen(String rawLabel) {
+  final label = normalizeCustomAllergenLabel(rawLabel);
+  if (label == null) return null;
+  return '$customAllergenPrefix$label';
+}
+
+/// Whether [keys] already contains the same custom allergy as [encoded]
+/// (accent-insensitive).
+bool hasEquivalentCustomAllergen(Iterable<String> keys, String encoded) {
+  final substance = customAllergenSubstance(encoded);
+  if (substance == null) return keys.contains(encoded);
+  final folded = foldAllergenDiacritics(substance);
+  for (final key in keys) {
+    if (key == encoded) return true;
+    final other = customAllergenSubstance(key);
+    if (other != null && foldAllergenDiacritics(other) == folded) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /// Localized chip/tag label for an allergen key (includes "sin …").
-String allergenLabel(AppLocalizations l10n, String key) =>
-    localizedTagLabel(l10n, key);
+String allergenLabel(AppLocalizations l10n, String key) {
+  final custom = customAllergenSubstance(key);
+  if (custom != null) {
+    return l10n.customAllergenFreeLabel(custom);
+  }
+  return localizedTagLabel(l10n, key);
+}
 
 /// Substance name for dialogs (without the leading "sin"), e.g. "huevo".
 String allergenSubstanceLabel(AppLocalizations l10n, String key) {
+  final custom = customAllergenSubstance(key);
+  if (custom != null) return custom;
   return switch (key.trim()) {
     'gluten_free' => l10n.allergenSubstanceGluten,
     'lactose_free' => l10n.allergenSubstanceLactose,
@@ -359,17 +457,47 @@ String allergenSubstanceLabel(AppLocalizations l10n, String key) {
   };
 }
 
+bool _isValidStoredAllergenKey(String key) {
+  if (allergenTagKeys.contains(key)) return true;
+  final custom = customAllergenSubstance(key);
+  if (custom == null) return false;
+  // Re-validate the stored substance without stripping again incorrectly:
+  // stored labels are already normalized (lowercase, no leading "sin").
+  if (custom.length > maxCustomAllergenLabelLength) return false;
+  return _customAllergenLabelPattern.hasMatch(custom) &&
+      custom == custom.toLowerCase();
+}
+
 /// Valid allergen keys from [keys], preserving order and dropping unknowns.
+/// Predefined keys keep input order among themselves; customs are kept as
+/// valid `custom:…` entries (deduped, accent-insensitive).
 List<String> normalizeAllergenKeys(Iterable<String> keys) {
   final seen = <String>{};
-  final out = <String>[];
+  final seenCustomFolded = <String>{};
+  final predefined = <String>[];
+  final customs = <String>[];
   for (final key in keys) {
-    final trimmed = key.trim();
-    if (allergenTagKeys.contains(trimmed) && seen.add(trimmed)) {
-      out.add(trimmed);
+    final trimmed = key.trim().toLowerCase();
+    if (!_isValidStoredAllergenKey(trimmed)) continue;
+    if (isCustomAllergenKey(trimmed)) {
+      final substance = customAllergenSubstance(trimmed);
+      if (substance == null) continue;
+      final folded = foldAllergenDiacritics(substance);
+      if (!seenCustomFolded.add(folded)) continue;
+      if (!seen.add(trimmed)) continue;
+      customs.add(trimmed);
+    } else {
+      if (!seen.add(trimmed)) continue;
+      predefined.add(trimmed);
     }
   }
-  return out;
+  // Stable product order for checklist keys, then customs alphabetically.
+  final orderedPredefined = allergenTagKeys
+      .where(predefined.contains)
+      .toList(growable: false);
+  customs.sort();
+  final limitedCustoms = customs.take(maxCustomAllergens).toList(growable: false);
+  return [...orderedPredefined, ...limitedCustoms];
 }
 
 /// Conflict dialog lines that always name each allergen/intolerance.

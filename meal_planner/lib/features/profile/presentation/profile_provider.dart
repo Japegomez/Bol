@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/profile.dart';
 import 'package:meal_planner/features/auth/domain/auth_state.dart';
 import 'package:meal_planner/features/auth/presentation/auth_provider.dart';
@@ -70,7 +71,10 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await _repository.updateAllergens(userId: userId, allergens: allergens);
+      await _repository.updateAllergens(
+        userId: userId,
+        allergens: normalizeAllergenKeys(allergens),
+      );
       return _repository.fetchProfile(userId);
     });
   }

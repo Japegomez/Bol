@@ -583,9 +583,22 @@
   "allergenSubstanceShellfish": "marisc",
   "allergenSubstanceSugar": "sucre",
   "allergiesSection": "Al·lèrgies i intoleràncies",
-  "allergiesHint": "L'assistent de receptes evitarà aquests ingredients en crear receptes.",
+  "allergiesHint": "L'assistent de receptes evitarà aquests ingredients en crear receptes, i preferirà substituts segurs de supermercat quan el plat es pugui adaptar.",
   "editAllergies": "Editar al·lèrgies i intoleràncies",
   "allergiesNoneConfigured": "Cap configurada",
+  "addCustomAllergy": "Afegir al·lèrgia/intolerància personalitzada",
+  "customAllergyDialogTitle": "Al·lèrgia o intolerància personalitzada",
+  "customAllergyHint": "Ex.: api, mostassa, sèsam…",
+  "customAllergyAdd": "Afegir",
+  "customAllergyInvalid": "Introdueix un nom vàlid (lletres, números, espais).",
+  "customAllergyDuplicate": "Aquesta al·lèrgia ja és a la llista.",
+  "customAllergyLimitReached": "Pots afegir fins a 10 al·lèrgies personalitzades.",
+  "customAllergenFreeLabel": "sense {name}",
+  "@customAllergenFreeLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "completeNutritionWithAssistant": "Completar amb IA",
   "completeTagsWithAssistant": "Completar amb IA",
   "recipeAssistantNutritionSaved": "Fitxa nutricional completada",

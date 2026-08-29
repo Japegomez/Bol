@@ -695,9 +695,22 @@
   "allergenSubstanceShellfish": "crostacei",
   "allergenSubstanceSugar": "zucchero",
   "allergiesSection": "Allergie e intolleranze",
-  "allergiesHint": "L'assistente delle ricette eviterà questi ingredienti quando creerà ricette.",
+  "allergiesHint": "L'assistente delle ricette eviterà questi ingredienti quando creerà ricette, e preferirà sostituti sicuri da supermercato quando il piatto può essere adattato.",
   "editAllergies": "Modifica allergie e intolleranze",
   "allergiesNoneConfigured": "Nessuna configurata",
+  "addCustomAllergy": "Aggiungi allergia/intolleranza personalizzata",
+  "customAllergyDialogTitle": "Allergia o intolleranza personalizzata",
+  "customAllergyHint": "Es.: sedano, senape, sesamo…",
+  "customAllergyAdd": "Aggiungi",
+  "customAllergyInvalid": "Inserisci un nome valido (lettere, numeri, spazi).",
+  "customAllergyDuplicate": "Questa allergia è già nell'elenco.",
+  "customAllergyLimitReached": "Puoi aggiungere fino a 10 allergie personalizzate.",
+  "customAllergenFreeLabel": "senza {name}",
+  "@customAllergenFreeLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "completeNutritionWithAssistant": "Completa con IA",
   "completeTagsWithAssistant": "Completa con IA",
   "recipeAssistantNutritionSaved": "Valori nutrizionali completati",

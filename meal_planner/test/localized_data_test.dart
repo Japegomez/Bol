@@ -94,8 +94,8 @@ void main() {
 
     test('conflict messages name each allergen', () {
       expect(allergenConflictMessages(l10n, ['egg_free', 'gluten_free']), [
-        'No se puede adaptar la receta para evitar: huevo.',
         'No se puede adaptar la receta para evitar: gluten.',
+        'No se puede adaptar la receta para evitar: huevo.',
       ]);
     });
 
@@ -155,8 +155,36 @@ void main() {
     test('normalizeAllergenKeys drops unknowns and duplicates', () {
       expect(
         normalizeAllergenKeys(['egg_free', 'nope', 'egg_free', 'gluten_free']),
-        ['egg_free', 'gluten_free'],
+        ['gluten_free', 'egg_free'],
       );
+    });
+
+    test('normalizeAllergenKeys keeps custom allergies', () {
+      expect(
+        normalizeAllergenKeys([
+          'custom:sésamo',
+          'egg_free',
+          'custom:apio',
+          'custom:SÉSAMO',
+          'custom:sesamo',
+          'custom:!!!',
+        ]),
+        ['egg_free', 'custom:apio', 'custom:sésamo'],
+      );
+    });
+
+    test('encodeCustomAllergen keeps accents, strips sin, lowercases', () {
+      expect(encodeCustomAllergen('Dátiles'), 'custom:dátiles');
+      expect(encodeCustomAllergen('sin dátiles'), 'custom:dátiles');
+      expect(encodeCustomAllergen('  Sin  Apio  '), 'custom:apio');
+      expect(encodeCustomAllergen('!!!'), isNull);
+      expect(encodeCustomAllergen(''), isNull);
+      expect(encodeCustomAllergen('sin'), isNull);
+    });
+
+    test('allergen labels support custom keys', () {
+      expect(allergenSubstanceLabel(l10n, 'custom:dátiles'), 'dátiles');
+      expect(allergenLabel(l10n, 'custom:dátiles'), 'sin dátiles');
     });
   });
 

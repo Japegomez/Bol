@@ -694,9 +694,22 @@
   "allergenSubstanceShellfish": "shellfish",
   "allergenSubstanceSugar": "sugar",
   "allergiesSection": "Allergies and intolerances",
-  "allergiesHint": "The recipe assistant will avoid these ingredients when creating recipes.",
+  "allergiesHint": "The recipe assistant will avoid these ingredients when creating recipes, and will prefer safe supermarket substitutes when the dish can still be made.",
   "editAllergies": "Edit allergies and intolerances",
   "allergiesNoneConfigured": "None configured",
+  "addCustomAllergy": "Add custom allergy/intolerance",
+  "customAllergyDialogTitle": "Custom allergy or intolerance",
+  "customAllergyHint": "e.g. celery, mustard, sesame…",
+  "customAllergyAdd": "Add",
+  "customAllergyInvalid": "Enter a valid name (letters, numbers, spaces).",
+  "customAllergyDuplicate": "That allergy is already on your list.",
+  "customAllergyLimitReached": "You can add up to 10 custom allergies.",
+  "customAllergenFreeLabel": "without {name}",
+  "@customAllergenFreeLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "completeNutritionWithAssistant": "Complete with AI",
   "completeTagsWithAssistant": "Complete with AI",
   "recipeAssistantNutritionSaved": "Nutrition information completed",

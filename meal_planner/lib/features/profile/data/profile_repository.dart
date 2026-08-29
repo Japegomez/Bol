@@ -1,4 +1,5 @@
 import 'package:image_picker/image_picker.dart';
+import 'package:meal_planner/core/locale/localized_data.dart';
 import 'package:meal_planner/core/supabase/models/profile.dart';
 import 'package:meal_planner/core/supabase/supabase_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -39,6 +40,7 @@ class ProfileRepository {
           .map((e) => e?.toString().trim() ?? '')
           .where((e) => e.isNotEmpty)
           .toList();
+      allergens = normalizeAllergenKeys(allergens);
     } else {
       allergens = const [];
     }

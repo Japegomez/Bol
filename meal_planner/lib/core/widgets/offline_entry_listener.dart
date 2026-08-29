@@ -68,7 +68,12 @@ class _OfflineEntryListenerState extends ConsumerState<OfflineEntryListener>
         final wasShown = ref.read(offlineDialogShownProvider);
         ref.read(offlineDialogShownProvider.notifier).state = false;
         if (wasShown && mounted) {
-          Navigator.of(context, rootNavigator: true).maybePop();
+          // Defer: ref.listen runs during notify; Navigator.of can be null in
+          // release (asserts stripped → TypeError on `navigator!`).
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            Navigator.maybeOf(context, rootNavigator: true)?.maybePop();
+          });
         }
         return;
       }
